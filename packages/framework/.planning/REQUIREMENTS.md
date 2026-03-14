@@ -55,9 +55,9 @@
 
 ### Advanced Topics
 
-- [ ] **ADV-01**: Multimodal page - rewrite/expand to cover images, audio, video, documents with examples
-- [ ] **ADV-02**: Error handling page - rewrite with full error taxonomy Mermaid diagram and recovery patterns per error type
-- [ ] **ADV-03**: Direct model requests page - calling model directly without agent wrapper
+- [x] **ADV-01**: Multimodal page - rewrite/expand to cover images, audio, video, documents with examples
+- [x] **ADV-02**: Error handling page - rewrite with full error taxonomy Mermaid diagram and recovery patterns per error type
+- [x] **ADV-03**: Direct model requests page - calling model directly without agent wrapper
 
 ### Project & Meta
 
@@ -127,9 +127,9 @@
 | EX-07 | Phase 5 | Complete |
 | EX-08 | Phase 5 | Complete |
 | EX-09 | Phase 5 | Complete |
-| ADV-01 | Phase 6 | Pending |
-| ADV-02 | Phase 6 | Pending |
-| ADV-03 | Phase 6 | Pending |
+| ADV-01 | Phase 6 | Complete |
+| ADV-02 | Phase 6 | Complete |
+| ADV-03 | Phase 6 | Complete |
 | META-01 | Phase 6 | Pending |
 | META-02 | Phase 6 | Pending |
 | META-03 | Phase 6 | Pending |

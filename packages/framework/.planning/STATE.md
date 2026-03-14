@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 05-03-PLAN.md (graph-workflow, human-in-the-loop, a2a examples)
-last_updated: "2026-03-14T17:09:07.325Z"
+stopped_at: Completed 06-01-PLAN.md (multimodal, error-handling, direct-model-requests advanced pages)
+last_updated: "2026-03-14T17:43:55.315Z"
 last_activity: 2026-03-14 -- Completed 02-01 (agents, models, dependencies, tools concept pages)
 progress:
   total_phases: 6
   completed_phases: 5
-  total_plans: 12
-  completed_plans: 12
+  total_plans: 15
+  completed_plans: 13
   percent: 17
 ---
 
@@ -60,6 +60,7 @@ Progress: [█░░░░░░░░░] 17%
 | Phase 05-examples P01 | 4 | 3 tasks | 3 files |
 | Phase 05-examples P02 | 5 | 3 tasks | 3 files |
 | Phase 05-examples P03 | 3 | 3 tasks | 4 files |
+| Phase 06-advanced-topics-meta-and-navigation P01 | 3 | 3 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -94,6 +95,8 @@ Recent decisions affecting current work:
 - [Phase 05-examples]: bank-support.mdx mapping table includes Pydantic AI decorator in contrast column — no Vibes code uses decorators
 - [Phase 05-examples]: Warning callouts avoid reproducing anti-patterns as code literals to prevent grep false-positives and reader confusion
 - [Phase 05-examples]: A2A example uses CodeGroup with server.ts/client.ts tabs - separate processes shown as separate files
+- [Phase 06-01]: Error page includes UsageLimitExceededError only in Warning callout (educational anti-pattern) — no code blocks use the wrong name
+- [Phase 06-01]: Each advanced page targets 2 Mermaid diagrams to hit DIAG-01 target of 30 exactly (24 + 6 = 30)
 
 ### Pending Todos
 
@@ -106,6 +109,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-14T17:07:19.377Z
-Stopped at: Completed 05-03-PLAN.md (graph-workflow, human-in-the-loop, a2a examples)
+Last session: 2026-03-14T17:43:55.313Z
+Stopped at: Completed 06-01-PLAN.md (multimodal, error-handling, direct-model-requests advanced pages)
 Resume file: None
