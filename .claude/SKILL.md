@@ -32,7 +32,7 @@ src/packages/framework/
 | `Agent(model, system_prompt, tools, result_type)` | `new Agent({ model, systemPrompt, tools, outputSchema })` |                                               |
 | `RunContext[Deps]`                                | `RunContext<TDeps>`                                       | Generic over deps                             |
 | `@agent.tool` decorator                           | `tool({ name, description, parameters, execute })`        | Factory function                              |
-| `result_type: BaseModel`                          | `outputSchema: z.object({...})`                           | Zod schema                                    |
+| `result_type: BaseModel`                          | `outputSchema: z.object({...})`                           | Zod schema; `TOutput` is inferred from schema |
 | `ResultValidator`                                 | `ResultValidator<TDeps, TOutput>`                         | Throw to reject & retry                       |
 | `agent.run(prompt, deps=x)`                       | `agent.run(prompt, { deps: x })`                          |                                               |
 | `agent.run_stream(prompt)`                        | `agent.stream(prompt)`                                    |                                               |
@@ -155,7 +155,30 @@ interface RunContext<TDeps = undefined> {
 }
 ```
 
-### 6. Types — use AI SDK exports, not custom wrappers
+### 6. `TOutput` is inferred from `outputSchema` — don't repeat it
+
+`outputSchema` is typed as `ZodType<TOutput>`, so TypeScript infers `TOutput` automatically from the schema you pass. You only need to specify `TDeps` explicitly when using dependencies:
+
+```typescript
+const ReportSchema = z.object({ title: z.string(), score: z.number() });
+type Report = z.infer<typeof ReportSchema>;
+
+// ✓ TOutput inferred — no second type param needed
+const agent = new Agent<Deps>({ model, outputSchema: ReportSchema });
+
+// ✓ Both inferred — no type params at all (when no deps)
+const agent = new Agent({ model, outputSchema: ReportSchema });
+
+// ✓ Union: TOutput inferred as SchemaA | SchemaB
+const agent = new Agent({ model, outputSchema: [SchemaA, SchemaB] });
+
+// ✗ Redundant — TOutput = Report is already inferred from schema
+const agent = new Agent<Deps, Report>({ model, outputSchema: ReportSchema });
+```
+
+**Why it works:** `AgentOptions.outputSchema` is `ZodType<TOutput> | ZodType<TOutput>[]`, not `ZodTypeAny`. Passing a schema binds `TOutput` to `z.infer<typeof schema>` at the call site.
+
+### 7. Types — use AI SDK exports, not custom wrappers
 
 ```typescript
 import { type ToolSet } from "ai"; // ✓ for tool maps
@@ -163,7 +186,7 @@ import { type ToolSet } from "ai"; // ✓ for tool maps
 // NOT: ReturnType<typeof aiTool>   // ✗
 ```
 
-### 7. Pydantic-ai decorator pattern → `agent.add*`
+### 8. Pydantic-ai decorator pattern → `agent.add*`
 
 pydantic-ai uses decorators to register dynamic behaviour on an agent after construction:
 
@@ -223,7 +246,7 @@ const agent = new Agent<Deps>({
 
 > **Key difference from pydantic-ai:** there is no `dynamic_system_prompt` constructor argument — `systemPrompt` accepts both. `agent.addSystemPrompt(fn)` is the decorator equivalent for post-construction registration.
 
-### 8. Result validators
+### 9. Result validators
 
 ```typescript
 type ResultValidator<TDeps, TOutput> = (
@@ -403,10 +426,11 @@ Add a row to the table in `docs/index.md`:
 1. Find the pydantic-ai source (`pydantic_ai/agent.py` or `pydantic_ai/_run.py`)
 2. Map Python types → TypeScript generics (Pydantic models → Zod schemas)
 3. Map Python context managers → async functions or class methods
-4. Keep types strictly from `ai` and `zod` — **no `any`, no `// deno-lint-ignore no-explicit-any`**
+4. Keep types strictly from `ai` and `zod` — **no `any`, no `// deno-lint-ignore` of any kind**
    - Use wrapper lambdas to bridge generic parameter mismatches (e.g. `(args) => opts.fn(args as z.infer<TParams>)`)
    - Use `unknown` + structural casts (`x as Record<string, unknown>`) instead of `any`
    - If you reach for `any`, stop and redesign the type boundary
+   - After implementation, run `grep -r "deno-lint-ignore" packages/framework/` — it must return empty
 5. Add to `AgentOptions` interface if it's a constructor option
 6. Export new public types from `mod.ts`
 7. Run `deno check mod.ts` to verify

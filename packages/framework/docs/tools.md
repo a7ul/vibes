@@ -258,8 +258,8 @@ requiresApproval: (_ctx, args) => args.id.startsWith("prod_"),
 ## `argsValidator` — Cross-Field Validation
 
 Zod validates each field in isolation. Use `argsValidator` for cross-field
-constraints that Zod alone cannot express. Throwing from `argsValidator` surfaces
-an error without consuming a retry:
+constraints that Zod alone cannot express. Throwing from `argsValidator`
+surfaces an error without consuming a retry:
 
 ```ts
 const bookFlight = tool({

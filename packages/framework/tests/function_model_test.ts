@@ -4,7 +4,10 @@
 import { assertEquals, assertExists } from "@std/assert";
 import { z } from "zod";
 import { Agent, tool } from "../mod.ts";
-import { FunctionModel, type ModelFunctionParams } from "../function_model.ts";
+import {
+  FunctionModel,
+  type ModelFunctionParams,
+} from "../lib/testing/function_model.ts";
 import {
   type DoGenerateResult,
   mockValues,

@@ -1,13 +1,13 @@
 # Temporal
 
-Run agents as durable Temporal workflows — surviving process crashes,
-network failures, and arbitrary pauses — with full activity replay.
+Run agents as durable Temporal workflows — surviving process crashes, network
+failures, and arbitrary pauses — with full activity replay.
 
 ## What is Temporal?
 
-[Temporal](https://temporal.io/) is a durable execution platform. Workflows
-are recorded as event histories; if a worker crashes, Temporal replays the
-history on restart so execution continues from where it left off. This makes
+[Temporal](https://temporal.io/) is a durable execution platform. Workflows are
+recorded as event histories; if a worker crashes, Temporal replays the history
+on restart so execution continues from where it left off. This makes
 long-running, multi-step agent workflows resilient by default.
 
 ## `TemporalAgent`
@@ -60,8 +60,8 @@ const result = await mockAgent.run({
 console.log(result.output); // "Paris"
 ```
 
-`MockTemporalAgent` is a drop-in replacement for `TemporalAgent` in tests —
-same API, no Temporal infrastructure required.
+`MockTemporalAgent` is a drop-in replacement for `TemporalAgent` in tests — same
+API, no Temporal infrastructure required.
 
 ## Worker Setup
 
@@ -85,7 +85,7 @@ Temporal requires all workflow state to be serializable to JSON. The framework
 provides helpers for safe serialization of agent messages and results:
 
 ```ts
-import { serializeAgentState, deserializeAgentState } from "./mod.ts";
+import { deserializeAgentState, serializeAgentState } from "./mod.ts";
 
 // Inside a workflow activity — safe to use in Temporal context
 const serialized = serializeAgentState(result);
@@ -147,27 +147,27 @@ const temporalAgent = new TemporalAgent(agentWithApprovalTools, {
 
 ### `TemporalAgent`
 
-| Member | Signature | Description |
-| --- | --- | --- |
-| constructor | `(agent, options)` | Wrap an agent for Temporal |
-| `start` | `(client, options) => Promise<WorkflowHandle>` | Start a durable workflow |
-| `workflowsPath` | `() => string` | Path to workflow definitions for `Worker.create` |
-| `activities` | `() => Activities` | Activity implementations for `Worker.create` |
+| Member          | Signature                                      | Description                                      |
+| --------------- | ---------------------------------------------- | ------------------------------------------------ |
+| constructor     | `(agent, options)`                             | Wrap an agent for Temporal                       |
+| `start`         | `(client, options) => Promise<WorkflowHandle>` | Start a durable workflow                         |
+| `workflowsPath` | `() => string`                                 | Path to workflow definitions for `Worker.create` |
+| `activities`    | `() => Activities`                             | Activity implementations for `Worker.create`     |
 
 ### `TemporalAgent` Options
 
-| Option | Type | Default | Description |
-| --- | --- | --- | --- |
-| `taskQueue` | `string` | required | Temporal task queue name |
-| `workflowExecutionTimeout` | `string` | — | Max total workflow duration |
-| `activityStartToCloseTimeout` | `string` | `"5m"` | Timeout per agent turn activity |
+| Option                        | Type     | Default  | Description                     |
+| ----------------------------- | -------- | -------- | ------------------------------- |
+| `taskQueue`                   | `string` | required | Temporal task queue name        |
+| `workflowExecutionTimeout`    | `string` | —        | Max total workflow duration     |
+| `activityStartToCloseTimeout` | `string` | `"5m"`   | Timeout per agent turn activity |
 
 ### `MockTemporalAgent`
 
-| Member | Signature | Description |
-| --- | --- | --- |
-| constructor | `(agent)` | Wrap an agent for in-process mock execution |
-| `run` | `(args) => Promise<RunResult>` | Execute without Temporal infrastructure |
+| Member      | Signature                      | Description                                 |
+| ----------- | ------------------------------ | ------------------------------------------- |
+| constructor | `(agent)`                      | Wrap an agent for in-process mock execution |
+| `run`       | `(args) => Promise<RunResult>` | Execute without Temporal infrastructure     |
 
 ## Error Behavior
 

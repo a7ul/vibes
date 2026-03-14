@@ -127,8 +127,8 @@ try {
 ## `runStreamEvents()`
 
 `runStreamEvents()` gives you a typed async iterable of structured events —
-richer than `textStream` alone. Use it when you need to observe tool calls,
-tool results, and run lifecycle events in addition to text.
+richer than `textStream` alone. Use it when you need to observe tool calls, tool
+results, and run lifecycle events in addition to text.
 
 ```ts
 import type { AgentStreamEvent } from "./mod.ts";
@@ -153,13 +153,13 @@ for await (const event of agent.runStreamEvents("What is 2 + 2?")) {
 
 ### `AgentStreamEvent` union
 
-| `type` | Extra fields | Description |
-| --- | --- | --- |
-| `"text-delta"` | `delta: string` | A text chunk from the model |
-| `"tool-call"` | `toolCallId, toolName, args` | The model requested a tool call |
-| `"tool-result"` | `toolCallId, toolName, result` | A tool returned a result |
-| `"run-complete"` | `result: RunResult<TOutput>` | The run finished successfully |
-| `"run-error"` | `error: unknown` | The run threw an error |
+| `type`           | Extra fields                   | Description                     |
+| ---------------- | ------------------------------ | ------------------------------- |
+| `"text-delta"`   | `delta: string`                | A text chunk from the model     |
+| `"tool-call"`    | `toolCallId, toolName, args`   | The model requested a tool call |
+| `"tool-result"`  | `toolCallId, toolName, result` | A tool returned a result        |
+| `"run-complete"` | `result: RunResult<TOutput>`   | The run finished successfully   |
+| `"run-error"`    | `error: unknown`               | The run threw an error          |
 
 ### `partialOutput` on `StreamResult`
 

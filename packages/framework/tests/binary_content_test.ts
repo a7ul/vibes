@@ -8,7 +8,7 @@ import {
   isUploadedFile,
   type UploadedFile,
   uploadedFileToToolResult,
-} from "../binary_content.ts";
+} from "../lib/multimodal/binary_content.ts";
 import { Agent, tool } from "../mod.ts";
 import { z } from "zod";
 import {
@@ -162,7 +162,7 @@ Deno.test("BinaryContent - tool can return BinaryContent without error", async (
     parameters: z.object({}),
     // deno-lint-ignore require-await
     execute: async (): Promise<
-      import("../binary_content.ts").BinaryContent
+      import("../multimodal/binary_content.ts").BinaryContent
     > => ({
       type: "binary",
       mimeType: "image/png",
@@ -190,7 +190,7 @@ Deno.test("UploadedFile - tool can return UploadedFile without error", async () 
     parameters: z.object({}),
     // deno-lint-ignore require-await
     execute: async (): Promise<
-      import("../binary_content.ts").UploadedFile
+      import("../multimodal/binary_content.ts").UploadedFile
     > => ({
       type: "uploaded_file",
       fileId: "file-test-123",

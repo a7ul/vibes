@@ -35,16 +35,16 @@ precedence over agent-level values for any fields they specify.
 
 ## `ModelSettings` Interface
 
-| Option | Type | Default | Description |
-| --- | --- | --- | --- |
-| `temperature` | `number` | model default | Sampling temperature (0–2). Higher = more creative/random |
-| `maxTokens` | `number` | model default | Maximum output tokens per model request |
-| `topP` | `number` | model default | Nucleus sampling threshold (0–1) |
-| `topK` | `number` | model default | Top-K sampling (model-dependent) |
-| `presencePenalty` | `number` | model default | Penalise tokens already present in context |
-| `frequencyPenalty` | `number` | model default | Penalise frequently used tokens |
-| `stopSequences` | `string[]` | — | Stop generation at these sequences |
-| `seed` | `number` | — | Seed for deterministic generation (model-dependent) |
+| Option             | Type       | Default       | Description                                               |
+| ------------------ | ---------- | ------------- | --------------------------------------------------------- |
+| `temperature`      | `number`   | model default | Sampling temperature (0–2). Higher = more creative/random |
+| `maxTokens`        | `number`   | model default | Maximum output tokens per model request                   |
+| `topP`             | `number`   | model default | Nucleus sampling threshold (0–1)                          |
+| `topK`             | `number`   | model default | Top-K sampling (model-dependent)                          |
+| `presencePenalty`  | `number`   | model default | Penalise tokens already present in context                |
+| `frequencyPenalty` | `number`   | model default | Penalise frequently used tokens                           |
+| `stopSequences`    | `string[]` | —             | Stop generation at these sequences                        |
+| `seed`             | `number`   | —             | Seed for deterministic generation (model-dependent)       |
 
 All fields are optional. Omit any field to use the model's default.
 

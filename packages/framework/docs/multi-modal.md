@@ -61,27 +61,41 @@ support file uploads (e.g. OpenAI Files API).
 Use the convenience helpers to build user messages that include media:
 
 ```ts
-import { imageMessage, audioMessage, fileMessage } from "./mod.ts";
+import { audioMessage, fileMessage, imageMessage } from "./mod.ts";
 
 // Image from URL
-const msg = imageMessage("https://example.com/photo.jpg", "Describe this image.");
+const msg = imageMessage(
+  "https://example.com/photo.jpg",
+  "Describe this image.",
+);
 
 // Image from local bytes
 const bytes = await Deno.readFile("./chart.png");
-const msg = imageMessage({ data: bytes, mimeType: "image/png" }, "What does this chart show?");
+const msg = imageMessage(
+  { data: bytes, mimeType: "image/png" },
+  "What does this chart show?",
+);
 
 // Audio
 const audio = await Deno.readFile("./recording.mp3");
-const msg = audioMessage({ data: audio, mimeType: "audio/mpeg" }, "Transcribe this.");
+const msg = audioMessage(
+  { data: audio, mimeType: "audio/mpeg" },
+  "Transcribe this.",
+);
 
 // File
-const msg = fileMessage({ fileId: "file-abc123", mimeType: "application/pdf" }, "Summarise.");
+const msg = fileMessage(
+  { fileId: "file-abc123", mimeType: "application/pdf" },
+  "Summarise.",
+);
 ```
 
 Pass these messages as `messageHistory` or as the prompt to `.run()`:
 
 ```ts
-const result = await agent.run(imageMessage(screenshotUrl, "What's on screen?"));
+const result = await agent.run(
+  imageMessage(screenshotUrl, "What's on screen?"),
+);
 ```
 
 ## Zod Schemas for Tool Parameters
@@ -129,27 +143,27 @@ execute: async (_ctx, args) => {
 
 ### `BinaryContent`
 
-| Field | Type | Description |
-| --- | --- | --- |
-| `type` | `"binary"` | Discriminator |
-| `mimeType` | `string` | MIME type (e.g. `"image/png"`, `"audio/mp3"`) |
-| `data` | `Uint8Array` | Raw bytes |
+| Field      | Type         | Description                                   |
+| ---------- | ------------ | --------------------------------------------- |
+| `type`     | `"binary"`   | Discriminator                                 |
+| `mimeType` | `string`     | MIME type (e.g. `"image/png"`, `"audio/mp3"`) |
+| `data`     | `Uint8Array` | Raw bytes                                     |
 
 ### `UploadedFile`
 
-| Field | Type | Description |
-| --- | --- | --- |
-| `type` | `"uploaded-file"` | Discriminator |
-| `fileId` | `string` | Provider-specific file reference |
-| `mimeType` | `string` | MIME type of the file |
+| Field      | Type              | Description                      |
+| ---------- | ----------------- | -------------------------------- |
+| `type`     | `"uploaded-file"` | Discriminator                    |
+| `fileId`   | `string`          | Provider-specific file reference |
+| `mimeType` | `string`          | MIME type of the file            |
 
 ### Message Helpers
 
-| Helper | Signature | Description |
-| --- | --- | --- |
+| Helper         | Signature                                                 | Description                        |
+| -------------- | --------------------------------------------------------- | ---------------------------------- |
 | `imageMessage` | `(image: string \| BinaryContent, text?) => ModelMessage` | Build a user message with an image |
-| `audioMessage` | `(audio: BinaryContent, text?) => ModelMessage` | Build a user message with audio |
-| `fileMessage` | `(file: UploadedFile, text?) => ModelMessage` | Build a user message with a file |
+| `audioMessage` | `(audio: BinaryContent, text?) => ModelMessage`           | Build a user message with audio    |
+| `fileMessage`  | `(file: UploadedFile, text?) => ModelMessage`             | Build a user message with a file   |
 
 ## Error Behavior
 

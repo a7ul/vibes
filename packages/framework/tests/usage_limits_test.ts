@@ -1,6 +1,6 @@
 import { assertEquals, assertRejects } from "@std/assert";
 import { Agent } from "../mod.ts";
-import { UsageLimitError } from "../errors.ts";
+import { UsageLimitError } from "../lib/types/errors.ts";
 import {
   type DoGenerateResult,
   MockLanguageModelV3,

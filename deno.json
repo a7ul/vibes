@@ -5,8 +5,6 @@
     "test": "deno test --allow-env --allow-net"
   },
   "imports": {
-    "@std/assert": "jsr:@std/assert@^1.0.19",
-    "@ai-sdk/anthropic": "npm:@ai-sdk/anthropic@^3",
-    "@ai-sdk/openai": "npm:@ai-sdk/openai@^3"
+    "@std/assert": "jsr:@std/assert@^1.0.19"
   }
 }

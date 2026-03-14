@@ -4,7 +4,7 @@
 import { assertEquals, assertExists } from "@std/assert";
 import { z } from "zod";
 import { Agent, tool } from "../mod.ts";
-import { createTestModel, TestModel } from "../test_model.ts";
+import { createTestModel, TestModel } from "../lib/testing/test_model.ts";
 
 // ---------------------------------------------------------------------------
 // Basic text response

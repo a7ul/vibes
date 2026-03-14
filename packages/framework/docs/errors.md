@@ -1,10 +1,13 @@
 # Errors
 
-The framework throws two custom error types. Both extend `Error` and can be caught with `instanceof`.
+The framework throws two custom error types. Both extend `Error` and can be
+caught with `instanceof`.
 
 ## `MaxTurnsError`
 
-Thrown when a run exceeds `maxTurns` (default: `10`) without producing a final result. This usually means the model is looping — calling tools repeatedly without converging on an answer.
+Thrown when a run exceeds `maxTurns` (default: `10`) without producing a final
+result. This usually means the model is looping — calling tools repeatedly
+without converging on an answer.
 
 ```ts
 import { MaxTurnsError } from "./mod.ts";
@@ -31,11 +34,14 @@ const agent = new Agent({ model: ..., maxTurns: 20 });
 
 ## `MaxRetriesError`
 
-Thrown when result validation fails more times than `maxRetries` allows (default: `3`). Occurs when:
+Thrown when result validation fails more times than `maxRetries` allows
+(default: `3`). Occurs when:
 
 - A `resultValidator` throws on every attempt.
-- The model calls `final_result` with data that fails Zod validation on every attempt.
-- The model repeatedly produces plain text instead of calling `final_result` when `outputSchema` is set.
+- The model calls `final_result` with data that fails Zod validation on every
+  attempt.
+- The model repeatedly produces plain text instead of calling `final_result`
+  when `outputSchema` is set.
 
 ```ts
 import { MaxRetriesError } from "./mod.ts";
@@ -53,10 +59,12 @@ try {
 
 **Constructor:** `new MaxRetriesError(retries: number, cause?: Error)`
 
-- `err.message` — includes the retry count and the last validation error message.
+- `err.message` — includes the retry count and the last validation error
+  message.
 - `err.cause` — the last `Error` thrown by a result validator (if any).
 
-**Increase the limit** if your schema or validators are strict and the model needs more attempts:
+**Increase the limit** if your schema or validators are strict and the model
+needs more attempts:
 
 ```ts
 const agent = new Agent({ model: ..., maxRetries: 5 });
@@ -66,7 +74,8 @@ const agent = new Agent({ model: ..., maxRetries: 5 });
 
 ## Model / Provider Errors
 
-Errors from the underlying AI SDK (network failures, API errors, rate limits) propagate directly — they are not wrapped. Catch them the same way:
+Errors from the underlying AI SDK (network failures, API errors, rate limits)
+propagate directly — they are not wrapped. Catch them the same way:
 
 ```ts
 import { APICallError } from "ai";
@@ -85,7 +94,7 @@ try {
 ## Error Handling Pattern
 
 ```ts
-import { MaxTurnsError, MaxRetriesError } from "./mod.ts";
+import { MaxRetriesError, MaxTurnsError } from "./mod.ts";
 
 async function safeRun(agent: Agent, prompt: string) {
   try {

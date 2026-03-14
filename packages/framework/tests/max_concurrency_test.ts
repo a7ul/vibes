@@ -4,7 +4,7 @@
  */
 import { assertEquals, assertRejects } from "@std/assert";
 import { Agent, tool } from "../mod.ts";
-import { Semaphore } from "../concurrency.ts";
+import { Semaphore } from "../lib/concurrency.ts";
 import { z } from "zod";
 import {
   type DoGenerateResult,

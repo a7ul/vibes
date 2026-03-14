@@ -80,10 +80,13 @@ Manages multiple MCP clients as a single unit — connect, use, and disconnect a
 clients together:
 
 ```ts
-import { MCPManager, MCPStdioClient, MCPHttpClient } from "./mod.ts";
+import { MCPHttpClient, MCPManager, MCPStdioClient } from "./mod.ts";
 
 const manager = new MCPManager([
-  new MCPStdioClient({ command: "npx", args: ["-y", "@mcp/filesystem", "/data"] }),
+  new MCPStdioClient({
+    command: "npx",
+    args: ["-y", "@mcp/filesystem", "/data"],
+  }),
   new MCPHttpClient({ url: "https://search-mcp.example.com/mcp" }),
 ]);
 
@@ -131,27 +134,27 @@ Example `mcp-config.json`:
 
 ## `MCPClient` Interface
 
-| Method | Signature | Description |
-| --- | --- | --- |
-| `connect` | `() => Promise<void>` | Connect to the server |
-| `disconnect` | `() => Promise<void>` | Disconnect and clean up |
-| `listTools` | `() => Promise<MCPTool[]>` | List available tools |
-| `callTool` | `(name, args) => Promise<MCPCallResult>` | Invoke a tool |
-| `getServerInstructions` | `() => string \| undefined` | Server-level system prompt hint |
+| Method                  | Signature                                | Description                     |
+| ----------------------- | ---------------------------------------- | ------------------------------- |
+| `connect`               | `() => Promise<void>`                    | Connect to the server           |
+| `disconnect`            | `() => Promise<void>`                    | Disconnect and clean up         |
+| `listTools`             | `() => Promise<MCPTool[]>`               | List available tools            |
+| `callTool`              | `(name, args) => Promise<MCPCallResult>` | Invoke a tool                   |
+| `getServerInstructions` | `() => string \| undefined`              | Server-level system prompt hint |
 
 ## `MCPStdioClient` Options
 
-| Option | Type | Description |
-| --- | --- | --- |
-| `command` | `string` | Executable to run |
-| `args` | `string[]` | Arguments passed to the command |
-| `env` | `Record<string, string>` | Extra environment variables |
+| Option    | Type                     | Description                     |
+| --------- | ------------------------ | ------------------------------- |
+| `command` | `string`                 | Executable to run               |
+| `args`    | `string[]`               | Arguments passed to the command |
+| `env`     | `Record<string, string>` | Extra environment variables     |
 
 ## `MCPHttpClient` Options
 
-| Option | Type | Description |
-| --- | --- | --- |
-| `url` | `string` | MCP server endpoint |
+| Option    | Type                     | Description              |
+| --------- | ------------------------ | ------------------------ |
+| `url`     | `string`                 | MCP server endpoint      |
 | `headers` | `Record<string, string>` | HTTP headers (e.g. auth) |
 
 ## Error Behavior
@@ -163,5 +166,5 @@ Example `mcp-config.json`:
   model.
 - Always call `disconnect()` (or `manager.disconnectAll()`) after use to avoid
   orphaned subprocesses.
-- If `listTools()` fails during a turn, that turn throws and the run fails. Guard
-  with try/catch if server availability is uncertain.
+- If `listTools()` fails during a turn, that turn throws and the run fails.
+  Guard with try/catch if server availability is uncertain.
