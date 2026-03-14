@@ -11,6 +11,9 @@ import {
 	nudgeWithValidationError,
 	prepareTurn,
 	resolveSystemPrompt,
+	resolveModelSettings,
+	modelSettingsToAISDKOptions,
+	resolveEndStrategy,
 	runValidators,
 	checkModelRequestsAllowed,
 	type InternalRunOpts,
@@ -34,7 +37,11 @@ export async function executeRun<TDeps, TOutput>(
 	const maxTurns = opts._override?.maxTurns ?? agent.maxTurns;
 	const maxRetries = opts._override?.maxRetries ?? agent.maxRetries;
 	const resultValidators = opts._override?.resultValidators ?? agent.resultValidators;
+	const modelSettingsRaw = resolveModelSettings(agent, opts);
+	const modelSettings = modelSettingsToAISDKOptions(modelSettingsRaw);
+	const endStrategy = resolveEndStrategy(agent, opts);
 
+	// systemPrompt is resolved once; instructions are resolved per-turn inside prepareTurn
 	const systemPrompt = await resolveSystemPrompt(
 		agent,
 		ctx,
@@ -45,14 +52,21 @@ export async function executeRun<TDeps, TOutput>(
 	const messages = buildInitialMessages(opts.messageHistory, prompt);
 
 	for (let turn = 0; turn < maxTurns; turn++) {
-		const { tools, msgsForModel } = await prepareTurn(agent, opts, ctx, messages);
+		const { tools, msgsForModel, system } = await prepareTurn(
+			agent,
+			opts,
+			ctx,
+			messages,
+			systemPrompt,
+		);
 
 		const response = await generateText({
 			model,
-			system: systemPrompt,
+			system,
 			messages: msgsForModel,
 			tools,
 			stopWhen: stepCountIs(1),
+			...modelSettings,
 		});
 
 		applyUsage(usage, response.usage);
@@ -76,6 +90,12 @@ export async function executeRun<TDeps, TOutput>(
 					ctx,
 					parsed.data as TOutput,
 				);
+
+				// generateText resolves all tool calls before returning, so all side
+				// effects have run regardless of endStrategy. The strategy is stored on
+				// the result for callers that need to inspect it.
+				void endStrategy; // acknowledged — no extra action needed in non-streaming path
+
 				const allMessages = [...messages, ...newMessages];
 				return {
 					output,

@@ -9,12 +9,13 @@ import {
 	type ModelMessage,
 	type ToolSet,
 } from "ai";
-import type { Agent } from "../agent.ts";
+import type { Agent, EndStrategy } from "../agent.ts";
 import type { HistoryProcessor } from "../history_processor.ts";
 import type { ResultValidator, RunContext, Usage } from "../types.ts";
 import type { ToolDefinition } from "../tool.ts";
 import type { Toolset } from "../toolsets/toolset.ts";
 import type { UsageLimits } from "../usage_limits.ts";
+import type { ModelSettings } from "../model_settings.ts";
 import { createUsage } from "../types.ts";
 import { toAISDKTools } from "../tool.ts";
 import { checkUsageLimits } from "../usage_limits.ts";
@@ -33,10 +34,15 @@ export interface InternalRunOpts<TDeps, TOutput> {
 	metadata?: Record<string, unknown>;
 	/** Per-run usage limits (overrides agent-level limits when set). */
 	usageLimits?: UsageLimits;
+	/** Per-run model settings (overrides agent-level modelSettings). */
+	modelSettings?: ModelSettings;
+	/** Per-run end strategy (overrides agent-level endStrategy). */
+	endStrategy?: EndStrategy;
 	/** Populated by Agent.override(); replaces corresponding agent fields for this run. */
 	_override?: {
 		model?: LanguageModel;
 		systemPrompts?: Array<string | ((ctx: RunContext<TDeps>) => string | Promise<string>)>;
+		instructions?: Array<string | ((ctx: RunContext<TDeps>) => string | Promise<string>)>;
 		tools?: ReadonlyArray<ToolDefinition<TDeps>>;
 		toolsets?: ReadonlyArray<Toolset<TDeps>>;
 		historyProcessors?: ReadonlyArray<HistoryProcessor<TDeps>>;
@@ -44,6 +50,8 @@ export interface InternalRunOpts<TDeps, TOutput> {
 		maxRetries?: number;
 		maxTurns?: number;
 		usageLimits?: UsageLimits;
+		modelSettings?: ModelSettings;
+		endStrategy?: EndStrategy;
 	};
 	/** When true, bypasses the ALLOW_MODEL_REQUESTS guard (set by agent.override()). */
 	_bypassModelRequestsCheck?: boolean;
@@ -67,6 +75,17 @@ export function createRunContext<TDeps>(
 	};
 }
 
+async function resolvePromptParts<TDeps>(
+	parts: ReadonlyArray<string | ((ctx: RunContext<TDeps>) => string | Promise<string>)>,
+	ctx: RunContext<TDeps>,
+): Promise<string | undefined> {
+	const resolved: string[] = [];
+	for (const p of parts) {
+		resolved.push(typeof p === "string" ? p : await p(ctx));
+	}
+	return resolved.length > 0 ? resolved.join("\n\n") : undefined;
+}
+
 export async function resolveSystemPrompt<TDeps, TOutput>(
 	agent: Agent<TDeps, TOutput>,
 	ctx: RunContext<TDeps>,
@@ -75,11 +94,30 @@ export async function resolveSystemPrompt<TDeps, TOutput>(
 	>,
 ): Promise<string | undefined> {
 	const prompts = overrideSystemPrompts ?? [...agent.systemPrompts];
-	const parts: string[] = [];
-	for (const p of prompts) {
-		parts.push(typeof p === "string" ? p : await p(ctx));
+	return resolvePromptParts(prompts, ctx);
+}
+
+/**
+ * Resolves instructions for the current turn and combines them with the
+ * resolved system prompt. Instructions differ from systemPrompt in that they
+ * are resolved per-turn (allowing dynamic per-turn values) and are NOT stored
+ * in the message history (they only exist in the `system` field of each call).
+ */
+export async function resolveSystemWithInstructions<TDeps, TOutput>(
+	agent: Agent<TDeps, TOutput>,
+	ctx: RunContext<TDeps>,
+	systemPrompt: string | undefined,
+	overrideInstructions?: Array<
+		string | ((ctx: RunContext<TDeps>) => string | Promise<string>)
+	>,
+): Promise<string | undefined> {
+	const instructionParts = overrideInstructions ?? [...agent.instructions];
+	const instructions = await resolvePromptParts(instructionParts, ctx);
+
+	if (systemPrompt && instructions) {
+		return `${systemPrompt}\n\n${instructions}`;
 	}
-	return parts.length > 0 ? parts.join("\n\n") : undefined;
+	return systemPrompt ?? instructions;
 }
 
 export function buildInitialMessages(
@@ -159,8 +197,9 @@ export function buildToolMap<TDeps>(
 	resolvedTools: ToolDefinition<TDeps>[],
 	outputSchema: import("zod").ZodTypeAny | undefined,
 	ctx: RunContext<TDeps>,
+	maxConcurrency?: number,
 ): ToolSet {
-	const toolMap = toAISDKTools(resolvedTools, () => ctx);
+	const toolMap = toAISDKTools(resolvedTools, () => ctx, maxConcurrency);
 	if (outputSchema) {
 		toolMap[FINAL_RESULT_TOOL] = aiTool({
 			description: "Return the final structured result.",
@@ -243,6 +282,8 @@ export interface TurnSetup<TDeps> {
 	toolMap: ToolSet;
 	tools: ToolSet | undefined;
 	msgsForModel: ModelMessage[];
+	/** System prompt combined with per-turn instructions. */
+	system: string | undefined;
 }
 
 export async function prepareTurn<TDeps, TOutput>(
@@ -250,6 +291,8 @@ export async function prepareTurn<TDeps, TOutput>(
 	opts: InternalRunOpts<TDeps, TOutput>,
 	ctx: RunContext<TDeps>,
 	messages: ModelMessage[],
+	/** The resolved system prompt (without instructions) from run start. */
+	systemPrompt: string | undefined,
 ): Promise<TurnSetup<TDeps>> {
 	// Check usage limits (agent-level, then per-run override)
 	const limits = opts._override?.usageLimits ?? opts.usageLimits ?? agent.usageLimits;
@@ -258,15 +301,71 @@ export async function prepareTurn<TDeps, TOutput>(
 	const tools = opts._override?.tools ?? agent.tools;
 	const toolsets = opts._override?.toolsets ?? agent.toolsets;
 	const resolvedTools = await resolveTools(tools, toolsets, ctx);
-	const toolMap = buildToolMap(resolvedTools, agent.outputSchema, ctx);
+	const toolMap = buildToolMap(resolvedTools, agent.outputSchema, ctx, agent.maxConcurrency);
 
 	const historyProcessors = opts._override?.historyProcessors ?? agent.historyProcessors;
 	const msgsForModel = await applyHistoryProcessors(historyProcessors, messages, ctx);
 
+	// Resolve per-turn instructions and combine with system prompt
+	const system = await resolveSystemWithInstructions(
+		agent,
+		ctx,
+		systemPrompt,
+		opts._override?.instructions,
+	);
+
 	// Notify capture store
 	_notifyModelRequest(msgsForModel);
 
-	return { toolMap, tools: toolsOrUndefined(toolMap), msgsForModel };
+	return { toolMap, tools: toolsOrUndefined(toolMap), msgsForModel, system };
+}
+
+/** Resolve effective model settings, merging agent-level with run/override-level. */
+export function resolveModelSettings<TDeps, TOutput>(
+	agent: Agent<TDeps, TOutput>,
+	opts: InternalRunOpts<TDeps, TOutput>,
+): ModelSettings {
+	// Override-level > run-level > agent-level (spread, so later keys win)
+	return {
+		...(agent.modelSettings ?? {}),
+		...(opts.modelSettings ?? {}),
+		...(opts._override?.modelSettings ?? {}),
+	};
+}
+
+/**
+ * Convert a `ModelSettings` object to the options expected by AI SDK v6's
+ * `generateText` / `streamText`. Notably, `maxTokens` maps to `maxOutputTokens`.
+ */
+export function modelSettingsToAISDKOptions(settings: ModelSettings): Record<string, unknown> {
+	const {
+		maxTokens,
+		temperature,
+		topP,
+		topK,
+		frequencyPenalty,
+		presencePenalty,
+		stopSequences,
+		seed,
+	} = settings;
+	const result: Record<string, unknown> = {};
+	if (temperature !== undefined) result.temperature = temperature;
+	if (maxTokens !== undefined) result.maxOutputTokens = maxTokens;
+	if (topP !== undefined) result.topP = topP;
+	if (topK !== undefined) result.topK = topK;
+	if (frequencyPenalty !== undefined) result.frequencyPenalty = frequencyPenalty;
+	if (presencePenalty !== undefined) result.presencePenalty = presencePenalty;
+	if (stopSequences !== undefined) result.stopSequences = stopSequences;
+	if (seed !== undefined) result.seed = seed;
+	return result;
+}
+
+/** Resolve effective end strategy. */
+export function resolveEndStrategy<TDeps, TOutput>(
+	agent: Agent<TDeps, TOutput>,
+	opts: InternalRunOpts<TDeps, TOutput>,
+): import("../agent.ts").EndStrategy {
+	return opts._override?.endStrategy ?? opts.endStrategy ?? agent.endStrategy;
 }
 
 // ---------------------------------------------------------------------------
