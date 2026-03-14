@@ -1,0 +1,130 @@
+---
+title: Chat App
+description: A multi-turn chat application connecting a Vibes streaming agent to a React frontend with Vercel AI UI.
+---
+
+This example shows a full-stack chat application: a Vibes streaming agent on the backend, connected to a React frontend using Vercel AI UI's `useChat` hook. Messages persist across turns using Vibes' built-in message history.
+
+## What You'll Learn
+
+- `agent.stream()` for streaming responses
+- `toDataStreamResponse()` to convert streams to Vercel AI data protocol
+- `useChat` React hook for real-time streaming UIs
+- Multi-turn conversation with `messageHistory`
+
+## Prerequisites
+
+- `ANTHROPIC_API_KEY` set in your environment
+- For the Deno server: Vibes installed (`deno add npm:@vibes/framework`)
+- For the Next.js route: `npm install @vibes/framework @ai-sdk/anthropic ai`
+
+## Complete Example
+
+<CodeGroup>
+
+```typescript agent.ts
+import { Agent } from "npm:@vibes/framework";
+import { anthropic } from "npm:@ai-sdk/anthropic";
+
+export const chatAgent = new Agent({
+  model: anthropic("claude-sonnet-4-6"),
+  systemPrompt:
+    "You are a helpful assistant. Be concise and friendly. " +
+    "Remember context from earlier in the conversation.",
+});
+```
+
+```typescript server.ts
+import { toDataStreamResponse } from "npm:ai";
+import { chatAgent } from "./agent.ts";
+
+Deno.serve({ port: 3000 }, async (req) => {
+  if (req.method !== "POST") {
+    return new Response("Method not allowed", { status: 405 });
+  }
+  const { messages } = await req.json();
+  const lastMessage = messages[messages.length - 1];
+  const history = messages.slice(0, -1);
+
+  const result = await chatAgent.stream(lastMessage.content, {
+    messageHistory: history,
+  });
+
+  return toDataStreamResponse(result.textStream);
+});
+```
+
+```typescript app/api/chat/route.ts
+import { toDataStreamResponse } from "ai";
+import { chatAgent } from "@/lib/agent";
+
+export async function POST(req: Request) {
+  const { messages } = await req.json();
+  const lastMessage = messages[messages.length - 1];
+  const history = messages.slice(0, -1);
+
+  const result = await chatAgent.stream(lastMessage.content, {
+    messageHistory: history,
+  });
+
+  return toDataStreamResponse(result.textStream);
+}
+```
+
+```tsx app/page.tsx
+"use client";
+import { useChat } from "ai/react";
+
+export default function ChatPage() {
+  const { messages, input, handleInputChange, handleSubmit } = useChat({
+    api: "/api/chat",
+  });
+
+  return (
+    <div>
+      <div>
+        {messages.map((m) => (
+          <div key={m.id}>
+            <strong>{m.role}:</strong> {m.content}
+          </div>
+        ))}
+      </div>
+      <form onSubmit={handleSubmit}>
+        <input
+          value={input}
+          onChange={handleInputChange}
+          placeholder="Ask something..."
+        />
+        <button type="submit">Send</button>
+      </form>
+    </div>
+  );
+}
+```
+
+</CodeGroup>
+
+## Run It
+
+```bash
+# Deno server
+deno run --allow-net --allow-env server.ts
+
+# Or: Next.js dev server
+npm run dev
+```
+
+## How It Works
+
+**`agent.stream()`**: Returns a result with `textStream` (async iterable of string chunks), `partialOutput`, and accumulated `messages`.
+
+**`toDataStreamResponse()`**: Converts the text stream to the Vercel AI data stream protocol — the format `useChat` expects. Imported from the `"ai"` package (already a dependency in your project).
+
+**`messageHistory`**: Pass previous messages to maintain conversation context across turns. Vibes accumulates new messages in `result.messages` — or use `result.newMessages` for only the new messages added in that run.
+
+**`useChat`**: Manages message state, sends POST requests to your API route, and streams tokens into the UI automatically. No manual state management needed.
+
+## Next Steps
+
+- [Vercel AI UI integration](/integrations/vercel-ai-ui) — structured output streaming, `useCompletion`
+- [Messages concept page](/concepts/messages) — `serializeMessages`, history processors
