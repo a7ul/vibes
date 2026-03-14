@@ -1,11 +1,12 @@
 import type { LanguageModel, ModelMessage } from "ai";
-import type { ZodType, ZodTypeAny } from "zod";
+import type { ZodType } from "zod";
 import type { RunContext } from "./types/context.ts";
 import type {
   ResultValidator,
   RunResult,
   StreamResult,
 } from "./types/results.ts";
+import type { BinaryImageOutputSentinel } from "./multimodal/binary_content.ts";
 import type { OutputMode } from "./types/output_mode.ts";
 import type { ToolDefinition } from "./tool.ts";
 import type { Toolset } from "./toolsets/toolset.ts";
@@ -57,8 +58,10 @@ export interface AgentOptions<TDeps, TOutput> {
   tools?: ToolDefinition<TDeps>[];
   /** Composable toolsets (resolved per-turn). Combined with `tools`. */
   toolsets?: Toolset<TDeps>[];
-  /** Zod schema for structured output. If omitted, output type is string. */
-  outputSchema?: ZodType<TOutput> | ZodType<TOutput>[];
+  /** Zod schema for structured output. If omitted, output type is string.
+   *  Pass `BINARY_IMAGE_OUTPUT` sentinel to indicate the agent returns a
+   *  `BinaryContent` image as its output (first tool image result wins). */
+  outputSchema?: ZodType<TOutput> | ZodType[] | BinaryImageOutputSentinel;
   /**
    * How structured output is delivered to the model.
    * - `'tool'` (default): Inject a `final_result` tool the model must call.
@@ -153,7 +156,7 @@ export interface AgentOverrideOptions<TDeps, TOutput> {
 export class Agent<TDeps = undefined, TOutput = string> {
   readonly name: string | undefined;
   readonly model: LanguageModel;
-  readonly outputSchema: ZodType<TOutput> | ZodType<TOutput>[] | undefined;
+  readonly outputSchema: ZodType<TOutput> | ZodType[] | BinaryImageOutputSentinel | undefined;
   readonly outputMode: OutputMode;
   readonly outputTemplate: boolean;
   readonly maxRetries: number;

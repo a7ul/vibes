@@ -30,6 +30,7 @@ import {
 import {
   binaryContentToToolResult,
   isBinaryContent,
+  isBinaryImageOutput,
   isUploadedFile,
   uploadedFileToToolResult,
 } from "../multimodal/binary_content.ts";
@@ -281,8 +282,9 @@ export function buildResponseMessages(
 export function buildToolMap<TDeps>(
   resolvedTools: ToolDefinition<TDeps>[],
   outputSchema:
-    | import("zod").ZodTypeAny
-    | import("zod").ZodTypeAny[]
+    | import("zod").ZodType
+    | import("zod").ZodType[]
+    | import("../multimodal/binary_content.ts").BinaryImageOutputSentinel
     | undefined,
   outputMode: import("../types/output_mode.ts").OutputMode,
   ctx: RunContext<TDeps>,
@@ -295,8 +297,8 @@ export function buildToolMap<TDeps>(
     maxConcurrency,
     sequentialMutex,
   );
-  if (outputSchema && outputMode === "tool") {
-    registerOutputTools(toolMap, outputSchema);
+  if (outputSchema && outputMode === "tool" && !isBinaryImageOutput(outputSchema)) {
+    registerOutputTools(toolMap, outputSchema as import("zod").ZodType | import("zod").ZodType[]);
   }
   return toolMap;
 }
@@ -467,9 +469,10 @@ export async function prepareTurn<TDeps, TOutput>(
   if (
     agent.outputMode === "prompted" &&
     agent.outputTemplate !== false &&
-    agent.outputSchema
+    agent.outputSchema &&
+    !isBinaryImageOutput(agent.outputSchema)
   ) {
-    const schemaPrompt = buildSchemaPrompt(agent.outputSchema);
+    const schemaPrompt = buildSchemaPrompt(agent.outputSchema as import("zod").ZodType | import("zod").ZodType[]);
     baseSystem = baseSystem ? `${baseSystem}\n\n${schemaPrompt}` : schemaPrompt;
   }
 
@@ -611,8 +614,9 @@ export async function checkRequiresApproval<TDeps>(
 export function buildDeferredAwareToolMap<TDeps>(
   tools: ReadonlyArray<ToolDefinition<TDeps>>,
   outputSchema:
-    | import("zod").ZodTypeAny
-    | import("zod").ZodTypeAny[]
+    | import("zod").ZodType
+    | import("zod").ZodType[]
+    | import("../multimodal/binary_content.ts").BinaryImageOutputSentinel
     | undefined,
   outputMode: import("../types/output_mode.ts").OutputMode,
   ctx: RunContext<TDeps>,
@@ -630,7 +634,7 @@ export function buildDeferredAwareToolMap<TDeps>(
       ...t,
       execute: async (
         execCtx: RunContext<TDeps>,
-        args: import("zod").infer<import("zod").ZodTypeAny>,
+        args: import("zod").infer<import("zod").ZodType>,
       ) => {
         const argsRecord = args as Record<string, unknown>;
         const needsApproval = await checkRequiresApproval(
@@ -661,8 +665,8 @@ export function buildDeferredAwareToolMap<TDeps>(
     maxConcurrency,
     sequentialMutex,
   );
-  if (outputSchema && outputMode === "tool") {
-    registerOutputTools(toolMap, outputSchema);
+  if (outputSchema && outputMode === "tool" && !isBinaryImageOutput(outputSchema)) {
+    registerOutputTools(toolMap, outputSchema as import("zod").ZodType | import("zod").ZodType[]);
   }
   return toolMap;
 }

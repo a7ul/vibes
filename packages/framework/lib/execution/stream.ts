@@ -25,6 +25,7 @@ import {
   runValidators,
   unionToolIndex,
 } from "./_run_utils.ts";
+import { isBinaryImageOutput } from "../multimodal/binary_content.ts";
 import { MaxTurnsError } from "../types/errors.ts";
 
 // ---------------------------------------------------------------------------
@@ -157,7 +158,7 @@ async function runStreamLoop<TDeps, TOutput>(
   const telemetry = resolveTelemetry(agent, opts);
   const outputMode = agent.outputMode;
   const outputSchema = agent.outputSchema;
-  const schemas = normaliseSchemas(outputSchema);
+  const schemas = isBinaryImageOutput(outputSchema) ? [] : normaliseSchemas(outputSchema);
 
   // Shared mutex for sequential tools — created once per run
   const sequentialMutex = createSequentialMutex();
@@ -308,7 +309,7 @@ async function runStreamLoop<TDeps, TOutput>(
         if (accumulatedText.trim().length > 0) {
           const parseResult = parseTextOutput<TOutput>(
             accumulatedText,
-            outputSchema,
+            isBinaryImageOutput(outputSchema) ? undefined : outputSchema,
           );
           if (!parseResult.success) {
             messages.push(...newMessages);

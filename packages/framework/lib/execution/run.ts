@@ -4,6 +4,10 @@ import type { Agent } from "../agent.ts";
 import type { RunContext } from "../types/context.ts";
 import type { RunResult } from "../types/results.ts";
 import {
+  extractBinaryImageFromToolOutput,
+  isBinaryImageOutput,
+} from "../multimodal/binary_content.ts";
+import {
   applyUsage,
   buildDeferredAwareToolMap,
   buildInitialMessages,
@@ -57,7 +61,7 @@ export async function executeRun<TDeps, TOutput>(
   const telemetry = resolveTelemetry(agent, opts);
   const outputMode = agent.outputMode;
   const outputSchema = agent.outputSchema;
-  const schemas = normaliseSchemas(outputSchema);
+  const schemas = isBinaryImageOutput(outputSchema) ? [] : normaliseSchemas(outputSchema);
 
   // systemPrompt is resolved once; instructions are resolved per-turn inside prepareTurn
   const systemPrompt = await resolveSystemPrompt(
@@ -343,7 +347,7 @@ export async function executeRun<TDeps, TOutput>(
       if (response.text.trim().length > 0) {
         const parseResult = parseTextOutput<TOutput>(
           response.text,
-          outputSchema,
+          isBinaryImageOutput(outputSchema) ? undefined : outputSchema,
         );
         if (!parseResult.success) {
           messages.push(...newMessages);
@@ -420,6 +424,30 @@ export async function executeRun<TDeps, TOutput>(
     applyUsage(usage, response.usage);
 
     const newMessages = response.response.messages as ModelMessage[];
+
+    // Check for binary image output mode
+    if (isBinaryImageOutput(outputSchema)) {
+      // Find first tool result that contains a binary image
+      const imageResult = response.toolResults
+        .map((r) => extractBinaryImageFromToolOutput((r as unknown as { output: unknown }).output))
+        .find((img) => img !== null) ?? null;
+
+      if (imageResult) {
+        const allMessages = [...messages, ...newMessages];
+        return {
+          output: imageResult as unknown as TOutput,
+          messages: allMessages,
+          newMessages: allMessages.slice(inputOffset),
+          usage: { ...usage },
+          retryCount: ctx.retryCount,
+          runId,
+          toolMetadata: new Map(ctx.toolResultMetadata),
+        };
+      }
+      // No image yet — continue to next turn
+      messages.push(...newMessages);
+      continue;
+    }
 
     // Check for output tool result (user-defined tools that end the run)
     const outputResult = response.toolResults.find(

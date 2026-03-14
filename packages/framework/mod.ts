@@ -98,14 +98,18 @@ export type { ExternalToolDefinition } from "./lib/toolsets/external_toolset.ts"
 export type {
 	BinaryContent,
 	BinaryImage,
+	BinaryImageOutputSentinel,
 	MultiModalContent,
 	UploadedFile,
 } from "./lib/multimodal/binary_content.ts";
 export {
+	BINARY_IMAGE_OUTPUT,
 	binaryContentSchema,
 	binaryContentToToolResult,
+	extractBinaryImageFromToolOutput,
 	isAudioContent,
 	isBinaryContent,
+	isBinaryImageOutput,
 	isDocumentContent,
 	isImageContent,
 	isMultiModalContent,
@@ -148,6 +152,21 @@ export {
 } from "./lib/graph/mod.ts";
 export { MaxGraphIterationsError, UnknownNodeError } from "./lib/graph/mod.ts";
 export { toMermaid } from "./lib/graph/mod.ts";
+
+// A2A (Agent-to-Agent) protocol adapter
+export { A2AAdapter } from "./lib/a2a/adapter.ts";
+export type { A2AAdapterOptions } from "./lib/a2a/adapter.ts";
+export { MemoryTaskStore } from "./lib/a2a/task_store.ts";
+export type { TaskStore } from "./lib/a2a/task_store.ts";
+export type {
+  A2AArtifact,
+  A2AMessage,
+  A2APart,
+  A2ATask,
+  A2ATaskState,
+  A2ATaskStatus,
+  AgentCard,
+} from "./lib/a2a/types.ts";
 
 // AG-UI protocol adapter
 export { AGUIAdapter } from "./lib/ag_ui/adapter.ts";
