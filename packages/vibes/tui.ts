@@ -10,7 +10,7 @@ const args = parseArgs(Deno.args, {
 
 if (args.help || !args["workflow-id"]) {
   console.log(`
-vibes tui — interactive terminal UI for the core agent
+vibes tui - interactive terminal UI for the core agent
 
 Usage:
   deno task tui --workflow-id <id> [options]

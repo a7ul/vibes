@@ -1,9 +1,9 @@
 ---
 title: Dependencies
-description: RunContext is Vibes's dependency injection system. Type your agent's external dependencies once, inject them at run time, and access them everywhere — in tools, prompts, validators, and history processors.
+description: RunContext is Vibes's dependency injection system. Type your agent's external dependencies once, inject them at run time, and access them everywhere - in tools, prompts, validators, and history processors.
 ---
 
-`RunContext<TDeps>` is the primary dependency injection mechanism in Vibes. When you construct an `Agent<TDeps>`, you declare what external resources it needs. At `agent.run()` time you supply those resources as `deps`, and every callback in the agent — system prompts, instructions, tools, validators, toolsets, and history processors — receives the same `RunContext` carrying those deps.
+`RunContext<TDeps>` is the primary dependency injection mechanism in Vibes. When you construct an `Agent<TDeps>`, you declare what external resources it needs. At `agent.run()` time you supply those resources as `deps`, and every callback in the agent - system prompts, instructions, tools, validators, toolsets, and history processors - receives the same `RunContext` carrying those deps.
 
 This is a signature feature of Vibes: you never need to close over global variables or pass deps out-of-band. Your agent is fully self-contained and trivially testable.
 
@@ -134,7 +134,7 @@ const result = await agent
 ```
 
 <Info>
-This is the recommended testing pattern — inject test doubles via `deps`, never mock the framework internals. Your agent code stays unchanged; only the dep implementations swap.
+This is the recommended testing pattern - inject test doubles via `deps`, never mock the framework internals. Your agent code stays unchanged; only the dep implementations swap.
 </Info>
 
 ## History Processors and Privacy
@@ -150,17 +150,17 @@ const agent = new Agent({
   model: anthropic("claude-sonnet-4-6"),
   historyProcessors: [
     privacyFilterProcessor([
-      // RegexPrivacyRule — redact credit card numbers
+      // RegexPrivacyRule - redact credit card numbers
       { pattern: /\d{4}-\d{4}-\d{4}-\d{4}/g, replacement: "[CARD]" },
-      // FieldPrivacyRule — remove a specific field from tool results
+      // FieldPrivacyRule - remove a specific field from tool results
       { messageType: "tool", fieldPath: "content.0.result.ssn" },
     ]),
   ],
 });
 ```
 
-- **`RegexPrivacyRule`**: `{ pattern: RegExp, replacement?: string }` — replace matches of the pattern with the replacement string (defaults to `"[REDACTED]"` if omitted).
-- **`FieldPrivacyRule`**: `{ messageType: string, fieldPath: string }` — remove the value at `fieldPath` from messages of the given type.
+- **`RegexPrivacyRule`**: `{ pattern: RegExp, replacement?: string }` - replace matches of the pattern with the replacement string (defaults to `"[REDACTED]"` if omitted).
+- **`FieldPrivacyRule`**: `{ messageType: string, fieldPath: string }` - remove the value at `fieldPath` from messages of the given type.
 
 ---
 

@@ -70,7 +70,7 @@ export async function executeRun<TDeps, TOutput>(
     opts._override?.systemPrompts,
   );
 
-  // Shared mutex for sequential tools — created once per run
+  // Shared mutex for sequential tools - created once per run
   const sequentialMutex = createSequentialMutex();
 
   // When resuming from deferred results, the messageHistory already contains
@@ -124,7 +124,7 @@ export async function executeRun<TDeps, TOutput>(
     );
     const { msgsForModel, system, outputToolNames, resolvedTools } = turnSetup;
 
-    // Check if any resolved tools require approval — if so, build a deferred-aware map
+    // Check if any resolved tools require approval - if so, build a deferred-aware map
     const pendingApprovals: import("./deferred.ts").DeferredToolRequest[] = [];
     const hasApprovalTools = resolvedTools.some(
       (t) => t.requiresApproval !== undefined && t.requiresApproval !== false,
@@ -147,7 +147,7 @@ export async function executeRun<TDeps, TOutput>(
     }
 
     // ---------------------------------------------------------------------------
-    // Native structured output mode — use AI SDK's output.object()
+    // Native structured output mode - use AI SDK's output.object()
     // ---------------------------------------------------------------------------
     if (outputMode === "native" && schemas.length > 0) {
       const primarySchema = schemas[0];
@@ -268,14 +268,14 @@ export async function executeRun<TDeps, TOutput>(
         }
       }
 
-      // Native mode with no object yet — nudge
+      // Native mode with no object yet - nudge
       messages.push(...newMessages);
       nudgeForFinalResult(ctx, messages, maxRetries);
       continue;
     }
 
     // ---------------------------------------------------------------------------
-    // Prompted output mode — schema injected into system prompt, parse text
+    // Prompted output mode - schema injected into system prompt, parse text
     // ---------------------------------------------------------------------------
     if (outputMode === "prompted" && schemas.length > 0) {
       const response = await generateText({
@@ -384,7 +384,7 @@ export async function executeRun<TDeps, TOutput>(
         }
       }
 
-      // No text — nudge
+      // No text - nudge
       messages.push(...newMessages);
       nudgeForFinalResult(ctx, messages, maxRetries);
       continue;
@@ -444,7 +444,7 @@ export async function executeRun<TDeps, TOutput>(
           toolMetadata: new Map(ctx.toolResultMetadata),
         };
       }
-      // No image yet — continue to next turn
+      // No image yet - continue to next turn
       messages.push(...newMessages);
       continue;
     }
@@ -505,7 +505,7 @@ export async function executeRun<TDeps, TOutput>(
         // generateText resolves all tool calls before returning, so all side
         // effects have run regardless of endStrategy. The strategy is stored on
         // the result for callers that need to inspect it.
-        void endStrategy; // acknowledged — no extra action needed in non-streaming path
+        void endStrategy; // acknowledged - no extra action needed in non-streaming path
 
         const allMessages = [...messages, ...newMessages];
         return {
@@ -525,7 +525,7 @@ export async function executeRun<TDeps, TOutput>(
       }
     }
 
-    // No tool calls — text response
+    // No tool calls - text response
     if (response.toolCalls.length === 0) {
       if (schemas.length > 0) {
         messages.push(...newMessages);
@@ -544,7 +544,7 @@ export async function executeRun<TDeps, TOutput>(
       };
     }
 
-    // Other tool calls — continue loop
+    // Other tool calls - continue loop
     messages.push(...newMessages);
   }
 

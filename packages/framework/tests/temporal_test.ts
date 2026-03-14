@@ -61,7 +61,7 @@ Deno.test("serializeRunState - serializes user messages", () => {
 });
 
 Deno.test("serializeRunState - serializes messages with array content", () => {
-  // Use cast to bypass strict ModelMessage typing — we're testing serialization
+  // Use cast to bypass strict ModelMessage typing - we're testing serialization
   // with a structurally valid but not statically typed message shape.
   const messages = [
     {
@@ -194,7 +194,7 @@ Deno.test("TemporalAgent.run - passes run options through", async () => {
     metadata: { requestId: "test-123" },
   });
 
-  // metadata is only captured if check tool is invoked by the model — so
+  // metadata is only captured if check tool is invoked by the model - so
   // we just verify the run completes without error
   void capturedMetadata;
 });
@@ -315,11 +315,11 @@ Deno.test("MockTemporalAgent - replay returns same result from cache", async () 
   const agent = new Agent({ model });
   const mock = new MockTemporalAgent(agent, defaultOptions);
 
-  // First run — hits the actual agent
+  // First run - hits the actual agent
   const result1 = await mock.run("same prompt");
   assertEquals(callCount, 1);
 
-  // Second run with the same prompt — should use replay cache
+  // Second run with the same prompt - should use replay cache
   const result2 = await mock.simulateReplay("same prompt");
   assertEquals(result2.output, result1.output);
 

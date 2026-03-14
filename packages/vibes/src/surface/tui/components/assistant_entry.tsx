@@ -17,7 +17,10 @@ export function AssistantEntry({ items, status, errorMessage }: AssistantEntryPr
         return <TextBlock key={i} content={item.content} showCursor={showCursor} />;
       })}
       {status === "error" && errorMessage && (
-        <Text color="red">{errorMessage}</Text>
+        <Box borderStyle="round" borderColor="red" paddingX={1} marginTop={1}>
+          <Text color="red" bold>Error: </Text>
+          <Text color="red">{errorMessage}</Text>
+        </Box>
       )}
     </Box>
   );

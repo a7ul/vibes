@@ -99,7 +99,7 @@ Same options as `.run()`. See [Streaming](./streaming) for full details.
 
 ## Dynamic System Prompts
 
-Dynamic system prompts are the equivalent of pydantic-ai's `@agent.system_prompt` decorator - one of the most powerful patterns in the framework.
+Dynamic system prompts are the equivalent of Pydantic AI's `@agent.system_prompt` decorator - one of the most powerful patterns in the framework.
 
 `systemPrompt` can be a function that receives a `RunContext` at runtime:
 
@@ -115,7 +115,7 @@ const agent = new Agent<Deps>({
 
 ### `addSystemPrompt()`
 
-Add system prompts after construction - the equivalent of pydantic-ai's `@agent.system_prompt` decorator:
+Add system prompts after construction - the equivalent of Pydantic AI's `@agent.system_prompt` decorator:
 
 ```ts
 const agent = new Agent({
@@ -135,7 +135,7 @@ agent.addSystemPrompt((ctx) => `Logged-in user: ${ctx.deps.username}`);
 
 All prompts (construction + added) are joined with `\n\n` into a single system message.
 
-> **pydantic-ai mapping:** `agent.addSystemPrompt(fn)` is the equivalent of:
+> **Pydantic AI mapping:** `agent.addSystemPrompt(fn)` is the equivalent of:
 > ```python
 > @agent.system_prompt
 > def inject_user(ctx: RunContext[Deps]) -> str:

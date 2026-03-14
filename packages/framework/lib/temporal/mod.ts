@@ -59,7 +59,7 @@
  * // await worker.run();
  * // -------------------------------------------------------------------------
  *
- * // For local development and testing — no Temporal server needed:
+ * // For local development and testing - no Temporal server needed:
  * const mock = new MockTemporalAgent(agent, { taskQueue: "test" });
  * const result = await mock.run("Hello!");
  * ```

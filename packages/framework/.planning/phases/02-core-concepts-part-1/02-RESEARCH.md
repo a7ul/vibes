@@ -1,7 +1,7 @@
 # Phase 2: Core Concepts Part 1 - Research
 
 **Researched:** 2026-03-14
-**Domain:** Vibes Agent Framework API documentation — 8 concept pages (agents, models, deps, tools, toolsets, results, messages, streaming)
+**Domain:** Vibes Agent Framework API documentation - 8 concept pages (agents, models, deps, tools, toolsets, results, messages, streaming)
 **Confidence:** HIGH
 
 ---
@@ -10,7 +10,7 @@
 
 Phase 2 creates eight deep-dive concept pages that form the pedagogical core of the Vibes documentation. Every page covers one major abstraction of `@vibes/framework`, with a teaching narrative, at least one Mermaid diagram, and working code examples verified against the actual `mod.ts` exports.
 
-The existing docs have most of this content scattered across `docs/reference/core/`, `docs/concepts/`, and `docs/reference/advanced/`. Phase 2 consolidates and rewrites these pages under a unified `docs/concepts/` structure following the pydantic-ai teaching style: explain the concept → show the Mermaid flow → walk through each API feature → close with a complete real-world example.
+The existing docs have most of this content scattered across `docs/reference/core/`, `docs/concepts/`, and `docs/reference/advanced/`. Phase 2 consolidates and rewrites these pages under a unified `docs/concepts/` structure following the Pydantic AI teaching style: explain the concept → show the Mermaid flow → walk through each API feature → close with a complete real-world example.
 
 All eight pages share the same base API contract: every code example must use actual exports from `mod.ts`. No invented APIs. The key inaccuracy in the current `docs/reference/core/streaming.mdx` is that `AgentStreamEvent` uses `event.kind` as the discriminant (NOT `event.type`), and the event names differ from what is documented (e.g., `"tool-call-start"` not `"tool-call"`, `"final-result"` not `"run-complete"`). This must be fixed in the new Streaming page.
 
@@ -23,14 +23,14 @@ All eight pages share the same base API contract: every code example must use ac
 
 | ID | Description | Research Support |
 |----|-------------|-----------------|
-| CONCEPT-01 | Agents page — Agent class deep dive, constructor options, type params `<TDeps,TOutput>`, system prompts, instructions, `agent.override()`, full agent loop Mermaid flowchart | `lib/agent.ts` fully analyzed; `AgentOptions`, `RunOptions`, `AgentOverrideOptions`, all methods documented below |
-| CONCEPT-02 | Models page — Vercel AI SDK model layer, quickstarts for 7 providers, ModelSettings | `lib/types/model_settings.ts` read; provider table from `docs/getting-started/install.mdx` reusable; Vercel AI SDK is `npm:ai@^6` per `deno.json` |
-| CONCEPT-03 | Dependencies page — RunContext DI as signature feature, fan-out diagram | `lib/types/context.ts` fully read; existing `docs/concepts/dependency-injection.mdx` has most content but needs Mermaid fan-out diagram |
-| CONCEPT-04 | Tools page — all 4 tool factories, `prepare`, `argsValidator`, `requiresApproval`, `sequential`, execution pipeline diagram | `lib/tool.ts` fully read; existing `docs/reference/core/tools.mdx` has most content; needs execution pipeline Mermaid |
-| CONCEPT-05 | Toolsets page — all toolset types, composition diagram, per-turn resolution sequence | `lib/toolsets/*.ts` all read; existing `docs/reference/core/toolsets.mdx` has good content; needs composition and resolution sequence diagrams |
-| CONCEPT-06 | Results page — `outputSchema`, union types, 3 output modes, result validators, retry flow | `lib/types/output_mode.ts`, `lib/types/results.ts`, `lib/execution/output_schema.ts` analyzed; existing structured-output and result-validators pages cover this |
-| CONCEPT-07 | Messages and Chat History page — `result.messages`, `result.newMessages`, 4 history processors, `serializeMessages`/`deserializeMessages`, multi-turn sequence diagram | `lib/history/processor.ts` and `lib/history/serialization.ts` fully read; existing `message-history.mdx` has good content; needs multi-turn sequence Mermaid |
-| CONCEPT-08 | Streaming page — `agent.stream()`, `agent.runStreamEvents()`, `textStream`, `partialOutput`, all event kinds, event timeline sequence diagram | `lib/types/events.ts` and `lib/types/results.ts` read; existing streaming page has bug (`event.type` should be `event.kind`); needs correction and event timeline Mermaid |
+| CONCEPT-01 | Agents page - Agent class deep dive, constructor options, type params `<TDeps,TOutput>`, system prompts, instructions, `agent.override()`, full agent loop Mermaid flowchart | `lib/agent.ts` fully analyzed; `AgentOptions`, `RunOptions`, `AgentOverrideOptions`, all methods documented below |
+| CONCEPT-02 | Models page - Vercel AI SDK model layer, quickstarts for 7 providers, ModelSettings | `lib/types/model_settings.ts` read; provider table from `docs/getting-started/install.mdx` reusable; Vercel AI SDK is `npm:ai@^6` per `deno.json` |
+| CONCEPT-03 | Dependencies page - RunContext DI as signature feature, fan-out diagram | `lib/types/context.ts` fully read; existing `docs/concepts/dependency-injection.mdx` has most content but needs Mermaid fan-out diagram |
+| CONCEPT-04 | Tools page - all 4 tool factories, `prepare`, `argsValidator`, `requiresApproval`, `sequential`, execution pipeline diagram | `lib/tool.ts` fully read; existing `docs/reference/core/tools.mdx` has most content; needs execution pipeline Mermaid |
+| CONCEPT-05 | Toolsets page - all toolset types, composition diagram, per-turn resolution sequence | `lib/toolsets/*.ts` all read; existing `docs/reference/core/toolsets.mdx` has good content; needs composition and resolution sequence diagrams |
+| CONCEPT-06 | Results page - `outputSchema`, union types, 3 output modes, result validators, retry flow | `lib/types/output_mode.ts`, `lib/types/results.ts`, `lib/execution/output_schema.ts` analyzed; existing structured-output and result-validators pages cover this |
+| CONCEPT-07 | Messages and Chat History page - `result.messages`, `result.newMessages`, 4 history processors, `serializeMessages`/`deserializeMessages`, multi-turn sequence diagram | `lib/history/processor.ts` and `lib/history/serialization.ts` fully read; existing `message-history.mdx` has good content; needs multi-turn sequence Mermaid |
+| CONCEPT-08 | Streaming page - `agent.stream()`, `agent.runStreamEvents()`, `textStream`, `partialOutput`, all event kinds, event timeline sequence diagram | `lib/types/events.ts` and `lib/types/results.ts` read; existing streaming page has bug (`event.type` should be `event.kind`); needs correction and event timeline Mermaid |
 </phase_requirements>
 
 ---
@@ -46,7 +46,7 @@ All eight pages share the same base API contract: every code example must use ac
 
 ### Framework API Surface (used in examples)
 
-All of these are actual exports from `mod.ts` — verified:
+All of these are actual exports from `mod.ts` - verified:
 
 | Export | Purpose | Used In |
 |--------|---------|---------|
@@ -91,7 +91,7 @@ All of these are actual exports from `mod.ts` — verified:
 | Google Gemini | `@ai-sdk/google` | `GOOGLE_GENERATIVE_AI_API_KEY` |
 | Groq | `@ai-sdk/groq` | `GROQ_API_KEY` |
 | Mistral | `@ai-sdk/mistral` | `MISTRAL_API_KEY` |
-| Ollama | `ollama-ai-provider` | (none — local) |
+| Ollama | `ollama-ai-provider` | (none - local) |
 | OpenAI-compatible | `@ai-sdk/openai` with custom `baseURL` | varies |
 
 ---
@@ -102,23 +102,23 @@ All of these are actual exports from `mod.ts` — verified:
 
 ```
 docs/concepts/
-  agents.mdx             # NEW — replaces concepts/how-agents-work.mdx
-  models.mdx             # NEW — no equivalent exists yet
-  dependencies.mdx       # NEW — replaces concepts/dependency-injection.mdx
-  tools.mdx              # NEW — replaces reference/core/tools.mdx
-  toolsets.mdx           # NEW — replaces reference/core/toolsets.mdx
-  results.mdx            # NEW — merges reference/core/structured-output.mdx + reference/core/result-validators.mdx
-  messages.mdx           # NEW — replaces reference/advanced/message-history.mdx
-  streaming.mdx          # NEW — replaces reference/core/streaming.mdx
+  agents.mdx             # NEW - replaces concepts/how-agents-work.mdx
+  models.mdx             # NEW - no equivalent exists yet
+  dependencies.mdx       # NEW - replaces concepts/dependency-injection.mdx
+  tools.mdx              # NEW - replaces reference/core/tools.mdx
+  toolsets.mdx           # NEW - replaces reference/core/toolsets.mdx
+  results.mdx            # NEW - merges reference/core/structured-output.mdx + reference/core/result-validators.mdx
+  messages.mdx           # NEW - replaces reference/advanced/message-history.mdx
+  streaming.mdx          # NEW - replaces reference/core/streaming.mdx
 ```
 
 Each page URL is `concepts/{slug}` which becomes the nav path in `docs.json`.
 
-### Pattern: pydantic-ai Teaching Flow Per Page
+### Pattern: Pydantic AI Teaching Flow Per Page
 
 Each concept page follows this structure:
 1. Frontmatter (`title`, `description`)
-2. 1-2 sentence intro — "what is this and why does it exist"
+2. 1-2 sentence intro - "what is this and why does it exist"
 3. Mermaid diagram showing the concept visually
 4. Core usage sections with code examples
 5. Reference table of all options/fields
@@ -127,8 +127,8 @@ Each concept page follows this structure:
 
 ### Anti-Patterns to Avoid
 
-- **Don't write reference-only pages:** Concept pages must teach, not just enumerate options. The existing `reference/core/agents.mdx` does not have a Mermaid diagram or teach the agent loop — avoid repeating that.
-- **Don't invent API fields:** Cross-check every code example against `mod.ts`. The existing `streaming.mdx` uses `event.type` (wrong) and `"run-complete"` (wrong) — the real discriminant is `event.kind` and the event is `"final-result"`.
+- **Don't write reference-only pages:** Concept pages must teach, not just enumerate options. The existing `reference/core/agents.mdx` does not have a Mermaid diagram or teach the agent loop - avoid repeating that.
+- **Don't invent API fields:** Cross-check every code example against `mod.ts`. The existing `streaming.mdx` uses `event.type` (wrong) and `"run-complete"` (wrong) - the real discriminant is `event.kind` and the event is `"final-result"`.
 - **Don't duplicate the install page:** The Models page should link to `getting-started/install` for setup steps, not repeat them.
 
 ---
@@ -186,7 +186,7 @@ All code examples in Phase 2 pages must use these verified patterns.
 ### CONCEPT-01: Minimal Agent
 
 ```typescript
-// Source: lib/agent.ts — AgentOptions interface
+// Source: lib/agent.ts - AgentOptions interface
 import { Agent } from "@vibes/framework";
 import { anthropic } from "@ai-sdk/anthropic";
 
@@ -202,7 +202,7 @@ console.log(result.output);
 ### CONCEPT-01: Agent with Type Parameters
 
 ```typescript
-// Source: lib/agent.ts — Agent<TDeps, TOutput>
+// Source: lib/agent.ts - Agent<TDeps, TOutput>
 type Deps = { db: Database };
 
 const agent = new Agent<Deps, string>({
@@ -214,7 +214,7 @@ const agent = new Agent<Deps, string>({
 ### CONCEPT-01: agent.override()
 
 ```typescript
-// Source: lib/agent.ts — override() method
+// Source: lib/agent.ts - override() method
 const result = await agent
   .override({ model: testModel, maxTurns: 3 })
   .run("Test prompt", { deps: fakeDeps });
@@ -359,7 +359,7 @@ const safe = new PreparedToolset(
 );
 ```
 
-### CONCEPT-06: Results — outputSchema with outputMode
+### CONCEPT-06: Results - outputSchema with outputMode
 
 ```typescript
 // Source: lib/agent.ts AgentOptions + lib/types/output_mode.ts
@@ -382,10 +382,10 @@ const second = await agent.run("What is my name?", {
 // result.newMessages = only messages added in this run
 ```
 
-### CONCEPT-07: privacyFilterProcessor — Correct Rule Shape
+### CONCEPT-07: privacyFilterProcessor - Correct Rule Shape
 
 ```typescript
-// Source: lib/history/processor.ts — PrivacyRule type
+// Source: lib/history/processor.ts - PrivacyRule type
 import { privacyFilterProcessor } from "@vibes/framework";
 
 const agent = new Agent({
@@ -399,7 +399,7 @@ const agent = new Agent({
 });
 ```
 
-### CONCEPT-08: stream() — Full StreamResult Interface
+### CONCEPT-08: stream() - Full StreamResult Interface
 
 ```typescript
 // Source: lib/types/results.ts StreamResult<TOutput>
@@ -422,7 +422,7 @@ for await (const partial of stream.partialOutput) {
 }
 ```
 
-### CONCEPT-08: runStreamEvents() — Correct event.kind
+### CONCEPT-08: runStreamEvents() - Correct event.kind
 
 ```typescript
 // Source: lib/types/events.ts AgentStreamEvent discriminated union
@@ -523,7 +523,7 @@ flowchart TD
     EX -- throws, retries left --> EX
     EX -- throws, no retries --> ERR([propagate error])
     EX -- returns --> RES{isOutput?}
-    RES -- yes --> OUT([final output — run ends])
+    RES -- yes --> OUT([final output - run ends])
     RES -- no --> HIST[Append result to\nmessage history]
     HIST --> NEXT[Next tool call\nor next turn]
 ```
@@ -674,7 +674,7 @@ sequenceDiagram
 1. **Navigation restructure**
    - What we know: Phase 2 creates 8 new `docs/concepts/` pages but doesn't restructure `docs.json` nav until Phase 6 (NAV-01).
    - What's unclear: Should new concept pages be added to `docs.json` during Phase 2, or left unnavigated until Phase 6?
-   - Recommendation: Add concept pages to the existing `"Concepts"` nav group in `docs.json` as part of Phase 2 — having unreachable pages is worse than an imperfect nav. Do NOT restructure the full nav (that's Phase 6 scope).
+   - Recommendation: Add concept pages to the existing `"Concepts"` nav group in `docs.json` as part of Phase 2 - having unreachable pages is worse than an imperfect nav. Do NOT restructure the full nav (that's Phase 6 scope).
 
 2. **Old reference pages**
    - What we know: `docs/reference/core/tools.mdx`, `streaming.mdx`, `toolsets.mdx`, `structured-output.mdx`, `result-validators.mdx` and `docs/reference/advanced/message-history.mdx` overlap with Phase 2 pages.
@@ -693,48 +693,48 @@ sequenceDiagram
 No test infrastructure exists for documentation pages. All validation is visual/manual: render the docs and verify code examples compile and Mermaid diagrams render. No automated test commands apply to MDX content.
 
 ### Wave 0 Gaps
-None — docs validation is manual for this project.
+None - docs validation is manual for this project.
 
 ---
 
 ## Sources
 
 ### Primary (HIGH confidence)
-- `lib/agent.ts` — `AgentOptions`, `RunOptions`, `AgentOverrideOptions`, `EndStrategy`, all methods
-- `lib/tool.ts` — `tool()`, `plainTool()`, `outputTool()`, `fromSchema()`, `ToolDefinition`, `toAISDKTools()`
-- `lib/types/context.ts` — `RunContext<TDeps>`, `Usage`, `createUsage()`
-- `lib/types/results.ts` — `RunResult<TOutput>`, `StreamResult<TOutput>`, `ResultValidator`
-- `lib/types/events.ts` — `AgentStreamEvent<TOutput>` discriminated union (all 8 kinds)
-- `lib/types/output_mode.ts` — `OutputMode` = `'tool' | 'native' | 'prompted'`
-- `lib/types/model_settings.ts` — `ModelSettings` (8 fields)
-- `lib/history/processor.ts` — `HistoryProcessor`, all 4 built-in processors, `PrivacyRule` shape
-- `lib/history/serialization.ts` — `serializeMessages`, `deserializeMessages`
-- `lib/toolsets/*.ts` — all 9 toolset implementations
-- `mod.ts` — complete public API surface verified
-- `deno.json` — dependency versions (`ai@^6`, `zod@^4`)
-- `docs/getting-started/install.mdx` — 7 provider table (reusable content)
-- `docs/concepts/how-agents-work.mdx` — existing content to build on
-- `docs/concepts/dependency-injection.mdx` — existing content (has bug in PrivacyRule example)
-- `docs/reference/core/streaming.mdx` — existing content (has event.kind/event.type bug)
-- `docs/reference/core/tools.mdx` — existing content (good, needs pipeline diagram)
-- `docs/reference/core/toolsets.mdx` — existing content (good, needs composition diagram)
-- `docs/reference/advanced/message-history.mdx` — existing content (good, needs sequence diagram)
-- `docs/reference/core/structured-output.mdx` — existing content (outputTemplate bug)
-- `.planning/codebase/ARCHITECTURE.md` — layer descriptions and data flow
-- `.planning/codebase/CONCERNS.md` — known bugs list
+- `lib/agent.ts` - `AgentOptions`, `RunOptions`, `AgentOverrideOptions`, `EndStrategy`, all methods
+- `lib/tool.ts` - `tool()`, `plainTool()`, `outputTool()`, `fromSchema()`, `ToolDefinition`, `toAISDKTools()`
+- `lib/types/context.ts` - `RunContext<TDeps>`, `Usage`, `createUsage()`
+- `lib/types/results.ts` - `RunResult<TOutput>`, `StreamResult<TOutput>`, `ResultValidator`
+- `lib/types/events.ts` - `AgentStreamEvent<TOutput>` discriminated union (all 8 kinds)
+- `lib/types/output_mode.ts` - `OutputMode` = `'tool' | 'native' | 'prompted'`
+- `lib/types/model_settings.ts` - `ModelSettings` (8 fields)
+- `lib/history/processor.ts` - `HistoryProcessor`, all 4 built-in processors, `PrivacyRule` shape
+- `lib/history/serialization.ts` - `serializeMessages`, `deserializeMessages`
+- `lib/toolsets/*.ts` - all 9 toolset implementations
+- `mod.ts` - complete public API surface verified
+- `deno.json` - dependency versions (`ai@^6`, `zod@^4`)
+- `docs/getting-started/install.mdx` - 7 provider table (reusable content)
+- `docs/concepts/how-agents-work.mdx` - existing content to build on
+- `docs/concepts/dependency-injection.mdx` - existing content (has bug in PrivacyRule example)
+- `docs/reference/core/streaming.mdx` - existing content (has event.kind/event.type bug)
+- `docs/reference/core/tools.mdx` - existing content (good, needs pipeline diagram)
+- `docs/reference/core/toolsets.mdx` - existing content (good, needs composition diagram)
+- `docs/reference/advanced/message-history.mdx` - existing content (good, needs sequence diagram)
+- `docs/reference/core/structured-output.mdx` - existing content (outputTemplate bug)
+- `.planning/codebase/ARCHITECTURE.md` - layer descriptions and data flow
+- `.planning/codebase/CONCERNS.md` - known bugs list
 
 ### Secondary (MEDIUM confidence)
-- pydantic-ai teaching style observed from Phase 1 research (concept page structure)
+- Pydantic AI teaching style observed from Phase 1 research (concept page structure)
 
 ---
 
 ## Metadata
 
 **Confidence breakdown:**
-- Standard stack: HIGH — all exports verified against `mod.ts` and source files
-- Architecture: HIGH — read all relevant source files directly
-- Pitfalls: HIGH — bugs identified by comparing existing docs against source code
-- Mermaid diagrams: HIGH — diagrams drafted from source code data flow analysis
+- Standard stack: HIGH - all exports verified against `mod.ts` and source files
+- Architecture: HIGH - read all relevant source files directly
+- Pitfalls: HIGH - bugs identified by comparing existing docs against source code
+- Mermaid diagrams: HIGH - diagrams drafted from source code data flow analysis
 
 **Research date:** 2026-03-14
 **Valid until:** 2026-06-14 (stable framework; no breaking changes expected before v1.0)

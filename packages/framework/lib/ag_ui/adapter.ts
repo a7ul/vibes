@@ -181,7 +181,7 @@ export class AGUIAdapter<TDeps, TOutput> {
 
               case "text-delta": {
                 if (currentMessageId === null) {
-                  // First text delta for this message — emit TEXT_MESSAGE_START
+                  // First text delta for this message - emit TEXT_MESSAGE_START
                   currentMessageId = generateId("msg");
                   enqueue({
                     type: "TEXT_MESSAGE_START",

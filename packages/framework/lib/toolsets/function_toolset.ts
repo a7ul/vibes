@@ -3,7 +3,7 @@ import type { Toolset } from "./toolset.ts";
 
 /**
  * A simple toolset that wraps an array of tool definitions.
- * Equivalent to pydantic-ai's `FunctionToolset`.
+ * Equivalent to Pydantic AI's `FunctionToolset`.
  *
  * @example
  * ```ts

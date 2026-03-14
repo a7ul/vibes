@@ -13,7 +13,7 @@ const args = parseArgs(Deno.args, {
 
 if (args.help || !args.prompt || !args["workflow-id"]) {
   console.log(`
-vibes — run a task with the core agent
+vibes - run a task with the core agent
 
 Usage:
   vibes --workflow-id <id> --prompt <text> [options]

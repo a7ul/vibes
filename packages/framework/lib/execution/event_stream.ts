@@ -56,7 +56,7 @@ export function executeStreamEvents<TDeps, TOutput>(
 }
 
 // ---------------------------------------------------------------------------
-// Async generator — the actual turn loop
+// Async generator - the actual turn loop
 // ---------------------------------------------------------------------------
 
 async function* runEventStreamLoop<TDeps, TOutput>(
@@ -156,7 +156,7 @@ async function* runEventStreamLoop<TDeps, TOutput>(
                     yield { kind: "partial-output", partial: parsed.data };
                   }
                 } catch {
-                  // incomplete JSON — not yet parseable, skip
+                  // incomplete JSON - not yet parseable, skip
                 }
               }
             }
@@ -288,7 +288,7 @@ async function* runEventStreamLoop<TDeps, TOutput>(
       }
 
       // ------------------------------------------------------------------
-      // Tool output mode — check for final_result tool result
+      // Tool output mode - check for final_result tool result
       // ------------------------------------------------------------------
       const finalResultEntry = toolResults.find((r) =>
         isFinalResultTool(r.toolName)
@@ -321,7 +321,7 @@ async function* runEventStreamLoop<TDeps, TOutput>(
       }
 
       // ------------------------------------------------------------------
-      // No tool calls — plain text response
+      // No tool calls - plain text response
       // ------------------------------------------------------------------
       if (toolCalls.length === 0) {
         if (schemas.length > 0) {
@@ -334,7 +334,7 @@ async function* runEventStreamLoop<TDeps, TOutput>(
         return;
       }
 
-      // Other tool calls — continue turn loop
+      // Other tool calls - continue turn loop
       messages.push(...newMessages);
     }
 

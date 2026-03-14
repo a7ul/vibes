@@ -96,7 +96,7 @@ const resumeTask = tool<CoreAgentDeps, typeof ResumeTaskSchema>({
     const task = await findTask(ctx.deps, task_id);
     if (typeof task === "string") return task;
     if (task.status === "running") {
-      return `Task ${task_id} is still running — can only resume completed or failed tasks.`;
+      return `Task ${task_id} is still running - can only resume completed or failed tasks.`;
     }
     const history = task.messageHistory as ModelMessage[] | undefined;
     if (!history?.length) return `Task ${task_id} has no conversation history to resume.`;

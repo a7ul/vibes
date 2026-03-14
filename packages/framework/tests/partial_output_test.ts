@@ -145,7 +145,7 @@ Deno.test("StreamResult - partialOutput streams partial tool args", async () => 
 });
 
 Deno.test("StreamResult - partialOutput best-effort: skips incomplete JSON", async () => {
-  // Only the last delta completes the JSON — partial deltas should be skipped
+  // Only the last delta completes the JSON - partial deltas should be skipped
   const model = new MockLanguageModelV3({
     doStream: () =>
       Promise.resolve({

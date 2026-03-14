@@ -5,7 +5,7 @@ import type { Toolset } from "./toolset.ts";
 /**
  * Merges multiple toolsets into one. Tools from all member toolsets are
  * combined; if two tools share the same name the last one wins.
- * Equivalent to pydantic-ai's `CombinedToolset`.
+ * Equivalent to Pydantic AI's `CombinedToolset`.
  *
  * @example
  * ```ts

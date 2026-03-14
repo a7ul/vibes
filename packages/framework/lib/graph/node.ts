@@ -1,5 +1,5 @@
 // ---------------------------------------------------------------------------
-// Graph FSM — BaseNode
+// Graph FSM - BaseNode
 // ---------------------------------------------------------------------------
 
 import type { NodeId, NodeResult } from "./types.ts";
@@ -19,14 +19,14 @@ export abstract class BaseNode<TState, TOutput = never> {
 
   /**
    * Optional static list of node IDs this node may transition to.
-   * Used for Mermaid diagram generation only — not enforced at runtime.
+   * Used for Mermaid diagram generation only - not enforced at runtime.
    *
    * Declare this in a subclass to include edges in Mermaid output:
    * ```ts
    * readonly nextNodes = ["node-b", "node-c"];
    * ```
    */
-  // Note: not declared here — subclasses freely add this property without override
+  // Note: not declared here - subclasses freely add this property without override
 
   /**
    * Execute this node's logic given the current state.

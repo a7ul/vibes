@@ -7,7 +7,7 @@ Tools give the model the ability to call functions during a run. Each tool has a
 name, a description the model uses to decide when to call it, a Zod parameter
 schema, and an execute function.
 
-> **RunContext flows through tools.** `execute`, `prepare`, and `requiresApproval` all receive a `RunContext` with your injected `deps`. This is the equivalent of pydantic-ai's `@agent.tool`. See [Dependency Injection](../../concepts/dependency-injection) for the full picture.
+> **RunContext flows through tools.** `execute`, `prepare`, and `requiresApproval` all receive a `RunContext` with your injected `deps`. This is the equivalent of Pydantic AI's `@agent.tool`. See [Dependency Injection](../../concepts/dependency-injection) for the full picture.
 
 ## Defining a Tool
 

@@ -142,7 +142,7 @@ Deno.test("WrapperToolset - can override tool return value", async () => {
   // We just verify the run completes without error; the overriding behaviour
   // is exercised by the wrapper calling next() and discarding the result.
   await agent.run("calc something");
-  // No assertion on the final output — the model drives the conversation.
+  // No assertion on the final output - the model drives the conversation.
   // The key invariant is that the wrapper's callTool was invoked.
 });
 

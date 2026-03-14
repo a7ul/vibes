@@ -1,6 +1,6 @@
 ---
 title: "MCP Server"
-description: "Expose a Vibes agent as an MCP server so any MCP-compatible client — Claude Desktop, Cursor, or another AI agent — can call it as a tool."
+description: "Expose a Vibes agent as an MCP server so any MCP-compatible client - Claude Desktop, Cursor, or another AI agent - can call it as a tool."
 ---
 
 When you expose a Vibes agent as an MCP server, any MCP-compatible client can discover and invoke your agent as a tool. This enables Claude Desktop, Cursor, Zed, or any other AI application that speaks MCP to call your agent directly.
@@ -98,7 +98,7 @@ After restarting Claude Desktop, your agent appears as an available tool.
 
 ## HTTP/SSE Transport
 
-Use `StreamableHTTPServerTransport` for remote access over HTTP. This lets any HTTP client — including other Vibes agents using `MCPHttpClient` — call your server.
+Use `StreamableHTTPServerTransport` for remote access over HTTP. This lets any HTTP client - including other Vibes agents using `MCPHttpClient` - call your server.
 
 ```typescript
 import { Agent } from "npm:@vibes/framework";
@@ -210,6 +210,6 @@ globalThis.addEventListener("unload", async () => {
 
 ## Further Reading
 
-- [MCP SDK documentation](https://modelcontextprotocol.io/docs/sdk) — full reference for `McpServer`, tool schemas, transports, and capabilities
-- [MCP Client](/integrations/mcp-client) — how to consume MCP servers from a Vibes agent
-- [Model Context Protocol specification](https://spec.modelcontextprotocol.io) — protocol details and capability negotiation
+- [MCP SDK documentation](https://modelcontextprotocol.io/docs/sdk) - full reference for `McpServer`, tool schemas, transports, and capabilities
+- [MCP Client](/integrations/mcp-client) - how to consume MCP servers from a Vibes agent
+- [Model Context Protocol specification](https://spec.modelcontextprotocol.io) - protocol details and capability negotiation

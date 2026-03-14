@@ -51,7 +51,7 @@ export class MCPManager<TDeps = undefined> implements Toolset<TDeps> {
 
   /**
    * Connect to all registered MCP servers in parallel.
-   * Safe to call even if some servers are already connected — the MCP SDK
+   * Safe to call even if some servers are already connected - the MCP SDK
    * will handle duplicate connect gracefully.
    */
   async connect(): Promise<void> {

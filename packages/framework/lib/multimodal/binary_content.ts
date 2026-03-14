@@ -19,7 +19,7 @@ export type BinaryContent = {
   data: Uint8Array;
 };
 
-/** Convenience alias — all binary content is also image-compatible. */
+/** Convenience alias - all binary content is also image-compatible. */
 export type BinaryImage = BinaryContent & { type: "binary" };
 
 export function isBinaryContent(v: unknown): v is BinaryContent {
@@ -97,7 +97,7 @@ export function isDocumentContent(v: BinaryContent): boolean {
 }
 
 // ---------------------------------------------------------------------------
-// Zod schemas — tools can use these in their parameters
+// Zod schemas - tools can use these in their parameters
 // ---------------------------------------------------------------------------
 
 /**
@@ -132,7 +132,7 @@ export const uploadedFileSchema: z.ZodType<UploadedFile> = z.object({
 });
 
 // ---------------------------------------------------------------------------
-// Conversion — BinaryContent → AI SDK image content part
+// Conversion - BinaryContent → AI SDK image content part
 // ---------------------------------------------------------------------------
 
 /**
@@ -192,7 +192,7 @@ export function uploadedFileToToolResult(file: UploadedFile): {
 }
 
 // ---------------------------------------------------------------------------
-// BinaryImage output sentinel — use as outputSchema for image-generating agents
+// BinaryImage output sentinel - use as outputSchema for image-generating agents
 // ---------------------------------------------------------------------------
 
 /** Sentinel value: pass as `outputSchema` to indicate the agent should return

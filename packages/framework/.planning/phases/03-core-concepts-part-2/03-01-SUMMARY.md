@@ -23,7 +23,7 @@ decisions:
   - "Used sequenceDiagram for HITL approval flow (interaction pattern) and graph TD for OTel span hierarchy (structural hierarchy)"
   - "Testing page adds sequenceDiagram for TestModel turn flow to meet mermaid-per-page requirement"
   - "ExternalToolset vs requiresApproval callout distinguishes the two HITL entry points clearly"
-  - "instrumentAgent note explicitly states Vibes creates no custom spans — AI SDK telemetry convention applies"
+  - "instrumentAgent note explicitly states Vibes creates no custom spans - AI SDK telemetry convention applies"
 metrics:
   duration: "2 min"
   completed_date: "2026-03-14"
@@ -40,7 +40,7 @@ Three advanced concept pages authored against verified framework APIs: HITL appr
 
 ### Task 1: human-in-the-loop.mdx
 Full HITL approval flow documentation. Covers:
-- `requiresApproval: true` on `tool()` — throws `ApprovalRequiredError` before `execute`
+- `requiresApproval: true` on `tool()` - throws `ApprovalRequiredError` before `execute`
 - `ApprovalRequiredError` catch pattern and `err.deferred.requests` iteration
 - `agent.resume(deferred, results)` with both `result` and `argsOverride` options
 - `ExternalToolset` with `ExternalToolDefinition[]` for client-side JSON Schema tools
@@ -54,7 +54,7 @@ Complete testing toolkit documentation. Covers:
 - `createTestModel({ outputSchema })` convenience factory
 - `FunctionModel` with 2-turn example showing tool call → text
 - `captureRunMessages` with Warning about concurrency limitation
-- `agent.override()` — clarifies it returns `{ run, stream, runStreamEvents }` not an `Agent`
+- `agent.override()` - clarifies it returns `{ run, stream, runStreamEvents }` not an `Agent`
 - Sequence diagram showing TestModel auto-generate turn flow
 
 ### Task 3: debugging.mdx
@@ -63,12 +63,12 @@ OTel instrumentation documentation. Covers:
 - Inline `TelemetrySettings` on `AgentOptions`
 - `excludeContent: true` for GDPR compliance
 - OTel span hierarchy graph (graph TD) showing per-turn and per-tool spans
-- Note clarifying Vibes delegates to Vercel AI SDK — no custom spans
+- Note clarifying Vibes delegates to Vercel AI SDK - no custom spans
 - External link to Vercel AI SDK telemetry docs
 
 ## Deviations from Plan
 
-None — plan executed exactly as written. All three tasks completed in sequence with correct APIs from research.
+None - plan executed exactly as written. All three tasks completed in sequence with correct APIs from research.
 
 ## Self-Check: PASSED
 

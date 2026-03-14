@@ -197,9 +197,21 @@ export function markAssistantStatus(
 
 export function formatError(err: unknown): string {
   if (err instanceof Error) {
-    if (err.name === "MaxTurnsError") return `Max turns reached: ${err.message}`;
-    if (err.name === "MaxRetriesError") return `Max retries reached: ${err.message}`;
-    return err.message;
+    if (
+      err.name === "AI_NoOutputGeneratedError" ||
+      err.message.includes("No output generated")
+    ) {
+      return "No response from model. Is ANTHROPIC_API_KEY set and valid?";
+    }
+    if (err.message.includes("401") || err.message.toLowerCase().includes("unauthorized")) {
+      return "Authentication failed. Check your ANTHROPIC_API_KEY.";
+    }
+    if (err.message.includes("429") || err.message.toLowerCase().includes("rate limit")) {
+      return "Rate limit hit. Wait a moment and try again.";
+    }
+    const prefix = err.name !== "Error" ? `[${err.name}] ` : "";
+    const detail = err.cause instanceof Error ? `\nCaused by: ${err.cause.message}` : "";
+    return `${prefix}${err.message}${detail}`;
   }
   return String(err);
 }

@@ -1,5 +1,5 @@
 // ---------------------------------------------------------------------------
-// Graph FSM — Mermaid diagram generation
+// Graph FSM - Mermaid diagram generation
 // ---------------------------------------------------------------------------
 
 import type { NodeId } from "./types.ts";

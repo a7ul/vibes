@@ -152,7 +152,7 @@ Deno.test("uploadedFileToToolResult - includes filename when present", () => {
 });
 
 // ---------------------------------------------------------------------------
-// Integration tests — tools returning BinaryContent and UploadedFile
+// Integration tests - tools returning BinaryContent and UploadedFile
 // ---------------------------------------------------------------------------
 
 Deno.test("BinaryContent - tool can return BinaryContent without error", async () => {

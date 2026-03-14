@@ -7,7 +7,7 @@ import { makeCtx } from "../_helpers.ts";
 import type { CoreAgentDeps } from "../../src/types.ts";
 
 const WF = "files-test-wf";
-// SandboxManager starts a persistent SOCKS5 proxy — disable resource/op sanitizers.
+// SandboxManager starts a persistent SOCKS5 proxy - disable resource/op sanitizers.
 const T = { sanitizeResources: false, sanitizeOps: false };
 
 async function setup() {

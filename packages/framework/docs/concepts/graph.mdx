@@ -1,6 +1,6 @@
 ---
 title: Graph Workflows
-description: Build multi-step pipelines as finite state machines with BaseNode and Graph — with built-in persistence and Mermaid visualization.
+description: Build multi-step pipelines as finite state machines with BaseNode and Graph - with built-in persistence and Mermaid visualization.
 ---
 
 A `Graph` is a finite state machine pipeline. You define nodes (processing steps) and transitions between them; the graph executes them in sequence, carrying a typed state object from node to node until a node produces a final output.
@@ -8,7 +8,7 @@ A `Graph` is a finite state machine pipeline. You define nodes (processing steps
 Use graphs for multi-step sequential workflows, resumable pipelines, and pipelines that benefit from step-by-step inspection or replay.
 
 <Info>
-If you are looking at older Vibes docs that show `new Graph({ nodes: [...] })` or `this.next()` inside a node — those are incorrect. The correct API is shown on this page.
+If you are looking at older Vibes docs that show `new Graph({ nodes: [...] })` or `this.next()` inside a node - those are incorrect. The correct API is shown on this page.
 </Info>
 
 ## Graph State Machine
@@ -22,7 +22,7 @@ flowchart TD
 
 ## Defining Nodes
 
-Each node extends `BaseNode<State, Output>`. The `run()` method returns either `next(nodeId, newState)` to transition to another node, or `output(value)` to end the graph. Import `next` and `output` as free functions from `@vibes/framework` — they are NOT methods on `BaseNode`.
+Each node extends `BaseNode<State, Output>`. The `run()` method returns either `next(nodeId, newState)` to transition to another node, or `output(value)` to end the graph. Import `next` and `output` as free functions from `@vibes/framework` - they are NOT methods on `BaseNode`.
 
 ```typescript
 import { Agent, BaseNode, next, output } from "@vibes/framework";
@@ -32,12 +32,12 @@ type State = { url: string; content?: string };
 
 class FetchNode extends BaseNode<State, string> {
   readonly id = "fetch";
-  readonly nextNodes = ["summarise"]; // optional — used by toMermaid() for edges
+  readonly nextNodes = ["summarise"]; // optional - used by toMermaid() for edges
 
   async run(state: State) {
     const content = await fetch(state.url).then(r => r.text());
     return next<State, string>("summarise", { ...state, content });
-    //    ^^^^ free function imported from @vibes/framework — NOT this.next()
+    //    ^^^^ free function imported from @vibes/framework - NOT this.next()
   }
 }
 
@@ -52,7 +52,7 @@ class SummariseNode extends BaseNode<State, string> {
   async run(state: State) {
     const summary = await summariseAgent.run(`Summarise: ${state.content}`);
     return output<State, string>(summary.output);
-    //     ^^^^ free function imported from @vibes/framework — NOT this.output()
+    //     ^^^^ free function imported from @vibes/framework - NOT this.output()
   }
 }
 ```
@@ -61,8 +61,8 @@ class SummariseNode extends BaseNode<State, string> {
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `id` | `string` (abstract) | Unique node identifier — used by `Graph` to look up and route to this node |
-| `nextNodes?` | `string[]` | Optional list of node IDs this node can transition to — used by `toMermaid()` to draw edges |
+| `id` | `string` (abstract) | Unique node identifier - used by `Graph` to look up and route to this node |
+| `nextNodes?` | `string[]` | Optional list of node IDs this node can transition to - used by `toMermaid()` to draw edges |
 | `run(state)` | `Promise<NodeResult>` (abstract) | Runs the node logic; return `next(...)` or `output(...)` |
 
 ## Building and Running a Graph
@@ -73,7 +73,7 @@ Pass nodes as a positional array to the `Graph` constructor. An optional second 
 import { Graph } from "@vibes/framework";
 
 const graph = new Graph<State, string>([new FetchNode(), new SummariseNode()], {
-  maxIterations: 50, // optional — default is unlimited
+  maxIterations: 50, // optional - default is unlimited
 });
 
 const result = await graph.run(
@@ -109,7 +109,7 @@ if (step?.kind === "output") {
 | `step.kind` | Extra fields | When |
 |------------|-------------|------|
 | `"node"` | `nodeId: string`, `state: State` | After each node completes a transition |
-| `"output"` | `output: Output` | When a node calls `output(value)` — graph is complete |
+| `"output"` | `output: Output` | When a node calls `output(value)` - graph is complete |
 
 ## Visualizing with toMermaid()
 
@@ -156,11 +156,11 @@ const result = await graph.run(initialState, "fetch", { persistence, graphId: "t
 | Symbol | Description |
 |--------|-------------|
 | `BaseNode<State, Output>` | Abstract base class for graph nodes |
-| `BaseNode.id` | `string` — unique node ID (abstract, set as `readonly id = "..."`) |
-| `BaseNode.nextNodes?` | `string[]` — optional outgoing node IDs for Mermaid edge generation |
-| `BaseNode.run(state)` | `Promise<NodeResult>` — abstract node logic; return `next(...)` or `output(...)` |
-| `next(nodeId, newState)` | Free function — transitions to another node with updated state |
-| `output(value)` | Free function — ends the graph with a final output value |
+| `BaseNode.id` | `string` - unique node ID (abstract, set as `readonly id = "..."`) |
+| `BaseNode.nextNodes?` | `string[]` - optional outgoing node IDs for Mermaid edge generation |
+| `BaseNode.run(state)` | `Promise<NodeResult>` - abstract node logic; return `next(...)` or `output(...)` |
+| `next(nodeId, newState)` | Free function - transitions to another node with updated state |
+| `output(value)` | Free function - ends the graph with a final output value |
 | `new Graph<State, Output>(nodes, options?)` | Create a graph from a node array; `options.maxIterations?` caps turns |
 | `graph.run(state, startNodeId, options?)` | Run to completion; returns `Output` |
 | `graph.runIter(state, startNodeId)` | Returns `GraphRun` for step-by-step iteration |
@@ -168,7 +168,7 @@ const result = await graph.run(initialState, "fetch", { persistence, graphId: "t
 | `GraphStep` | `{ kind: "node", nodeId, state }` or `{ kind: "output", output }` |
 | `graph.toMermaid()` | Returns a `flowchart TD` Mermaid string |
 | `FileStatePersistence<State>(dir)` | Persists graph state to files under `dir/`; resumes on restart |
-| `MemoryStatePersistence<State>()` | In-memory persistence — useful for testing |
+| `MemoryStatePersistence<State>()` | In-memory persistence - useful for testing |
 
 ---
 

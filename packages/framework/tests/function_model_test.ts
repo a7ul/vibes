@@ -1,5 +1,5 @@
 /**
- * Tests for FunctionModel — custom-function-driven language model.
+ * Tests for FunctionModel - custom-function-driven language model.
  */
 import { assertEquals, assertExists } from "@std/assert";
 import { z } from "zod";

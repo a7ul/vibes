@@ -3,7 +3,7 @@ title: "MCP Client"
 description: "Connect your Vibes agent to Model Context Protocol servers to access external tools, data sources, and services."
 ---
 
-The [Model Context Protocol](https://modelcontextprotocol.io) (MCP) is an open standard that lets AI agents connect to external tool servers. A Vibes agent can consume any MCP-compatible server — local subprocesses, remote HTTP services, or a fleet of both — without writing any protocol code.
+The [Model Context Protocol](https://modelcontextprotocol.io) (MCP) is an open standard that lets AI agents connect to external tool servers. A Vibes agent can consume any MCP-compatible server - local subprocesses, remote HTTP services, or a fleet of both - without writing any protocol code.
 
 ## Architecture
 
@@ -21,7 +21,7 @@ flowchart TD
     F --> A
 ```
 
-`MCPStdioClient` and `MCPHttpClient` both implement the `MCPClient` interface. `MCPToolset` wraps one client and bridges it to the agent's `Toolset` interface. `MCPManager` manages multiple `MCPToolset` instances and is itself a `Toolset` — pass it directly to an agent.
+`MCPStdioClient` and `MCPHttpClient` both implement the `MCPClient` interface. `MCPToolset` wraps one client and bridges it to the agent's `Toolset` interface. `MCPManager` manages multiple `MCPToolset` instances and is itself a `Toolset` - pass it directly to an agent.
 
 ## MCPStdioClient
 
@@ -131,17 +131,17 @@ const toolset = new MCPToolset(client, {
 | `getServerInstructions()` | Returns the server's instruction text, if any |
 | `invalidateCache()` | Forces the next `tools()` call to re-fetch from the server |
 
-## MCPManager — Multiple Servers
+## MCPManager - Multiple Servers
 
-When your agent needs tools from more than one MCP server, use `MCPManager`. It collects multiple `MCPToolset` instances, connects them all at once, and merges their tool lists. Because `MCPManager` implements `Toolset`, you pass it directly to the agent — no extra wrapping needed.
+When your agent needs tools from more than one MCP server, use `MCPManager`. It collects multiple `MCPToolset` instances, connects them all at once, and merges their tool lists. Because `MCPManager` implements `Toolset`, you pass it directly to the agent - no extra wrapping needed.
 
 <Warning>
 **Common mistakes to avoid:**
 
 - Do NOT pass arguments to the constructor: `new MCPManager()` takes no arguments.
-- Do NOT call `manager.connectAll()` — the method is `manager.connect()`.
-- Do NOT call `manager.toolset()` — the manager itself is the toolset; pass `manager` directly.
-- Do NOT use `MCPManager.fromConfig()` — use the standalone `createManagerFromConfig(path)` function instead.
+- Do NOT call `manager.connectAll()` - the method is `manager.connect()`.
+- Do NOT call `manager.toolset()` - the manager itself is the toolset; pass `manager` directly.
+- Do NOT use `MCPManager.fromConfig()` - use the standalone `createManagerFromConfig(path)` function instead.
 </Warning>
 
 ```typescript

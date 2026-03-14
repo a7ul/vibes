@@ -3,7 +3,7 @@ title: Human-in-the-Loop
 description: Gate sensitive tool execution behind human approval with requiresApproval, ApprovalRequiredError, and agent.resume().
 ---
 
-Human-in-the-loop (HITL) lets you pause an agent run before a sensitive tool executes, ask a human for approval, then resume the run with the decision. Use it whenever an action is irreversible, high-risk, or requires accountability — deleting records, sending emails, making purchases, or executing code on behalf of a user.
+Human-in-the-loop (HITL) lets you pause an agent run before a sensitive tool executes, ask a human for approval, then resume the run with the decision. Use it whenever an action is irreversible, high-risk, or requires accountability - deleting records, sending emails, making purchases, or executing code on behalf of a user.
 
 ## Approval Flow
 
@@ -109,7 +109,7 @@ try {
 
 ## ExternalToolset
 
-Use `ExternalToolset` when tool execution happens client-side and you have a raw JSON Schema instead of a Zod schema. `ExternalToolset` automatically sets `requiresApproval: true` on every tool — the intent is always to throw `ApprovalRequiredError`, let the client execute the tool, then resume with the result.
+Use `ExternalToolset` when tool execution happens client-side and you have a raw JSON Schema instead of a Zod schema. `ExternalToolset` automatically sets `requiresApproval: true` on every tool - the intent is always to throw `ApprovalRequiredError`, let the client execute the tool, then resume with the result.
 
 ```typescript
 import { Agent, ApprovalRequiredError, ExternalToolset } from "@vibes/framework";
@@ -168,7 +168,7 @@ const results = {
   results: deferred.requests.map(req => ({
     toolCallId: req.toolCallId,
     argsOverride: {
-      // Corrected args — the tool's execute function will be called with these
+      // Corrected args - the tool's execute function will be called with these
       userId: "alice456",  // human corrected the ID
     },
   })),
@@ -183,12 +183,12 @@ When `argsOverride` is present, the framework re-invokes the tool's `execute` fu
 
 | Symbol | Type | Description |
 |--------|------|-------------|
-| `requiresApproval` | `boolean` | Option on `tool()` — causes `ApprovalRequiredError` before `execute` runs |
+| `requiresApproval` | `boolean` | Option on `tool()` - causes `ApprovalRequiredError` before `execute` runs |
 | `ApprovalRequiredError` | `class` | Thrown when a tool with `requiresApproval: true` is called; has `.deferred` property |
-| `DeferredToolRequest` | `interface` | `{ toolCallId: string, toolName: string, args: unknown }` — one entry per pending tool call |
+| `DeferredToolRequest` | `interface` | `{ toolCallId: string, toolName: string, args: unknown }` - one entry per pending tool call |
 | `DeferredToolRequests` | `class` | `err.deferred`; has `.requests: DeferredToolRequest[]` |
-| `DeferredToolResults` | `interface` | Argument to `agent.resume()` — `{ results: DeferredToolResult[] }` |
-| `DeferredToolResult` | `interface` | `{ toolCallId: string, result?: unknown, argsOverride?: unknown }` — provide one or the other |
+| `DeferredToolResults` | `interface` | Argument to `agent.resume()` - `{ results: DeferredToolResult[] }` |
+| `DeferredToolResult` | `interface` | `{ toolCallId: string, result?: unknown, argsOverride?: unknown }` - provide one or the other |
 | `agent.resume(deferred, results)` | `method` | Resumes a paused run; returns `Promise<RunResult<TOutput>>` |
 | `ExternalToolset` | `class` | Toolset for client-side tools defined with JSON Schema; auto-sets `requiresApproval: true` |
 | `ExternalToolDefinition` | `interface` | `{ name: string, description: string, jsonSchema: object }` |

@@ -8,7 +8,7 @@ import type { RunContext } from "../types/context.ts";
  * and the current run context, and return a (possibly shorter/modified) list
  * of messages to actually send to the model.
  *
- * Processors do NOT mutate the stored history — they only affect what's
+ * Processors do NOT mutate the stored history - they only affect what's
  * sent to the model on that turn.
  */
 export type HistoryProcessor<TDeps = undefined> = (
@@ -120,7 +120,7 @@ export function summarizeHistoryProcessor(
   const keepRecent = Math.floor(maxMessages / 2);
 
   return async (messages) => {
-    // Filter out system messages — we summarize only user/assistant/tool turns
+    // Filter out system messages - we summarize only user/assistant/tool turns
     const systemMessages = messages.filter((m) => m.role === "system");
     const nonSystemMessages = messages.filter((m) => m.role !== "system");
 

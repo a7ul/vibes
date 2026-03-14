@@ -9,7 +9,7 @@ import type {
 } from "./mcp_types.ts";
 
 // ---------------------------------------------------------------------------
-// MCPHttpClient — HTTP streamable transport
+// MCPHttpClient - HTTP streamable transport
 // ---------------------------------------------------------------------------
 
 /** Configuration for an HTTP-based MCP server. */
@@ -155,7 +155,7 @@ export class MCPHttpClient implements MCPClient {
         );
       }
     } catch {
-      // Elicitation not supported by this server version — ignore
+      // Elicitation not supported by this server version - ignore
     }
   }
 }

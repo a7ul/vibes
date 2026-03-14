@@ -1,6 +1,6 @@
 ---
 title: Streaming
-description: Real-time token and event streaming with agent.stream() and agent.runStreamEvents() — text deltas, tool call visibility, and progressive structured output.
+description: Real-time token and event streaming with agent.stream() and agent.runStreamEvents() - text deltas, tool call visibility, and progressive structured output.
 ---
 
 Vibes provides two streaming APIs. `agent.stream()` is the simpler option: it returns a `StreamResult` that you can iterate over for text tokens and await for the final output. `agent.runStreamEvents()` gives you granular event-level control: every turn start, text delta, tool call, and tool result is emitted as a typed event.
@@ -34,7 +34,7 @@ sequenceDiagram
     Agent-->>App: usage-update { usage: {...} }
 ```
 
-## agent.stream() — Simple Streaming
+## agent.stream() - Simple Streaming
 
 `agent.stream()` returns a `StreamResult<TOutput>` immediately. The async iterables deliver data in real time; the promises resolve when the run completes.
 
@@ -69,7 +69,7 @@ for await (const partial of stream.partialOutput) {
 }
 ```
 
-## agent.runStreamEvents() — Event Stream
+## agent.runStreamEvents() - Event Stream
 
 `agent.runStreamEvents()` returns an `AsyncIterable<AgentStreamEvent<TOutput>>`. Switch on `event.kind` to handle each event type.
 
@@ -107,7 +107,7 @@ for await (const event of agent.runStreamEvents("What is 2 + 2?")) {
 ```
 
 <Warning>
-The event discriminant is `event.kind`, not `event.type`. The existing `reference/core/streaming.mdx` page has this bug — always use `event.kind`.
+The event discriminant is `event.kind`, not `event.type`. The existing `reference/core/streaming.mdx` page has this bug - always use `event.kind`.
 </Warning>
 
 ## AgentStreamEvent Reference
@@ -121,7 +121,7 @@ The event discriminant is `event.kind`, not `event.type`. The existing `referenc
 | `"partial-output"` | `partial: unknown` | Progressive structured output (tool mode only) |
 | `"usage-update"` | `usage: Usage` | After each turn completes |
 | `"final-result"` | `output: TOutput` | Run completed successfully |
-| `"error"` | `error: unknown` | Unrecoverable error — stream ends |
+| `"error"` | `error: unknown` | Unrecoverable error - stream ends |
 
 ## When to Use Which
 

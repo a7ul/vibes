@@ -1,18 +1,18 @@
 ---
-name: pydantic-ai-to-aisdk-ts
-description: Patterns for porting pydantic-ai (Python) features to TypeScript using the Vercel AI SDK. Use when porting a pydantic-ai feature, adding a new capability to the vibes framework, or mapping pydantic-ai concepts to AI SDK equivalents.
+name: Pydantic AI-to-aisdk-ts
+description: Patterns for porting Pydantic AI (Python) features to TypeScript using the Vercel AI SDK. Use when porting a Pydantic AI feature, adding a new capability to the vibes framework, or mapping Pydantic AI concepts to AI SDK equivalents.
 origin: vibes-project
 ---
 
-# Porting pydantic-ai → TypeScript (Vercel AI SDK)
+# Porting Pydantic AI → TypeScript (Vercel AI SDK)
 
-This skill covers the patterns, decisions, and mappings used in the `vibes` project to port pydantic-ai's framework concepts to TypeScript with the Vercel AI SDK (`ai` package) and Zod.
+This skill covers the patterns, decisions, and mappings used in the `vibes` project to port Pydantic AI's framework concepts to TypeScript with the Vercel AI SDK (`ai` package) and Zod.
 
 ## Framework Structure
 
 ```
 src/packages/framework/
-├── agent.ts                  # Agent class — main public entry point
+├── agent.ts                  # Agent class - main public entry point
 ├── tool.ts                   # ToolDefinition, tool(), toAISDKTools()
 ├── errors.ts                 # MaxTurnsError, MaxRetriesError
 ├── types/
@@ -20,14 +20,14 @@ src/packages/framework/
 │   ├── run_context.ts        # RunContext<TDeps>
 │   └── result.ts             # RunResult, StreamResult, ResultValidator
 └── execution/
-    ├── run.ts                # executeRun() — non-streaming turn loop
-    ├── stream.ts             # executeStream() — streaming turn loop
+    ├── run.ts                # executeRun() - non-streaming turn loop
+    ├── stream.ts             # executeStream() - streaming turn loop
     └── _run_utils.ts         # Shared helpers (internal only)
 ```
 
-## Concept Mapping: pydantic-ai → AI SDK TypeScript
+## Concept Mapping: Pydantic AI → AI SDK TypeScript
 
-| pydantic-ai                                       | TypeScript equivalent                                     | Notes                                         |
+| Pydantic AI                                       | TypeScript equivalent                                     | Notes                                         |
 | ------------------------------------------------- | --------------------------------------------------------- | --------------------------------------------- |
 | `Agent(model, system_prompt, tools, result_type)` | `new Agent({ model, systemPrompt, tools, outputSchema })` |                                               |
 | `RunContext[Deps]`                                | `RunContext<TDeps>`                                       | Generic over deps                             |
@@ -79,7 +79,7 @@ result[t.name] = aiTool({
 
 ### 2. Structured output via synthetic `final_result` tool
 
-pydantic-ai forces structured output by injecting a tool called `final_result`. Replicate this:
+Pydantic AI forces structured output by injecting a tool called `final_result`. Replicate this:
 
 ```typescript
 if (agent.outputSchema) {
@@ -104,12 +104,12 @@ generateText({ maxSteps: 1 }) → processTurn → {
 }
 ```
 
-Use `maxSteps: 1` to get one LLM call per loop iteration — we manage the multi-turn loop ourselves for full control.
+Use `maxSteps: 1` to get one LLM call per loop iteration - we manage the multi-turn loop ourselves for full control.
 
 ### 4. Streaming
 
 ```typescript
-// One streamText call per turn — consume textStream deltas, then await results
+// One streamText call per turn - consume textStream deltas, then await results
 const stream = streamText({ model, system, messages, tools, maxSteps: 1 });
 for await (const delta of stream.textStream) {
   controller.enqueue(delta);
@@ -155,7 +155,7 @@ interface RunContext<TDeps = undefined> {
 }
 ```
 
-### 6. `TOutput` is inferred from `outputSchema` — don't repeat it
+### 6. `TOutput` is inferred from `outputSchema` - don't repeat it
 
 `outputSchema` is typed as `ZodType<TOutput>`, so TypeScript infers `TOutput` automatically from the schema you pass. You only need to specify `TDeps` explicitly when using dependencies:
 
@@ -163,22 +163,22 @@ interface RunContext<TDeps = undefined> {
 const ReportSchema = z.object({ title: z.string(), score: z.number() });
 type Report = z.infer<typeof ReportSchema>;
 
-// ✓ TOutput inferred — no second type param needed
+// ✓ TOutput inferred - no second type param needed
 const agent = new Agent<Deps>({ model, outputSchema: ReportSchema });
 
-// ✓ Both inferred — no type params at all (when no deps)
+// ✓ Both inferred - no type params at all (when no deps)
 const agent = new Agent({ model, outputSchema: ReportSchema });
 
 // ✓ Union: TOutput inferred as SchemaA | SchemaB
 const agent = new Agent({ model, outputSchema: [SchemaA, SchemaB] });
 
-// ✗ Redundant — TOutput = Report is already inferred from schema
+// ✗ Redundant - TOutput = Report is already inferred from schema
 const agent = new Agent<Deps, Report>({ model, outputSchema: ReportSchema });
 ```
 
 **Why it works:** `AgentOptions.outputSchema` is `ZodType<TOutput> | ZodType<TOutput>[]`, not `ZodTypeAny`. Passing a schema binds `TOutput` to `z.infer<typeof schema>` at the call site.
 
-### 7. Types — use AI SDK exports, not custom wrappers
+### 7. Types - use AI SDK exports, not custom wrappers
 
 ```typescript
 import { type ToolSet } from "ai"; // ✓ for tool maps
@@ -188,7 +188,7 @@ import { type ToolSet } from "ai"; // ✓ for tool maps
 
 ### 8. Pydantic-ai decorator pattern → `agent.add*`
 
-pydantic-ai uses decorators to register dynamic behaviour on an agent after construction:
+Pydantic AI uses decorators to register dynamic behaviour on an agent after construction:
 
 ```python
 @agent.system_prompt
@@ -239,12 +239,12 @@ const agent = new Agent<Deps>({
   model: ...,
   systemPrompt: [
     "You are a helpful assistant.",          // static
-    (ctx) => `Current user: ${ctx.deps.username}`, // dynamic — same field
+    (ctx) => `Current user: ${ctx.deps.username}`, // dynamic - same field
   ],
 });
 ```
 
-> **Key difference from pydantic-ai:** there is no `dynamic_system_prompt` constructor argument — `systemPrompt` accepts both. `agent.addSystemPrompt(fn)` is the decorator equivalent for post-construction registration.
+> **Key difference from Pydantic AI:** there is no `dynamic_system_prompt` constructor argument - `systemPrompt` accepts both. `agent.addSystemPrompt(fn)` is the decorator equivalent for post-construction registration.
 
 ### 9. Result validators
 
@@ -259,7 +259,7 @@ Throw from a validator to reject the output and force the model to retry (up to 
 
 ## What's NOT Yet Ported (backlog)
 
-| pydantic-ai feature                | Status     | Notes                                              |
+| Pydantic AI feature                | Status     | Notes                                              |
 | ---------------------------------- | ---------- | -------------------------------------------------- |
 | `UsageLimits` (token/request caps) | Not ported | Check usage in turn loop before calling model      |
 | `Agent.override()` context manager | Not ported | Would override model/system/tools for a single run |
@@ -267,11 +267,11 @@ Throw from a validator to reject the output and force the model to retry (up to 
 | `TestModel` / `FunctionModel`      | Not ported | Needed for unit tests without API calls            |
 | Streaming result validators        | Not ported | Currently validators only run after full output    |
 | `agent.last_run_messages`          | Not ported |                                                    |
-| Multi-agent orchestration          | Not ported | pydantic-ai allows passing agents as tools         |
+| Multi-agent orchestration          | Not ported | Pydantic AI allows passing agents as tools         |
 
 ## Testing a Ported Feature
 
-Tests live in `src/packages/framework/tests/`. Use `ai/test` — no real API key needed.
+Tests live in `src/packages/framework/tests/`. Use `ai/test` - no real API key needed.
 
 ### Import map entry (required)
 
@@ -378,7 +378,7 @@ const model = new MockLanguageModelV1({
 
 ## Documenting a Ported Feature
 
-Docs live in `src/packages/framework/docs/`. Mirror the pydantic-ai docs style: concept first, API reference table, then progressively complex examples.
+Docs live in `src/packages/framework/docs/`. Mirror the Pydantic AI docs style: concept first, API reference table, then progressively complex examples.
 
 ### Doc file structure
 
@@ -389,7 +389,7 @@ One-sentence summary of what it does.
 
 ## Basic Usage
 
-Minimal working example — copy-pasteable.
+Minimal working example - copy-pasteable.
 
 ## API Reference
 
@@ -418,31 +418,31 @@ What throws, when, and how to handle it.
 Add a row to the table in `docs/index.md`:
 
 ```markdown
-- [**Feature Name**](./feature-name.md) — one-line description
+- [**Feature Name**](./feature-name.md) - one-line description
 ```
 
-## Porting a New Feature — Checklist
+## Porting a New Feature - Checklist
 
-1. Find the pydantic-ai source (`pydantic_ai/agent.py` or `pydantic_ai/_run.py`)
+1. Find the Pydantic AI source (`pydantic_ai/agent.py` or `pydantic_ai/_run.py`)
 2. Map Python types → TypeScript generics (Pydantic models → Zod schemas)
 3. Map Python context managers → async functions or class methods
-4. Keep types strictly from `ai` and `zod` — **no `any`, no `// deno-lint-ignore` of any kind**
+4. Keep types strictly from `ai` and `zod` - **no `any`, no `// deno-lint-ignore` of any kind**
    - Use wrapper lambdas to bridge generic parameter mismatches (e.g. `(args) => opts.fn(args as z.infer<TParams>)`)
    - Use `unknown` + structural casts (`x as Record<string, unknown>`) instead of `any`
    - If you reach for `any`, stop and redesign the type boundary
-   - After implementation, run `grep -r "deno-lint-ignore" packages/framework/` — it must return empty
+   - After implementation, run `grep -r "deno-lint-ignore" packages/framework/` - it must return empty
 5. Add to `AgentOptions` interface if it's a constructor option
 6. Export new public types from `mod.ts`
 7. Run `deno check mod.ts` to verify
 8. Write tests in `packages/framework/tests/` using `MockLanguageModelV3`
 9. Write a doc page in `packages/framework/docs/` following the structure above
 10. Link the doc page from `docs/index.md`
-11. **After all tests pass — review structure and readability:**
+11. **After all tests pass - review structure and readability:**
     - Are new files in the right place? (`toolsets/` for toolset classes, `execution/` for internals, root for public API)
     - Is each file under ~200 lines? If not, consider splitting
     - Are helper functions that are only used in one place inlined rather than extracted?
     - Does `mod.ts` export everything a consumer needs and nothing internal?
-    - Read your new code top-to-bottom as a newcomer — if any section is confusing, simplify it
+    - Read your new code top-to-bottom as a newcomer - if any section is confusing, simplify it
 
 ## Runtime: Deno + npm imports
 

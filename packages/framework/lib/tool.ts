@@ -44,8 +44,8 @@ export interface ToolDefinition<TDeps = undefined> {
     | undefined
     | Promise<ToolDefinition<TDeps> | null | undefined>;
   /**
-   * When true, calling this tool ends the run — the tool's return value
-   * becomes the final run output. Equivalent to pydantic-ai's output tools.
+   * When true, calling this tool ends the run - the tool's return value
+   * becomes the final run output. Equivalent to Pydantic AI's output tools.
    */
   isOutput?: boolean;
   /**
@@ -121,7 +121,7 @@ export function tool<
 /**
  * Define a tool that does not need the `RunContext`. Simpler signature when
  * your tool has no dependency injection requirements.
- * Equivalent to pydantic-ai's `@agent.tool_plain`.
+ * Equivalent to Pydantic AI's `@agent.tool_plain`.
  *
  * @example
  * ```ts
@@ -192,9 +192,9 @@ export function fromSchema<TDeps = undefined>(opts: {
 }
 
 /**
- * Define an output tool — when the model calls this tool, its return value
+ * Define an output tool - when the model calls this tool, its return value
  * becomes the final run output and the run ends immediately.
- * Equivalent to pydantic-ai's output tools / `final_result` pattern.
+ * Equivalent to Pydantic AI's output tools / `final_result` pattern.
  *
  * @example
  * ```ts
@@ -229,7 +229,7 @@ export function outputTool<
 }
 
 // ---------------------------------------------------------------------------
-// toAISDKTools — internal conversion used by the run loop
+// toAISDKTools - internal conversion used by the run loop
 // ---------------------------------------------------------------------------
 
 /**
@@ -289,7 +289,7 @@ export function toAISDKTools<TDeps>(
           }
         };
 
-        // Sequential tool — acquire the run-level mutex
+        // Sequential tool - acquire the run-level mutex
         const withSequential = t.sequential && sequentialMutex !== undefined
           ? () => sequentialMutex.run(run)
           : run;

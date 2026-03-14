@@ -3,7 +3,7 @@ title: Toolsets
 description: Toolsets are collections of tools resolved per turn, letting you group, filter, rename, and compose tools dynamically based on runtime context.
 ---
 
-Toolsets are dynamic, per-turn tool groups. Unlike the static `tools` array — which sends every tool to the model on every turn — toolsets are resolved at the start of each turn and can depend on context: the user's role, feature flags, which phase the agent is in, and so on.
+Toolsets are dynamic, per-turn tool groups. Unlike the static `tools` array - which sends every tool to the model on every turn - toolsets are resolved at the start of each turn and can depend on context: the user's role, feature flags, which phase the agent is in, and so on.
 
 An agent can mix static `tools` and any number of `toolsets`. All are merged into a single flat tool list before each model call.
 
@@ -34,7 +34,7 @@ graph TD
     O --> P
 ```
 
-## FunctionToolset — Basic Toolset
+## FunctionToolset - Basic Toolset
 
 `FunctionToolset` is the simplest toolset: a named group of static tools. Use it to logically bundle related tools together.
 
@@ -50,7 +50,7 @@ const agent = new Agent({
 });
 ```
 
-## FilteredToolset — Conditional Tools
+## FilteredToolset - Conditional Tools
 
 `FilteredToolset` wraps another toolset with a boolean predicate. When the predicate returns `false`, the entire inner toolset is hidden from the model for that turn.
 
@@ -65,7 +65,7 @@ const adminToolset = new FilteredToolset(
 
 The predicate is **all-or-nothing**: the inner toolset is either shown in full or hidden entirely. For per-tool filtering within a toolset, see `PreparedToolset`.
 
-## PreparedToolset — Per-Turn Filtering
+## PreparedToolset - Per-Turn Filtering
 
 `PreparedToolset` lets you return a *subset* of tools based on context. The `prepare` function receives the full `RunContext` and the complete tool list, and returns whichever tools to expose.
 
@@ -88,7 +88,7 @@ const safe = new PreparedToolset(
 | Predicate receives | `(ctx)` | `(ctx, tools)` |
 | Use when | Hiding entire toolset by role | Filtering individual tools by state |
 
-## CombinedToolset — Merging Toolsets
+## CombinedToolset - Merging Toolsets
 
 `CombinedToolset` merges multiple toolsets into one. Tools from later toolsets override earlier ones on name conflict (last name wins).
 
@@ -98,7 +98,7 @@ import { CombinedToolset } from "@vibes/framework";
 const combined = new CombinedToolset([toolsetA, toolsetB]);
 ```
 
-## PrefixedToolset — Namespacing
+## PrefixedToolset - Namespacing
 
 `PrefixedToolset` adds a string prefix to every tool name. Use it to avoid collisions when combining toolsets from different domains.
 
@@ -109,7 +109,7 @@ const namespaced = new PrefixedToolset(innerToolset, "admin_");
 // "search" → "admin_search", "delete" → "admin_delete"
 ```
 
-## RenamedToolset — Custom Names
+## RenamedToolset - Custom Names
 
 `RenamedToolset` renames specific tools using a mapping object.
 
@@ -121,9 +121,9 @@ const renamed = new RenamedToolset(innerToolset, {
 });
 ```
 
-## WrapperToolset — Middleware
+## WrapperToolset - Middleware
 
-`WrapperToolset` wraps another toolset and intercepts `execute` calls. Use it for cross-cutting concerns like logging, tracing, input transformation, or output transformation — without modifying the underlying tools.
+`WrapperToolset` wraps another toolset and intercepts `execute` calls. Use it for cross-cutting concerns like logging, tracing, input transformation, or output transformation - without modifying the underlying tools.
 
 ```typescript
 import { WrapperToolset } from "@vibes/framework";
@@ -138,7 +138,7 @@ const logged = new WrapperToolset(innerToolset, {
 });
 ```
 
-## ApprovalRequiredToolset — Mark All for Approval
+## ApprovalRequiredToolset - Mark All for Approval
 
 `ApprovalRequiredToolset` wraps a toolset and marks every tool inside it as `requiresApproval: true`. Use it when you want to require human approval for an entire group of tools without modifying them individually.
 
@@ -150,9 +150,9 @@ const gated = new ApprovalRequiredToolset(dangerousToolset);
 
 When any tool from this toolset is requested by the model, Vibes throws `ApprovalRequiredError` with the deferred tool requests. See [Human-in-the-Loop](/guides/human-in-the-loop) for the full approval flow.
 
-## ExternalToolset — Tools Without Zod Schemas
+## ExternalToolset - Tools Without Zod Schemas
 
-`ExternalToolset` is for tools that have pre-existing JSON schemas — for example, tools loaded from an MCP server. Parameters are passed as raw JSON instead of going through Zod parsing.
+`ExternalToolset` is for tools that have pre-existing JSON schemas - for example, tools loaded from an MCP server. Parameters are passed as raw JSON instead of going through Zod parsing.
 
 ```typescript
 import { ExternalToolset } from "@vibes/framework";

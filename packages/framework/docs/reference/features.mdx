@@ -1,9 +1,9 @@
 ---
 title: "Feature Parity"
-description: "Comparison with pydantic-ai features and links to documentation"
+description: "Comparison with Pydantic AI features and links to documentation"
 ---
 
-This document tracks every pydantic-ai feature and its status in the TypeScript
+This document tracks every Pydantic AI feature and its status in the TypeScript
 framework. Use it as a backlog when deciding what to port next.
 
 **Legend:** ✅ Ported · 🚧 Partial · ❌ Not ported
@@ -12,7 +12,7 @@ framework. Use it as a backlog when deciding what to port next.
 
 ## Agent API
 
-| Feature                 | pydantic-ai                                  | Status | Docs | Notes |
+| Feature                 | Pydantic AI                                  | Status | Docs | Notes |
 | ----------------------- | -------------------------------------------- | ------ | ---- | ----- |
 | `agent.run()`           | `agent.run(prompt, deps=x)`                  | ✅     | [Agents](/reference/core/agents) | `agent.run(prompt, { deps: x })` |
 | `agent.run_stream()`    | `agent.run_stream(prompt)`                   | ✅     | [Streaming](/reference/core/streaming) | `agent.stream(prompt)` |
@@ -32,15 +32,15 @@ framework. Use it as a backlog when deciding what to port next.
 | Max concurrency         | `max_concurrency`                            | ✅     | [Agents](/reference/core/agents) | `maxConcurrency` on `AgentOptions` - semaphore-based cap on concurrent tool executions |
 | `instructions` field    | `@agent.instructions` decorator              | ✅     | [Agents](/reference/core/agents) | `instructions` on `AgentOptions`/`RunOptions`; re-injected each turn, not stored in message history |
 | Model-specific settings | `model_settings=` on `run()`                 | ✅     | [Model Settings](/reference/advanced/model-settings) | `modelSettings: { temperature, maxTokens, ... }` on `AgentOptions` or `RunOptions` |
-| Sync run                | `agent.run_sync()`                           | ❌     | — | Deno is async-native - not applicable |
-| Node-level iteration    | `agent.iter()` / `AgentRun`                  | ❌     | — | Not applicable - use `runStreamEvents()` for step-by-step observation in async TypeScript |
-| Last run messages       | `agent.last_run_messages`                    | ❌     | — | Removed from pydantic-ai; superseded by `result.newMessages` |
+| Sync run                | `agent.run_sync()`                           | ❌     | - | Deno is async-native - not applicable |
+| Node-level iteration    | `agent.iter()` / `AgentRun`                  | ❌     | - | Not applicable - use `runStreamEvents()` for step-by-step observation in async TypeScript |
+| Last run messages       | `agent.last_run_messages`                    | ❌     | - | Removed from Pydantic AI; superseded by `result.newMessages` |
 
 ---
 
 ## Tools
 
-| Feature                | pydantic-ai                                     | Status | Docs | Notes |
+| Feature                | Pydantic AI                                     | Status | Docs | Notes |
 | ---------------------- | ----------------------------------------------- | ------ | ---- | ----- |
 | Tools with context     | `@agent.tool`                                   | ✅     | [Tools](/reference/core/tools) | `tool({ execute: (ctx, args) => ... })` |
 | Tool `maxRetries`      | `retries=` on `@agent.tool`                     | ✅     | [Tools](/reference/core/tools) | `maxRetries` on `ToolDefinition` |
@@ -55,13 +55,13 @@ framework. Use it as a backlog when deciding what to port next.
 | Sequential execution   | `sequential=True` on tool                       | ✅     | [Tools](/reference/core/tools) | `sequential: true` on `ToolDefinition` - acquires mutex before executing |
 | Deferred tools         | Tools requiring human approval before execution | ✅     | [Deferred Tools](/reference/advanced/deferred-tools) | `requiresApproval: true` on `ToolDefinition` - see Deferred Tools section |
 | MCP server tools       | Connect external MCP servers as tool providers  | ✅     | [MCP](/reference/integrations/mcp) | `MCPToolset` wraps any `MCPClient` - see MCP section |
-| Docstring extraction   | Auto-doc from Python docstrings                 | ❌     | — | No runtime equivalent in TypeScript - use `description` field explicitly |
+| Docstring extraction   | Auto-doc from Python docstrings                 | ❌     | - | No runtime equivalent in TypeScript - use `description` field explicitly |
 
 ---
 
 ## Toolsets
 
-| Feature                   | pydantic-ai                                 | Status | Docs | Notes |
+| Feature                   | Pydantic AI                                 | Status | Docs | Notes |
 | ------------------------- | ------------------------------------------- | ------ | ---- | ----- |
 | `FunctionToolset`         | Group locally defined function tools        | ✅     | [Toolsets](/reference/core/toolsets) | `new FunctionToolset([tool1, tool2])` |
 | `CombinedToolset`         | Merge multiple toolsets into one            | ✅     | [Toolsets](/reference/core/toolsets) | `new CombinedToolset(ts1, ts2)` |
@@ -79,7 +79,7 @@ framework. Use it as a backlog when deciding what to port next.
 
 ## Deferred Tools (Human-in-the-Loop & External Execution)
 
-| Feature                      | pydantic-ai                                      | Status | Docs | Notes |
+| Feature                      | Pydantic AI                                      | Status | Docs | Notes |
 | ---------------------------- | ------------------------------------------------ | ------ | ---- | ----- |
 | `requires_approval=True`     | Mark a tool as approval-required                 | ✅     | [Deferred Tools](/reference/advanced/deferred-tools) | `requiresApproval: true` on `ToolDefinition` or `tool()` options |
 | `ApprovalRequired` exception | Pause agent, surface pending calls to caller     | ✅     | [Human in the Loop](/guides/human-in-the-loop) | `ApprovalRequiredError` - catch it, inspect `.requests`, resume with results |
@@ -93,7 +93,7 @@ framework. Use it as a backlog when deciding what to port next.
 
 ## Output & Structured Results
 
-| Feature                     | pydantic-ai                          | Status | Docs | Notes |
+| Feature                     | Pydantic AI                          | Status | Docs | Notes |
 | --------------------------- | ------------------------------------ | ------ | ---- | ----- |
 | Single schema output        | `result_type: BaseModel`             | ✅     | [Structured Output](/reference/core/structured-output) | `outputSchema: z.object({...})` via `final_result` tool |
 | Result validators           | `@agent.result_validator`            | ✅     | [Result Validators](/reference/core/result-validators) | `addResultValidator(fn)` - throw to retry |
@@ -112,7 +112,7 @@ framework. Use it as a backlog when deciding what to port next.
 
 ## Message History
 
-| Feature                   | pydantic-ai                                   | Status | Docs | Notes |
+| Feature                   | Pydantic AI                                   | Status | Docs | Notes |
 | ------------------------- | --------------------------------------------- | ------ | ---- | ----- |
 | Pass history to next run  | `message_history=result.all_messages()`       | ✅     | [Message History](/reference/advanced/message-history) | `{ messageHistory: result.messages }` |
 | `new_messages()`          | Slice of messages from current run only       | ✅     | [Message History](/reference/advanced/message-history) | `result.newMessages` on `RunResult` and `StreamResult` |
@@ -127,7 +127,7 @@ framework. Use it as a backlog when deciding what to port next.
 
 ## Dependencies
 
-| Feature                 | pydantic-ai                            | Status | Docs | Notes |
+| Feature                 | Pydantic AI                            | Status | Docs | Notes |
 | ----------------------- | -------------------------------------- | ------ | ---- | ----- |
 | Typed deps              | `RunContext[MyDeps]`                   | ✅     | [Dependencies](/reference/core/dependencies) | `Agent<MyDeps, TOutput>` - deps typed via generic parameter |
 | Deps in tools           | `ctx: RunContext[MyDeps]` in tool      | ✅     | [Dependencies](/reference/core/dependencies) | `ctx.deps` in `execute(ctx, args)` |
@@ -140,7 +140,7 @@ framework. Use it as a backlog when deciding what to port next.
 
 ## Usage & Limits
 
-| Feature        | pydantic-ai                                                | Status | Docs | Notes |
+| Feature        | Pydantic AI                                                | Status | Docs | Notes |
 | -------------- | ---------------------------------------------------------- | ------ | ---- | ----- |
 | Usage tracking | `result.usage()`                                           | ✅     | [Usage Limits](/reference/advanced/usage-limits) | `result.usage` - prompt/completion tokens + requests |
 | `UsageLimits`  | Cap request count, input tokens, output tokens, tool calls | ✅     | [Usage Limits](/reference/advanced/usage-limits) | `usageLimits: { maxRequests, maxInputTokens, ... }` on `AgentOptions` or `run()` |
@@ -149,7 +149,7 @@ framework. Use it as a backlog when deciding what to port next.
 
 ## Errors
 
-| Feature               | pydantic-ai                      | Status | Docs | Notes |
+| Feature               | Pydantic AI                      | Status | Docs | Notes |
 | --------------------- | -------------------------------- | ------ | ---- | ----- |
 | `UserError`           | Raised for bad agent config      | ✅     | [Errors](/reference/core/errors) | |
 | `UnexpectedModelBehavior` | Malformed model response     | ✅     | [Errors](/reference/core/errors) | |
@@ -163,12 +163,12 @@ framework. Use it as a backlog when deciding what to port next.
 
 ## MCP (Model Context Protocol)
 
-| Feature                   | pydantic-ai                                   | Status | Docs | Notes |
+| Feature                   | Pydantic AI                                   | Status | Docs | Notes |
 | ------------------------- | --------------------------------------------- | ------ | ---- | ----- |
 | `MCPServerStdio`          | Subprocess stdio transport                    | ✅     | [MCP](/reference/integrations/mcp) | `MCPStdioClient` using `@modelcontextprotocol/sdk` |
 | `MCPServerStreamableHTTP` | HTTP Streamable transport                     | ✅     | [MCP](/reference/integrations/mcp) | `MCPHttpClient` using `StreamableHTTPClientTransport` |
-| `MCPServerSSE`            | Server-Sent Events transport (deprecated)     | ❌     | — | Prefer `MCPHttpClient` (StreamableHTTP) |
-| Dynamic tool discovery    | Auto-convert MCP tools to pydantic-ai tools   | ✅     | [MCP](/reference/integrations/mcp) | `MCPToolset.tools()` fetches and converts MCP tools automatically |
+| `MCPServerSSE`            | Server-Sent Events transport (deprecated)     | ❌     | - | Prefer `MCPHttpClient` (StreamableHTTP) |
+| Dynamic tool discovery    | Auto-convert MCP tools to Pydantic AI tools   | ✅     | [MCP](/reference/integrations/mcp) | `MCPToolset.tools()` fetches and converts MCP tools automatically |
 | Elicitation support       | MCP server can request structured input       | ✅     | [MCP](/reference/integrations/mcp) | `elicitationCallback` option on `MCPToolset` |
 | Server instructions       | Access MCP server `instructions` post-connect | ✅     | [MCP](/reference/integrations/mcp) | `mcpToolset.getServerInstructions()` |
 | Tool caching              | Cache discovered tools with invalidation      | ✅     | [MCP](/reference/integrations/mcp) | `toolCacheTtlMs` option on `MCPToolset` (default 60 s) |
@@ -179,9 +179,9 @@ framework. Use it as a backlog when deciding what to port next.
 
 ## Testing
 
-| Feature                      | pydantic-ai                                                       | Status | Docs | Notes |
+| Feature                      | Pydantic AI                                                       | Status | Docs | Notes |
 | ---------------------------- | ----------------------------------------------------------------- | ------ | ---- | ----- |
-| Mock model                   | `MockLanguageModelV1` (from `ai/test`)                            | ✅     | [Testing](/reference/core/testing) | Equivalent to pydantic-ai's `TestModel` |
+| Mock model                   | `MockLanguageModelV1` (from `ai/test`)                            | ✅     | [Testing](/reference/core/testing) | Equivalent to Pydantic AI's `TestModel` |
 | Multi-turn mock              | `mockValues(...)`                                                 | ✅     | [Testing](/reference/core/testing) | Cycle through responses across turns |
 | Stream mock                  | `convertArrayToReadableStream`                                    | ✅     | [Testing](/reference/core/testing) | Build mock stream chunks |
 | `Agent.override()`           | Swap model/deps/toolsets in tests without modifying app code      | ✅     | [Testing](/reference/core/testing) | `agent.override({ model: mockModel }).run(prompt)` |
@@ -194,7 +194,7 @@ framework. Use it as a backlog when deciding what to port next.
 
 ## Multi-Agent
 
-| Feature                    | pydantic-ai                                             | Status | Docs | Notes |
+| Feature                    | Pydantic AI                                             | Status | Docs | Notes |
 | -------------------------- | ------------------------------------------------------- | ------ | ---- | ----- |
 | Agent-as-tool              | Tool that calls `child.run(usage=ctx.usage)` internally | ✅     | [Multi-Agent](/reference/advanced/multi-agent) | Pattern: `tool({ execute: async (ctx, { prompt }) => { const r = await child.run(prompt, { deps: ctx.deps }); ... } })` |
 | Usage aggregation          | Pass `usage=ctx.usage` to sub-agent to merge costs      | ✅     | [Multi-Agent](/reference/advanced/multi-agent) | Manually add sub-agent usage to `ctx.usage` inside the tool |
@@ -203,19 +203,19 @@ framework. Use it as a backlog when deciding what to port next.
 | Graph state persistence    | `SimpleStatePersistence`, `FileStatePersistence`        | ✅     | [Graph](/reference/integrations/graph) | `MemoryStatePersistence`, `FileStatePersistence` - pause/resume across restarts |
 | Graph visualization        | Mermaid diagram generation                              | ✅     | [Graph](/reference/integrations/graph) | `toMermaid(graph, nodes)` returns Mermaid flowchart string |
 | `Graph.iter()` / `.next()` | Manual stepping through graph nodes                     | ✅     | [Graph](/reference/integrations/graph) | `graph.runIter(state, startNode)` returns `GraphRun` with `.next()` method |
-| A2A protocol               | `agent.to_a2a()` - expose agent as ASGI A2A server      | ✅     | — *(docs coming soon)* | `new A2AAdapter(agent, opts)` - JSON-RPC handler with `tasks/send`, `tasks/get`, `tasks/cancel`, agent card at `/.well-known/agent.json` |
+| A2A protocol               | `agent.to_a2a()` - expose agent as ASGI A2A server      | ✅     | - *(docs coming soon)* | `new A2AAdapter(agent, opts)` - JSON-RPC handler with `tasks/send`, `tasks/get`, `tasks/cancel`, agent card at `/.well-known/agent.json` |
 
 ---
 
 ## Observability
 
-| Feature                 | pydantic-ai                             | Status | Docs | Notes |
+| Feature                 | Pydantic AI                             | Status | Docs | Notes |
 | ----------------------- | --------------------------------------- | ------ | ---- | ----- |
-| Logfire integration     | Auto-traces runs, turns, and tool calls | ❌     | — | Not applicable (Logfire is Python-only) |
+| Logfire integration     | Auto-traces runs, turns, and tool calls | ❌     | - | Not applicable (Logfire is Python-only) |
 | OpenTelemetry support   | OTel Gen-AI semantic conventions        | ✅     | [OpenTelemetry](/reference/integrations/otel) | `instrumentAgent(agent, opts)` - uses AI SDK `experimental_telemetry` |
 | Run-level spans         | Structured spans per run with metadata  | ✅     | [OpenTelemetry](/reference/integrations/otel) | AI SDK auto-creates run spans when telemetry is enabled |
 | Tool-level spans        | Span per tool call with args and result | ✅     | [OpenTelemetry](/reference/integrations/otel) | AI SDK auto-creates tool spans when telemetry is enabled |
-| HTTPX instrumentation   | Capture raw HTTP request/response       | ❌     | — | Not applicable (no HTTPX in Deno/Node) |
+| HTTPX instrumentation   | Capture raw HTTP request/response       | ❌     | - | Not applicable (no HTTPX in Deno/Node) |
 | Custom `TracerProvider` | Bring your own OTel tracer              | ✅     | [OpenTelemetry](/reference/integrations/otel) | Pass `tracer` in `TelemetrySettings` via `instrumentAgent` or `modelSettings` |
 | Content exclusion       | Strip prompt/response from spans        | ✅     | [OpenTelemetry](/reference/integrations/otel) | `excludeContent: true` on `InstrumentationOptions` → `recordInputs/Outputs: false` |
 
@@ -223,32 +223,32 @@ framework. Use it as a backlog when deciding what to port next.
 
 ## Evaluation Framework (Pydantic Evals)
 
-| Feature               | pydantic-ai                                         | Status | Docs | Notes |
+| Feature               | Pydantic AI                                         | Status | Docs | Notes |
 | --------------------- | --------------------------------------------------- | ------ | ---- | ----- |
-| Datasets & Cases      | `Dataset`, `Case` - typed test scenarios            | ❌     | — | Not yet implemented |
-| Built-in evaluators   | Exact match, type validation                        | ❌     | — | Not yet implemented |
-| LLM-as-judge          | LLM-based evaluators for subjective qualities       | ❌     | — | Not yet implemented |
-| Custom evaluators     | Domain-specific scoring functions                   | ❌     | — | Not yet implemented |
-| Span-based evaluation | Score runs via OTel trace spans                     | ❌     | — | Not yet implemented |
-| Experiments           | Run and compare datasets across model/prompt combos | ❌     | — | Not yet implemented |
-| Logfire integration   | Visualize eval results in Logfire                   | ❌     | — | Not applicable (Logfire is Python-only) |
-| Async + concurrency   | Configurable concurrency and retries for evals      | ❌     | — | Not yet implemented |
+| Datasets & Cases      | `Dataset`, `Case` - typed test scenarios            | ❌     | - | Not yet implemented |
+| Built-in evaluators   | Exact match, type validation                        | ❌     | - | Not yet implemented |
+| LLM-as-judge          | LLM-based evaluators for subjective qualities       | ❌     | - | Not yet implemented |
+| Custom evaluators     | Domain-specific scoring functions                   | ❌     | - | Not yet implemented |
+| Span-based evaluation | Score runs via OTel trace spans                     | ❌     | - | Not yet implemented |
+| Experiments           | Run and compare datasets across model/prompt combos | ❌     | - | Not yet implemented |
+| Logfire integration   | Visualize eval results in Logfire                   | ❌     | - | Not applicable (Logfire is Python-only) |
+| Async + concurrency   | Configurable concurrency and retries for evals      | ❌     | - | Not yet implemented |
 
 ---
 
 ## Durable Execution
 
-| Feature              | pydantic-ai                                               | Status | Docs | Notes |
+| Feature              | Pydantic AI                                               | Status | Docs | Notes |
 | -------------------- | --------------------------------------------------------- | ------ | ---- | ----- |
 | Temporal integration | `TemporalAgent` - offloads model/tool calls to activities | ✅     | [Temporal](/reference/integrations/temporal) | `TemporalAgent` + `MockTemporalAgent` - requires Node.js for Temporal worker |
-| DBOS integration     | Postgres-backed state checkpointing                       | ❌     | — | Not implemented (skipped by design) |
-| Prefect integration  | Transactional task semantics with cache keys              | ❌     | — | Not implemented (skipped by design) |
+| DBOS integration     | Postgres-backed state checkpointing                       | ❌     | - | Not implemented (skipped by design) |
+| Prefect integration  | Transactional task semantics with cache keys              | ❌     | - | Not implemented (skipped by design) |
 
 ---
 
 ## AG-UI Protocol
 
-| Feature                | pydantic-ai                                     | Status | Docs | Notes |
+| Feature                | Pydantic AI                                     | Status | Docs | Notes |
 | ---------------------- | ----------------------------------------------- | ------ | ---- | ----- |
 | AG-UI event streaming  | `AGUIAdapter.run_stream()` - agent-to-UI events | ✅     | [AG-UI](/reference/integrations/ag-ui) | `AGUIAdapter.handleRequest(input)` returns SSE `Response` |
 | Follow-up messaging    | Continue conversation after tool call results   | ✅     | [AG-UI](/reference/integrations/ag-ui) | `input.messages` history passed as `messageHistory` automatically |
@@ -258,7 +258,7 @@ framework. Use it as a backlog when deciding what to port next.
 
 ## Multi-Modal Support
 
-| Feature              | pydantic-ai                              | Status | Docs | Notes |
+| Feature              | Pydantic AI                              | Status | Docs | Notes |
 | -------------------- | ---------------------------------------- | ------ | ---- | ----- |
 | Image input to tools | Pass images into tool parameters         | ✅     | [Multi-Modal](/reference/advanced/multi-modal) | `binaryContentSchema` in tool `parameters`; `BinaryContent` in `execute` |
 | Audio / video input  | Audio and video as tool parameters       | ✅     | [Multi-Modal](/reference/advanced/multi-modal) | `BinaryContent` with audio/video MIME types; `isAudioContent()` type guard |

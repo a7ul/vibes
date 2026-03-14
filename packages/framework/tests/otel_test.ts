@@ -100,7 +100,7 @@ Deno.test("createTelemetrySettings - metadata is passed through", () => {
 Deno.test("createTelemetrySettings - metadata is a new object (immutable copy)", () => {
   const opts: InstrumentationOptions = { metadata: { env: "test" } };
   const settings = createTelemetrySettings("agent", opts);
-  // Mutate the settings metadata — original opts should not change
+  // Mutate the settings metadata - original opts should not change
   if (settings.metadata) {
     (settings.metadata as Record<string, unknown>)["extra"] = "added";
   }
@@ -382,7 +382,7 @@ Deno.test("recordRunAttributes - only defined fields are set", () => {
 });
 
 // ---------------------------------------------------------------------------
-// Type-level tests — verify exports are accessible from mod.ts
+// Type-level tests - verify exports are accessible from mod.ts
 // ---------------------------------------------------------------------------
 
 Deno.test("TelemetrySettings type is exported from mod.ts", () => {

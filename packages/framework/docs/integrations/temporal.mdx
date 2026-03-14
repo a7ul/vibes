@@ -4,7 +4,7 @@ description: "Run Vibes agents as durable, fault-tolerant workflows using Tempor
 ---
 
 <Info>
-**Node.js runtime required for Temporal workers.** Temporal's workflow runtime uses V8 isolates and cannot run in Deno. Use `MockTemporalAgent` in Deno for unit tests — it works without a Temporal server.
+**Node.js runtime required for Temporal workers.** Temporal's workflow runtime uses V8 isolates and cannot run in Deno. Use `MockTemporalAgent` in Deno for unit tests - it works without a Temporal server.
 </Info>
 
 [Temporal](https://temporal.io) is a durable execution platform that makes long-running workflows resilient to failures. When you run a Vibes agent through Temporal, every model call and tool invocation is automatically retried on failure, replayed correctly after crashes, and auditable through Temporal's history service. This makes Temporal the right choice for workflows that take minutes or hours, need guaranteed completion, or must survive process restarts.
@@ -67,7 +67,7 @@ const temporalAgent = new TemporalAgent(agent, {
 
 | Option | Type | Required | Description |
 |--------|------|----------|-------------|
-| `taskQueue` | `string` | Yes | Temporal task queue name — must match the worker's task queue |
+| `taskQueue` | `string` | Yes | Temporal task queue name - must match the worker's task queue |
 | `depsFactory` | `() => TDeps \| Promise<TDeps>` | No | Factory called each activity execution to create fresh dependencies |
 | `modelCallActivity` | `TemporalActivityOptions` | No | Timeout and retry config for model turn activities |
 | `toolCallActivity` | `TemporalActivityOptions` | No | Timeout and retry config for tool call activities |
@@ -86,7 +86,7 @@ const temporalAgent = new TemporalAgent(agent, {
 The worker runs in a **Node.js** process. It registers `temporalAgent.activities` (a property) and a `workflowsPath` pointing to your workflow file.
 
 ```typescript
-// worker.js — Node.js only, NOT Deno
+// worker.js - Node.js only, NOT Deno
 import { Worker } from "@temporalio/worker";
 import { TemporalAgent } from "@vibes/framework";
 
@@ -104,7 +104,7 @@ await worker.run();
 Your `workflows.ts` file re-exports `temporalAgent.workflowFn` (also a property):
 
 ```typescript
-// workflows.ts — re-export workflowFn as a named workflow
+// workflows.ts - re-export workflowFn as a named workflow
 import { temporalAgent } from "./my-agent";
 
 export const researchWorkflow = temporalAgent.workflowFn;  // property, NOT a method call
@@ -113,16 +113,16 @@ export const researchWorkflow = temporalAgent.workflowFn;  // property, NOT a me
 <Warning>
 **`temporalAgent.activities` and `temporalAgent.workflowFn` are properties, not methods.**
 
-Do NOT call them with parentheses — they are not functions:
-- `temporalAgent.activities` — correct (property access)
-- `temporalAgent.workflowFn` — correct (property access)
+Do NOT call them with parentheses - they are not functions:
+- `temporalAgent.activities` - correct (property access)
+- `temporalAgent.workflowFn` - correct (property access)
 
 Adding `()` after either property causes a TypeError at runtime.
 </Warning>
 
 ## Starting Workflows
 
-Workflows are started via the Temporal client — there is no framework method for this. The client connects to the Temporal server and schedules execution on the worker's task queue.
+Workflows are started via the Temporal client - there is no framework method for this. The client connects to the Temporal server and schedules execution on the worker's task queue.
 
 ```typescript
 import { Client, Connection } from "@temporalio/client";
@@ -156,7 +156,7 @@ const handle = await client.workflow.start(temporalAgent.workflowFn, {
 
 console.log(`Started workflow: ${handle.workflowId}`);
 
-// Later — check status or get result
+// Later - check status or get result
 const result = await client.workflow.result(handle.workflowId);
 ```
 
@@ -165,15 +165,15 @@ const result = await client.workflow.result(handle.workflowId);
 <Warning>
 If you're migrating from older Vibes documentation, the following APIs were documented incorrectly. **None of these exist in the actual framework:**
 
-1. `temporalAgent.start(client, opts)` — This method does not exist. Use `client.workflow.start(temporalAgent.workflowFn, opts)` instead.
+1. `temporalAgent.start(client, opts)` - This method does not exist. Use `client.workflow.start(temporalAgent.workflowFn, opts)` instead.
 
-2. `temporalAgent.workflowsPath()` — This method does not exist. Provide your own workflow file that re-exports `temporalAgent.workflowFn`.
+2. `temporalAgent.workflowsPath()` - This method does not exist. Provide your own workflow file that re-exports `temporalAgent.workflowFn`.
 
-3. `activities` used as a method call — `activities` is a **property**, not a method. Use `temporalAgent.activities` (no parentheses).
+3. `activities` used as a method call - `activities` is a **property**, not a method. Use `temporalAgent.activities` (no parentheses).
 
-4. `new MockTemporalAgent(agent)` without a second argument — The constructor requires `TemporalAgentOptions` including `taskQueue`. Use `new MockTemporalAgent(agent, { taskQueue: "test" })`.
+4. `new MockTemporalAgent(agent)` without a second argument - The constructor requires `TemporalAgentOptions` including `taskQueue`. Use `new MockTemporalAgent(agent, { taskQueue: "test" })`.
 
-5. `serializeAgentState` / `deserializeAgentState` — These exports do not exist. The correct names are `serializeRunState` and `deserializeRunState`.
+5. `serializeAgentState` / `deserializeAgentState` - These exports do not exist. The correct names are `serializeRunState` and `deserializeRunState`.
 </Warning>
 
 ## MockTemporalAgent (Testing)
@@ -183,7 +183,7 @@ If you're migrating from older Vibes documentation, the following APIs were docu
 ```typescript
 import { MockTemporalAgent } from "npm:@vibes/framework";
 
-// Second argument is required — must include taskQueue
+// Second argument is required - must include taskQueue
 const mock = new MockTemporalAgent(agent, { taskQueue: "test" });
 
 // Run the agent
@@ -194,7 +194,7 @@ console.log(result.output); // "4"
 const history = mock.getActivityHistory();
 console.log(history[0].activity); // "runModelTurn"
 
-// Simulate replay — uses cached results (no model API calls)
+// Simulate replay - uses cached results (no model API calls)
 const replayResult = await mock.simulateReplay("What is 2 + 2?");
 console.log(replayResult.output); // "4" (from cache)
 
@@ -207,7 +207,7 @@ mock.reset();
 | Method | Description |
 |--------|-------------|
 | `run(prompt, opts?)` | Execute the agent, recording all activity invocations |
-| `simulateReplay(prompt, opts?)` | Re-run using cached activity results — no model API calls |
+| `simulateReplay(prompt, opts?)` | Re-run using cached activity results - no model API calls |
 | `getActivityHistory()` | Returns `ReadonlyArray<ActivityHistoryEntry>` of all recorded activities |
 | `reset()` | Clears activity history and replay cache |
 
@@ -254,7 +254,7 @@ const roundTripped = roundTripMessages(messages);  // ModelMessage[] → ModelMe
 ```
 
 <Warning>
-The old docs used `serializeAgentState` and `deserializeAgentState` — these names do not exist. The correct exports are `serializeRunState` and `deserializeRunState`.
+The old docs used `serializeAgentState` and `deserializeAgentState` - these names do not exist. The correct exports are `serializeRunState` and `deserializeRunState`.
 </Warning>
 
 ## API Reference
@@ -264,8 +264,8 @@ The old docs used `serializeAgentState` and `deserializeAgentState` — these na
 | Member | Signature | Description |
 |--------|-----------|-------------|
 | Constructor | `new TemporalAgent(agent, options)` | Create the agent with Temporal config |
-| `activities` | property: `{ runModelTurn, runToolCall }` | Temporal activity implementations — pass to `Worker.create` |
-| `workflowFn` | property: async function | Valid Temporal workflow function — export from your workflows file |
+| `activities` | property: `{ runModelTurn, runToolCall }` | Temporal activity implementations - pass to `Worker.create` |
+| `workflowFn` | property: async function | Valid Temporal workflow function - export from your workflows file |
 | `run(prompt, opts?)` | `(string, opts?) => Promise<RunResult>` | Non-Temporal fallback using `agent.run()` directly |
 | `taskQueue` | getter: `string` | The configured task queue name |
 

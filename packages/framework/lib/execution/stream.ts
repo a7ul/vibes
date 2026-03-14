@@ -29,7 +29,7 @@ import { isBinaryImageOutput } from "../multimodal/binary_content.ts";
 import { MaxTurnsError } from "../types/errors.ts";
 
 // ---------------------------------------------------------------------------
-// Deferred result — single promise resolves output + messages + usage together
+// Deferred result - single promise resolves output + messages + usage together
 // ---------------------------------------------------------------------------
 
 interface DeferredResult<TOutput> {
@@ -160,7 +160,7 @@ async function runStreamLoop<TDeps, TOutput>(
   const outputSchema = agent.outputSchema;
   const schemas = isBinaryImageOutput(outputSchema) ? [] : normaliseSchemas(outputSchema);
 
-  // Shared mutex for sequential tools — created once per run
+  // Shared mutex for sequential tools - created once per run
   const sequentialMutex = createSequentialMutex();
 
   // systemPrompt resolved once; instructions resolved per-turn inside prepareTurn
@@ -245,11 +245,11 @@ async function runStreamLoop<TDeps, TOutput>(
                   try {
                     partialController.enqueue(parsed.data as TOutput);
                   } catch {
-                    // stream already closed — ignore
+                    // stream already closed - ignore
                   }
                 }
               } catch {
-                // incomplete JSON — not yet parseable, skip
+                // incomplete JSON - not yet parseable, skip
               }
             }
           }
@@ -350,7 +350,7 @@ async function runStreamLoop<TDeps, TOutput>(
       }
 
       // ---------------------------------------------------------------------------
-      // Check for final_result (or final_result_N) tool result — tool mode
+      // Check for final_result (or final_result_N) tool result - tool mode
       // ---------------------------------------------------------------------------
       const finalResultEntry = toolResults.find(
         (r) => isFinalResultTool(r.toolName),
@@ -400,7 +400,7 @@ async function runStreamLoop<TDeps, TOutput>(
         }
       }
 
-      // No tool calls — text response
+      // No tool calls - text response
       if (toolCalls.length === 0) {
         if (schemas.length > 0) {
           messages.push(...newMessages);
@@ -418,7 +418,7 @@ async function runStreamLoop<TDeps, TOutput>(
         return;
       }
 
-      // Other tool calls — continue loop
+      // Other tool calls - continue loop
       messages.push(...newMessages);
     }
 

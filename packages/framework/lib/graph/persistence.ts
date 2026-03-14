@@ -1,5 +1,5 @@
 // ---------------------------------------------------------------------------
-// Graph FSM — state persistence
+// Graph FSM - state persistence
 // ---------------------------------------------------------------------------
 
 import type { NodeId } from "./types.ts";
@@ -28,7 +28,7 @@ export interface StatePersistence<TState> {
 // ---------------------------------------------------------------------------
 
 /**
- * In-memory persistence — useful for testing and single-process workflows.
+ * In-memory persistence - useful for testing and single-process workflows.
  * State is lost when the process exits.
  */
 export class MemoryStatePersistence<TState>
@@ -55,7 +55,7 @@ export class MemoryStatePersistence<TState>
 // ---------------------------------------------------------------------------
 
 /**
- * File-backed persistence — survives process restarts.
+ * File-backed persistence - survives process restarts.
  * State is JSON-serialized and stored in `{dir}/{graphId}.json`.
  *
  * Requires `--allow-read` and `--allow-write` Deno permissions for the directory.
@@ -91,7 +91,7 @@ export class FileStatePersistence<TState> implements StatePersistence<TState> {
       }
       return null;
     } catch {
-      // File not found or parse error — treat as no saved state
+      // File not found or parse error - treat as no saved state
       return null;
     }
   }

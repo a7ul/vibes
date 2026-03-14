@@ -72,7 +72,7 @@ Deno.test("outputTool - output tool result takes precedence over continued loopi
     execute: (_ctx, args) => Promise.resolve(args.value),
   });
 
-  // Model calls done tool — the agent should stop without calling regular tool
+  // Model calls done tool - the agent should stop without calling regular tool
   const responses = mockValues<DoGenerateResult>(
     toolCallResponse("done", { value: "finished" }),
   );
@@ -127,7 +127,7 @@ Deno.test("outputTool - result validator can reject then accept output tool resu
 
   const responses = mockValues<DoGenerateResult>(
     toolCallResponse("done", { value: "first" }),
-    // After rejection, agent retries — model provides second done call
+    // After rejection, agent retries - model provides second done call
     toolCallResponse("done", { value: "second" }),
   );
   const model = new MockLanguageModelV3({
@@ -141,7 +141,7 @@ Deno.test("outputTool - result validator can reject then accept output tool resu
     maxRetries: 2,
   });
 
-  // First validator call rejects, second accepts — run succeeds with "second"
+  // First validator call rejects, second accepts - run succeeds with "second"
   const result = await agent.run("get answer");
   assertEquals(result.output, "second");
   assertEquals(validatorCallCount, 2);

@@ -9,7 +9,7 @@
 import type { Tracer } from "@opentelemetry/api";
 
 // ---------------------------------------------------------------------------
-// TelemetrySettings — re-exported from AI SDK for public API surface
+// TelemetrySettings - re-exported from AI SDK for public API surface
 // ---------------------------------------------------------------------------
 
 /**
@@ -23,7 +23,7 @@ import type { Tracer } from "@opentelemetry/api";
 export type { TelemetrySettings } from "ai";
 
 // ---------------------------------------------------------------------------
-// InstrumentationOptions — passed to instrumentAgent()
+// InstrumentationOptions - passed to instrumentAgent()
 // ---------------------------------------------------------------------------
 
 /**

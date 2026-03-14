@@ -190,7 +190,7 @@ export function buildInitialMessages(
 }
 
 // ---------------------------------------------------------------------------
-// Tool resolution — called per-turn to support prepare() and dynamic toolsets
+// Tool resolution - called per-turn to support prepare() and dynamic toolsets
 // ---------------------------------------------------------------------------
 
 /**
@@ -372,7 +372,7 @@ export async function runValidators<TDeps, TOutput>(
 }
 
 // ---------------------------------------------------------------------------
-// Nudge helpers — push a retry user message and throw if retries exhausted
+// Nudge helpers - push a retry user message and throw if retries exhausted
 // ---------------------------------------------------------------------------
 
 export function nudgeForFinalResult<TDeps>(
@@ -406,7 +406,7 @@ export function nudgeWithValidationError<TDeps>(
 }
 
 // ---------------------------------------------------------------------------
-// Pre-turn setup helper — runs limits check, resolves tools, applies processors
+// Pre-turn setup helper - runs limits check, resolves tools, applies processors
 // ---------------------------------------------------------------------------
 
 export interface TurnSetup<TDeps> {
@@ -643,7 +643,7 @@ export function buildDeferredAwareToolMap<TDeps>(
           argsRecord,
         );
         if (!needsApproval) {
-          // Dynamic predicate returned false — run original execute
+          // Dynamic predicate returned false - run original execute
           return t.execute(execCtx, args);
         }
         // Record this call; toolCallId will be filled in by correlateApprovalIds
@@ -652,7 +652,7 @@ export function buildDeferredAwareToolMap<TDeps>(
           toolName: t.name,
           args: argsRecord,
         });
-        // Placeholder result — discarded when we throw ApprovalRequiredError
+        // Placeholder result - discarded when we throw ApprovalRequiredError
         return `__approval_required__`;
       },
     };
@@ -795,7 +795,7 @@ export async function buildResumeToolMessage<TDeps>(
  * When the AI SDK executes tools and encounters a deferred (approval-required)
  * tool, it records a placeholder tool-result in the response messages. For the
  * resume state we only want to store the conversation up to the assistant's
- * tool-call message — NOT the placeholder results (which will be replaced by
+ * tool-call message - NOT the placeholder results (which will be replaced by
  * the approved results when the run is resumed).
  *
  * @param responseMessages - Messages from `response.response.messages`.

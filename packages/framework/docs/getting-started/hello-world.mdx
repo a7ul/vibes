@@ -3,7 +3,7 @@ title: "Hello World"
 description: "Build your first AI agent in 5 minutes. Start simple, add tools, structured output, and tests."
 ---
 
-In this tutorial you will build a weather agent from scratch. You will start with a bare agent, add a tool, add structured output, and write a test — all in one progressive flow. By the end, you will have a fully tested, type-safe agent.
+In this tutorial you will build a weather agent from scratch. You will start with a bare agent, add a tool, add structured output, and write a test - all in one progressive flow. By the end, you will have a fully tested, type-safe agent.
 
 ## Prerequisites
 
@@ -70,7 +70,7 @@ console.log(result.output);
 // "The weather in Tokyo is currently 22°C and sunny."
 ```
 
-`tool()` creates a type-safe tool with Zod parameter validation. The agent automatically calls tools when relevant. The `_ctx` parameter is the `RunContext` — we will use it later for dependency injection.
+`tool()` creates a type-safe tool with Zod parameter validation. The agent automatically calls tools when relevant. The `_ctx` parameter is the `RunContext` - we will use it later for dependency injection.
 
 <Tip>
   The tool's `description` helps the model decide when to call it. Be specific!
@@ -182,7 +182,7 @@ Run the test:
 deno test agent_test.ts
 ```
 
-`TestModel` simulates model responses without API calls. `agent.override()` creates a copy of the agent with the test model — the original agent is unchanged (immutable). `setAllowModelRequests(false)` blocks any accidental real API calls in your test suite.
+`TestModel` simulates model responses without API calls. `agent.override()` creates a copy of the agent with the test model - the original agent is unchanged (immutable). `setAllowModelRequests(false)` blocks any accidental real API calls in your test suite.
 
 </Step>
 

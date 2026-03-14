@@ -28,7 +28,7 @@ export type SystemPromptFn<TDeps> = (
   ctx: RunContext<TDeps>,
 ) => string | Promise<string>;
 
-/** Alias for the instructions field — same signature as systemPrompt. */
+/** Alias for the instructions field - same signature as systemPrompt. */
 export type InstructionsFn<TDeps> = SystemPromptFn<TDeps>;
 
 /**
@@ -46,12 +46,12 @@ export interface AgentOptions<TDeps, TOutput> {
   name?: string;
   /** Vercel AI SDK model instance (e.g. anthropic("claude-..."), openai("gpt-...")) */
   model: LanguageModel;
-  /** System prompt — a static string or a dynamic function. */
+  /** System prompt - a static string or a dynamic function. */
   systemPrompt?: string | SystemPromptFn<TDeps>;
   /**
    * Instructions injected each turn as part of the system prompt but NOT
    * recorded in `result.messages` / `result.newMessages`. Same signature as
-   * `systemPrompt`. Equivalent to pydantic-ai's `instructions`.
+   * `systemPrompt`. Equivalent to Pydantic AI's `instructions`.
    */
   instructions?: string | InstructionsFn<TDeps>;
   /** Tools available to the model. */
@@ -125,7 +125,7 @@ export interface RunOptions<TDeps> {
   endStrategy?: EndStrategy;
   /**
    * Deferred tool results to inject when resuming a paused run.
-   * Normally not set directly — use `agent.resume()` instead.
+   * Normally not set directly - use `agent.resume()` instead.
    */
   deferredResults?: DeferredToolResults;
   /**
@@ -357,7 +357,7 @@ export class Agent<TDeps = undefined, TOutput = string> {
   /**
    * Returns a scoped runner that overrides specific agent settings for a
    * single `run()` or `stream()` call. Does not mutate the original agent.
-   * Critical for test patterns — override runs bypass the
+   * Critical for test patterns - override runs bypass the
    * `setAllowModelRequests(false)` guard.
    *
    * @example

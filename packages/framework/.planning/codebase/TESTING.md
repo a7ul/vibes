@@ -6,7 +6,7 @@
 
 **Runner:**
 - Deno test runner (built-in)
-- Config: `deno.json` — task `"test": "deno test -A"` (all permissions)
+- Config: `deno.json` - task `"test": "deno test -A"` (all permissions)
 
 **Assertion Library:**
 - `@std/assert` from JSR: `assertEquals`, `assertExists`, `assertRejects`, `assertThrows`, `assertInstanceOf`
@@ -25,7 +25,7 @@ deno test -A <file>       # Run single file
 - Not co-located with source files
 
 **Naming:**
-- `{subject}_test.ts` — maps to the feature being tested: `agent_test.ts`, `toolsets_test.ts`, `graph_test.ts`
+- `{subject}_test.ts` - maps to the feature being tested: `agent_test.ts`, `toolsets_test.ts`, `graph_test.ts`
 - Shared helpers in `tests/_helpers.ts` (underscore prefix = internal)
 
 **Structure:**
@@ -52,7 +52,7 @@ tests/
 
 **Suite Organization:**
 ```typescript
-// No describe() blocks — tests use flat Deno.test() with descriptive names
+// No describe() blocks - tests use flat Deno.test() with descriptive names
 Deno.test("Agent - basic text run", async () => { ... });
 Deno.test("Agent - structured output with Zod schema", async () => { ... });
 Deno.test("Agent - tool with deps injection", async () => { ... });
@@ -64,7 +64,7 @@ Name format: `"ClassName/Feature - scenario description"` e.g.:
 - `"FunctionToolset - exposes tools to agent"`
 - `"CombinedToolset - last toolset wins on name conflict"`
 
-**No `beforeEach`/`afterEach`** — each test is fully self-contained.
+**No `beforeEach`/`afterEach`** - each test is fully self-contained.
 
 **State isolation pattern:**
 ```typescript
@@ -79,7 +79,7 @@ function withModelRequestsEnabled<T>(fn: () => Promise<T>): Promise<T> {
 
 **Framework:** `ai/test` from the Vercel AI SDK provides `MockLanguageModelV3` and `mockValues`.
 
-**Primary mocking pattern — `MockLanguageModelV3` with helper factories:**
+**Primary mocking pattern - `MockLanguageModelV3` with helper factories:**
 ```typescript
 import { MockLanguageModelV3, mockValues } from "ai/test";
 import { textResponse, toolCallResponse } from "./_helpers.ts";
@@ -138,7 +138,7 @@ const { result, messages } = await captureRunMessages(() =>
 const systemMessage = messages[0].find((m) => m.role === "system");
 ```
 
-**`TestModel` — schema-aware auto-responder:**
+**`TestModel` - schema-aware auto-responder:**
 ```typescript
 // Defined in lib/testing/test_model.ts, exported from mod.ts
 const model = new TestModel();                    // calls all tools then returns text
@@ -151,7 +151,7 @@ const model = createTestModel({ outputSchema: OutputSchema }); // use Zod for va
 - Turn 1 (`callTools: true`): calls every non-`final_result` tool once with schema-valid args
 - Turn 2 (or turn 1 when `callTools: false`): calls `final_result` with schema-valid data, or returns text
 
-**`FunctionModel` — turn-by-turn function control:**
+**`FunctionModel` - turn-by-turn function control:**
 ```typescript
 // Defined in lib/testing/function_model.ts, exported from mod.ts
 const model = new FunctionModel(({ messages, tools, turn }) => {
@@ -182,7 +182,7 @@ setAllowModelRequests(false);
 
 ## Fixtures and Factories
 
-**Inline test data — no separate fixture files:**
+**Inline test data - no separate fixture files:**
 ```typescript
 // Deps are typed inline per test
 type Deps = { greeting: string };
@@ -211,7 +211,7 @@ function makeTool(name: string) {
 
 ## Coverage
 
-**Requirements:** Not enforced — no coverage config detected.
+**Requirements:** Not enforced - no coverage config detected.
 
 **View Coverage:**
 ```bash
@@ -223,16 +223,16 @@ deno coverage cov_profile
 
 **Unit Tests (dominant pattern):**
 - Each test file maps to one module or feature
-- Tests are isolated — no shared setup across tests
+- Tests are isolated - no shared setup across tests
 - Mock all I/O (model calls, deps) via injection
 
 **Integration Tests:**
 - Tests that exercise multiple layers together (agent + tool + toolset) in the same test
 - `agent_test.ts`, `toolsets_test.ts`, `deferred_tools_test.ts` are integration-style
-- No separate integration test directory — mixed with unit tests
+- No separate integration test directory - mixed with unit tests
 
 **E2E Tests:**
-- Not present — all tests use mock models, no real API calls
+- Not present - all tests use mock models, no real API calls
 
 ## Common Patterns
 

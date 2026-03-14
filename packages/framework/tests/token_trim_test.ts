@@ -45,8 +45,8 @@ Deno.test("tokenTrimHistoryProcessor - always preserves system messages", async 
   const processor = tokenTrimHistoryProcessor(5, charCounter);
   const messages: ModelMessage[] = [
     systemMsg("sys"),
-    userMsg("removed"), // 7 chars — won't fit
-    assistantMsg("hi"), // 2 chars — fits
+    userMsg("removed"), // 7 chars - won't fit
+    assistantMsg("hi"), // 2 chars - fits
   ];
   const result = await Promise.resolve(processor(messages, {} as never));
   assertEquals(result, [systemMsg("sys"), assistantMsg("hi")]);
@@ -91,8 +91,8 @@ Deno.test("tokenTrimHistoryProcessor - multiple system messages all preserved", 
   const messages: ModelMessage[] = [
     systemMsg("aa"),
     systemMsg("bb"),
-    userMsg("removed!!!"), // 10 chars — won't fit in remaining 6
-    userMsg("123456"), // 6 chars — fits
+    userMsg("removed!!!"), // 10 chars - won't fit in remaining 6
+    userMsg("123456"), // 6 chars - fits
   ];
   const result = await Promise.resolve(processor(messages, {} as never));
   assertEquals(result, [systemMsg("aa"), systemMsg("bb"), userMsg("123456")]);

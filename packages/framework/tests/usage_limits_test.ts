@@ -11,7 +11,7 @@ import {
 import { z } from "zod";
 
 Deno.test("UsageLimits - maxRequests=1 throws on second turn within a run", async () => {
-  // Run with maxRequests:1 — after 1 model call, the next turn's pre-check should throw
+  // Run with maxRequests:1 - after 1 model call, the next turn's pre-check should throw
   const Schema = z.object({ answer: z.string() });
   // Model never returns final_result, forcing multiple turns
   const model = new MockLanguageModelV3({

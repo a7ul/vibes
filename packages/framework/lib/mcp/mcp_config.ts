@@ -67,7 +67,7 @@ export async function loadMCPConfig(
 
 /**
  * Create `MCPClient` instances from an array of `MCPServerConfig` objects.
- * Does not connect — callers must call `connect()` on each client.
+ * Does not connect - callers must call `connect()` on each client.
  */
 export function createClientsFromConfig(
   configs: MCPServerConfig[],
@@ -150,7 +150,7 @@ function validateConfigs(items: unknown[]): MCPServerConfig[] {
       throw new Error(
         `MCP config[${idx}]: unknown type "${
           obj["type"]
-        }" — expected "stdio" or "http"`,
+        }" - expected "stdio" or "http"`,
       );
     }
     if (obj["type"] === "stdio" && typeof obj["command"] !== "string") {

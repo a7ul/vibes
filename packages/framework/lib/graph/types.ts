@@ -1,13 +1,13 @@
 // ---------------------------------------------------------------------------
-// Graph FSM — core types
+// Graph FSM - core types
 // ---------------------------------------------------------------------------
 
 export type NodeId = string;
 
 /**
  * The result of running a node:
- * - `{ kind: 'next', nodeId, state }` — transition to another node with new state
- * - `{ kind: 'output', output }` — graph is done, emit final output
+ * - `{ kind: 'next', nodeId, state }` - transition to another node with new state
+ * - `{ kind: 'output', output }` - graph is done, emit final output
  */
 export type NodeResult<TState, TOutput> =
   | { readonly kind: "next"; readonly nodeId: NodeId; readonly state: TState }

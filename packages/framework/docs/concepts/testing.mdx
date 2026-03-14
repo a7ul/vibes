@@ -1,6 +1,6 @@
 ---
 title: Testing
-description: Fast, deterministic agent tests with TestModel, FunctionModel, and captureRunMessages — no real API calls required.
+description: Fast, deterministic agent tests with TestModel, FunctionModel, and captureRunMessages - no real API calls required.
 ---
 
 Testing agents correctly means running them without real model API calls, in a way that's fast and deterministic. Vibes provides two main options: `TestModel` auto-generates plausible tool calls and a final response on every run; `FunctionModel` gives you full per-turn control so you can simulate exact model behavior. Both integrate with `agent.override({ model })` to drop in a test model without changing your agent definition.
@@ -12,12 +12,12 @@ Call `setAllowModelRequests(false)` once at the top of your test file to raise a
 ```typescript
 import { setAllowModelRequests } from "@vibes/framework/testing";
 
-// At the top of your test file — prevents any real model call
+// At the top of your test file - prevents any real model call
 setAllowModelRequests(false);
 ```
 
 <Warning>
-`setAllowModelRequests(false)` is module-level global state. Only call it once at the top of a test file setup block. `agent.override({ model })` bypasses this guard automatically — test models always work even when real calls are blocked.
+`setAllowModelRequests(false)` is module-level global state. Only call it once at the top of a test file setup block. `agent.override({ model })` bypasses this guard automatically - test models always work even when real calls are blocked.
 </Warning>
 
 ## TestModel
@@ -62,11 +62,11 @@ const typedResult = await agent.override({ model: typedModel }).run("Hello");
 |--------|------|---------|-------------|
 | `callTools` | `boolean` | `true` | Auto-generate tool calls on the first turn before returning final result |
 | `text` | `string` | `"test response"` | Text returned when there is no output schema |
-| `outputSchema` | Zod schema | — | When provided, generates schema-valid structured output |
+| `outputSchema` | Zod schema | - | When provided, generates schema-valid structured output |
 
 `createTestModel({ outputSchema })` is a convenience factory equivalent to `new TestModel({ outputSchema })`.
 
-## FunctionModel — Per-Turn Control
+## FunctionModel - Per-Turn Control
 
 When you need precise control over what the model returns on each turn, use `FunctionModel`. Its constructor takes a function that receives `{ messages, tools, turn }` and returns a `ModelResponse`.
 
@@ -130,12 +130,12 @@ console.log(result.output);
 ```
 
 <Warning>
-`captureRunMessages` is not safe for concurrent agent runs — it uses module-level state that is reset after each call. Use it for sequential assertions only. Do not run multiple agents in parallel inside the same `captureRunMessages` callback.
+`captureRunMessages` is not safe for concurrent agent runs - it uses module-level state that is reset after each call. Use it for sequential assertions only. Do not run multiple agents in parallel inside the same `captureRunMessages` callback.
 </Warning>
 
 ## agent.override()
 
-`agent.override({ model })` returns a runner object — it is **not** an `Agent` instance. The runner exposes the same three execution methods:
+`agent.override({ model })` returns a runner object - it is **not** an `Agent` instance. The runner exposes the same three execution methods:
 
 ```typescript
 const runner = agent.override({ model });
@@ -147,7 +147,7 @@ for await (const event of runner.runStreamEvents("Hello")) { ... }
 ```
 
 <Note>
-`agent.override()` returns `{ run, stream, runStreamEvents }` — not an `Agent`. You cannot pass the override result where an `Agent` is expected, and it cannot be stored in a variable typed as `Agent`.
+`agent.override()` returns `{ run, stream, runStreamEvents }` - not an `Agent`. You cannot pass the override result where an `Agent` is expected, and it cannot be stored in a variable typed as `Agent`.
 </Note>
 
 The `override` call bypasses the `setAllowModelRequests(false)` guard automatically, so your test models always work even when real API calls are blocked.
@@ -156,7 +156,7 @@ The `override` call bypasses the `setAllowModelRequests(false)` guard automatica
 
 | Symbol | Signature | Description |
 |--------|-----------|-------------|
-| `setAllowModelRequests` | `(allow: boolean) => void` | Module-level guard — throws if a real model call is attempted when `false` |
+| `setAllowModelRequests` | `(allow: boolean) => void` | Module-level guard - throws if a real model call is attempted when `false` |
 | `TestModel` | `new TestModel(options?)` | Auto-generates tool calls and final result; use for most agent tests |
 | `createTestModel` | `({ outputSchema }) => TestModel` | Convenience factory for typed output tests |
 | `FunctionModel` | `new FunctionModel(fn)` | Per-turn model control; `fn` receives `{ messages, tools, turn }` |

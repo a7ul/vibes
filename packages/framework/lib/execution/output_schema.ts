@@ -69,7 +69,7 @@ export function isUnionSchema(
  * - Single schema: registers `"final_result"`.
  * - Array of schemas: registers `"final_result_0"`, `"final_result_1"`, etc.
  *
- * Mutates `toolMap` in place (the caller owns the object — this is an
+ * Mutates `toolMap` in place (the caller owns the object - this is an
  * intentional write to a freshly constructed map).
  */
 export function registerOutputTools(

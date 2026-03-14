@@ -3,7 +3,7 @@ title: Models
 description: Vibes uses the Vercel AI SDK model abstraction, accepting any LanguageModel-compatible provider. Swap models at construction time or override per run.
 ---
 
-Vibes accepts any [Vercel AI SDK](https://sdk.vercel.ai) `LanguageModel` instance as its `model` option. This means every provider that ships a Vercel AI SDK adapter — Anthropic, OpenAI, Google, Groq, Mistral, Ollama, and custom OpenAI-compatible endpoints — works with Vibes out of the box. The model is passed at agent construction and can be overridden per run.
+Vibes accepts any [Vercel AI SDK](https://sdk.vercel.ai) `LanguageModel` instance as its `model` option. This means every provider that ships a Vercel AI SDK adapter - Anthropic, OpenAI, Google, Groq, Mistral, Ollama, and custom OpenAI-compatible endpoints - works with Vibes out of the box. The model is passed at agent construction and can be overridden per run.
 
 For installation and initial setup, see [Getting Started](/getting-started/install).
 
@@ -131,7 +131,7 @@ npm install ollama-ai-provider
 ```typescript
 import { Agent } from "@vibes/framework";
 import { ollama } from "ollama-ai-provider";
-// No API key required — connects to your local Ollama server
+// No API key required - connects to your local Ollama server
 
 const agent = new Agent({
   model: ollama("llama3.2"),
@@ -185,7 +185,7 @@ const agent = new Agent({
 
 ## Overriding the Model Per Run
 
-Use `agent.override({ model })` to swap the model for a single run without modifying the agent. This is useful for routing different prompts to different models — for example, a cheaper model for classification and an expensive model for generation:
+Use `agent.override({ model })` to swap the model for a single run without modifying the agent. This is useful for routing different prompts to different models - for example, a cheaper model for classification and an expensive model for generation:
 
 ```typescript
 const cheapModel = groq("llama-3.3-70b-versatile");

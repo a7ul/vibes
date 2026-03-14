@@ -3,7 +3,7 @@ title: Agents
 description: The Agent class is the central abstraction in Vibes. It wraps the Vercel AI SDK model loop, manages tool execution, and delivers structured output.
 ---
 
-The `Agent` class is the primary way you build an AI agent in Vibes. It wraps the Vercel AI SDK's `generateText` / `streamText` loop, manages multi-turn tool execution, injects dependencies, and validates structured output — all in a single cohesive interface.
+The `Agent` class is the primary way you build an AI agent in Vibes. It wraps the Vercel AI SDK's `generateText` / `streamText` loop, manages multi-turn tool execution, injects dependencies, and validates structured output - all in a single cohesive interface.
 
 An agent is typed over its dependencies (`TDeps`) and output (`TOutput`), making it fully type-safe end to end.
 
@@ -54,8 +54,8 @@ console.log(result.output);
 
 `Agent<TDeps, TOutput>` accepts two type parameters:
 
-- **`TDeps`** — the shape of the dependencies object injected at run time. Defaults to `undefined` (no deps).
-- **`TOutput`** — the output type. Defaults to `string`. Specify this when using `outputSchema` for structured output.
+- **`TDeps`** - the shape of the dependencies object injected at run time. Defaults to `undefined` (no deps).
+- **`TOutput`** - the output type. Defaults to `string`. Specify this when using `outputSchema` for structured output.
 
 ```typescript
 type Deps = { db: Database };
@@ -78,33 +78,33 @@ All options are passed to `new Agent(opts: AgentOptions<TDeps, TOutput>)`.
 | Field | Type | Default | Description |
 |-------|------|---------|-------------|
 | `model` | `LanguageModel` | required | Vercel AI SDK model instance (e.g. `anthropic("claude-sonnet-4-6")`) |
-| `name` | `string?` | — | Human-readable agent name |
-| `systemPrompt` | `string \| (ctx) => string` | — | Base system prompt, static or dynamic |
-| `instructions` | `string \| (ctx) => string` | — | Per-run additions appended after `systemPrompt`. Not recorded in `result.messages` |
+| `name` | `string?` | - | Human-readable agent name |
+| `systemPrompt` | `string \| (ctx) => string` | - | Base system prompt, static or dynamic |
+| `instructions` | `string \| (ctx) => string` | - | Per-run additions appended after `systemPrompt`. Not recorded in `result.messages` |
 | `tools` | `ToolDefinition<TDeps>[]` | `[]` | Static tools always available to the model |
 | `toolsets` | `Toolset<TDeps>[]` | `[]` | Dynamic per-turn tool groups |
-| `outputSchema` | `ZodType \| ZodType[]` | — | Zod schema for structured output |
+| `outputSchema` | `ZodType \| ZodType[]` | - | Zod schema for structured output |
 | `outputMode` | `'tool' \| 'native' \| 'prompted'` | `'tool'` | How structured output is requested |
 | `outputTemplate` | `boolean` | `true` | Whether to inject the schema into the system prompt |
-| `resultValidators` | `ResultValidator<TDeps, TOutput>[]` | `[]` | Post-parse validators — throw to reject and retry |
+| `resultValidators` | `ResultValidator<TDeps, TOutput>[]` | `[]` | Post-parse validators - throw to reject and retry |
 | `maxRetries` | `number` | `3` | Max validation retries before `MaxRetriesError` |
 | `maxTurns` | `number` | `10` | Max tool-call round trips before `MaxTurnsError` |
-| `usageLimits` | `UsageLimits?` | — | Cap cumulative token or request usage |
+| `usageLimits` | `UsageLimits?` | - | Cap cumulative token or request usage |
 | `historyProcessors` | `HistoryProcessor<TDeps>[]` | `[]` | Per-turn message transforms (trim, summarize, filter) |
-| `modelSettings` | `ModelSettings?` | — | Temperature, maxTokens, topP, and other model parameters |
+| `modelSettings` | `ModelSettings?` | - | Temperature, maxTokens, topP, and other model parameters |
 | `endStrategy` | `'early' \| 'exhaustive'` | `'early'` | When to stop after receiving `final_result` |
 | `maxConcurrency` | `number?` | unlimited | Max concurrent tool executions per turn |
-| `telemetry` | `TelemetrySettings?` | — | OpenTelemetry settings passed to the AI SDK |
+| `telemetry` | `TelemetrySettings?` | - | OpenTelemetry settings passed to the AI SDK |
 
 ## Running an Agent
 
 Vibes provides three run methods depending on how you want to consume the output:
 
 ```typescript
-// Awaitable — returns RunResult<TOutput> when the run completes
+// Awaitable - returns RunResult<TOutput> when the run completes
 const result = await agent.run("What is 2 + 2?");
 
-// Streaming — returns StreamResult<TOutput> immediately
+// Streaming - returns StreamResult<TOutput> immediately
 // Consume textStream, then await output / messages / usage
 const stream = agent.stream("Tell me a story.");
 for await (const chunk of stream.textStream) {
@@ -112,7 +112,7 @@ for await (const chunk of stream.textStream) {
 }
 const output = await stream.output;
 
-// Event stream — returns AsyncIterable<AgentStreamEvent<TOutput>>
+// Event stream - returns AsyncIterable<AgentStreamEvent<TOutput>>
 // Full visibility into each turn, tool call, and text delta
 for await (const event of agent.runStreamEvents("What is 2 + 2?")) {
   // switch on event.kind

@@ -3,7 +3,7 @@ title: "Vercel AI UI"
 description: "Stream Vibes agent output to React frontends using Vercel AI SDK's useChat and useCompletion hooks."
 ---
 
-[Vercel AI UI](https://sdk.vercel.ai/docs/ai-sdk-ui) provides React hooks — `useChat` and `useCompletion` — that handle streaming text responses, message history, and loading states out of the box. There is no dedicated Vibes framework class for this integration. The pattern is straightforward: run your Vibes agent with `agent.stream()`, pipe the output through `toDataStreamResponse()` from the `ai` package, and the Vercel AI hooks connect to it automatically.
+[Vercel AI UI](https://sdk.vercel.ai/docs/ai-sdk-ui) provides React hooks - `useChat` and `useCompletion` - that handle streaming text responses, message history, and loading states out of the box. There is no dedicated Vibes framework class for this integration. The pattern is straightforward: run your Vibes agent with `agent.stream()`, pipe the output through `toDataStreamResponse()` from the `ai` package, and the Vercel AI hooks connect to it automatically.
 
 ## How Streaming Works
 
@@ -73,7 +73,7 @@ Deno.serve(async (req: Request) => {
 ```
 
 <Info>
-The `ai` package (v6) is already a dependency in `deno.json` — no separate install is needed for Deno projects. For Next.js, install with `npm install ai`.
+The `ai` package (v6) is already a dependency in `deno.json` - no separate install is needed for Deno projects. For Next.js, install with `npm install ai`.
 </Info>
 
 ## React Frontend
@@ -118,7 +118,7 @@ export function Chat() {
 
 ### useCompletion
 
-`useCompletion` is simpler — designed for single-turn completions without conversation history. Use this for standalone prompts like document summarization or code generation forms.
+`useCompletion` is simpler - designed for single-turn completions without conversation history. Use this for standalone prompts like document summarization or code generation forms.
 
 ```typescript
 "use client";
@@ -154,7 +154,7 @@ export function Summarizer() {
 }
 ```
 
-The API route for `useCompletion` is similar — just use a `prompt` field instead of `messages`:
+The API route for `useCompletion` is similar - just use a `prompt` field instead of `messages`:
 
 ```typescript
 // app/api/complete/route.ts
@@ -175,7 +175,7 @@ export async function POST(req: Request) {
 If your agent uses `outputSchema` (structured JSON output), use `result.partialOutput` instead of `result.textStream`. The `partialOutput` stream emits incremental JSON chunks as the schema is filled in.
 
 ```typescript
-// app/api/analyze/route.ts — structured output with useCompletion
+// app/api/analyze/route.ts - structured output with useCompletion
 import { agent } from "@/lib/agent";  // agent has outputSchema: z.object({ ... })
 import { toDataStreamResponse } from "ai";
 
@@ -195,7 +195,7 @@ export async function POST(req: Request) {
 A minimal full-stack chat application:
 
 ```typescript
-// lib/agent.ts — shared agent definition
+// lib/agent.ts - shared agent definition
 import { Agent } from "npm:@vibes/framework";
 import { anthropic } from "npm:@ai-sdk/anthropic";
 
@@ -206,7 +206,7 @@ export const agent = new Agent({
 ```
 
 ```typescript
-// app/api/chat/route.ts — Next.js API route
+// app/api/chat/route.ts - Next.js API route
 import { agent } from "@/lib/agent";
 import { toDataStreamResponse } from "ai";
 
@@ -223,7 +223,7 @@ export async function POST(req: Request) {
 ```
 
 ```typescript
-// app/page.tsx — React component
+// app/page.tsx - React component
 "use client";
 import { useChat } from "ai/react";
 

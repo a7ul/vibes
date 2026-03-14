@@ -1,5 +1,5 @@
 /**
- * TestModel — a schema-aware mock language model for testing.
+ * TestModel - a schema-aware mock language model for testing.
  *
  * Automatically generates valid responses based on the tools and output schema
  * provided in each `doGenerate` call:
@@ -158,7 +158,7 @@ function generateFromZodDef(zodType: ZodType): unknown {
       return "test";
     }
     case "optional": {
-      // Skip optional fields — return undefined so callers can omit them
+      // Skip optional fields - return undefined so callers can omit them
       return undefined;
     }
     case "nullable": {
@@ -400,7 +400,7 @@ export class TestModel {
 }
 
 // ---------------------------------------------------------------------------
-// createTestModel — convenience factory
+// createTestModel - convenience factory
 // ---------------------------------------------------------------------------
 
 /**
