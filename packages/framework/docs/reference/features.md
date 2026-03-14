@@ -108,7 +108,7 @@ framework. Use it as a backlog when deciding what to port next.
 | Streaming structured output | Partial validation as output streams | ✅     | `result.partialOutput` async iterable on `StreamResult`                |
 | Message serialization       | `ModelMessagesTypeAdapter`           | ✅     | `serializeMessages(msgs)` / `deserializeMessages(json)`                |
 | Disable schema prompt       | `template=False` on output marker    | ✅     | `outputTemplate: false` on `AgentOptions`                              |
-| `BinaryImage` output        | Generate images as output type       | ❌     | Not yet implemented as a dedicated output type                         |
+| `BinaryImage` output        | Generate images as output type       | ✅     | `outputSchema: BINARY_IMAGE_OUTPUT` — first tool result with `image/*` MIME type becomes the run output as `BinaryContent` |
 
 ---
 
@@ -178,7 +178,7 @@ framework. Use it as a backlog when deciding what to port next.
 | Graph state persistence    | `SimpleStatePersistence`, `FileStatePersistence`        | ✅     | `MemoryStatePersistence`, `FileStatePersistence` — pause/resume across restarts                                                                                              |
 | Graph visualization        | Mermaid diagram generation                              | ✅     | `toMermaid(graph, nodes)` returns Mermaid flowchart string                                                                                                                   |
 | `Graph.iter()` / `.next()` | Manual stepping through graph nodes                     | ✅     | `graph.runIter(state, startNode)` returns `GraphRun` with `.next()` method                                                                                                   |
-| A2A protocol               | `agent.to_a2a()` — expose agent as ASGI A2A server      | ❌     | Not implemented                                                                                                                                                              |
+| A2A protocol               | `agent.to_a2a()` — expose agent as ASGI A2A server      | ✅     | `new A2AAdapter(agent, opts)` — JSON-RPC handler with `tasks/send`, `tasks/get`, `tasks/cancel`, agent card at `/.well-known/agent.json`, `MemoryTaskStore` built-in        |
 
 ---
 
@@ -239,4 +239,4 @@ framework. Use it as a backlog when deciding what to port next.
 | Audio / video input  | Audio and video as tool parameters       | ✅     | `BinaryContent` with audio/video MIME types; `isAudioContent()` type guard |
 | Document input       | PDFs and documents as tool parameters    | ✅     | `BinaryContent` with `application/pdf` etc.; `isDocumentContent()` guard   |
 | `UploadedFile`       | File reference for provider file uploads | ✅     | `UploadedFile` type + `uploadedFileSchema` + `uploadedFileToToolResult()`  |
-| `BinaryImage` output | Agent returns a generated image          | ❌     | Not yet implemented as a dedicated output type                             |
+| `BinaryImage` output | Agent returns a generated image          | ✅     | `outputSchema: BINARY_IMAGE_OUTPUT` — agent returns `BinaryContent` when a tool produces an `image/*` result |
