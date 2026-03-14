@@ -3,8 +3,6 @@ title: "Agents"
 description: "Agent class, AgentOptions, run(), stream(), resume()"
 ---
 
-# Agents
-
 An `Agent` is the central object in Vibes. It holds a model, system prompts,
 tools, an optional output schema, and result validators. You call `.run()` or
 `.stream()` on it to execute a prompt.
@@ -26,12 +24,12 @@ const agent = new Agent({
 | Option                | Type                                 | Default  | Description                                                          |
 | --------------------- | ------------------------------------ | -------- | -------------------------------------------------------------------- |
 | `model`               | `LanguageModelV1`                    | required | Any Vercel AI SDK model                                              |
-| `name`                | `string`                             | —        | Human-readable label for the agent                                   |
-| `systemPrompt`        | `string \| string[]`                 | —        | Static system prompt(s), joined with `\n\n`                          |
-| `dynamicSystemPrompt` | `SystemPromptFn \| SystemPromptFn[]` | —        | Function(s) called at run time with [`RunContext`](../core/run-context) |
-| `tools`               | `ToolDefinition[]`                   | —        | Tools the model can call                                             |
-| `outputSchema`        | `ZodTypeAny`                         | —        | Zod schema for structured output                                     |
-| `resultValidators`    | `ResultValidator[]`                  | —        | Validators run after output is parsed                                |
+| `name`                | `string`                             | -        | Human-readable label for the agent                                   |
+| `systemPrompt`        | `string \| string[]`                 | -        | Static system prompt(s), joined with `\n\n`                          |
+| `dynamicSystemPrompt` | `SystemPromptFn \| SystemPromptFn[]` | -        | Function(s) called at run time with [`RunContext`](../core/run-context) |
+| `tools`               | `ToolDefinition[]`                   | -        | Tools the model can call                                             |
+| `outputSchema`        | `ZodTypeAny`                         | -        | Zod schema for structured output                                     |
+| `resultValidators`    | `ResultValidator[]`                  | -        | Validators run after output is parsed                                |
 | `maxRetries`          | `number`                             | `3`      | Max retries for validation failures                                  |
 | `maxTurns`            | `number`                             | `10`     | Max tool-call round trips per run                                    |
 
@@ -41,9 +39,9 @@ const agent = new Agent({
 class Agent<TDeps = undefined, TOutput = string>
 ```
 
-- **`TDeps`** — the type of dependencies injected at run time via `deps`.
+- **`TDeps`** - the type of dependencies injected at run time via `deps`.
   Defaults to `undefined` (no deps).
-- **`TOutput`** — the type of `result.output`. Defaults to `string`. Set by
+- **`TOutput`** - the type of `result.output`. Defaults to `string`. Set by
   providing an `outputSchema`.
 
 ```ts
@@ -147,7 +145,7 @@ const agent = new Agent({ model: openai("gpt-4o") });
 ```
 
 Pass model-specific options (temperature, max tokens, etc.) directly to the
-provider constructor — they are forwarded to the API automatically.
+provider constructor - they are forwarded to the API automatically.
 
 ## Multi-Turn Conversations
 
@@ -178,9 +176,9 @@ const agent = new Agent({ model: ..., maxTurns: 5 });
 Both configure the agent's system instructions, but they are evaluated
 differently:
 
-- `systemPrompt` — a static string (or array of strings). All strings are joined
+- `systemPrompt` - a static string (or array of strings). All strings are joined
   with `\n\n` before the run starts.
-- `instructions` — a dynamic function called with the `RunContext` on every run,
+- `instructions` - a dynamic function called with the `RunContext` on every run,
   **after** `systemPrompt` is resolved. Use it when instructions must reference
   run-time data.
 

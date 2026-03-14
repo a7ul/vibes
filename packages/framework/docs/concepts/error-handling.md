@@ -3,8 +3,6 @@ title: "Error Handling"
 description: "All error types and recovery patterns"
 ---
 
-# Error Handling
-
 Vibes raises specific error types for different failure modes. Handling them explicitly makes agents more robust.
 
 ## Error Types
@@ -59,14 +57,14 @@ try {
 ```
 
 **Prevention:**
-- Keep Zod schemas simple — deeply nested required fields fail more often
+- Keep Zod schemas simple - deeply nested required fields fail more often
 - Use `.describe()` on fields to guide the model
 - Make fields optional where possible
 - Check your result validators aren't too strict
 
 ### `ApprovalRequiredError`
 
-One or more tools require human approval before execution. This is thrown intentionally — it's not a failure.
+One or more tools require human approval before execution. This is thrown intentionally - it's not a failure.
 
 ```ts
 import { ApprovalRequiredError } from "@vibes/framework";
@@ -146,29 +144,29 @@ async function runAgent(prompt: string) {
     return await agent.run(prompt);
   } catch (err) {
     if (err instanceof ApprovalRequiredError) {
-      // Not a failure — needs human input
+      // Not a failure - needs human input
       return { status: "pending_approval", deferred: err.deferred };
     }
 
     if (err instanceof MaxTurnsError) {
-      // Agent got stuck — log and return graceful error
+      // Agent got stuck - log and return graceful error
       logger.warn("Agent exceeded max turns", { turns: err.turns, prompt });
       return { status: "error", message: "Request too complex. Please simplify." };
     }
 
     if (err instanceof MaxRetriesError) {
-      // Output validation failed — usually a model or schema issue
+      // Output validation failed - usually a model or schema issue
       logger.error("Output validation failed", { error: err.lastError });
       return { status: "error", message: "Unable to produce valid response." };
     }
 
     if (err instanceof UsageLimitExceededError) {
-      // Budget exceeded — return partial result or error
+      // Budget exceeded - return partial result or error
       logger.warn("Usage limit exceeded", { usage: err.usage });
       return { status: "error", message: "Request too expensive." };
     }
 
-    // Unknown error — re-throw for caller to handle
+    // Unknown error - re-throw for caller to handle
     throw err;
   }
 }
@@ -184,7 +182,7 @@ const searchTool = tool({
   execute: async (_ctx, { query }) => {
     const response = await fetch(`https://api.search.com?q=${query}`);
     if (!response.ok) {
-      // This error is sent to the model — it can retry or use a different tool
+      // This error is sent to the model - it can retry or use a different tool
       throw new Error(`Search failed: ${response.status} ${response.statusText}`);
     }
     return await response.json();
@@ -197,7 +195,7 @@ If a tool exhausts its `maxRetries`, the error is propagated to the model as a t
 
 ## Provider Errors
 
-Network failures, rate limits, and API errors from the LLM provider are not wrapped by Vibes — they propagate as-is from the Vercel AI SDK. Handle them in your calling code:
+Network failures, rate limits, and API errors from the LLM provider are not wrapped by Vibes - they propagate as-is from the Vercel AI SDK. Handle them in your calling code:
 
 ```ts
 import { APICallError } from "ai";
@@ -207,7 +205,7 @@ try {
 } catch (err) {
   if (err instanceof APICallError) {
     if (err.statusCode === 429) {
-      // Rate limited — back off and retry
+      // Rate limited - back off and retry
       await sleep(5000);
       return await agent.run(prompt);
     }
@@ -218,6 +216,6 @@ try {
 
 ## Next Steps
 
-- [Errors reference](../reference/core/errors) — complete API reference for all error types
-- [Usage Limits](../reference/advanced/usage-limits) — control costs with token and request budgets
-- [Deferred Tools](../reference/advanced/deferred-tools) — human-in-the-loop approval patterns
+- [Errors reference](../reference/core/errors) - complete API reference for all error types
+- [Usage Limits](../reference/advanced/usage-limits) - control costs with token and request budgets
+- [Deferred Tools](../reference/advanced/deferred-tools) - human-in-the-loop approval patterns

@@ -3,8 +3,6 @@ title: "Structured Output"
 description: "Return typed, Zod-validated JSON from your agent"
 ---
 
-# Structured Output
-
 By default, agents return a plain string. Providing an `outputSchema` tells the agent to return validated, typed JSON instead.
 
 > **Coming from pydantic-ai?** This is equivalent to pydantic-ai's `result_type`. Vibes uses Zod instead of Pydantic models.
@@ -39,7 +37,7 @@ console.log(result.output.languages);   // ["Japanese"]
 
 ## How It Works
 
-When you provide `outputSchema`, Vibes automatically injects a `final_result` tool. The model must call this tool to end the run — it cannot return a plain text answer.
+When you provide `outputSchema`, Vibes automatically injects a `final_result` tool. The model must call this tool to end the run - it cannot return a plain text answer.
 
 The `final_result` tool's parameters are derived from your Zod schema. The model fills in the fields, Zod validates the result, and you get a fully typed `result.output`.
 
@@ -73,7 +71,7 @@ const result = await agent.run("Tell me about Brazil.");
 
 result.output.capital;     // TypeScript knows this is string ✓
 result.output.population;  // TypeScript knows this is number ✓
-result.output.xyz;         // TypeScript error — field doesn't exist ✓
+result.output.xyz;         // TypeScript error - field doesn't exist ✓
 ```
 
 ## Validation and Retries
@@ -145,7 +143,7 @@ const agent = new Agent({
   resultValidators: [
     (_ctx, output) => {
       if (output.confidence < 0.5) {
-        throw new Error("Confidence too low — try a different approach");
+        throw new Error("Confidence too low - try a different approach");
       }
       return output;
     },
@@ -157,6 +155,6 @@ See [Result Validators](../reference/core/result-validators) for details.
 
 ## Next Steps
 
-- [Testing Your Agent](./testing.md) — test structured output without API calls
-- [Result Validators](../reference/core/result-validators) — post-process and validate output
-- [Streaming](../reference/core/streaming) — stream partial output as it arrives
+- [Testing Your Agent](./testing.md) - test structured output without API calls
+- [Result Validators](../reference/core/result-validators) - post-process and validate output
+- [Streaming](../reference/core/streaming) - stream partial output as it arrives

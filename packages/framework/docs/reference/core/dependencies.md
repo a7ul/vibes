@@ -3,9 +3,7 @@ title: "Dependencies"
 description: "Injecting runtime context into tools and prompts"
 ---
 
-# Dependencies
-
-Dependencies are runtime values you inject into an agent run — things like
+Dependencies are runtime values you inject into an agent run - things like
 database connections, API clients, user sessions, or configuration. They flow
 through the entire run and are accessible in tools, dynamic system prompts, and
 result validators.
@@ -42,7 +40,7 @@ const result = await agent.run("What are my recent orders?", {
 });
 ```
 
-A fresh `RunContext<Deps>` is created for each call — deps are never shared
+A fresh `RunContext<Deps>` is created for each call - deps are never shared
 across runs.
 
 ## Accessing Deps in Tools
@@ -96,7 +94,7 @@ const agent = new Agent<Deps, Output>({
 
 ## Agents Without Dependencies
 
-If you don't need deps, omit `TDeps` — it defaults to `undefined`:
+If you don't need deps, omit `TDeps` - it defaults to `undefined`:
 
 ```ts
 const agent = new Agent({ model: ..., systemPrompt: "Be helpful." });
@@ -105,7 +103,7 @@ const agent = new Agent({ model: ..., systemPrompt: "Be helpful." });
 const result = await agent.run("Hello.");
 ```
 
-Tools and prompts still receive a `RunContext<undefined>` — `ctx.deps` is
+Tools and prompts still receive a `RunContext<undefined>` - `ctx.deps` is
 `undefined`.
 
 ## Sharing Expensive Resources

@@ -3,8 +3,6 @@ title: "Tools"
 description: "tool(), plainTool(), outputTool(), fromSchema() factories"
 ---
 
-# Tools
-
 Tools give the model the ability to call functions during a run. Each tool has a
 name, a description the model uses to decide when to call it, a Zod parameter
 schema, and an execute function.
@@ -46,9 +44,9 @@ const search = tool({
 tool<TDeps, TParams>({ ... })
 ```
 
-- **`TDeps`** — type of `ctx.deps` inside `execute`. Must match the agent's
+- **`TDeps`** - type of `ctx.deps` inside `execute`. Must match the agent's
   `TDeps`.
-- **`TParams`** — inferred from `parameters`. `args` in `execute` is typed as
+- **`TParams`** - inferred from `parameters`. `args` in `execute` is typed as
   `z.infer<TParams>`.
 
 ```ts
@@ -84,7 +82,7 @@ The first argument to `execute` is a [`RunContext`](../core/run-context):
 execute: (async (ctx, args) => {
   console.log(ctx.deps); // your injected dependencies
   console.log(ctx.usage); // token usage so far
-  console.log(ctx.toolName); // "my_tool" — the current tool's name
+  console.log(ctx.toolName); // "my_tool" - the current tool's name
   console.log(ctx.runId); // unique ID for this run
   return "done";
 });
@@ -97,10 +95,10 @@ appended to the message history as a tool result, which the model sees on the
 next turn.
 
 ```ts
-// String — simplest case
+// String - simplest case
 execute: async (_ctx, { city }) => `${city}: 22°C`,
 
-// Object — structured data
+// Object - structured data
 execute: async (_ctx, { id }) => ({ id, name: "Alice", role: "admin" }),
 ```
 
@@ -123,7 +121,7 @@ const flakyApi = tool({
 });
 ```
 
-> Tool retries are transparent to the model — it only sees the final result or
+> Tool retries are transparent to the model - it only sees the final result or
 > error.
 
 ## Parameter Descriptions
@@ -164,7 +162,7 @@ const echo = tool({
 });
 ```
 
-## `plainTool` — Skipping the Context
+## `plainTool` - Skipping the Context
 
 When a tool needs no dependency injection at all, use `plainTool` for a cleaner
 signature without the unused `ctx` parameter:
@@ -180,7 +178,7 @@ const add = plainTool({
 });
 ```
 
-## `fromSchema` — Raw JSON Schema
+## `fromSchema` - Raw JSON Schema
 
 When integrating with external schema registries or OpenAPI specs, build a tool
 directly from a raw JSON Schema object instead of Zod:
@@ -200,7 +198,7 @@ const search = fromSchema({
 });
 ```
 
-## `outputTool` — Terminal Tools
+## `outputTool` - Terminal Tools
 
 An output tool ends the run immediately when the model calls it. Its return
 value becomes `result.output`. This is the manual equivalent of `outputSchema`.
@@ -224,7 +222,7 @@ const result = await agent.run("What is 2 + 2?");
 
 By default, when the model calls multiple tools in a single turn they execute
 concurrently. Set `sequential: true` to force a tool to acquire a run-level
-mutex — useful for tools that must not overlap with each other:
+mutex - useful for tools that must not overlap with each other:
 
 ```ts
 const writeFile = tool({
@@ -260,7 +258,7 @@ Pass a function for conditional approval:
 requiresApproval: (_ctx, args) => args.id.startsWith("prod_"),
 ```
 
-## `argsValidator` — Cross-Field Validation
+## `argsValidator` - Cross-Field Validation
 
 Zod validates each field in isolation. Use `argsValidator` for cross-field
 constraints that Zod alone cannot express. Throwing from `argsValidator`
@@ -283,7 +281,7 @@ const bookFlight = tool({
 });
 ```
 
-## `prepare` — Per-Turn Tool Modification
+## `prepare` - Per-Turn Tool Modification
 
 Called once per turn before tools are sent to the model. Return a modified tool
 definition to change its description or parameters dynamically, or return

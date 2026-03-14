@@ -3,15 +3,13 @@ title: "Errors"
 description: "All error types thrown by @vibes/framework"
 ---
 
-# Errors
-
 The framework throws two custom error types. Both extend `Error` and can be
 caught with `instanceof`.
 
 ## `MaxTurnsError`
 
 Thrown when a run exceeds `maxTurns` (default: `10`) without producing a final
-result. This usually means the model is looping — calling tools repeatedly
+result. This usually means the model is looping - calling tools repeatedly
 without converging on an answer.
 
 ```ts
@@ -64,9 +62,9 @@ try {
 
 **Constructor:** `new MaxRetriesError(retries: number, cause?: Error)`
 
-- `err.message` — includes the retry count and the last validation error
+- `err.message` - includes the retry count and the last validation error
   message.
-- `err.cause` — the last `Error` thrown by a result validator (if any).
+- `err.cause` - the last `Error` thrown by a result validator (if any).
 
 **Increase the limit** if your schema or validators are strict and the model
 needs more attempts:
@@ -80,7 +78,7 @@ const agent = new Agent({ model: ..., maxRetries: 5 });
 ## Model / Provider Errors
 
 Errors from the underlying AI SDK (network failures, API errors, rate limits)
-propagate directly — they are not wrapped. Catch them the same way:
+propagate directly - they are not wrapped. Catch them the same way:
 
 ```ts
 import { APICallError } from "ai";
@@ -106,13 +104,13 @@ async function safeRun(agent: Agent, prompt: string) {
     return await agent.run(prompt);
   } catch (err) {
     if (err instanceof MaxTurnsError) {
-      // Agent looped — simplify the prompt or increase maxTurns
+      // Agent looped - simplify the prompt or increase maxTurns
       throw new Error(
         "Agent could not complete the task within the turn limit",
       );
     }
     if (err instanceof MaxRetriesError) {
-      // Output never passed validation — relax validators or improve the prompt
+      // Output never passed validation - relax validators or improve the prompt
       throw new Error(`Validation failed: ${err.cause?.message}`);
     }
     // Rethrow unexpected errors (network, auth, etc.)

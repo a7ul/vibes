@@ -3,9 +3,7 @@ title: "Adding Tools"
 description: "Give your agent capabilities with type-safe tools"
 ---
 
-# Adding Tools
-
-Tools give agents the ability to take actions — search the web, call APIs, read files, query databases, or run any code you write.
+Tools give agents the ability to take actions - search the web, call APIs, read files, query databases, or run any code you write.
 
 > **Coming from pydantic-ai?** Vibes tools map directly to pydantic-ai's `@agent.tool` decorator pattern, but as plain objects using the `tool()` factory. Parameters use Zod instead of Pydantic.
 
@@ -29,10 +27,10 @@ const getWeather = tool({
 ```
 
 A tool has four parts:
-- **`name`** — how the model refers to the tool (snake_case recommended)
-- **`description`** — tells the model what the tool does and when to use it. Write it for the model, not for humans.
-- **`parameters`** — a Zod schema. The model must provide values matching this schema.
-- **`execute`** — your implementation. Receives `RunContext` and the validated args.
+- **`name`** - how the model refers to the tool (snake_case recommended)
+- **`description`** - tells the model what the tool does and when to use it. Write it for the model, not for humans.
+- **`parameters`** - a Zod schema. The model must provide values matching this schema.
+- **`execute`** - your implementation. Receives `RunContext` and the validated args.
 
 ## Register on an Agent
 
@@ -69,9 +67,9 @@ If the model calls multiple tools in one turn, they run **concurrently** by defa
 ## Using RunContext in Tools
 
 The first argument to `execute` is a [`RunContext`](../reference/core/run-context). It carries:
-- `ctx.deps` — your injected dependencies (database, config, etc.)
-- `ctx.usage` — token usage so far
-- `ctx.runId` — the unique ID for this run
+- `ctx.deps` - your injected dependencies (database, config, etc.)
+- `ctx.usage` - token usage so far
+- `ctx.runId` - the unique ID for this run
 
 ```ts
 type Deps = { db: Database };
@@ -148,13 +146,13 @@ const bookFlight = tool({
     }
   },
   execute: async (_ctx, args) => {
-    // argsValidator ran first — safe to proceed
+    // argsValidator ran first - safe to proceed
     return await flightApi.book(args);
   },
 });
 ```
 
-Throwing in `argsValidator` does NOT consume a retry — the error is sent back to the model as feedback to fix its arguments.
+Throwing in `argsValidator` does NOT consume a retry - the error is sent back to the model as feedback to fix its arguments.
 
 ## Sequential Tools
 
@@ -170,6 +168,6 @@ const writeToSharedState = tool({
 
 ## Next Steps
 
-- [Toolsets](../reference/core/toolsets) — composable, context-aware tool groups
-- [Structured Output](./structured-output.md) — get typed JSON from the agent
-- [Dependencies](../concepts/dependency-injection.md) — injecting databases, APIs, and config
+- [Toolsets](../reference/core/toolsets) - composable, context-aware tool groups
+- [Structured Output](./structured-output.md) - get typed JSON from the agent
+- [Dependencies](../concepts/dependency-injection.md) - injecting databases, APIs, and config

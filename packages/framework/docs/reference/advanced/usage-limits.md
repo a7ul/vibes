@@ -3,8 +3,6 @@ title: "Usage Limits"
 description: "Capping tokens and requests per run"
 ---
 
-# Usage Limits
-
 Usage limits let you cap how many tokens or model requests an agent can consume
 in a single run, throwing a `UsageLimitError` if the budget is exceeded.
 
@@ -45,10 +43,10 @@ Per-run limits override agent-level limits.
 
 | Option            | Type     | Default | Description                              |
 | ----------------- | -------- | ------- | ---------------------------------------- |
-| `maxRequests`     | `number` | —       | Max number of model requests (turns)     |
-| `maxInputTokens`  | `number` | —       | Max input tokens consumed cumulatively   |
-| `maxOutputTokens` | `number` | —       | Max output tokens generated cumulatively |
-| `maxTotalTokens`  | `number` | —       | Max combined input + output tokens       |
+| `maxRequests`     | `number` | -       | Max number of model requests (turns)     |
+| `maxInputTokens`  | `number` | -       | Max input tokens consumed cumulatively   |
+| `maxOutputTokens` | `number` | -       | Max output tokens generated cumulatively |
+| `maxTotalTokens`  | `number` | -       | Max combined input + output tokens       |
 
 All fields are optional. Omit any field to leave that dimension uncapped.
 
@@ -127,7 +125,7 @@ console.log(result.usage.totalTokens); // inputTokens + outputTokens
 
 - Limits are checked **before** each model request, not after. A run that ends
   exactly on a limit boundary succeeds.
-- `UsageLimitError` is a terminal error — the run is not retried. Catch it
+- `UsageLimitError` is a terminal error - the run is not retried. Catch it
   explicitly if you need a fallback.
 - For streaming, the error surfaces when you await `stream.output`,
   `stream.messages`, or `stream.usage`.

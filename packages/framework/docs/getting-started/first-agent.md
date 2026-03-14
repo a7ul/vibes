@@ -3,8 +3,6 @@ title: "Your First Agent"
 description: "Create and run your first agent in minutes"
 ---
 
-# Your First Agent
-
 This guide walks you through creating a basic agent, running it, and understanding what happens at each step.
 
 > **Coming from pydantic-ai?** The `Agent` class maps directly to pydantic-ai's `Agent`. `agent.run()` is equivalent to `agent.run_sync()`. The `RunResult` is equivalent to pydantic-ai's `RunResult`.
@@ -21,7 +19,7 @@ const agent = new Agent({
 });
 ```
 
-An `Agent` holds configuration — model, system prompt, tools, output schema. It has no mutable state; you can reuse it across many runs.
+An `Agent` holds configuration - model, system prompt, tools, output schema. It has no mutable state; you can reuse it across many runs.
 
 ## Run It
 
@@ -56,7 +54,7 @@ When you call `agent.run()`:
 5. **Result validators** run on the output (if any)
 6. **`RunResult`** is returned
 
-This loop is called the _agent loop_. The model drives it — Vibes just handles the plumbing.
+This loop is called the _agent loop_. The model drives it - Vibes just handles the plumbing.
 
 See [How Agents Work](../concepts/how-agents-work.md) for a deeper dive.
 
@@ -103,8 +101,8 @@ const agent = new Agent({
 class Agent<TDeps = undefined, TOutput = string>
 ```
 
-- **`TDeps`** — the type of `deps` passed at run time. Defaults to `undefined` (no deps needed).
-- **`TOutput`** — the type of `result.output`. Defaults to `string`. Override by providing an `outputSchema`.
+- **`TDeps`** - the type of `deps` passed at run time. Defaults to `undefined` (no deps needed).
+- **`TOutput`** - the type of `result.output`. Defaults to `string`. Override by providing an `outputSchema`.
 
 ```ts
 // No deps, string output (defaults)
@@ -122,6 +120,6 @@ const agent = new Agent<{ db: Database }, { answer: string }>({
 
 ## Next Steps
 
-- [Adding Tools](./adding-tools.md) — give the agent real capabilities
-- [Structured Output](./structured-output.md) — get typed JSON responses
-- [Testing Your Agent](./testing.md) — test without API calls
+- [Adding Tools](./adding-tools.md) - give the agent real capabilities
+- [Structured Output](./structured-output.md) - get typed JSON responses
+- [Testing Your Agent](./testing.md) - test without API calls

@@ -3,8 +3,6 @@ title: "Streaming"
 description: "textStream, partialOutput, and runStreamEvents()"
 ---
 
-# Streaming
-
 Call `.stream()` instead of `.run()` to receive text deltas as the model
 generates them. The response object exposes the text stream and separate
 promises for the final output, messages, and usage.
@@ -37,8 +35,8 @@ completes internally).
 ## Consuming the Stream
 
 You **must** consume `textStream` (or the internal stream will not complete).
-Awaiting only `output` without consuming `textStream` will still work — the
-framework drains the stream internally — but you won't see intermediate text.
+Awaiting only `output` without consuming `textStream` will still work - the
+framework drains the stream internally - but you won't see intermediate text.
 
 ```ts
 const stream = agent.stream("Summarise this article.");
@@ -131,7 +129,7 @@ try {
 
 ## `runStreamEvents()`
 
-`runStreamEvents()` gives you a typed async iterable of structured events —
+`runStreamEvents()` gives you a typed async iterable of structured events -
 richer than `textStream` alone. Use it when you need to observe tool calls, tool
 results, and run lifecycle events in addition to text.
 

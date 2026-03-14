@@ -3,10 +3,8 @@ title: "Toolsets"
 description: "Composable, context-aware tool groups"
 ---
 
-# Toolsets
-
 A `Toolset` is a composable, context-aware group of tools that is resolved per
-turn — letting you dynamically include or exclude tools based on the current run
+turn - letting you dynamically include or exclude tools based on the current run
 context.
 
 ## What is a Toolset?
@@ -228,9 +226,9 @@ const agent = new Agent<MyDeps>({ model, toolsets: [new DynamicToolset()] });
 
 ## Error Behavior
 
-- `FilteredToolset`: predicate errors propagate as unhandled rejections — guard
+- `FilteredToolset`: predicate errors propagate as unhandled rejections - guard
   your predicate.
 - `CombinedToolset`: if any member toolset's `tools()` throws, the entire
   combined call fails.
-- `PrefixedToolset`/`RenamedToolset`: purely synchronous transforms — no error
+- `PrefixedToolset`/`RenamedToolset`: purely synchronous transforms - no error
   surface beyond the inner toolset.

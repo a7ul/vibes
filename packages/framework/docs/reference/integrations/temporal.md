@@ -3,10 +3,8 @@ title: "Temporal"
 description: "Durable agent workflows with Temporal"
 ---
 
-# Temporal
-
-Run agents as durable Temporal workflows — surviving process crashes, network
-failures, and arbitrary pauses — with full activity replay.
+Run agents as durable Temporal workflows - surviving process crashes, network
+failures, and arbitrary pauses - with full activity replay.
 
 ## What is Temporal?
 
@@ -65,7 +63,7 @@ const result = await mockAgent.run({
 console.log(result.output); // "Paris"
 ```
 
-`MockTemporalAgent` is a drop-in replacement for `TemporalAgent` in tests — same
+`MockTemporalAgent` is a drop-in replacement for `TemporalAgent` in tests - same
 API, no Temporal infrastructure required.
 
 ## Worker Setup
@@ -92,7 +90,7 @@ provides helpers for safe serialization of agent messages and results:
 ```ts
 import { deserializeAgentState, serializeAgentState } from "@vibes/framework";
 
-// Inside a workflow activity — safe to use in Temporal context
+// Inside a workflow activity - safe to use in Temporal context
 const serialized = serializeAgentState(result);
 ```
 
@@ -102,15 +100,15 @@ Temporal's Node.js SDK requires the **Node.js runtime**. The `TemporalAgent` and
 its worker components cannot run under Deno. Use Node.js (v18+) for Temporal
 workers.
 
-`MockTemporalAgent` has no runtime constraint and works under Deno — use it for
+`MockTemporalAgent` has no runtime constraint and works under Deno - use it for
 all tests and local development.
 
 ```ts
-// In Deno tests — use MockTemporalAgent
+// In Deno tests - use MockTemporalAgent
 import { MockTemporalAgent } from "@vibes/framework";
 const mock = new MockTemporalAgent(agent);
 
-// In Node.js workers — use TemporalAgent
+// In Node.js workers - use TemporalAgent
 import { TemporalAgent } from "@vibes/framework";
 const temporal = new TemporalAgent(agent, { taskQueue: "..." });
 ```
@@ -164,7 +162,7 @@ const temporalAgent = new TemporalAgent(agentWithApprovalTools, {
 | Option                        | Type     | Default  | Description                     |
 | ----------------------------- | -------- | -------- | ------------------------------- |
 | `taskQueue`                   | `string` | required | Temporal task queue name        |
-| `workflowExecutionTimeout`    | `string` | —        | Max total workflow duration     |
+| `workflowExecutionTimeout`    | `string` | -        | Max total workflow duration     |
 | `activityStartToCloseTimeout` | `string` | `"5m"`   | Timeout per agent turn activity |
 
 ### `MockTemporalAgent`
@@ -179,6 +177,6 @@ const temporalAgent = new TemporalAgent(agentWithApprovalTools, {
 - Temporal activities are retried automatically on failure. Transient model API
   errors (rate limits, timeouts) are retried by Temporal's retry policy before
   reaching the `maxRetries` framework limit.
-- `MaxTurnsError` and `UsageLimitError` are non-retryable — they cause the
+- `MaxTurnsError` and `UsageLimitError` are non-retryable - they cause the
   workflow to fail immediately.
 - When using `MockTemporalAgent`, errors propagate synchronously from `run()`.

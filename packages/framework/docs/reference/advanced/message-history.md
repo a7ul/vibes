@@ -3,8 +3,6 @@ title: "Message History"
 description: "Multi-turn conversations, history processors, serialization"
 ---
 
-# Message History
-
 Message history lets you persist conversation context across multiple agent runs
 and control what gets sent to the model on each turn.
 
@@ -27,7 +25,7 @@ const second = await agent.run("What is my name?", {
 console.log(second.output); // "Your name is Alice."
 ```
 
-Use `result.newMessages` when you want to store only the delta — for example,
+Use `result.newMessages` when you want to store only the delta - for example,
 appending to a persistent log:
 
 ```ts
@@ -58,7 +56,7 @@ const messages = await stream.messages; // use for next turn
 ## History Processors
 
 History processors transform the message list before each model call. They do
-**not** mutate the stored history — they only filter what gets sent to the model
+**not** mutate the stored history - they only filter what gets sent to the model
 on that turn.
 
 Register processors via `historyProcessors` on the agent:
@@ -164,10 +162,10 @@ const agent = new Agent({
 });
 ```
 
-**Regex rules** (`{ pattern, replacement? }`) — scan all string values in every
+**Regex rules** (`{ pattern, replacement? }`) - scan all string values in every
 message recursively. `replacement` defaults to `"[REDACTED]"`.
 
-**Field rules** (`{ messageType, fieldPath }`) — delete a field at a
+**Field rules** (`{ messageType, fieldPath }`) - delete a field at a
 dot-separated path from messages of the given role. Use numeric indices for
 array positions, e.g. `"content.0.result.token"`.
 
@@ -182,7 +180,7 @@ type HistoryProcessor<TDeps = undefined> = (
 ) => ModelMessage[] | Promise<ModelMessage[]>;
 ```
 
-Example — remove all tool-call messages older than 10 turns:
+Example - remove all tool-call messages older than 10 turns:
 
 ```ts
 const dropOldToolCalls: HistoryProcessor = (messages) => {
@@ -235,6 +233,6 @@ const next = await agent.run("Continue", { messageHistory: history });
   underlying model API to return a `400`. Validate history from external storage
   with `deserializeMessages`.
 - `summarizeHistoryProcessor` makes a real API call on each turn where history
-  exceeds the limit — factor in latency and cost.
+  exceeds the limit - factor in latency and cost.
 - `privacyFilterProcessor` is applied to a copy of the messages; the original
   history is never mutated.

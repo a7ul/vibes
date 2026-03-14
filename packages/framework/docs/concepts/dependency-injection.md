@@ -3,9 +3,7 @@ title: "Dependency Injection"
 description: "Type-safe deps pattern for tools, prompts, and validators"
 ---
 
-# Dependency Injection
-
-Vibes uses a type-safe dependency injection pattern — the same one pydantic-ai uses. Your tools, system prompts, and validators can access databases, APIs, config, and any other runtime state without globals or singletons.
+Vibes uses a type-safe dependency injection pattern - the same one pydantic-ai uses. Your tools, system prompts, and validators can access databases, APIs, config, and any other runtime state without globals or singletons.
 
 > **Coming from pydantic-ai?** This is pydantic-ai's `deps` pattern, almost identical. `RunContext<TDeps>` maps to `RunContext[TDeps]`.
 
@@ -14,7 +12,7 @@ Vibes uses a type-safe dependency injection pattern — the same one pydantic-ai
 Without DI, tools reach for globals:
 
 ```ts
-// Bad — globals, untestable, hard to swap
+// Bad - globals, untestable, hard to swap
 const db = new Database(process.env.DATABASE_URL!);
 
 const lookupUser = tool({
@@ -35,7 +33,7 @@ type Deps = {
   emailService: EmailService;
 };
 
-// 2. Use deps in tools — type-safe
+// 2. Use deps in tools - type-safe
 const lookupUser = tool({
   name: "lookup_user",
   description: "Find a user by email",
@@ -202,7 +200,7 @@ const agent = new Agent({
   tools: [
     tool({
       execute: async (_ctx, args) => {
-        // ctx.deps is undefined — that's fine
+        // ctx.deps is undefined - that's fine
         return "result";
       },
     }),
@@ -212,6 +210,6 @@ const agent = new Agent({
 
 ## Next Steps
 
-- [Run Context](../reference/core/run-context) — full `RunContext` API reference
-- [Testing](./testing.md) — how DI makes testing easy
-- [Multi-Agent Systems](../guides/multi-agent-systems.md) — passing deps across agents
+- [Run Context](../reference/core/run-context) - full `RunContext` API reference
+- [Testing](./testing.md) - how DI makes testing easy
+- [Multi-Agent Systems](../guides/multi-agent-systems.md) - passing deps across agents

@@ -3,8 +3,6 @@ title: "Result Validators"
 description: "Post-process and retry agent output"
 ---
 
-# Result Validators
-
 Result validators run after the model's output has been parsed by Zod. They let
 you enforce business rules, transform the output, or reject it and force the
 model to try again.

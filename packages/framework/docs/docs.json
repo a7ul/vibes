@@ -1,5 +1,6 @@
 {
   "$schema": "https://mintlify.com/docs.json",
+  "theme": "mint",
   "name": "Vibes Agent Framework",
   "description": "pydantic-ai patterns for TypeScript. Powered by Vercel AI SDK.",
   "logo": {
@@ -8,16 +9,16 @@
   },
   "favicon": "/favicon.svg",
   "colors": {
-    "primary": "#7C3AED",
-    "light": "#A78BFA",
-    "dark": "#5B21B6",
-    "background": {
-      "dark": "#0F0A1A"
-    }
+    "primary": "#FFFFFF",
+    "light": "#F9FAFB",
+    "dark": "#E5E7EB"
+  },
+  "modeToggle": {
+    "default": "dark"
   },
   "topbarCtaButton": {
     "name": "GitHub",
-    "url": "https://github.com/atularen/vibes"
+    "url": "https://github.com/a7ul/vibes"
   },
   "topbarLinks": [
     {
@@ -29,80 +30,82 @@
     {
       "name": "GitHub",
       "icon": "github",
-      "url": "https://github.com/atularen/vibes"
+      "url": "https://github.com/a7ul/vibes"
     }
   ],
-  "navigation": [
-    {
-      "group": "Getting Started",
-      "pages": [
-        "index",
-        "getting-started/install",
-        "getting-started/first-agent",
-        "getting-started/adding-tools",
-        "getting-started/structured-output",
-        "getting-started/testing"
-      ]
-    },
-    {
-      "group": "Concepts",
-      "pages": [
-        "concepts/how-agents-work",
-        "concepts/dependency-injection",
-        "concepts/error-handling"
-      ]
-    },
-    {
-      "group": "Guides",
-      "pages": [
-        "guides/human-in-the-loop",
-        "guides/multi-agent-systems"
-      ]
-    },
-    {
-      "group": "Reference: Core",
-      "pages": [
-        "reference/core/agents",
-        "reference/core/tools",
-        "reference/core/toolsets",
-        "reference/core/structured-output",
-        "reference/core/result-validators",
-        "reference/core/streaming",
-        "reference/core/dependencies",
-        "reference/core/run-context",
-        "reference/core/errors",
-        "reference/core/testing"
-      ]
-    },
-    {
-      "group": "Reference: Advanced",
-      "pages": [
-        "reference/advanced/message-history",
-        "reference/advanced/usage-limits",
-        "reference/advanced/deferred-tools",
-        "reference/advanced/multi-modal",
-        "reference/advanced/multi-agent",
-        "reference/advanced/model-settings"
-      ]
-    },
-    {
-      "group": "Integrations",
-      "pages": [
-        "reference/integrations/mcp",
-        "reference/integrations/graph",
-        "reference/integrations/ag-ui",
-        "reference/integrations/otel",
-        "reference/integrations/temporal"
-      ]
-    },
-    {
-      "group": "Meta",
-      "pages": [
-        "reference/features"
-      ]
-    }
-  ],
+  "navigation": {
+    "groups": [
+      {
+        "group": "Getting Started",
+        "pages": [
+          "index",
+          "getting-started/install",
+          "getting-started/first-agent",
+          "getting-started/adding-tools",
+          "getting-started/structured-output",
+          "getting-started/testing"
+        ]
+      },
+      {
+        "group": "Concepts",
+        "pages": [
+          "concepts/how-agents-work",
+          "concepts/dependency-injection",
+          "concepts/error-handling"
+        ]
+      },
+      {
+        "group": "Guides",
+        "pages": [
+          "guides/human-in-the-loop",
+          "guides/multi-agent-systems"
+        ]
+      },
+      {
+        "group": "Reference: Core",
+        "pages": [
+          "reference/core/agents",
+          "reference/core/tools",
+          "reference/core/toolsets",
+          "reference/core/structured-output",
+          "reference/core/result-validators",
+          "reference/core/streaming",
+          "reference/core/dependencies",
+          "reference/core/run-context",
+          "reference/core/errors",
+          "reference/core/testing"
+        ]
+      },
+      {
+        "group": "Reference: Advanced",
+        "pages": [
+          "reference/advanced/message-history",
+          "reference/advanced/usage-limits",
+          "reference/advanced/deferred-tools",
+          "reference/advanced/multi-modal",
+          "reference/advanced/multi-agent",
+          "reference/advanced/model-settings"
+        ]
+      },
+      {
+        "group": "Integrations",
+        "pages": [
+          "reference/integrations/mcp",
+          "reference/integrations/graph",
+          "reference/integrations/ag-ui",
+          "reference/integrations/otel",
+          "reference/integrations/temporal"
+        ]
+      },
+      {
+        "group": "Meta",
+        "pages": [
+          "reference/features"
+        ]
+      }
+    ]
+  },
   "footerSocials": {
-    "github": "https://github.com/atularen/vibes"
+    "github": "https://github.com/a7ul/vibes"
   }
 }

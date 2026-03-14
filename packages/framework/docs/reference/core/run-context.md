@@ -3,8 +3,6 @@ title: "RunContext"
 description: "The context object available during a run"
 ---
 
-# RunContext
-
 `RunContext<TDeps>` is passed to every tool `execute` function, dynamic system
 prompt, and result validator during a run. It gives you access to the current
 dependencies, token usage, retry count, and a unique run ID.
@@ -25,7 +23,7 @@ interface RunContext<TDeps = undefined> {
 
 ### `deps`
 
-Your injected runtime dependencies. The type is `TDeps` — whatever you declared
+Your injected runtime dependencies. The type is `TDeps` - whatever you declared
 as the first type parameter on `Agent<TDeps, TOutput>`.
 
 ```ts
