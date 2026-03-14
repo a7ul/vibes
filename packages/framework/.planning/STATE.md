@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 03-01-PLAN.md (human-in-the-loop, testing, debugging concept pages)
-last_updated: "2026-03-14T16:10:52.846Z"
+stopped_at: Completed 03-02-PLAN.md (multi-agent, graph, thinking concept pages)
+last_updated: "2026-03-14T16:15:52.259Z"
 last_activity: 2026-03-14 -- Completed 02-01 (agents, models, dependencies, tools concept pages)
 progress:
   total_phases: 6
-  completed_phases: 2
+  completed_phases: 3
   total_plans: 7
-  completed_plans: 6
+  completed_plans: 7
   percent: 17
 ---
 
@@ -54,6 +54,7 @@ Progress: [█░░░░░░░░░] 17%
 | Phase 01-landing-and-getting-started P03 | 2 | 1 tasks | 1 files |
 | Phase 02-core-concepts-part-1 P02 | 3 | 3 tasks | 5 files |
 | Phase 03-core-concepts-part-2 P01 | 2 | 3 tasks | 3 files |
+| Phase 03-core-concepts-part-2 P02 | 3 | 3 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -77,6 +78,8 @@ Recent decisions affecting current work:
 - [Phase 02-02]: All 8 new concept pages added to docs.json Concepts nav; 3 existing pages retained until Phase 6
 - [Phase 03-01]: Used sequenceDiagram for HITL and TestModel flows; graph TD for OTel span hierarchy
 - [Phase 03-01]: instrumentAgent note explicitly states Vibes creates no custom spans — all span naming follows Vercel AI SDK
+- [Phase 03-02]: graph.mdx Info callout explicitly warns about the two old API bugs (new Graph({ nodes }) and this.next())
+- [Phase 03-02]: thinking.mdx explains pass-through: ModelSettings has no thinking field; config goes on model constructor via Vercel AI SDK providerOptions
 
 ### Pending Todos
 
@@ -89,6 +92,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-14T16:10:52.844Z
-Stopped at: Completed 03-01-PLAN.md (human-in-the-loop, testing, debugging concept pages)
+Last session: 2026-03-14T16:15:52.257Z
+Stopped at: Completed 03-02-PLAN.md (multi-agent, graph, thinking concept pages)
 Resume file: None

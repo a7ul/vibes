@@ -28,9 +28,9 @@
 - [x] **CONCEPT-09**: Human-in-the-Loop page — `requiresApproval`, `ApprovalRequiredError`, `DeferredToolRequests`, `DeferredToolResults`, `agent.resume()`, `ExternalToolset`, approval sequence Mermaid diagram
 - [x] **CONCEPT-10**: Testing page — `TestModel`, `createTestModel()`, `FunctionModel`, `setAllowModelRequests(false)`, `captureRunMessages()`, `agent.override()`, real test code examples
 - [x] **CONCEPT-11**: Debugging and Monitoring page — `instrumentAgent()`, `TelemetrySettings`, OTel span hierarchy Mermaid diagram, content exclusion
-- [ ] **CONCEPT-12**: Multi-Agent page — agent-as-tool pattern, usage aggregation, programmatic handoff, agent delegation sequence diagram
-- [ ] **CONCEPT-13**: Graph page — `BaseNode`, `Graph`, `GraphRun`, fixed API (constructor + free functions), `toMermaid()`, `runIter()`, `FileStatePersistence`, FSM Mermaid diagram
-- [ ] **CONCEPT-14**: Thinking page — extended reasoning config for Anthropic (`thinking.budgetTokens`) and Google models
+- [x] **CONCEPT-12**: Multi-Agent page — agent-as-tool pattern, usage aggregation, programmatic handoff, agent delegation sequence diagram
+- [x] **CONCEPT-13**: Graph page — `BaseNode`, `Graph`, `GraphRun`, fixed API (constructor + free functions), `toMermaid()`, `runIter()`, `FileStatePersistence`, FSM Mermaid diagram
+- [x] **CONCEPT-14**: Thinking page — extended reasoning config for Anthropic (`thinking.budgetTokens`) and Google models
 
 ### Integrations
 
@@ -109,9 +109,9 @@
 | CONCEPT-09 | Phase 3 | Complete |
 | CONCEPT-10 | Phase 3 | Complete |
 | CONCEPT-11 | Phase 3 | Complete |
-| CONCEPT-12 | Phase 3 | Pending |
-| CONCEPT-13 | Phase 3 | Pending |
-| CONCEPT-14 | Phase 3 | Pending |
+| CONCEPT-12 | Phase 3 | Complete |
+| CONCEPT-13 | Phase 3 | Complete |
+| CONCEPT-14 | Phase 3 | Complete |
 | INT-01a | Phase 4 | Pending |
 | INT-01b | Phase 4 | Pending |
 | INT-02 | Phase 4 | Pending |
