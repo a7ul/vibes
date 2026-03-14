@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 03-02-PLAN.md (multi-agent, graph, thinking concept pages)
-last_updated: "2026-03-14T16:19:34.242Z"
+stopped_at: Completed 04-01-PLAN.md (MCP client, MCP server, AG-UI integration pages)
+last_updated: "2026-03-14T16:36:14.062Z"
 last_activity: 2026-03-14 -- Completed 02-01 (agents, models, dependencies, tools concept pages)
 progress:
   total_phases: 6
   completed_phases: 3
-  total_plans: 7
-  completed_plans: 7
+  total_plans: 9
+  completed_plans: 8
   percent: 17
 ---
 
@@ -55,6 +55,7 @@ Progress: [█░░░░░░░░░] 17%
 | Phase 02-core-concepts-part-1 P02 | 3 | 3 tasks | 5 files |
 | Phase 03-core-concepts-part-2 P01 | 2 | 3 tasks | 3 files |
 | Phase 03-core-concepts-part-2 P02 | 3 | 3 tasks | 4 files |
+| Phase 04-integrations P01 | 3 | 3 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -80,6 +81,8 @@ Recent decisions affecting current work:
 - [Phase 03-01]: instrumentAgent note explicitly states Vibes creates no custom spans — all span naming follows Vercel AI SDK
 - [Phase 03-02]: graph.mdx Info callout explicitly warns about the two old API bugs (new Graph({ nodes }) and this.next())
 - [Phase 03-02]: thinking.mdx explains pass-through: ModelSettings has no thinking field; config goes on model constructor via Vercel AI SDK providerOptions
+- [Phase 04-integrations]: ag-ui.mdx Warning callout mentions depsFactory by name as the wrong approach — correct option is deps/getState, never depsFactory in code examples
+- [Phase 04-integrations]: mcp-client.mdx Warning callout enumerates all four MCPManager anti-patterns to help developers migrating from broken docs
 
 ### Pending Todos
 
@@ -92,6 +95,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-14T16:15:52.257Z
-Stopped at: Completed 03-02-PLAN.md (multi-agent, graph, thinking concept pages)
+Last session: 2026-03-14T16:36:14.061Z
+Stopped at: Completed 04-01-PLAN.md (MCP client, MCP server, AG-UI integration pages)
 Resume file: None
