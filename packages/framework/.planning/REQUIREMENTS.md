@@ -34,9 +34,9 @@
 
 ### Integrations
 
-- [ ] **INT-01a**: MCP Client page — `MCPToolset`, `MCPStdioClient`, `MCPHttpClient`, `MCPManager`, `loadMCPConfig`, architecture diagram
-- [ ] **INT-01b**: MCP Server page — exposing a Vibes agent as an MCP server (new capability docs)
-- [ ] **INT-02**: AG-UI page — fixed API (`deps`/`getState` not `depsFactory`), `AGUIAdapter.handleRequest()`, SSE event sequence diagram
+- [x] **INT-01a**: MCP Client page — `MCPToolset`, `MCPStdioClient`, `MCPHttpClient`, `MCPManager`, `loadMCPConfig`, architecture diagram
+- [x] **INT-01b**: MCP Server page — exposing a Vibes agent as an MCP server (new capability docs)
+- [x] **INT-02**: AG-UI page — fixed API (`deps`/`getState` not `depsFactory`), `AGUIAdapter.handleRequest()`, SSE event sequence diagram
 - [ ] **INT-03**: A2A page — brand new, full coverage: `A2AAdapter`, AgentCard at `/.well-known/agent.json`, `tasks/send`, `tasks/sendSubscribe`, `tasks/get`, `tasks/cancel`, task state machine Mermaid diagram, `MemoryTaskStore`
 - [ ] **INT-04**: Temporal page — rewrite with durable execution overview, `TemporalAgent`, `MockTemporalAgent`, workflow-activities Mermaid diagram
 - [ ] **INT-05**: Vercel AI UI page — new page connecting Vibes agent stream to `useChat`/`useCompletion` React hooks
@@ -112,9 +112,9 @@
 | CONCEPT-12 | Phase 3 | Complete |
 | CONCEPT-13 | Phase 3 | Complete |
 | CONCEPT-14 | Phase 3 | Complete |
-| INT-01a | Phase 4 | Pending |
-| INT-01b | Phase 4 | Pending |
-| INT-02 | Phase 4 | Pending |
+| INT-01a | Phase 4 | Complete |
+| INT-01b | Phase 4 | Complete |
+| INT-02 | Phase 4 | Complete |
 | INT-03 | Phase 4 | Pending |
 | INT-04 | Phase 4 | Pending |
 | INT-05 | Phase 4 | Pending |

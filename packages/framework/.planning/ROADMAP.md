@@ -129,6 +129,6 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6
 | 1. Landing and Getting Started | 3/3 | Complete   | 2026-03-14 |
 | 2. Core Concepts Part 1 | 2/2 | Complete   | 2026-03-14 |
 | 3. Core Concepts Part 2 | 2/2 | Complete   | 2026-03-14 |
-| 4. Integrations | 0/2 | Not started | - |
+| 4. Integrations | 1/2 | In Progress|  |
 | 5. Examples | 0/3 | Not started | - |
 | 6. Advanced Topics, Meta, and Navigation | 0/3 | Not started | - |
