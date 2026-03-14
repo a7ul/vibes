@@ -65,8 +65,8 @@ Plans:
 **Plans**: 2 plans
 
 Plans:
-- [ ] 03-01: TBD
-- [ ] 03-02: TBD
+- [ ] 03-01-PLAN.md — Create human-in-the-loop.mdx, testing.mdx, debugging.mdx (CONCEPT-09, 10, 11)
+- [ ] 03-02-PLAN.md — Create multi-agent.mdx, graph.mdx, thinking.mdx + update docs.json (CONCEPT-12, 13, 14)
 
 ### Phase 4: Integrations
 **Goal**: Developers can integrate Vibes agents with MCP, AG-UI, A2A, Temporal, and Vercel AI UI through dedicated pages with architecture diagrams and correct APIs
