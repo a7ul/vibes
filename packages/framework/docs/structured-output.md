@@ -6,7 +6,7 @@ fully typed, Zod-validated object back instead.
 ## Basic Usage
 
 ```ts
-import { Agent } from "./mod.ts";
+import { Agent } from "@vibes/framework";
 import { anthropic } from "@ai-sdk/anthropic";
 import { z } from "zod";
 

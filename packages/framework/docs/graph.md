@@ -16,7 +16,7 @@ makes transitions explicit and inspectable.
 Extend `BaseNode` to define a node. Implement `id` and `run()`:
 
 ```ts
-import { BaseNode } from "./mod.ts";
+import { BaseNode } from "@vibes/framework";
 
 type State = { query: string; results?: string[] };
 
@@ -50,7 +50,7 @@ class SummariseNode extends BaseNode<State, string> {
 Construct a `Graph` with your nodes and run it:
 
 ```ts
-import { Graph } from "./mod.ts";
+import { Graph } from "@vibes/framework";
 
 const graph = new Graph({
   nodes: [new FetchNode(), new SummariseNode()],
@@ -104,7 +104,7 @@ Provide a `StatePersistence` implementation to make graph runs resumable across
 process restarts or failures:
 
 ```ts
-import type { StatePersistence } from "./mod.ts";
+import type { StatePersistence } from "@vibes/framework";
 
 class KVPersistence<TState> implements StatePersistence<TState> {
   constructor(private kv: Deno.Kv) {}

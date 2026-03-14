@@ -10,7 +10,7 @@ result. This usually means the model is looping — calling tools repeatedly
 without converging on an answer.
 
 ```ts
-import { MaxTurnsError } from "./mod.ts";
+import { MaxTurnsError } from "@vibes/framework";
 
 try {
   const result = await agent.run("Do something complex.");
@@ -44,7 +44,7 @@ Thrown when result validation fails more times than `maxRetries` allows
   when `outputSchema` is set.
 
 ```ts
-import { MaxRetriesError } from "./mod.ts";
+import { MaxRetriesError } from "@vibes/framework";
 
 try {
   const result = await agent.run("Give me a structured answer.");
@@ -94,7 +94,7 @@ try {
 ## Error Handling Pattern
 
 ```ts
-import { MaxRetriesError, MaxTurnsError } from "./mod.ts";
+import { MaxRetriesError, MaxTurnsError } from "@vibes/framework";
 
 async function safeRun(agent: Agent, prompt: string) {
   try {

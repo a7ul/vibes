@@ -8,7 +8,7 @@ in a single run, throwing a `UsageLimitError` if the budget is exceeded.
 Pass a `usageLimits` object when calling `.run()` or `.stream()`:
 
 ```ts
-import { Agent } from "./mod.ts";
+import { Agent } from "@vibes/framework";
 
 const agent = new Agent({
   model,
@@ -52,7 +52,7 @@ All fields are optional. Omit any field to leave that dimension uncapped.
 Thrown before any model request that would exceed the configured limit.
 
 ```ts
-import { UsageLimitError } from "./mod.ts";
+import { UsageLimitError } from "@vibes/framework";
 
 try {
   await agent.run("Do a lot of work.", { usageLimits: { maxRequests: 3 } });

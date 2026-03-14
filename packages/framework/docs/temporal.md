@@ -16,8 +16,8 @@ long-running, multi-step agent workflows resilient by default.
 Temporal workflow + activity:
 
 ```ts
-import { TemporalAgent } from "./mod.ts";
-import { Agent } from "./mod.ts";
+import { TemporalAgent } from "@vibes/framework";
+import { Agent } from "@vibes/framework";
 import { Client, Connection } from "@temporalio/client";
 
 const agent = new Agent({
@@ -49,7 +49,7 @@ For local development and testing, `MockTemporalAgent` runs the same workflow
 logic in-process without requiring a Temporal server:
 
 ```ts
-import { MockTemporalAgent } from "./mod.ts";
+import { MockTemporalAgent } from "@vibes/framework";
 
 const mockAgent = new MockTemporalAgent(agent);
 
@@ -85,7 +85,7 @@ Temporal requires all workflow state to be serializable to JSON. The framework
 provides helpers for safe serialization of agent messages and results:
 
 ```ts
-import { deserializeAgentState, serializeAgentState } from "./mod.ts";
+import { deserializeAgentState, serializeAgentState } from "@vibes/framework";
 
 // Inside a workflow activity — safe to use in Temporal context
 const serialized = serializeAgentState(result);
@@ -102,11 +102,11 @@ all tests and local development.
 
 ```ts
 // In Deno tests — use MockTemporalAgent
-import { MockTemporalAgent } from "./mod.ts";
+import { MockTemporalAgent } from "@vibes/framework";
 const mock = new MockTemporalAgent(agent);
 
 // In Node.js workers — use TemporalAgent
-import { TemporalAgent } from "./mod.ts";
+import { TemporalAgent } from "@vibes/framework";
 const temporal = new TemporalAgent(agent, { taskQueue: "..." });
 ```
 

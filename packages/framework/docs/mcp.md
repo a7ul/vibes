@@ -15,7 +15,7 @@ translates them into `ToolDefinition` objects the agent can call.
 Connect to an MCP server running as a subprocess:
 
 ```ts
-import { MCPStdioClient, MCPToolset } from "./mod.ts";
+import { MCPStdioClient, MCPToolset } from "@vibes/framework";
 
 const client = new MCPStdioClient({
   command: "npx",
@@ -37,7 +37,7 @@ await client.disconnect();
 Connect to an MCP server over HTTP/SSE:
 
 ```ts
-import { MCPHttpClient, MCPToolset } from "./mod.ts";
+import { MCPHttpClient, MCPToolset } from "@vibes/framework";
 
 const client = new MCPHttpClient({
   url: "https://my-mcp-server.example.com/mcp",
@@ -80,7 +80,7 @@ Manages multiple MCP clients as a single unit — connect, use, and disconnect a
 clients together:
 
 ```ts
-import { MCPHttpClient, MCPManager, MCPStdioClient } from "./mod.ts";
+import { MCPHttpClient, MCPManager, MCPStdioClient } from "@vibes/framework";
 
 const manager = new MCPManager([
   new MCPStdioClient({
@@ -107,7 +107,7 @@ Load MCP server configuration from a JSON file (compatible with Claude Desktop
 config format):
 
 ```ts
-import { loadMCPConfig, MCPManager } from "./mod.ts";
+import { loadMCPConfig, MCPManager } from "@vibes/framework";
 
 const config = await loadMCPConfig("./mcp-config.json");
 const manager = MCPManager.fromConfig(config);

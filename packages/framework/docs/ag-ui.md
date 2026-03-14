@@ -17,8 +17,8 @@ Wrap your agent with `AGUIAdapter` and call `handleRequest()` from your HTTP
 handler:
 
 ```ts
-import { AGUIAdapter } from "./mod.ts";
-import { Agent } from "./mod.ts";
+import { AGUIAdapter } from "@vibes/framework";
+import { Agent } from "@vibes/framework";
 
 const agent = new Agent({
   model,

@@ -11,7 +11,7 @@ the parsed output. Return the output to accept it (optionally modified), or
 throw an `Error` to reject it.
 
 ```ts
-import { Agent } from "./mod.ts";
+import { Agent } from "@vibes/framework";
 import { z } from "zod";
 
 const ScoreSchema = z.object({ score: z.number() });

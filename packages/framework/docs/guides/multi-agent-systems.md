@@ -1,0 +1,235 @@
+# Multi-Agent Systems
+
+Complex tasks are often best solved by multiple specialized agents working together. Vibes supports several patterns for composing agents.
+
+> **Coming from pydantic-ai?** This mirrors pydantic-ai's multi-agent patterns exactly. Agent-as-tool is the primary pattern in both frameworks.
+
+## Pattern 1: Agent as Tool
+
+The simplest pattern — one agent delegates to another by calling it as a tool.
+
+```ts
+import { Agent, tool } from "@vibes/framework";
+import { anthropic } from "@ai-sdk/anthropic";
+import { z } from "zod";
+
+// Specialist agent: summarization
+const summarizerAgent = new Agent({
+  model: anthropic("claude-haiku-4-5-20251001"),
+  systemPrompt: "You are an expert at summarizing text concisely.",
+});
+
+// Specialist agent: translation
+const translatorAgent = new Agent({
+  model: anthropic("claude-haiku-4-5-20251001"),
+  systemPrompt: "You are an expert translator. Translate accurately and naturally.",
+});
+
+// Wrap specialist agents as tools
+const summarizeTool = tool({
+  name: "summarize",
+  description: "Summarize a piece of text in 2-3 sentences",
+  parameters: z.object({
+    text: z.string().describe("The text to summarize"),
+  }),
+  execute: async (_ctx, { text }) => {
+    const result = await summarizerAgent.run(`Summarize: ${text}`);
+    return result.output;
+  },
+});
+
+const translateTool = tool({
+  name: "translate",
+  description: "Translate text to a target language",
+  parameters: z.object({
+    text: z.string(),
+    targetLanguage: z.string().describe("e.g. 'French', 'Spanish', 'Japanese'"),
+  }),
+  execute: async (_ctx, { text, targetLanguage }) => {
+    const result = await translatorAgent.run(
+      `Translate to ${targetLanguage}: ${text}`
+    );
+    return result.output;
+  },
+});
+
+// Orchestrator uses both specialists
+const orchestrator = new Agent({
+  model: anthropic("claude-sonnet-4-6"),
+  systemPrompt: "You help users process documents. Use tools to summarize and translate.",
+  tools: [summarizeTool, translateTool],
+});
+
+const result = await orchestrator.run(
+  "Summarize this article and translate it to French: [long article text]"
+);
+```
+
+## Pattern 2: Passing Dependencies Down
+
+When specialist agents need the same runtime context (database, config, etc.), pass `deps` from the orchestrator's `RunContext`:
+
+```ts
+type AppDeps = { db: Database; userId: string };
+
+const dataAgent = new Agent<AppDeps>({
+  model: anthropic("claude-haiku-4-5-20251001"),
+  tools: [
+    tool({
+      name: "fetch_user_data",
+      parameters: z.object({ field: z.string() }),
+      execute: async (ctx, { field }) => {
+        return await ctx.deps.db.users.getField(ctx.deps.userId, field);
+      },
+    }),
+  ],
+});
+
+const orchestrator = new Agent<AppDeps>({
+  model: anthropic("claude-sonnet-4-6"),
+  tools: [
+    tool({
+      name: "analyze_user",
+      parameters: z.object({ aspect: z.string() }),
+      execute: async (ctx, { aspect }) => {
+        // Pass the orchestrator's deps down to the sub-agent
+        const result = await dataAgent.run(
+          `Analyze the user's ${aspect}`,
+          { deps: ctx.deps }
+        );
+        return result.output;
+      },
+    }),
+  ],
+});
+
+await orchestrator.run("Analyze this user's purchase history", {
+  deps: { db: myDb, userId: "user-123" },
+});
+```
+
+## Pattern 3: Programmatic Handoff
+
+For structured pipelines where you know the sequence upfront:
+
+```ts
+async function processResearchQuery(query: string) {
+  // Stage 1: Research
+  const researchResult = await researchAgent.run(
+    `Find information about: ${query}`
+  );
+
+  // Stage 2: Analyze the research
+  const analysisResult = await analysisAgent.run(
+    `Analyze this research and identify key insights:\n\n${researchResult.output}`
+  );
+
+  // Stage 3: Write a report
+  const reportResult = await writerAgent.run(
+    `Write a professional report based on:\n\n${analysisResult.output}`
+  );
+
+  return reportResult.output;
+}
+```
+
+## Pattern 4: Supervisor with Structured Output
+
+An orchestrator that decides which specialist to use and combines their outputs:
+
+```ts
+const SupervisorOutput = z.object({
+  routing: z.enum(["legal", "technical", "billing"]),
+  summary: z.string(),
+  urgency: z.enum(["low", "medium", "high"]),
+});
+
+const supervisor = new Agent({
+  model: anthropic("claude-sonnet-4-6"),
+  systemPrompt: "You triage customer support tickets.",
+  outputSchema: SupervisorOutput,
+});
+
+async function handleTicket(ticket: string) {
+  const routing = await supervisor.run(ticket);
+
+  switch (routing.output.routing) {
+    case "legal":
+      return await legalAgent.run(ticket);
+    case "technical":
+      return await technicalAgent.run(ticket);
+    case "billing":
+      return await billingAgent.run(ticket);
+  }
+}
+```
+
+## Pattern 5: Parallel Sub-Agents
+
+Run multiple specialist agents concurrently:
+
+```ts
+const researchTool = tool({
+  name: "research_parallel",
+  description: "Research multiple topics simultaneously",
+  parameters: z.object({
+    topics: z.array(z.string()).describe("Topics to research"),
+  }),
+  execute: async (_ctx, { topics }) => {
+    // Run all research agents concurrently
+    const results = await Promise.all(
+      topics.map((topic) => researchAgent.run(`Research: ${topic}`))
+    );
+    return results.map((r, i) => `${topics[i]}: ${r.output}`).join("\n\n");
+  },
+});
+```
+
+## Model Selection Strategy
+
+Use cheaper/faster models for specialists, stronger models for orchestration:
+
+```ts
+// Fast, cheap model for simple tasks
+const summarizerAgent = new Agent({
+  model: anthropic("claude-haiku-4-5-20251001"),
+});
+
+// Stronger model for complex reasoning and orchestration
+const orchestrator = new Agent({
+  model: anthropic("claude-sonnet-4-6"),
+});
+```
+
+## Avoiding Infinite Loops
+
+Be careful with agents that can call other agents that can call back:
+
+```ts
+// Dangerous: A calls B, B can call A
+// Safe: Use clear hierarchies or pass a recursion depth in deps
+
+type Deps = { depth: number };
+
+const recursiveAgent = new Agent<Deps>({
+  model,
+  tools: [
+    tool({
+      name: "sub_task",
+      execute: async (ctx, args) => {
+        if (ctx.deps.depth >= 3) return "Max depth reached";
+        const result = await recursiveAgent.run(args.prompt, {
+          deps: { depth: ctx.deps.depth + 1 },
+        });
+        return result.output;
+      },
+    }),
+  ],
+});
+```
+
+## Next Steps
+
+- [Dependency Injection](../concepts/dependency-injection.md) — passing deps across agents
+- [Graph Workflows](./graph-workflows.md) — FSM-style multi-step pipelines
+- [Multi-Agent reference](../multi-agent.md) — full API reference

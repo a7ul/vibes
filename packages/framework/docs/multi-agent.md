@@ -10,7 +10,7 @@ were a regular tool. The child agent receives a sub-prompt and returns its
 output.
 
 ```ts
-import { Agent, tool } from "./mod.ts";
+import { Agent, tool } from "@vibes/framework";
 import { z } from "zod";
 
 // Specialist child agent

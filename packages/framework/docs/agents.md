@@ -7,7 +7,7 @@ tools, an optional output schema, and result validators. You call `.run()` or
 ## Creating an Agent
 
 ```ts
-import { Agent } from "./mod.ts";
+import { Agent } from "@vibes/framework";
 import { anthropic } from "@ai-sdk/anthropic";
 
 const agent = new Agent({

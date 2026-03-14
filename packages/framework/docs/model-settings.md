@@ -8,7 +8,7 @@ sequences — passed to the underlying model API on every request.
 Pass `modelSettings` at agent construction time to apply defaults to every run:
 
 ```ts
-import { Agent } from "./mod.ts";
+import { Agent } from "@vibes/framework";
 import { anthropic } from "@ai-sdk/anthropic";
 
 const agent = new Agent({
