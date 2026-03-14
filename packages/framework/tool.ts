@@ -1,6 +1,7 @@
 import type { z, ZodTypeAny } from "zod";
 import { tool as aiTool, type ToolSet } from "ai";
 import type { RunContext } from "./types.ts";
+import { Semaphore } from "./concurrency.ts";
 
 export interface ToolDefinition<TDeps = undefined> {
 	name: string;
@@ -107,37 +108,52 @@ export function plainTool<TParams extends ZodTypeAny = ZodTypeAny>(opts: {
  * Convert our ToolDefinition array into the format expected by Vercel AI SDK's
  * generateText/streamText `tools` option. Execution is wired through the provided
  * RunContext so tools have access to deps, usage, etc.
+ *
+ * @param tools - Tool definitions to convert.
+ * @param getCtx - Factory that returns the current RunContext.
+ * @param maxConcurrency - Optional cap on concurrent tool executions per turn.
  */
 export function toAISDKTools<TDeps>(
 	tools: ReadonlyArray<ToolDefinition<TDeps>>,
 	getCtx: () => RunContext<TDeps>,
+	maxConcurrency?: number,
 ): ToolSet {
+	const semaphore = maxConcurrency !== undefined
+		? new Semaphore(maxConcurrency)
+		: undefined;
+
 	const result: ToolSet = {};
 	for (const t of tools) {
 		result[t.name] = aiTool({
 			description: t.description,
 			inputSchema: t.parameters,
 			execute: async (args: z.infer<ZodTypeAny>) => {
-				const ctx = getCtx();
-				const prev = ctx.toolName;
-				ctx.toolName = t.name;
-				const attempts = (t.maxRetries ?? 0) + 1;
-				let lastErr: unknown;
-				try {
-					if (t.argsValidator) {
-						await t.argsValidator(args);
-					}
-					for (let i = 0; i < attempts; i++) {
-						try {
-							return await t.execute(ctx, args);
-						} catch (err) {
-							lastErr = err;
+				const run = async () => {
+					const ctx = getCtx();
+					const prev = ctx.toolName;
+					ctx.toolName = t.name;
+					const attempts = (t.maxRetries ?? 0) + 1;
+					let lastErr: unknown;
+					try {
+						if (t.argsValidator) {
+							await t.argsValidator(args);
 						}
+						for (let i = 0; i < attempts; i++) {
+							try {
+								return await t.execute(ctx, args);
+							} catch (err) {
+								lastErr = err;
+							}
+						}
+						throw lastErr;
+					} finally {
+						ctx.toolName = prev;
 					}
-					throw lastErr;
-				} finally {
-					ctx.toolName = prev;
-				}
+				};
+
+				return semaphore !== undefined
+					? semaphore.run(run)
+					: run();
 			},
 		});
 	}

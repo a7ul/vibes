@@ -4,7 +4,12 @@ export type {
 	AgentOverrideOptions,
 	RunOptions,
 	SystemPromptFn,
+	InstructionsFn,
+	EndStrategy,
 } from "./agent.ts";
+
+export type { ModelSettings } from "./model_settings.ts";
+export { Semaphore } from "./concurrency.ts";
 
 export { tool, plainTool, toAISDKTools } from "./tool.ts";
 export type { ToolDefinition } from "./tool.ts";

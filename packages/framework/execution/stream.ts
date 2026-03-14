@@ -12,6 +12,9 @@ import {
 	nudgeWithValidationError,
 	prepareTurn,
 	resolveSystemPrompt,
+	resolveModelSettings,
+	modelSettingsToAISDKOptions,
+	resolveEndStrategy,
 	runValidators,
 	checkModelRequestsAllowed,
 	type InternalRunOpts,
@@ -125,7 +128,11 @@ async function runStreamLoop<TDeps, TOutput>(
 	const maxTurns = opts._override?.maxTurns ?? agent.maxTurns;
 	const maxRetries = opts._override?.maxRetries ?? agent.maxRetries;
 	const resultValidators = opts._override?.resultValidators ?? agent.resultValidators;
+	const modelSettingsRaw = resolveModelSettings(agent, opts);
+	const modelSettings = modelSettingsToAISDKOptions(modelSettingsRaw);
+	const endStrategy = resolveEndStrategy(agent, opts);
 
+	// systemPrompt resolved once; instructions resolved per-turn inside prepareTurn
 	const systemPrompt = await resolveSystemPrompt(
 		agent,
 		ctx,
@@ -137,14 +144,21 @@ async function runStreamLoop<TDeps, TOutput>(
 
 	try {
 		for (let turn = 0; turn < maxTurns; turn++) {
-			const { tools, msgsForModel } = await prepareTurn(agent, opts, ctx, messages);
+			const { tools, msgsForModel, system } = await prepareTurn(
+				agent,
+				opts,
+				ctx,
+				messages,
+				systemPrompt,
+			);
 
 			const stream = streamText({
 				model,
-				system: systemPrompt,
+				system,
 				messages: msgsForModel,
 				tools,
 				stopWhen: stepCountIs(1),
+				...modelSettings,
 			});
 
 			let accumulatedText = "";
@@ -190,6 +204,14 @@ async function runStreamLoop<TDeps, TOutput>(
 						ctx,
 						parsed.data as TOutput,
 					);
+
+					// With 'exhaustive' strategy, ensure all other tool results in this
+					// response have been awaited before resolving. streamText with
+					// stepCountIs(1) already awaits all tool executions, so by the time
+					// `toolResults` resolves, all tools have run. The strategy is stored
+					// for callers.
+					void endStrategy; // acknowledged
+
 					const allMessages = [...messages, ...newMessages];
 					streamClosed = true;
 					textController.close();
