@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 01-03-PLAN.md (missing anthropic import fix in hello-world.mdx)
-last_updated: "2026-03-14T15:27:59.725Z"
-last_activity: 2026-03-14 -- Completed 01-01 (landing page + introduction)
+stopped_at: Completed 02-01-PLAN.md (agents/models/dependencies/tools concept pages)
+last_updated: "2026-03-14T15:31:00.000Z"
+last_activity: 2026-03-14 -- Completed 02-01 (agents, models, dependencies, tools concept pages)
 progress:
   total_phases: 6
   completed_phases: 1
-  total_plans: 3
-  completed_plans: 3
-  percent: 100
+  total_plans: 4
+  completed_plans: 4
+  percent: 17
 ---
 
 # Project State
@@ -21,16 +21,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-14)
 
 **Core value:** Every developer who lands on the docs can understand Vibes, why it exists, and ship their first agent in under 5 minutes.
-**Current focus:** Phase 1 - Landing and Getting Started
+**Current focus:** Phase 2 - Core Concepts Part 1
 
 ## Current Position
 
-Phase: 1 of 6 (Landing and Getting Started)
-Plan: 1 of 2 in current phase
+Phase: 2 of 6 (Core Concepts Part 1)
+Plan: 1 of 8 in current phase (02-01 complete)
 Status: In progress
-Last activity: 2026-03-14 -- Completed 01-01 (landing page + introduction)
+Last activity: 2026-03-14 -- Completed 02-01 (agents, models, dependencies, tools concept pages)
 
-Progress: [██████████] 100%
+Progress: [█░░░░░░░░░] 17%
 
 ## Performance Metrics
 
@@ -68,6 +68,9 @@ Recent decisions affecting current work:
 - [Phase 01-02]: Deleted 4 fragmented getting-started pages and replaced with single progressive hello-world.mdx tutorial
 - [Phase 01-02]: Added introduction to Getting Started nav group alongside new hello-world tutorial
 - [Phase 01-landing-and-getting-started]: Added anthropic import to Step 4 only — Steps 1-3 were already correct and untouched
+- [02-01]: outputTemplate is boolean (not string) — documented correctly in agents.mdx
+- [02-01]: PrivacyRule uses { pattern, replacement? } for regex rules — no type key or redactValue
+- [02-01]: RunContext has 7 fields + attachMetadata() — full interface documented in dependencies.mdx
 
 ### Pending Todos
 
@@ -80,6 +83,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-14T15:24:25.144Z
-Stopped at: Completed 01-03-PLAN.md (missing anthropic import fix in hello-world.mdx)
+Last session: 2026-03-14T15:31:00.000Z
+Stopped at: Completed 02-01-PLAN.md (agents/models/dependencies/tools concept pages)
 Resume file: None
