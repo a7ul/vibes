@@ -1,6 +1,8 @@
 # RunContext
 
-`RunContext<TDeps>` is passed to every tool `execute` function, dynamic system prompt, and result validator during a run. It gives you access to the current dependencies, token usage, retry count, and a unique run ID.
+`RunContext<TDeps>` is passed to every tool `execute` function, dynamic system
+prompt, and result validator during a run. It gives you access to the current
+dependencies, token usage, retry count, and a unique run ID.
 
 ## Interface
 
@@ -18,13 +20,14 @@ interface RunContext<TDeps = undefined> {
 
 ### `deps`
 
-Your injected runtime dependencies. The type is `TDeps` — whatever you declared as the first type parameter on `Agent<TDeps, TOutput>`.
+Your injected runtime dependencies. The type is `TDeps` — whatever you declared
+as the first type parameter on `Agent<TDeps, TOutput>`.
 
 ```ts
-execute: async (ctx, args) => {
+execute: (async (ctx, args) => {
   const user = await ctx.deps.db.users.findById(args.userId);
   return user;
-};
+});
 ```
 
 See [Dependencies](./dependencies.md) for full details.
@@ -33,13 +36,14 @@ See [Dependencies](./dependencies.md) for full details.
 
 ### `usage`
 
-Cumulative token usage for the current run, updated after each LLM call. Useful for logging, rate limiting, or cost tracking inside a tool.
+Cumulative token usage for the current run, updated after each LLM call. Useful
+for logging, rate limiting, or cost tracking inside a tool.
 
 ```ts
-execute: async (ctx, args) => {
+execute: (async (ctx, args) => {
   console.log(`Tokens used so far: ${ctx.usage.totalTokens}`);
   return doWork(args);
-};
+});
 ```
 
 `Usage` is:
@@ -57,7 +61,9 @@ type Usage = {
 
 ### `retryCount`
 
-How many times the current result has been retried due to validation failures. Starts at `0`. Increments each time a result validator throws or structured output validation fails.
+How many times the current result has been retried due to validation failures.
+Starts at `0`. Increments each time a result validator throws or structured
+output validation fails.
 
 Useful for relaxing constraints on later retries:
 
@@ -76,26 +82,28 @@ resultValidators: [
 
 ### `toolName`
 
-The name of the tool currently executing, or `null` when the context is used outside of tool execution (e.g. in a dynamic system prompt or result validator).
+The name of the tool currently executing, or `null` when the context is used
+outside of tool execution (e.g. in a dynamic system prompt or result validator).
 
 ```ts
-execute: async (ctx, args) => {
+execute: (async (ctx, args) => {
   console.log(`Running tool: ${ctx.toolName}`); // e.g. "search"
   return doWork(args);
-};
+});
 ```
 
 ---
 
 ### `runId`
 
-A UUID generated once per `.run()` or `.stream()` call. Useful for correlating logs, traces, or audit records across an entire multi-turn run.
+A UUID generated once per `.run()` or `.stream()` call. Useful for correlating
+logs, traces, or audit records across an entire multi-turn run.
 
 ```ts
-execute: async (ctx, args) => {
+execute: (async (ctx, args) => {
   logger.info({ runId: ctx.runId, tool: ctx.toolName }, "Tool called");
   return doWork(args);
-};
+});
 ```
 
 ---

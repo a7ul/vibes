@@ -126,11 +126,11 @@ if (result.output.type === "answer") {
 
 Controls how the framework asks the model to produce structured output:
 
-| Mode | Behaviour | When to use |
-| --- | --- | --- |
-| `"tool"` (default) | Injects a `final_result` tool; model calls it | Most models; best type safety |
-| `"native"` | Uses the model's native structured-output API (e.g. `responseFormat`) | Models with native JSON mode |
-| `"prompted"` | Appends a JSON instruction to the system prompt; parses the last code block | Models without tool support |
+| Mode               | Behaviour                                                                   | When to use                   |
+| ------------------ | --------------------------------------------------------------------------- | ----------------------------- |
+| `"tool"` (default) | Injects a `final_result` tool; model calls it                               | Most models; best type safety |
+| `"native"`         | Uses the model's native structured-output API (e.g. `responseFormat`)       | Models with native JSON mode  |
+| `"prompted"`       | Appends a JSON instruction to the system prompt; parses the last code block | Models without tool support   |
 
 ```ts
 const agent = new Agent({
@@ -150,7 +150,8 @@ const agent = new Agent({
   model,
   outputSchema: MySchema,
   outputMode: "prompted",
-  outputTemplate: "Respond ONLY with a JSON object matching this schema:\n{schema}",
+  outputTemplate:
+    "Respond ONLY with a JSON object matching this schema:\n{schema}",
 });
 ```
 

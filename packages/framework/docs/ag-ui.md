@@ -7,8 +7,8 @@ with AG-UI frontends.
 ## What is AG-UI?
 
 AG-UI is an open protocol for streaming AI agent output to web frontends. It
-defines a set of typed SSE events (text deltas, tool calls, state snapshots,
-run lifecycle) that frontends can consume without knowing the underlying agent
+defines a set of typed SSE events (text deltas, tool calls, state snapshots, run
+lifecycle) that frontends can consume without knowing the underlying agent
 framework.
 
 ## Basic Usage
@@ -43,12 +43,12 @@ streams SSE events back to the client.
 
 The request body must be JSON with this shape:
 
-| Field | Type | Description |
-| --- | --- | --- |
-| `threadId` | `string` | Client-supplied thread ID for multi-turn continuations |
-| `runId` | `string` (optional) | Run identifier; auto-generated when omitted |
-| `messages` | `AGUIMessage[]` | Conversation history including the latest user message |
-| `state` | `Record<string, unknown>` (optional) | Initial state emitted in `STATE_SNAPSHOT` event |
+| Field      | Type                                 | Description                                            |
+| ---------- | ------------------------------------ | ------------------------------------------------------ |
+| `threadId` | `string`                             | Client-supplied thread ID for multi-turn continuations |
+| `runId`    | `string` (optional)                  | Run identifier; auto-generated when omitted            |
+| `messages` | `AGUIMessage[]`                      | Conversation history including the latest user message |
+| `state`    | `Record<string, unknown>` (optional) | Initial state emitted in `STATE_SNAPSHOT` event        |
 
 ```ts
 // Example POST body
@@ -62,26 +62,26 @@ The request body must be JSON with this shape:
 
 ## `AGUIMessage`
 
-| Field | Type | Description |
-| --- | --- | --- |
-| `role` | `"user" \| "assistant"` | Message role |
-| `content` | `string` | Message text |
+| Field     | Type                    | Description  |
+| --------- | ----------------------- | ------------ |
+| `role`    | `"user" \| "assistant"` | Message role |
+| `content` | `string`                | Message text |
 
 ## SSE Event Types
 
 The adapter emits these events in order during a run:
 
-| Event type | Description |
-| --- | --- |
-| `RUN_STARTED` | Run began; includes `threadId` and `runId` |
-| `STATE_SNAPSHOT` | Initial state (if `state` was in the request) |
-| `TEXT_MESSAGE_START` | Model started generating a text response |
-| `TEXT_MESSAGE_CONTENT` | Text delta chunk |
-| `TEXT_MESSAGE_END` | Model finished generating text for this turn |
-| `TOOL_CALL_START` | Model called a tool |
-| `TOOL_CALL_END` | Tool returned a result |
-| `RUN_FINISHED` | Run completed successfully |
-| `RUN_ERROR` | Run failed with an error |
+| Event type             | Description                                   |
+| ---------------------- | --------------------------------------------- |
+| `RUN_STARTED`          | Run began; includes `threadId` and `runId`    |
+| `STATE_SNAPSHOT`       | Initial state (if `state` was in the request) |
+| `TEXT_MESSAGE_START`   | Model started generating a text response      |
+| `TEXT_MESSAGE_CONTENT` | Text delta chunk                              |
+| `TEXT_MESSAGE_END`     | Model finished generating text for this turn  |
+| `TOOL_CALL_START`      | Model called a tool                           |
+| `TOOL_CALL_END`        | Tool returned a result                        |
+| `RUN_FINISHED`         | Run completed successfully                    |
+| `RUN_ERROR`            | Run failed with an error                      |
 
 ## Multi-Turn Conversations
 
@@ -143,15 +143,15 @@ Deno.serve((req) => {
 
 ### `AGUIAdapter`
 
-| Member | Signature | Description |
-| --- | --- | --- |
-| constructor | `(agent, options?)` | Wrap an agent |
+| Member          | Signature                    | Description                              |
+| --------------- | ---------------------------- | ---------------------------------------- |
+| constructor     | `(agent, options?)`          | Wrap an agent                            |
 | `handleRequest` | `(req: Request) => Response` | Handle a POST request, return SSE stream |
 
 ### `AGUIAdapter` Options
 
-| Option | Type | Description |
-| --- | --- | --- |
+| Option        | Type                      | Description                        |
+| ------------- | ------------------------- | ---------------------------------- |
 | `depsFactory` | `(req: Request) => TDeps` | Extract deps from the HTTP request |
 
 ## Error Behavior

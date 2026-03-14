@@ -352,25 +352,27 @@ const model = new TestModel({
   ],
 });
 
-const agent = new Agent({ model, outputSchema: OutputSchema, tools: [searchTool] });
+const agent = new Agent({
+  model,
+  outputSchema: OutputSchema,
+  tools: [searchTool],
+});
 const result = await agent.run("What is vibes?");
 assertEquals(result.output.answer.includes("Vibes"), true);
 ```
 
 ### `FunctionModel` — Programmatic Control
 
-`FunctionModel` gives you full control by accepting a function that receives
-the current prompt and returns a response. Useful for testing behaviour that
-depends on message content:
+`FunctionModel` gives you full control by accepting a function that receives the
+current prompt and returns a response. Useful for testing behaviour that depends
+on message content:
 
 ```ts
 import { FunctionModel } from "./mod.ts";
 
 const model = new FunctionModel(({ prompt }) => {
   const lastUser = prompt.findLast((m) => m.role === "user");
-  const content = typeof lastUser?.content === "string"
-    ? lastUser.content
-    : "";
+  const content = typeof lastUser?.content === "string" ? lastUser.content : "";
   return {
     text: content.includes("hello") ? "Hi there!" : "I don't understand.",
     finishReason: "stop" as const,

@@ -1,6 +1,8 @@
 # Deferred Tools (Human-in-the-Loop)
 
-Deferred tools pause an agent run when a tool call requires human approval before execution. The caller inspects the pending requests, approves or modifies them, then resumes the run.
+Deferred tools pause an agent run when a tool call requires human approval
+before execution. The caller inspects the pending requests, approves or modifies
+them, then resumes the run.
 
 ## The Pattern
 
@@ -57,7 +59,8 @@ try {
 
 ## Conditional Approval
 
-Pass a function instead of `true` to require approval only under certain conditions:
+Pass a function instead of `true` to require approval only under certain
+conditions:
 
 ```ts
 const transferFunds = tool({
@@ -69,31 +72,34 @@ const transferFunds = tool({
 });
 ```
 
-The function receives the `RunContext` and the proposed arguments. Return `true` to pause, `false` to execute immediately.
+The function receives the `RunContext` and the proposed arguments. Return `true`
+to pause, `false` to execute immediately.
 
 ## `DeferredToolRequest`
 
 Each pending tool call in `deferred.requests` has:
 
-| Field | Type | Description |
-| --- | --- | --- |
-| `toolCallId` | `string` | Correlates request to result — must be echoed back |
-| `toolName` | `string` | The name of the tool the model called |
-| `args` | `Record<string, unknown>` | The arguments the model passed |
+| Field        | Type                      | Description                                        |
+| ------------ | ------------------------- | -------------------------------------------------- |
+| `toolCallId` | `string`                  | Correlates request to result — must be echoed back |
+| `toolName`   | `string`                  | The name of the tool the model called              |
+| `args`       | `Record<string, unknown>` | The arguments the model passed                     |
 
 ## `DeferredToolResult`
 
-When calling `agent.resume()`, supply one result per request. Provide exactly one of `result` or `argsOverride`:
+When calling `agent.resume()`, supply one result per request. Provide exactly
+one of `result` or `argsOverride`:
 
-| Field | Type | Description |
-| --- | --- | --- |
-| `toolCallId` | `string` | Must match a `DeferredToolRequest.toolCallId` |
-| `result` | `string \| object` | Inject this value directly as the tool output |
-| `argsOverride` | `Record<string, unknown>` | Re-execute the tool with these args instead |
+| Field          | Type                      | Description                                   |
+| -------------- | ------------------------- | --------------------------------------------- |
+| `toolCallId`   | `string`                  | Must match a `DeferredToolRequest.toolCallId` |
+| `result`       | `string \| object`        | Inject this value directly as the tool output |
+| `argsOverride` | `Record<string, unknown>` | Re-execute the tool with these args instead   |
 
 ## Resuming with `argsOverride`
 
-Use `argsOverride` to let a human correct the model's arguments before execution:
+Use `argsOverride` to let a human correct the model's arguments before
+execution:
 
 ```ts
 const results = {
@@ -106,11 +112,13 @@ const results = {
 const finalResult = await agent.resume(deferred, results);
 ```
 
-The tool's `execute` function is called with the overridden args, not the original ones.
+The tool's `execute` function is called with the overridden args, not the
+original ones.
 
 ## Multiple Pending Approvals
 
-A single turn can produce multiple tool calls. All of them must be resolved before resuming:
+A single turn can produce multiple tool calls. All of them must be resolved
+before resuming:
 
 ```ts
 const results = {
@@ -153,7 +161,8 @@ const finalResult = await agent.resume(deferred, humanResults);
 
 ### `ApprovalRequiredToolset`
 
-Use `ApprovalRequiredToolset` to wrap an entire toolset so all its tools require approval:
+Use `ApprovalRequiredToolset` to wrap an entire toolset so all its tools require
+approval:
 
 ```ts
 import { ApprovalRequiredToolset } from "./mod.ts";
@@ -166,31 +175,36 @@ const agent = new Agent({ model, toolsets: [safeToolset] });
 
 ### `tool({ requiresApproval })`
 
-| Value | Behaviour |
-| --- | --- |
-| `true` | Always requires approval |
-| `false` / omitted | Never requires approval |
+| Value                                        | Behaviour                                  |
+| -------------------------------------------- | ------------------------------------------ |
+| `true`                                       | Always requires approval                   |
+| `false` / omitted                            | Never requires approval                    |
 | `(ctx, args) => boolean \| Promise<boolean>` | Conditional — called before each execution |
 
 ### `ApprovalRequiredError`
 
-| Property | Type | Description |
-| --- | --- | --- |
+| Property   | Type                   | Description                                       |
+| ---------- | ---------------------- | ------------------------------------------------- |
 | `deferred` | `DeferredToolRequests` | Contains `requests` array and opaque resume state |
-| `message` | `string` | Lists tool names requiring approval |
+| `message`  | `string`               | Lists tool names requiring approval               |
 
 ### `agent.resume(deferred, results)`
 
-| Arg | Type | Description |
-| --- | --- | --- |
+| Arg        | Type                   | Description                                      |
+| ---------- | ---------------------- | ------------------------------------------------ |
 | `deferred` | `DeferredToolRequests` | The object from `ApprovalRequiredError.deferred` |
-| `results` | `DeferredToolResults` | `{ results: DeferredToolResult[] }` |
+| `results`  | `DeferredToolResults`  | `{ results: DeferredToolResult[] }`              |
 
 Returns `Promise<RunResult<TOutput>>` — same type as `agent.run()`.
 
 ## Error Behavior
 
-- `ApprovalRequiredError` is thrown synchronously from `.run()` when the model produces a tool call with `requiresApproval: true`. The run is **paused**, not failed.
-- Calling `agent.resume()` with missing `toolCallId` entries throws an error — every pending request must be resolved.
-- If the resumed run itself triggers another approval-required tool, `agent.resume()` throws a new `ApprovalRequiredError`. Handle it the same way.
-- After `maxTurns`, `MaxTurnsError` is thrown even inside a resumed run — turns are counted cumulatively.
+- `ApprovalRequiredError` is thrown synchronously from `.run()` when the model
+  produces a tool call with `requiresApproval: true`. The run is **paused**, not
+  failed.
+- Calling `agent.resume()` with missing `toolCallId` entries throws an error —
+  every pending request must be resolved.
+- If the resumed run itself triggers another approval-required tool,
+  `agent.resume()` throws a new `ApprovalRequiredError`. Handle it the same way.
+- After `maxTurns`, `MaxTurnsError` is thrown even inside a resumed run — turns
+  are counted cumulatively.

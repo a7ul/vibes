@@ -1,8 +1,8 @@
 # Graph
 
-A `Graph` is a finite-state machine (FSM) where each node can run an agent,
-call an API, or do any async work, then transition to another node or emit a
-final output.
+A `Graph` is a finite-state machine (FSM) where each node can run an agent, call
+an API, or do any async work, then transition to another node or emit a final
+output.
 
 ## What is a Graph?
 
@@ -41,6 +41,7 @@ class SummariseNode extends BaseNode<State, string> {
 ```
 
 `run()` must return one of:
+
 - `this.next(nodeId, newState)` — transition to another node with updated state
 - `this.output(value)` — end the graph and emit `value` as the final output
 
@@ -57,7 +58,7 @@ const graph = new Graph({
 
 const output = await graph.run(
   { query: "TypeScript history" }, // initial state
-  "fetch",                         // starting node ID
+  "fetch", // starting node ID
 );
 
 console.log(output); // final string from SummariseNode
@@ -65,9 +66,9 @@ console.log(output); // final string from SummariseNode
 
 ### `GraphOptions`
 
-| Option | Type | Default | Description |
-| --- | --- | --- | --- |
-| `maxIterations` | `number` | `100` | Max node visits before `MaxGraphIterationsError` |
+| Option          | Type     | Default | Description                                      |
+| --------------- | -------- | ------- | ------------------------------------------------ |
+| `maxIterations` | `number` | `100`   | Max node visits before `MaxGraphIterationsError` |
 
 ## Step-by-Step Execution with `GraphRun`
 
@@ -92,10 +93,10 @@ if (step?.kind === "output") {
 
 ### `GraphStep` union
 
-| `kind` | Fields | Description |
-| --- | --- | --- |
-| `"node"` | `nodeId: string`, `state: TState` | Paused at a node after it ran |
-| `"output"` | `output: TOutput` | Graph completed with a final value |
+| `kind`     | Fields                            | Description                        |
+| ---------- | --------------------------------- | ---------------------------------- |
+| `"node"`   | `nodeId: string`, `state: TState` | Paused at a node after it ran      |
+| `"output"` | `output: TOutput`                 | Graph completed with a final value |
 
 ## State Persistence
 
@@ -113,7 +114,10 @@ class KVPersistence<TState> implements StatePersistence<TState> {
   }
 
   async load(graphId: string) {
-    const entry = await this.kv.get<{ nodeId: string; state: TState }>(["graph", graphId]);
+    const entry = await this.kv.get<{ nodeId: string; state: TState }>([
+      "graph",
+      graphId,
+    ]);
     return entry.value ?? null;
   }
 }
@@ -155,7 +159,9 @@ class ValidateNode extends BaseNode<State, Report> {
 
   async run(state: State) {
     const { output } = await validatorAgent.run(state.draft);
-    if (output.valid) return this.output({ draft: state.draft, score: output.score });
+    if (output.valid) {
+      return this.output({ draft: state.draft, score: output.score });
+    }
     return this.next("generate", { ...state, feedback: output.feedback });
   }
 }
@@ -180,22 +186,22 @@ class RouterNode extends BaseNode<State, never> {
 
 ### `BaseNode<TState, TOutput>`
 
-| Member | Type | Description |
-| --- | --- | --- |
-| `id` | `string` (abstract) | Unique node identifier |
-| `nextNodes` | `string[]` (optional) | Declared transition targets for Mermaid |
-| `run(state)` | `Promise<NodeResult>` (abstract) | Node logic |
-| `this.next(id, state)` | `NodeResult` | Transition helper |
-| `this.output(value)` | `NodeResult` | End-graph helper |
+| Member                 | Type                             | Description                             |
+| ---------------------- | -------------------------------- | --------------------------------------- |
+| `id`                   | `string` (abstract)              | Unique node identifier                  |
+| `nextNodes`            | `string[]` (optional)            | Declared transition targets for Mermaid |
+| `run(state)`           | `Promise<NodeResult>` (abstract) | Node logic                              |
+| `this.next(id, state)` | `NodeResult`                     | Transition helper                       |
+| `this.output(value)`   | `NodeResult`                     | End-graph helper                        |
 
 ### `Graph<TState, TOutput>`
 
-| Member | Signature | Description |
-| --- | --- | --- |
-| constructor | `({ nodes, maxIterations? })` | Build the graph |
-| `run` | `(state, startNode, opts?) => Promise<TOutput>` | Execute fully |
-| `runIter` | `(state, startNode, opts?) => GraphRun` | Step-by-step handle |
-| `toMermaid` | `() => string` | Generate Mermaid diagram |
+| Member      | Signature                                       | Description              |
+| ----------- | ----------------------------------------------- | ------------------------ |
+| constructor | `({ nodes, maxIterations? })`                   | Build the graph          |
+| `run`       | `(state, startNode, opts?) => Promise<TOutput>` | Execute fully            |
+| `runIter`   | `(state, startNode, opts?) => GraphRun`         | Step-by-step handle      |
+| `toMermaid` | `() => string`                                  | Generate Mermaid diagram |
 
 ## Error Behavior
 

@@ -38,12 +38,12 @@ Spans appear in whatever OpenTelemetry-compatible backend you have configured
 
 ## `InstrumentationOptions`
 
-| Option | Type | Default | Description |
-| --- | --- | --- | --- |
-| `isEnabled` | `boolean` | `true` | Enable or disable telemetry |
-| `functionId` | `string` | agent name | Span function identifier |
-| `metadata` | `Record<string, string \| number \| boolean>` | — | Extra attributes added to every span |
-| `excludeContent` | `boolean` | `false` | Omit prompt/completion content from spans (for privacy) |
+| Option           | Type                                          | Default    | Description                                             |
+| ---------------- | --------------------------------------------- | ---------- | ------------------------------------------------------- |
+| `isEnabled`      | `boolean`                                     | `true`     | Enable or disable telemetry                             |
+| `functionId`     | `string`                                      | agent name | Span function identifier                                |
+| `metadata`       | `Record<string, string \| number \| boolean>` | —          | Extra attributes added to every span                    |
+| `excludeContent` | `boolean`                                     | `false`    | Omit prompt/completion content from spans (for privacy) |
 
 ## `TelemetrySettings`
 
@@ -137,5 +137,6 @@ const instrumented = instrumentAgent(agent, { isEnabled: false });
 
 - `instrumentAgent()` does not throw if OTel is not configured — it falls back
   to a no-op tracer silently.
-- Errors in the wrapped agent propagate unchanged through the instrumented proxy.
+- Errors in the wrapped agent propagate unchanged through the instrumented
+  proxy.
 - If `isEnabled: false`, no spans are created and performance overhead is zero.

@@ -16,8 +16,8 @@
 import { assertEquals, assertExists, assertStringIncludes } from "@std/assert";
 import { z } from "zod";
 import { Agent, tool } from "../mod.ts";
-import { AGUIAdapter } from "../ag_ui/mod.ts";
-import type { AGUIEvent, AGUIRunInput } from "../ag_ui/mod.ts";
+import { AGUIAdapter } from "../lib/ag_ui/mod.ts";
+import type { AGUIEvent, AGUIRunInput } from "../lib/ag_ui/mod.ts";
 import { MockLanguageModelV3, textStream, toolCallStream } from "./_helpers.ts";
 
 // ---------------------------------------------------------------------------

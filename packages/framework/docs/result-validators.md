@@ -1,10 +1,14 @@
 # Result Validators
 
-Result validators run after the model's output has been parsed by Zod. They let you enforce business rules, transform the output, or reject it and force the model to try again.
+Result validators run after the model's output has been parsed by Zod. They let
+you enforce business rules, transform the output, or reject it and force the
+model to try again.
 
 ## Basic Usage
 
-A validator is a function that receives the [`RunContext`](./run-context.md) and the parsed output. Return the output to accept it (optionally modified), or throw an `Error` to reject it.
+A validator is a function that receives the [`RunContext`](./run-context.md) and
+the parsed output. Return the output to accept it (optionally modified), or
+throw an `Error` to reject it.
 
 ```ts
 import { Agent } from "./mod.ts";
@@ -44,7 +48,9 @@ type ResultValidator<TDeps, TOutput> = (
 
 ## Retry Behaviour
 
-When a validator throws, the error message is sent back to the model as a user message asking it to try again. The run retries up to `maxRetries` (default: `3`). If all retries are exhausted, [`MaxRetriesError`](./errors.md) is thrown.
+When a validator throws, the error message is sent back to the model as a user
+message asking it to try again. The run retries up to `maxRetries` (default:
+`3`). If all retries are exhausted, [`MaxRetriesError`](./errors.md) is thrown.
 
 ```ts
 const agent = new Agent<undefined, Output>({
@@ -55,10 +61,11 @@ const agent = new Agent<undefined, Output>({
 });
 ```
 
-`ctx.retryCount` increments each time a retry occurs, so validators can inspect how many attempts have already been made:
+`ctx.retryCount` increments each time a retry occurs, so validators can inspect
+how many attempts have already been made:
 
 ```ts
-(_ctx, output) => {
+((_ctx, output) => {
   if (ctx.retryCount >= 2) {
     // Relax constraints on later retries
     return output;
@@ -67,12 +74,13 @@ const agent = new Agent<undefined, Output>({
     throw new Error("Output does not meet strict criteria");
   }
   return output;
-};
+});
 ```
 
 ## Transforming Output
 
-Validators can return a modified version of the output. The modified value becomes `result.output`:
+Validators can return a modified version of the output. The modified value
+becomes `result.output`:
 
 ```ts
 resultValidators: [
@@ -100,7 +108,8 @@ resultValidators: [
 
 ## Multiple Validators
 
-Multiple validators run in order. Each receives the output returned by the previous validator:
+Multiple validators run in order. Each receives the output returned by the
+previous validator:
 
 ```ts
 resultValidators: [
@@ -114,7 +123,8 @@ If any validator throws, the entire output is rejected and the model retries.
 
 ## Validators Without Dependencies
 
-If your agent has `TDeps = undefined`, the `ctx` argument is still present but `ctx.deps` is `undefined`:
+If your agent has `TDeps = undefined`, the `ctx` argument is still present but
+`ctx.deps` is `undefined`:
 
 ```ts
 resultValidators: [

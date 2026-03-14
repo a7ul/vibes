@@ -1,10 +1,14 @@
 # Dependencies
 
-Dependencies are runtime values you inject into an agent run — things like database connections, API clients, user sessions, or configuration. They flow through the entire run and are accessible in tools, dynamic system prompts, and result validators.
+Dependencies are runtime values you inject into an agent run — things like
+database connections, API clients, user sessions, or configuration. They flow
+through the entire run and are accessible in tools, dynamic system prompts, and
+result validators.
 
 ## Defining a Deps Type
 
-Declare a type for your dependencies and pass it as the first type parameter to `Agent`:
+Declare a type for your dependencies and pass it as the first type parameter to
+`Agent`:
 
 ```ts
 type Deps = {
@@ -33,7 +37,8 @@ const result = await agent.run("What are my recent orders?", {
 });
 ```
 
-A fresh `RunContext<Deps>` is created for each call — deps are never shared across runs.
+A fresh `RunContext<Deps>` is created for each call — deps are never shared
+across runs.
 
 ## Accessing Deps in Tools
 
@@ -51,7 +56,8 @@ const getOrders = tool<Deps>({
 });
 ```
 
-The `tool<Deps>()` call pins the tool's `TDeps` to `Deps`, so TypeScript knows the exact shape of `ctx.deps`.
+The `tool<Deps>()` call pins the tool's `TDeps` to `Deps`, so TypeScript knows
+the exact shape of `ctx.deps`.
 
 ## Accessing Deps in Dynamic System Prompts
 
@@ -94,11 +100,13 @@ const agent = new Agent({ model: ..., systemPrompt: "Be helpful." });
 const result = await agent.run("Hello.");
 ```
 
-Tools and prompts still receive a `RunContext<undefined>` — `ctx.deps` is `undefined`.
+Tools and prompts still receive a `RunContext<undefined>` — `ctx.deps` is
+`undefined`.
 
 ## Sharing Expensive Resources
 
-Create deps once and reuse across runs. Connections and clients are safe to share:
+Create deps once and reuse across runs. Connections and clients are safe to
+share:
 
 ```ts
 const sharedDeps = {
@@ -117,7 +125,8 @@ const r2 = await agent.run("Query 2", {
 
 ## Type Safety
 
-TypeScript enforces that the `deps` you pass at run time matches the agent's `TDeps`, and that all tools registered on the agent share the same `TDeps`:
+TypeScript enforces that the `deps` you pass at run time matches the agent's
+`TDeps`, and that all tools registered on the agent share the same `TDeps`:
 
 ```ts
 type Deps = { apiKey: string };

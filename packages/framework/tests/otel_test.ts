@@ -20,7 +20,7 @@ import {
   recordUsageAttributes,
 } from "../mod.ts";
 import type { InstrumentationOptions } from "../mod.ts";
-import { resolveTelemetry } from "../execution/_run_utils.ts";
+import { resolveTelemetry } from "../lib/execution/_run_utils.ts";
 import { MockLanguageModelV3, textResponse, textStream } from "./_helpers.ts";
 
 // ---------------------------------------------------------------------------

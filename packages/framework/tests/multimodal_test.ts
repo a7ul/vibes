@@ -23,9 +23,13 @@ import {
   type UploadedFile,
   uploadedFileSchema,
   uploadedFileToToolResult,
-} from "../binary_content.ts";
+} from "../lib/multimodal/binary_content.ts";
 
-import { audioMessage, fileMessage, imageMessage } from "../content.ts";
+import {
+  audioMessage,
+  fileMessage,
+  imageMessage,
+} from "../lib/multimodal/content.ts";
 
 // ---------------------------------------------------------------------------
 // 13.1  Zod schemas

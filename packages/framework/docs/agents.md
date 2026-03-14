@@ -194,10 +194,10 @@ resolved `systemPrompt`.
 
 Controls when the agent considers a run complete after a tool-only turn:
 
-| Value | Behaviour |
-| --- | --- |
+| Value               | Behaviour                                                                                                              |
+| ------------------- | ---------------------------------------------------------------------------------------------------------------------- |
 | `"early"` (default) | Stop as soon as the model produces a text response or output tool call, even if other tools were also called this turn |
-| `"exhaustive"` | Run all tool calls in the current turn before checking for completion |
+| `"exhaustive"`      | Run all tool calls in the current turn before checking for completion                                                  |
 
 ```ts
 const agent = new Agent({ model, endStrategy: "exhaustive" });
@@ -224,8 +224,8 @@ control over execution order.
 
 ## `runStreamEvents()`
 
-For detailed event-by-event observation of a run (tool calls, tool results,
-text deltas, completion), use `runStreamEvents()`. See
+For detailed event-by-event observation of a run (tool calls, tool results, text
+deltas, completion), use `runStreamEvents()`. See
 [Streaming](./streaming.md#runstreamevents) for the full event type reference.
 
 ```ts

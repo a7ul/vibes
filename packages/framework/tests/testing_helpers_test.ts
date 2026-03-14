@@ -5,7 +5,7 @@ import {
   getAllowModelRequests,
   setAllowModelRequests,
 } from "../mod.ts";
-import { ModelRequestsDisabledError } from "../errors.ts";
+import { ModelRequestsDisabledError } from "../lib/types/errors.ts";
 import {
   type DoGenerateResult,
   MockLanguageModelV3,

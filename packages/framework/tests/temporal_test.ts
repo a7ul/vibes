@@ -13,11 +13,11 @@ import {
   roundTripMessages,
   serializeRunState,
   TemporalAgent,
-} from "../temporal/mod.ts";
+} from "../lib/temporal/mod.ts";
 import type {
   SerializableMessage,
   TemporalAgentOptions,
-} from "../temporal/mod.ts";
+} from "../lib/temporal/mod.ts";
 import {
   type DoGenerateResult,
   MockLanguageModelV3,
@@ -180,7 +180,9 @@ Deno.test("TemporalAgent.run - passes run options through", async () => {
         description: "check",
         parameters: z.object({}),
         // deno-lint-ignore require-await
-        execute: async (ctx: import("../types.ts").RunContext<undefined>) => {
+        execute: async (
+          ctx: import("../types/context.ts").RunContext<undefined>,
+        ) => {
           capturedMetadata = ctx.metadata;
           return "checked";
         },

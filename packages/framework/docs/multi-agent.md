@@ -5,8 +5,8 @@ can invoke, or via programmatic hand-off in application code.
 
 ## Agent-as-Tool Pattern
 
-Wrap any agent in a `tool()` definition so the parent agent can call it as if
-it were a regular tool. The child agent receives a sub-prompt and returns its
+Wrap any agent in a `tool()` definition so the parent agent can call it as if it
+were a regular tool. The child agent receives a sub-prompt and returns its
 output.
 
 ```ts
@@ -16,7 +16,8 @@ import { z } from "zod";
 // Specialist child agent
 const researchAgent = new Agent({
   model,
-  systemPrompt: "You are a research specialist. Return concise factual summaries.",
+  systemPrompt:
+    "You are a research specialist. Return concise factual summaries.",
 });
 
 // Wrap it as a tool
@@ -35,11 +36,14 @@ const researchTool = tool({
 // Orchestrator parent agent
 const orchestrator = new Agent({
   model,
-  systemPrompt: "You are an orchestrator. Use the research tool to gather facts.",
+  systemPrompt:
+    "You are an orchestrator. Use the research tool to gather facts.",
   tools: [researchTool],
 });
 
-const result = await orchestrator.run("Write a report on the history of TypeScript.");
+const result = await orchestrator.run(
+  "Write a report on the history of TypeScript.",
+);
 console.log(result.output);
 ```
 
@@ -56,9 +60,12 @@ const analyserTool = tool<Deps>({
   parameters: z.object({ datasetId: z.string() }),
   execute: async (ctx, { datasetId }) => {
     const dataset = await ctx.deps.db.datasets.get(datasetId);
-    const result = await analystAgent.run(`Analyse: ${JSON.stringify(dataset)}`, {
-      deps: ctx.deps, // forward deps to child
-    });
+    const result = await analystAgent.run(
+      `Analyse: ${JSON.stringify(dataset)}`,
+      {
+        deps: ctx.deps, // forward deps to child
+      },
+    );
     return result.output;
   },
 });
@@ -128,9 +135,12 @@ Pass history between chained agents to maintain conversation context:
 
 ```ts
 const stage1 = await plannerAgent.run("Plan a trip to Japan.");
-const stage2 = await detailAgent.run("Expand each item into a day-by-day schedule.", {
-  messageHistory: stage1.messages,
-});
+const stage2 = await detailAgent.run(
+  "Expand each item into a day-by-day schedule.",
+  {
+    messageHistory: stage1.messages,
+  },
+);
 ```
 
 ### Supervisor Pattern
@@ -147,7 +157,11 @@ const supervisorTool = tool({
     task: z.string(),
   }),
   execute: async (_ctx, { specialist, task }) => {
-    const agents = { writer: writerAgent, analyst: analystAgent, coder: coderAgent };
+    const agents = {
+      writer: writerAgent,
+      analyst: analystAgent,
+      coder: coderAgent,
+    };
     const result = await agents[specialist].run(task);
     return result.output;
   },
@@ -158,8 +172,8 @@ const supervisorTool = tool({
 
 - Child agent errors propagate as tool errors — the parent model sees the error
   message and can retry or fall back.
-- `MaxTurnsError` and `UsageLimitError` from child agents are **not** automatically
-  caught. Wrap child `agent.run()` calls in try/catch if you want to handle them
-  gracefully.
+- `MaxTurnsError` and `UsageLimitError` from child agents are **not**
+  automatically caught. Wrap child `agent.run()` calls in try/catch if you want
+  to handle them gracefully.
 - Usage from child agents is not automatically merged into parent usage unless
   you do so explicitly in the tool's `execute` function.
