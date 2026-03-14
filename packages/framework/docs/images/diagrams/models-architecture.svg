@@ -1,0 +1,79 @@
+<svg viewBox="0 0 760 420" xmlns="http://www.w3.org/2000/svg" font-family="'Geist', ui-sans-serif, system-ui, sans-serif">
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 1 L 9 5 L 0 9 z" fill="#475569"/>
+    </marker>
+    <style>
+      .bg { fill: #0f172a; }
+      .node-blue { fill: #1e3a5f; stroke: #4a9eed; }
+      .node-purple { fill: #2d1b69; stroke: #8b5cf6; }
+      .node-teal { fill: #1a4d4d; stroke: #06b6d4; }
+      .node-green { fill: #1a3a2e; stroke: #22c55e; }
+      .node-orange { fill: #5c3d1a; stroke: #f59e0b; }
+      .label-blue { fill: #bfdbfe; }
+      .label-purple { fill: #ddd6fe; }
+      .label-teal { fill: #a5f3fc; }
+      .label-green { fill: #bbf7d0; }
+      .label-orange { fill: #fde68a; }
+      .label-muted { fill: #94a3b8; }
+      .arrow { stroke: #475569; }
+      @media (prefers-color-scheme: light) {
+        .bg { fill: #f8fafc; }
+        .node-blue { fill: #dbeafe; stroke: #4a9eed; }
+        .node-purple { fill: #ede9fe; stroke: #8b5cf6; }
+        .node-teal { fill: #ccfbf1; stroke: #06b6d4; }
+        .node-green { fill: #dcfce7; stroke: #22c55e; }
+        .node-orange { fill: #fef3c7; stroke: #f59e0b; }
+        .label-blue { fill: #1e40af; }
+        .label-purple { fill: #4c1d95; }
+        .label-teal { fill: #0e7490; }
+        .label-green { fill: #166534; }
+        .label-orange { fill: #78350f; }
+        .label-muted { fill: #64748b; }
+        .arrow { stroke: #94a3b8; }
+      }
+    </style>
+  </defs>
+  <rect class="bg" x="0" y="0" width="760" height="420" rx="12"/>
+  <!-- Your Application -->
+  <rect class="node-blue" x="20" y="170" width="160" height="55" rx="10" stroke-width="1.5"/>
+  <text class="label-blue" x="100" y="197" text-anchor="middle" dominant-baseline="middle" font-size="15" font-weight="500">Your Application</text>
+  <!-- arrow -->
+  <line class="arrow" x1="180" y1="197" x2="218" y2="197" stroke-width="1.5" marker-end="url(#arr)"/>
+  <!-- Agent (Vibes) -->
+  <rect class="node-purple" x="220" y="170" width="130" height="55" rx="10" stroke-width="1.5"/>
+  <text class="label-purple" x="285" y="190" text-anchor="middle" dominant-baseline="middle" font-size="14" font-weight="500">Agent</text>
+  <text class="label-muted" x="285" y="210" text-anchor="middle" dominant-baseline="middle" font-size="12">(Vibes)</text>
+  <!-- arrow -->
+  <line class="arrow" x1="350" y1="197" x2="388" y2="197" stroke-width="1.5" marker-end="url(#arr)"/>
+  <!-- LanguageModel interface -->
+  <rect class="node-teal" x="390" y="160" width="160" height="75" rx="10" stroke-width="1.5"/>
+  <text class="label-teal" x="470" y="185" text-anchor="middle" dominant-baseline="middle" font-size="13" font-weight="500">LanguageModel</text>
+  <text class="label-teal" x="470" y="203" text-anchor="middle" dominant-baseline="middle" font-size="13" font-weight="500">interface</text>
+  <text class="label-muted" x="470" y="222" text-anchor="middle" dominant-baseline="middle" font-size="12">(Vercel AI SDK)</text>
+  <!-- arrows to providers -->
+  <path class="arrow" d="M 550 172 L 592 55" stroke-width="1.5" fill="none" marker-end="url(#arr)"/>
+  <path class="arrow" d="M 550 180 L 592 108" stroke-width="1.5" fill="none" marker-end="url(#arr)"/>
+  <path class="arrow" d="M 550 190 L 592 161" stroke-width="1.5" fill="none" marker-end="url(#arr)"/>
+  <path class="arrow" d="M 550 197" stroke-width="0" fill="none"/>
+  <line class="arrow" x1="550" y1="197" x2="590" y2="197" stroke-width="1.5" marker-end="url(#arr)"/>
+  <path class="arrow" d="M 550 215 L 592 240" stroke-width="1.5" fill="none" marker-end="url(#arr)"/>
+  <path class="arrow" d="M 550 225 L 592 293" stroke-width="1.5" fill="none" marker-end="url(#arr)"/>
+  <path class="arrow" d="M 550 232 L 592 346" stroke-width="1.5" fill="none" marker-end="url(#arr)"/>
+  <!-- Provider boxes -->
+  <rect class="node-green" x="592" y="30" width="148" height="42" rx="8" stroke-width="1.5"/>
+  <text class="label-green" x="666" y="51" text-anchor="middle" dominant-baseline="middle" font-size="13" font-weight="500">@ai-sdk/anthropic</text>
+  <rect class="node-green" x="592" y="84" width="148" height="42" rx="8" stroke-width="1.5"/>
+  <text class="label-green" x="666" y="105" text-anchor="middle" dominant-baseline="middle" font-size="13" font-weight="500">@ai-sdk/openai</text>
+  <rect class="node-green" x="592" y="138" width="148" height="42" rx="8" stroke-width="1.5"/>
+  <text class="label-green" x="666" y="159" text-anchor="middle" dominant-baseline="middle" font-size="13" font-weight="500">@ai-sdk/google</text>
+  <rect class="node-green" x="592" y="176" width="148" height="42" rx="8" stroke-width="1.5"/>
+  <text class="label-green" x="666" y="197" text-anchor="middle" dominant-baseline="middle" font-size="13" font-weight="500">@ai-sdk/groq</text>
+  <rect class="node-green" x="592" y="222" width="148" height="42" rx="8" stroke-width="1.5"/>
+  <text class="label-green" x="666" y="243" text-anchor="middle" dominant-baseline="middle" font-size="13" font-weight="500">@ai-sdk/mistral</text>
+  <rect class="node-orange" x="592" y="268" width="148" height="42" rx="8" stroke-width="1.5"/>
+  <text class="label-orange" x="666" y="289" text-anchor="middle" dominant-baseline="middle" font-size="13" font-weight="500">ollama-ai-provider</text>
+  <rect class="node-blue" x="592" y="322" width="148" height="42" rx="8" stroke-width="1.5"/>
+  <text class="label-blue" x="666" y="337" text-anchor="middle" dominant-baseline="middle" font-size="12" font-weight="500">@ai-sdk/openai</text>
+  <text class="label-muted" x="666" y="354" text-anchor="middle" dominant-baseline="middle" font-size="11">(custom baseURL)</text>
+</svg>

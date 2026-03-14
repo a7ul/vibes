@@ -9,25 +9,7 @@ For installation and initial setup, see [Getting Started](/getting-started/insta
 
 ## Architecture
 
-```mermaid
-graph TD
-    App["Your Application"] --> Agent["Agent\n(Vibes)"]
-    Agent --> LM["LanguageModel interface\n(Vercel AI SDK)"]
-    LM --> Anthropic["@ai-sdk/anthropic"]
-    LM --> OpenAI["@ai-sdk/openai"]
-    LM --> Google["@ai-sdk/google"]
-    LM --> Groq["@ai-sdk/groq"]
-    LM --> Mistral["@ai-sdk/mistral"]
-    LM --> Ollama["ollama-ai-provider"]
-    LM --> Compat["@ai-sdk/openai\n(custom baseURL)"]
-    Anthropic --> APIs["LLM APIs"]
-    OpenAI --> APIs
-    Google --> APIs
-    Groq --> APIs
-    Mistral --> APIs
-    Ollama --> Local["Local Ollama server"]
-    Compat --> CustomAPI["Custom / self-hosted API"]
-```
+<img src="/images/diagrams/models-architecture.svg" alt="Model architecture: Your Application → Agent → LanguageModel interface → provider packages" />
 
 ## Provider Quickstarts
 

@@ -1,0 +1,74 @@
+<svg viewBox="0 0 780 320" xmlns="http://www.w3.org/2000/svg" font-family="'Geist', ui-sans-serif, system-ui, sans-serif">
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 1 L 9 5 L 0 9 z" fill="#475569"/>
+    </marker>
+    <style>
+      .bg { fill: #0f172a; }
+      .node-input { fill: #1e3a5f; stroke: #4a9eed; }
+      .node-helper { fill: #2d1b69; stroke: #8b5cf6; }
+      .node-msg { fill: #1a4d4d; stroke: #06b6d4; }
+      .node-model { fill: #1a3a2e; stroke: #22c55e; }
+      .label-blue { fill: #bfdbfe; }
+      .label-purple { fill: #ddd6fe; }
+      .label-teal { fill: #a5f3fc; }
+      .label-green { fill: #bbf7d0; }
+      .label-muted { fill: #94a3b8; }
+      .arrow { stroke: #475569; }
+      @media (prefers-color-scheme: light) {
+        .bg { fill: #f8fafc; }
+        .node-input { fill: #dbeafe; stroke: #4a9eed; }
+        .node-helper { fill: #ede9fe; stroke: #8b5cf6; }
+        .node-msg { fill: #ccfbf1; stroke: #06b6d4; }
+        .node-model { fill: #dcfce7; stroke: #22c55e; }
+        .label-blue { fill: #1e40af; }
+        .label-purple { fill: #4c1d95; }
+        .label-teal { fill: #0e7490; }
+        .label-green { fill: #166534; }
+        .label-muted { fill: #64748b; }
+        .arrow { stroke: #94a3b8; }
+      }
+    </style>
+  </defs>
+  <rect class="bg" x="0" y="0" width="780" height="320" rx="12"/>
+  <!-- Input nodes -->
+  <rect class="node-input" x="20" y="30" width="165" height="50" rx="9" stroke-width="1.5"/>
+  <text class="label-blue" x="102" y="50" text-anchor="middle" dominant-baseline="middle" font-size="14" font-weight="500">Image</text>
+  <text class="label-muted" x="102" y="68" text-anchor="middle" dominant-baseline="middle" font-size="12">string / Uint8Array / URL</text>
+  <rect class="node-input" x="20" y="100" width="165" height="50" rx="9" stroke-width="1.5"/>
+  <text class="label-blue" x="102" y="120" text-anchor="middle" dominant-baseline="middle" font-size="14" font-weight="500">Audio</text>
+  <text class="label-muted" x="102" y="138" text-anchor="middle" dominant-baseline="middle" font-size="12">string / Uint8Array</text>
+  <rect class="node-input" x="20" y="170" width="165" height="50" rx="9" stroke-width="1.5"/>
+  <text class="label-blue" x="102" y="190" text-anchor="middle" dominant-baseline="middle" font-size="14" font-weight="500">Video</text>
+  <text class="label-muted" x="102" y="208" text-anchor="middle" dominant-baseline="middle" font-size="12">string / Uint8Array</text>
+  <rect class="node-input" x="20" y="240" width="165" height="50" rx="9" stroke-width="1.5"/>
+  <text class="label-blue" x="102" y="260" text-anchor="middle" dominant-baseline="middle" font-size="14" font-weight="500">Document</text>
+  <text class="label-muted" x="102" y="278" text-anchor="middle" dominant-baseline="middle" font-size="12">string / Uint8Array</text>
+  <!-- arrows to helpers -->
+  <line class="arrow" x1="185" y1="55" x2="258" y2="55" stroke-width="1.5" marker-end="url(#arr)"/>
+  <line class="arrow" x1="185" y1="125" x2="258" y2="125" stroke-width="1.5" marker-end="url(#arr)"/>
+  <line class="arrow" x1="185" y1="195" x2="258" y2="218" stroke-width="1.5" marker-end="url(#arr)"/>
+  <line class="arrow" x1="185" y1="265" x2="258" y2="248" stroke-width="1.5" marker-end="url(#arr)"/>
+  <!-- Helper nodes -->
+  <rect class="node-helper" x="260" y="30" width="155" height="50" rx="9" stroke-width="1.5"/>
+  <text class="label-purple" x="337" y="55" text-anchor="middle" dominant-baseline="middle" font-size="14" font-weight="500">imageMessage</text>
+  <rect class="node-helper" x="260" y="100" width="155" height="50" rx="9" stroke-width="1.5"/>
+  <text class="label-purple" x="337" y="125" text-anchor="middle" dominant-baseline="middle" font-size="14" font-weight="500">audioMessage</text>
+  <rect class="node-helper" x="260" y="185" width="155" height="80" rx="9" stroke-width="1.5"/>
+  <text class="label-purple" x="337" y="210" text-anchor="middle" dominant-baseline="middle" font-size="14" font-weight="500">fileMessage</text>
+  <text class="label-muted" x="337" y="230" text-anchor="middle" dominant-baseline="middle" font-size="12">video/* or</text>
+  <text class="label-muted" x="337" y="248" text-anchor="middle" dominant-baseline="middle" font-size="12">application/pdf etc.</text>
+  <!-- arrows to UserModelMessage -->
+  <path class="arrow" d="M 415 55 C 450 55 450 148 478 148" stroke-width="1.5" fill="none" marker-end="url(#arr)"/>
+  <path class="arrow" d="M 415 125 C 450 125 450 148 478 148" stroke-width="1.5" fill="none" marker-end="url(#arr)"/>
+  <path class="arrow" d="M 415 225 C 450 225 450 148 478 148" stroke-width="1.5" fill="none" marker-end="url(#arr)"/>
+  <!-- UserModelMessage -->
+  <rect class="node-msg" x="480" y="118" width="155" height="60" rx="9" stroke-width="1.5"/>
+  <text class="label-teal" x="557" y="143" text-anchor="middle" dominant-baseline="middle" font-size="13" font-weight="500">UserModel</text>
+  <text class="label-teal" x="557" y="162" text-anchor="middle" dominant-baseline="middle" font-size="13" font-weight="500">Message</text>
+  <!-- arrow to Model -->
+  <line class="arrow" x1="635" y1="148" x2="688" y2="148" stroke-width="1.5" marker-end="url(#arr)"/>
+  <!-- Model -->
+  <rect class="node-model" x="690" y="118" width="75" height="60" rx="9" stroke-width="1.5"/>
+  <text class="label-green" x="727" y="148" text-anchor="middle" dominant-baseline="middle" font-size="14" font-weight="500">Model</text>
+</svg>

@@ -1,0 +1,51 @@
+<svg viewBox="0 0 700 320" xmlns="http://www.w3.org/2000/svg" font-family="'Geist', ui-sans-serif, system-ui, sans-serif">
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 1 L 9 5 L 0 9 z" fill="#64748b"/>
+    </marker>
+    <style>
+      .bg { fill: #0f172a; }
+      .node-blue { fill: #1e3a5f; stroke: #4a9eed; }
+      .node-purple { fill: #2d1b69; stroke: #8b5cf6; }
+      .node-teal { fill: #1a4d4d; stroke: #06b6d4; }
+      .label-blue { fill: #bfdbfe; }
+      .label-purple { fill: #ddd6fe; }
+      .label-teal { fill: #a5f3fc; }
+      .arrow { stroke: #64748b; }
+      @media (prefers-color-scheme: light) {
+        .bg { fill: #f8fafc; }
+        .node-blue { fill: #dbeafe; stroke: #4a9eed; }
+        .node-purple { fill: #ede9fe; stroke: #8b5cf6; }
+        .node-teal { fill: #ccfbf1; stroke: #06b6d4; }
+        .label-blue { fill: #1e40af; }
+        .label-purple { fill: #4c1d95; }
+        .label-teal { fill: #0e7490; }
+        .arrow { stroke: #94a3b8; }
+      }
+    </style>
+  </defs>
+  <rect class="bg" x="0" y="0" width="700" height="320" rx="12"/>
+  <!-- agent run span -->
+  <rect class="node-blue" x="240" y="30" width="220" height="55" rx="10" stroke-width="1.5"/>
+  <text class="label-blue" x="350" y="57" text-anchor="middle" dominant-baseline="middle" font-size="17" font-weight="500">agent run span</text>
+  <!-- arrow to turn1 -->
+  <path class="arrow" d="M 310 85 L 185 155" stroke-width="1.5" fill="none" marker-end="url(#arr)"/>
+  <!-- arrow to turn2 -->
+  <path class="arrow" d="M 390 85 L 515 155" stroke-width="1.5" fill="none" marker-end="url(#arr)"/>
+  <!-- turn 1 span -->
+  <rect class="node-purple" x="60" y="155" width="250" height="55" rx="10" stroke-width="1.5"/>
+  <text class="label-purple" x="185" y="182" text-anchor="middle" dominant-baseline="middle" font-size="15" font-weight="500">turn 1: generateText span</text>
+  <!-- turn 2 span -->
+  <rect class="node-purple" x="390" y="155" width="250" height="55" rx="10" stroke-width="1.5"/>
+  <text class="label-purple" x="515" y="182" text-anchor="middle" dominant-baseline="middle" font-size="15" font-weight="500">turn 2: generateText span</text>
+  <!-- arrow to search -->
+  <path class="arrow" d="M 145 210 L 110 255" stroke-width="1.5" fill="none" marker-end="url(#arr)"/>
+  <!-- arrow to lookup -->
+  <path class="arrow" d="M 225 210 L 290 255" stroke-width="1.5" fill="none" marker-end="url(#arr)"/>
+  <!-- tool: search span -->
+  <rect class="node-teal" x="30" y="255" width="190" height="50" rx="10" stroke-width="1.5"/>
+  <text class="label-teal" x="125" y="280" text-anchor="middle" dominant-baseline="middle" font-size="14" font-weight="500">tool: search span</text>
+  <!-- tool: lookup span -->
+  <rect class="node-teal" x="240" y="255" width="190" height="50" rx="10" stroke-width="1.5"/>
+  <text class="label-teal" x="335" y="280" text-anchor="middle" dominant-baseline="middle" font-size="14" font-weight="500">tool: lookup span</text>
+</svg>

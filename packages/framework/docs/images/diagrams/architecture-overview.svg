@@ -1,0 +1,61 @@
+<svg viewBox="0 0 580 300" xmlns="http://www.w3.org/2000/svg" font-family="'Geist', ui-sans-serif, system-ui, sans-serif">
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 1 L 9 5 L 0 9 z" fill="#64748b"/>
+    </marker>
+    <style>
+      .bg { fill: #0f172a; }
+      .node-blue { fill: #1e3a5f; stroke: #4a9eed; }
+      .node-purple { fill: #2d1b69; stroke: #8b5cf6; }
+      .node-teal { fill: #1a4d4d; stroke: #06b6d4; }
+      .node-provider { fill: #1a3a2e; stroke: #22c55e; }
+      .label-blue { fill: #bfdbfe; }
+      .label-purple { fill: #ddd6fe; }
+      .label-teal { fill: #a5f3fc; }
+      .label-green { fill: #bbf7d0; }
+      .label-muted { fill: #94a3b8; }
+      .arrow { stroke: #475569; }
+      @media (prefers-color-scheme: light) {
+        .bg { fill: #f8fafc; }
+        .node-blue { fill: #dbeafe; stroke: #4a9eed; }
+        .node-purple { fill: #ede9fe; stroke: #8b5cf6; }
+        .node-teal { fill: #ccfbf1; stroke: #06b6d4; }
+        .node-provider { fill: #dcfce7; stroke: #22c55e; }
+        .label-blue { fill: #1e40af; }
+        .label-purple { fill: #4c1d95; }
+        .label-teal { fill: #0e7490; }
+        .label-green { fill: #166534; }
+        .label-muted { fill: #64748b; }
+        .arrow { stroke: #94a3b8; }
+      }
+    </style>
+  </defs>
+  <rect class="bg" x="0" y="0" width="580" height="300" rx="12"/>
+  <!-- Your Code -->
+  <rect class="node-blue" x="190" y="20" width="200" height="50" rx="10" stroke-width="1.5"/>
+  <text class="label-blue" x="290" y="45" text-anchor="middle" dominant-baseline="middle" font-size="17" font-weight="500">Your Code</text>
+  <!-- arrow -->
+  <line class="arrow" x1="290" y1="70" x2="290" y2="95" stroke-width="1.5" marker-end="url(#arr)"/>
+  <!-- @vibes/framework -->
+  <rect class="node-purple" x="155" y="95" width="270" height="50" rx="10" stroke-width="1.5"/>
+  <text class="label-purple" x="290" y="120" text-anchor="middle" dominant-baseline="middle" font-size="17" font-weight="500">@vibes/framework</text>
+  <!-- arrow -->
+  <line class="arrow" x1="290" y1="145" x2="290" y2="170" stroke-width="1.5" marker-end="url(#arr)"/>
+  <!-- Vercel AI SDK -->
+  <rect class="node-teal" x="165" y="170" width="250" height="50" rx="10" stroke-width="1.5"/>
+  <text class="label-teal" x="290" y="195" text-anchor="middle" dominant-baseline="middle" font-size="17" font-weight="500">Vercel AI SDK</text>
+  <!-- fan arrows to providers -->
+  <path class="arrow" d="M 220 220 L 80 252" stroke-width="1.5" fill="none" marker-end="url(#arr)"/>
+  <path class="arrow" d="M 263 220 L 213 252" stroke-width="1.5" fill="none" marker-end="url(#arr)"/>
+  <path class="arrow" d="M 317 220 L 367 252" stroke-width="1.5" fill="none" marker-end="url(#arr)"/>
+  <path class="arrow" d="M 360 220 L 500 252" stroke-width="1.5" fill="none" marker-end="url(#arr)"/>
+  <!-- Provider boxes -->
+  <rect class="node-provider" x="20" y="252" width="120" height="38" rx="8" stroke-width="1.5"/>
+  <text class="label-green" x="80" y="271" text-anchor="middle" dominant-baseline="middle" font-size="13" font-weight="500">Anthropic</text>
+  <rect class="node-provider" x="158" y="252" width="110" height="38" rx="8" stroke-width="1.5"/>
+  <text class="label-green" x="213" y="271" text-anchor="middle" dominant-baseline="middle" font-size="13" font-weight="500">OpenAI</text>
+  <rect class="node-provider" x="312" y="252" width="110" height="38" rx="8" stroke-width="1.5"/>
+  <text class="label-green" x="367" y="271" text-anchor="middle" dominant-baseline="middle" font-size="13" font-weight="500">Google</text>
+  <rect class="node-provider" x="438" y="252" width="122" height="38" rx="8" stroke-width="1.5"/>
+  <text class="label-muted" x="499" y="271" text-anchor="middle" dominant-baseline="middle" font-size="12" font-weight="400">Groq / Mistral /...</text>
+</svg>

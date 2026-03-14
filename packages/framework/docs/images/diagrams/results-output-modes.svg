@@ -1,0 +1,54 @@
+<svg viewBox="0 0 700 290" xmlns="http://www.w3.org/2000/svg" font-family="'Geist', ui-sans-serif, system-ui, sans-serif">
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 1 L 9 5 L 0 9 z" fill="#64748b"/>
+    </marker>
+    <style>
+      .bg { fill: #0f172a; }
+      .node-blue { fill: #1e3a5f; stroke: #4a9eed; }
+      .node-purple { fill: #2d1b69; stroke: #8b5cf6; }
+      .node-green { fill: #1a4d2e; stroke: #22c55e; }
+      .node-orange { fill: #5c3d1a; stroke: #f59e0b; }
+      .label-blue { fill: #bfdbfe; }
+      .label-purple { fill: #ddd6fe; }
+      .label-green { fill: #bbf7d0; }
+      .label-orange { fill: #fde68a; }
+      .label-muted { fill: #94a3b8; }
+      .arrow { stroke: #64748b; }
+      @media (prefers-color-scheme: light) {
+        .bg { fill: #f8fafc; }
+        .node-blue { fill: #dbeafe; stroke: #4a9eed; }
+        .node-purple { fill: #ede9fe; stroke: #8b5cf6; }
+        .node-green { fill: #dcfce7; stroke: #22c55e; }
+        .node-orange { fill: #fef3c7; stroke: #f59e0b; }
+        .label-blue { fill: #1e40af; }
+        .label-purple { fill: #4c1d95; }
+        .label-green { fill: #166534; }
+        .label-orange { fill: #78350f; }
+        .label-muted { fill: #64748b; }
+        .arrow { stroke: #94a3b8; }
+      }
+    </style>
+  </defs>
+  <rect class="bg" x="0" y="0" width="700" height="290" rx="12"/>
+  <!-- outputSchema node -->
+  <rect class="node-blue" x="20" y="105" width="170" height="70" rx="10" stroke-width="1.5"/>
+  <text class="label-blue" x="105" y="132" text-anchor="middle" dominant-baseline="middle" font-size="15" font-weight="600">outputSchema</text>
+  <text class="label-blue" x="105" y="153" text-anchor="middle" dominant-baseline="middle" font-size="14">defined</text>
+  <!-- arrows to 3 modes -->
+  <path class="arrow" d="M 190 125 C 230 125 230 80 270 80" stroke-width="1.5" fill="none" marker-end="url(#arr)"/>
+  <path class="arrow" d="M 190 140 L 270 140" stroke-width="1.5" fill="none" marker-end="url(#arr)"/>
+  <path class="arrow" d="M 190 155 C 230 155 230 205 270 205" stroke-width="1.5" fill="none" marker-end="url(#arr)"/>
+  <!-- tool mode -->
+  <rect class="node-purple" x="270" y="45" width="400" height="70" rx="10" stroke-width="1.5"/>
+  <text class="label-purple" x="470" y="70" text-anchor="middle" dominant-baseline="middle" font-size="15" font-weight="600">'tool' (default)</text>
+  <text class="label-muted" x="470" y="92" text-anchor="middle" dominant-baseline="middle" font-size="13">Model calls outputTool to return structured data</text>
+  <!-- native mode -->
+  <rect class="node-green" x="270" y="110" width="400" height="70" rx="10" stroke-width="1.5"/>
+  <text class="label-green" x="470" y="135" text-anchor="middle" dominant-baseline="middle" font-size="15" font-weight="600">'native'</text>
+  <text class="label-muted" x="470" y="157" text-anchor="middle" dominant-baseline="middle" font-size="13">Provider native JSON mode</text>
+  <!-- prompted mode -->
+  <rect class="node-orange" x="270" y="175" width="400" height="70" rx="10" stroke-width="1.5"/>
+  <text class="label-orange" x="470" y="200" text-anchor="middle" dominant-baseline="middle" font-size="15" font-weight="600">'prompted'</text>
+  <text class="label-muted" x="470" y="222" text-anchor="middle" dominant-baseline="middle" font-size="13">Schema injected into system prompt as text</text>
+</svg>

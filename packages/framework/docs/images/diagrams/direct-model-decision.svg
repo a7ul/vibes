@@ -1,0 +1,72 @@
+<svg viewBox="0 0 660 380" xmlns="http://www.w3.org/2000/svg" font-family="'Geist', ui-sans-serif, system-ui, sans-serif">
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 1 L 9 5 L 0 9 z" fill="#475569"/>
+    </marker>
+    <style>
+      .bg { fill: #0f172a; }
+      .node-start { fill: #1a4d4d; stroke: #06b6d4; }
+      .node-decision { fill: #2d1b69; stroke: #8b5cf6; }
+      .node-agent { fill: #1e3a5f; stroke: #4a9eed; }
+      .node-direct { fill: #1a3a2e; stroke: #22c55e; }
+      .label-teal { fill: #a5f3fc; }
+      .label-purple { fill: #ddd6fe; }
+      .label-blue { fill: #bfdbfe; }
+      .label-green { fill: #bbf7d0; }
+      .label-yes { fill: #4ade80; }
+      .label-no { fill: #fb923c; }
+      .label-muted { fill: #94a3b8; }
+      .arrow { stroke: #475569; }
+      @media (prefers-color-scheme: light) {
+        .bg { fill: #f8fafc; }
+        .node-start { fill: #ccfbf1; stroke: #06b6d4; }
+        .node-decision { fill: #ede9fe; stroke: #8b5cf6; }
+        .node-agent { fill: #dbeafe; stroke: #4a9eed; }
+        .node-direct { fill: #dcfce7; stroke: #22c55e; }
+        .label-teal { fill: #0e7490; }
+        .label-purple { fill: #4c1d95; }
+        .label-blue { fill: #1e40af; }
+        .label-green { fill: #166534; }
+        .label-yes { fill: #16a34a; }
+        .label-no { fill: #ea580c; }
+        .label-muted { fill: #64748b; }
+        .arrow { stroke: #94a3b8; }
+      }
+    </style>
+  </defs>
+  <rect class="bg" x="0" y="0" width="660" height="380" rx="12"/>
+  <!-- START oval -->
+  <ellipse class="node-start" cx="330" cy="42" rx="170" ry="28" stroke-width="1.5"/>
+  <text class="label-teal" x="330" y="42" text-anchor="middle" dominant-baseline="middle" font-size="15" font-weight="500">Need model output?</text>
+  <!-- arrow down -->
+  <line class="arrow" x1="330" y1="70" x2="330" y2="105" stroke-width="1.5" marker-end="url(#arr)"/>
+  <!-- Q1 diamond: tools, outputSchema, multi-turn, validators, deps? -->
+  <polygon class="node-decision" points="330,105 510,155 330,205 150,155" stroke-width="1.5"/>
+  <text class="label-purple" x="330" y="143" text-anchor="middle" dominant-baseline="middle" font-size="13" font-weight="500">Tools, outputSchema,</text>
+  <text class="label-purple" x="330" y="160" text-anchor="middle" dominant-baseline="middle" font-size="13" font-weight="500">multi-turn, validators,</text>
+  <text class="label-purple" x="330" y="177" text-anchor="middle" dominant-baseline="middle" font-size="13" font-weight="500">or deps?</text>
+  <!-- Yes → agent (right) -->
+  <line class="arrow" x1="510" y1="155" x2="570" y2="155" stroke-width="1.5" marker-end="url(#arr)"/>
+  <text class="label-yes" x="535" y="143" text-anchor="middle" font-size="13" font-weight="600">Yes</text>
+  <!-- AGENT box (right) -->
+  <rect class="node-agent" x="572" y="125" width="70" height="60" rx="8" stroke-width="1.5"/>
+  <text class="label-blue" x="607" y="148" text-anchor="middle" dominant-baseline="middle" font-size="12" font-weight="500">agent</text>
+  <text class="label-blue" x="607" y="166" text-anchor="middle" dominant-baseline="middle" font-size="12" font-weight="500">.run / .stream</text>
+  <!-- No → Q2 (down) -->
+  <line class="arrow" x1="330" y1="205" x2="330" y2="240" stroke-width="1.5" marker-end="url(#arr)"/>
+  <text class="label-no" x="344" y="226" text-anchor="start" font-size="13" font-weight="600">No</text>
+  <!-- Q2 diamond: one-shot, no tools, simple prompt? -->
+  <polygon class="node-decision" points="330,240 490,285 330,330 170,285" stroke-width="1.5"/>
+  <text class="label-purple" x="330" y="274" text-anchor="middle" dominant-baseline="middle" font-size="13" font-weight="500">One-shot, no tools,</text>
+  <text class="label-purple" x="330" y="292" text-anchor="middle" dominant-baseline="middle" font-size="13" font-weight="500">simple prompt?</text>
+  <!-- Yes → DIRECT (left) -->
+  <line class="arrow" x1="170" y1="285" x2="110" y2="285" stroke-width="1.5" marker-end="url(#arr)"/>
+  <text class="label-yes" x="135" y="272" text-anchor="middle" font-size="13" font-weight="600">Yes</text>
+  <!-- DIRECT box (left) -->
+  <rect class="node-direct" x="10" y="255" width="100" height="60" rx="8" stroke-width="1.5"/>
+  <text class="label-green" x="60" y="278" text-anchor="middle" dominant-baseline="middle" font-size="12" font-weight="500">generateText</text>
+  <text class="label-green" x="60" y="296" text-anchor="middle" dominant-baseline="middle" font-size="12" font-weight="500">streamText</text>
+  <!-- No → AGENT (curved right) -->
+  <path class="arrow" d="M 490 285 C 545 285 560 200 572 175" stroke-width="1.5" fill="none" marker-end="url(#arr)"/>
+  <text class="label-no" x="536" y="278" text-anchor="middle" font-size="13" font-weight="600">No</text>
+</svg>
