@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 02-02-PLAN.md (toolsets/results/messages/streaming concept pages)
-last_updated: "2026-03-14T15:55:24.047Z"
+stopped_at: Completed 03-01-PLAN.md (human-in-the-loop, testing, debugging concept pages)
+last_updated: "2026-03-14T16:10:52.846Z"
 last_activity: 2026-03-14 -- Completed 02-01 (agents, models, dependencies, tools concept pages)
 progress:
   total_phases: 6
   completed_phases: 2
-  total_plans: 5
-  completed_plans: 5
+  total_plans: 7
+  completed_plans: 6
   percent: 17
 ---
 
@@ -53,6 +53,7 @@ Progress: [█░░░░░░░░░] 17%
 | Phase 01-landing-and-getting-started P02 | 2 min | 3 tasks | 7 files |
 | Phase 01-landing-and-getting-started P03 | 2 | 1 tasks | 1 files |
 | Phase 02-core-concepts-part-1 P02 | 3 | 3 tasks | 5 files |
+| Phase 03-core-concepts-part-2 P01 | 2 | 3 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -74,6 +75,8 @@ Recent decisions affecting current work:
 - [02-01]: RunContext has 7 fields + attachMetadata() — full interface documented in dependencies.mdx
 - [Phase 02-02]: event.kind (not event.type) is the correct AgentStreamEvent discriminant — warning callout added to streaming.mdx
 - [Phase 02-02]: All 8 new concept pages added to docs.json Concepts nav; 3 existing pages retained until Phase 6
+- [Phase 03-01]: Used sequenceDiagram for HITL and TestModel flows; graph TD for OTel span hierarchy
+- [Phase 03-01]: instrumentAgent note explicitly states Vibes creates no custom spans — all span naming follows Vercel AI SDK
 
 ### Pending Todos
 
@@ -86,6 +89,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-14T15:51:59.135Z
-Stopped at: Completed 02-02-PLAN.md (toolsets/results/messages/streaming concept pages)
+Last session: 2026-03-14T16:10:52.844Z
+Stopped at: Completed 03-01-PLAN.md (human-in-the-loop, testing, debugging concept pages)
 Resume file: None
