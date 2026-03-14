@@ -13,26 +13,23 @@ Every call to `agent.run()`, `agent.stream()`, or `agent.runStreamEvents()` goes
 
 ```mermaid
 flowchart TD
-    A([agent.run / stream / runStreamEvents]) --> B[createRunContext\nwith deps + runId]
-    B --> C[Resolve system prompts\nand instructions]
-    C --> D{Turn loop}
-    D --> E[prepareTurn\nresolve tools + toolsets\napply historyProcessors]
-    E --> F[generateText / streamText\nVercel AI SDK]
-    F --> G{Response type?}
-    G -- text only --> H[Return RunResult]
-    G -- final_result tool --> I[Parse output\nrun resultValidators]
-    I --> J{Valid?}
-    J -- yes --> H
-    J -- no --> K{retries left?}
-    K -- yes --> D
-    K -- no --> L([throw MaxRetriesError])
-    G -- tool calls --> M[Execute tools\nconcurrently or sequential]
-    M --> N{requiresApproval?}
-    N -- yes --> O([throw ApprovalRequiredError\nDeferredToolRequests])
-    N -- no --> P[Append tool results\nto message history]
-    P --> Q{turn >= maxTurns?}
-    Q -- yes --> R([throw MaxTurnsError])
-    Q -- no --> D
+    A([Start Run]) --> B[Build Context]
+    B --> C{Turn Loop}
+    C --> D[Prepare Turn]
+    D --> E[Generate Response]
+    E --> F{Response Type?}
+    F -- text --> G([Return Result])
+    F -- structured output --> H[Validate Output]
+    H -- valid --> G
+    H -- invalid --> I{Retries left?}
+    I -- yes --> C
+    I -- no --> J([Max Retries Error])
+    F -- tool calls --> K[Execute Tools]
+    K -- needs approval --> L([Approval Required Error])
+    K -- approved --> M[Append Results to History]
+    M --> N{Turn limit reached?}
+    N -- yes --> O([Max Turns Error])
+    N -- no --> C
 ```
 
 ## Basic Usage

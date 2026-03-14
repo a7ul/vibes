@@ -37,7 +37,15 @@ console.log(result.output); // "Paris"
 
 ## Architecture
 
-<img src="/images/diagrams/architecture-overview.svg" alt="Architecture: Your Code → @vibes/framework → Vercel AI SDK → Anthropic, OpenAI, Google, and more" />
+```mermaid
+flowchart TD
+    A[Your Code] --> B[Vibes Framework]
+    B --> C[AI SDK]
+    C --> D[Anthropic]
+    C --> E[OpenAI]
+    C --> F[Google]
+    C --> G[Groq / Mistral / ...]
+```
 
 ## Acknowledgments
 

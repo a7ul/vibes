@@ -13,15 +13,15 @@ sequenceDiagram
     participant Agent
     participant Model
 
-    App->>Agent: run("My name is Alice.")
-    Agent->>Model: [user: "My name is Alice."]
-    Model-->>Agent: "Nice to meet you, Alice!"
-    Agent-->>App: RunResult { messages: [user, assistant] }
+    App->>Agent: run first message
+    Agent->>Model: send message
+    Model-->>Agent: response
+    Agent-->>App: Result with full history
 
-    App->>Agent: run("What is my name?", { messageHistory })
-    Agent->>Model: [user: "My name is Alice.", assistant: "...", user: "What is my name?"]
-    Model-->>Agent: "Your name is Alice."
-    Agent-->>App: RunResult { messages: [u, a, u, a], newMessages: [u, a] }
+    App->>Agent: run follow-up with history
+    Agent->>Model: send full conversation
+    Model-->>Agent: response with context
+    Agent-->>App: Result with updated history
 ```
 
 Use `result.messages` as the `messageHistory` for the next run:

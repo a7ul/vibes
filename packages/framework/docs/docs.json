@@ -9,9 +9,9 @@
   },
   "favicon": "/favicon.svg",
   "colors": {
-    "primary": "#FFFFFF",
-    "light": "#F9FAFB",
-    "dark": "#E5E7EB"
+    "primary": "#18181B",
+    "light": "#FFFFFF",
+    "dark": "#09090B"
   },
   "css": ["/custom.css"],
   "modeToggle": {

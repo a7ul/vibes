@@ -28,10 +28,31 @@ interface NodeWithEdges {
  *   process --> end_node
  * ```
  */
+const MERMAID_INIT = `%%{init: {
+  "theme": "base",
+  "themeVariables": {
+    "primaryColor": "#dce8ff",
+    "primaryBorderColor": "#1e1e1e",
+    "primaryTextColor": "#0d0d0d",
+    "secondaryColor": "#cdfae0",
+    "secondaryBorderColor": "#1e1e1e",
+    "tertiaryColor": "#e8d5ff",
+    "tertiaryBorderColor": "#1e1e1e",
+    "background": "#ffffff",
+    "mainBkg": "#dce8ff",
+    "nodeBorder": "#1e1e1e",
+    "clusterBkg": "#f2f3f5",
+    "titleColor": "#0d0d0d",
+    "edgeLabelBackground": "#f0f0f0",
+    "lineColor": "#1e1e1e",
+    "fontFamily": "Geist, sans-serif"
+  }
+}}%%`;
+
 export function toMermaid<TState, TOutput>(
   nodes: BaseNode<TState, TOutput>[],
 ): string {
-  const lines: string[] = ["flowchart TD"];
+  const lines: string[] = [MERMAID_INIT, "flowchart TD"];
 
   // Cast to access optional nextNodes property without TypeScript errors
   const nodesWithEdges = nodes as unknown as NodeWithEdges[];

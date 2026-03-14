@@ -15,23 +15,22 @@ sequenceDiagram
     participant Agent
     participant Model
 
-    App->>Agent: runStreamEvents("What is 2+2?")
-    Agent-->>App: turn-start { turn: 0 }
-    Agent->>Model: generateText (streaming)
+    App->>Agent: stream events
+    Agent-->>App: turn started
+    Agent->>Model: generate (streaming)
     Model-->>Agent: token stream begins
-    Agent-->>App: text-delta { delta: "Let" }
-    Agent-->>App: text-delta { delta: " me" }
-    Agent-->>App: text-delta { delta: " calculate" }
-    Agent-->>App: tool-call-start { toolName: "add", args: {a:2, b:2} }
+    Agent-->>App: text delta
+    Agent-->>App: text delta
+    Agent-->>App: tool call started
     Note over Agent: tool executes
-    Agent-->>App: tool-call-result { toolName: "add", result: "4" }
-    Agent-->>App: usage-update { usage: {...} }
-    Agent->>Model: second turn (tool result)
-    Agent-->>App: turn-start { turn: 1 }
-    Model-->>Agent: "The answer is 4"
-    Agent-->>App: text-delta { delta: "The answer is 4" }
-    Agent-->>App: final-result { output: "The answer is 4" }
-    Agent-->>App: usage-update { usage: {...} }
+    Agent-->>App: tool call result
+    Agent-->>App: usage update
+    Agent->>Model: next turn with tool result
+    Agent-->>App: turn started
+    Model-->>Agent: final response
+    Agent-->>App: text delta
+    Agent-->>App: final result
+    Agent-->>App: usage update
 ```
 
 ## agent.stream() - Simple Streaming

@@ -9,7 +9,23 @@ Use `instrumentAgent()` when you want to add tracing to an agent you didn't defi
 
 ## OTel Span Hierarchy
 
-<img src="/images/diagrams/debugging-otel-spans.svg" alt="OTel span hierarchy: agent run span contains turn spans, each containing tool spans" />
+```mermaid
+flowchart TD
+    A[Agent Run]
+
+    subgraph Turn1[Turn 1]
+        B[Model Call]
+        B --> D[Tool: search]
+        B --> E[Tool: lookup]
+    end
+
+    subgraph Turn2[Turn 2]
+        C[Model Call]
+    end
+
+    A --> Turn1
+    A --> Turn2
+```
 
 Each model call (one per agent turn) gets its own `generateText` span. Each tool invocation gets a child span under that turn's span. The exact span names and attributes follow the Vercel AI SDK telemetry convention and may vary by SDK version.
 

@@ -19,19 +19,19 @@ import {
 
 ```mermaid
 graph TD
-    E[agent.run throws] --> A{Error type?}
-    A --> B[MaxTurnsError]
-    A --> C[MaxRetriesError]
-    A --> D[UsageLimitError]
-    A --> F[ApprovalRequiredError]
-    A --> G[ModelRequestsDisabledError]
-    A --> H[Provider/Network Error]
-    B --> B1[Increase maxTurns or simplify task]
-    C --> C1[Simplify schema or increase maxRetries]
-    D --> D1[Increase budget or optimize prompt]
-    F --> F1[Inspect deferred.requests then agent.resume]
-    G --> G1[Only in tests — use TestModel or setAllowModelRequests true]
-    H --> H1[From AI SDK — handle APICallError, rate limits]
+    E[Agent Run Error] --> A{Error Type}
+    A --> B[Too Many Turns]
+    A --> C[Output Validation Failed]
+    A --> D[Budget Exceeded]
+    A --> F[Approval Required]
+    A --> G[Model Requests Disabled]
+    A --> H[Provider or Network Error]
+    B --> B1[Increase turn limit or simplify task]
+    C --> C1[Simplify schema or increase retries]
+    D --> D1[Increase budget or shorten prompt]
+    F --> F1[Show pending calls, then resume]
+    G --> G1[Test-only: use a test model]
+    H --> H1[Handle rate limits and API errors]
 ```
 
 ---
@@ -298,12 +298,12 @@ sequenceDiagram
     participant Agent
     participant Human
 
-    App->>Agent: agent.run("Transfer $500 to account 12345")
-    Agent-->>App: throws ApprovalRequiredError
-    App->>Human: display err.deferred.requests (pending tool calls)
-    Human-->>App: approves / rejects
-    App->>Agent: agent.resume(err.deferred)
-    Agent-->>App: RunResult (agent continues from where it stopped)
+    App->>Agent: run sensitive task
+    Agent-->>App: Approval Required
+    App->>Human: show pending tool calls
+    Human-->>App: approve or reject
+    App->>Agent: resume with decision
+    Agent-->>App: Result
 ```
 
 This is the most complex recovery flow because it spans two separate agent invocations. The `err.deferred` object carries all state needed to resume — the agent does not need to restart the conversation from scratch.

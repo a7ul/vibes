@@ -13,18 +13,13 @@ Every entry point to the agent resolves a single `RunContext<TDeps>` and fans it
 
 ```mermaid
 graph LR
-    R([agent.run / stream])
-    RC[RunContext&lt;TDeps&gt;\n deps, usage, runId\n retryCount, toolName\n metadata]
-
-    R --> RC
-
-    RC --> SP["systemPrompt(ctx)\ninstructions(ctx)"]
-    RC --> TE["tool.execute(ctx, args)"]
-    RC --> TP["tool.prepare(ctx)"]
-    RC --> TA["tool.requiresApproval(ctx, args)"]
-    RC --> RV["resultValidators\n(ctx, output)"]
-    RC --> TS["toolset.tools(ctx)"]
-    RC --> HP["historyProcessors\n(messages, ctx)"]
+    A([Run]) --> B[Run Context]
+    B --> C[System Prompt]
+    B --> D[Tool Execution]
+    B --> E[Tool Availability]
+    B --> F[Output Validation]
+    B --> G[Toolsets]
+    B --> H[History Processors]
 ```
 
 ## Defining Dependencies

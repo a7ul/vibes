@@ -15,20 +15,15 @@ description: "Run Vibes agents as durable, fault-tolerant workflows using Tempor
 sequenceDiagram
     participant C as Client
     participant T as Temporal Server
-    participant W as Node.js Worker
-    participant WF as workflowFn
-    participant A as activities.runModelTurn
-    participant AG as TemporalAgent → Agent
+    participant W as Worker
+    participant Agent
 
-    C->>T: client.workflow.start(workflowFn, { args })
-    T->>W: schedule workflow execution
-    W->>WF: run workflowFn(prompt)
-    WF->>A: schedule runModelTurn activity
-    A->>AG: TemporalAgent.run(prompt)
-    AG-->>A: ModelTurnResult
-    A-->>WF: result (serialized, replay-safe)
-    WF-->>T: workflow complete
-    T-->>C: handle.result() resolves
+    C->>T: start workflow
+    T->>W: schedule execution
+    W->>Agent: run model turn
+    Agent-->>W: turn result
+    W-->>T: workflow complete
+    T-->>C: result resolved
 ```
 
 The key insight: `workflowFn` is a deterministic orchestrator. It schedules `activities` (model turns, tool calls) as separate execution units. If the worker crashes mid-run, Temporal replays `workflowFn` from its event history and skips already-completed activities, resuming exactly where it left off.

@@ -13,15 +13,14 @@ sequenceDiagram
     participant Agent
     participant Human
 
-    App->>Agent: agent.run("Delete user alice")
-    Agent->>Agent: model calls delete_user tool
-    Agent-->>App: throws ApprovalRequiredError
-    Note over App: err.deferred.requests = [{ toolCallId, toolName, args }]
+    App->>Agent: run task
+    Agent->>Agent: model requests sensitive tool
+    Agent-->>App: Approval Required
     App->>Human: show approval UI
     Human-->>App: approved
-    App->>Agent: agent.resume(deferred, { results: [...] })
-    Agent->>Agent: inject approved result, continue run
-    Agent-->>App: RunResult<TOutput>
+    App->>Agent: resume with approval
+    Agent->>Agent: execute tool, continue run
+    Agent-->>App: Result
 ```
 
 ## requiresApproval on tool()

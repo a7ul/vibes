@@ -11,22 +11,18 @@ Vibes provides four tool factories for different use cases: `tool()` (with depen
 
 ```mermaid
 flowchart TD
-    M[Model returns tool call] --> L[Look up tool by name]
-    L --> Z[Validate args against\nZod parameters schema]
-    Z -- invalid --> ER[Surface error to model\nno retry consumed]
-    Z -- valid --> AV{argsValidator?}
-    AV -- yes --> AVR[Run argsValidator]
-    AVR -- throws --> ER
-    AVR -- ok --> AP{requiresApproval?}
-    AV -- no --> AP
-    AP -- true --> DEF([throw ApprovalRequiredError])
-    AP -- false --> EX[execute ctx, args]
-    EX -- throws, retries left --> EX
-    EX -- throws, no retries --> ERR([propagate error])
-    EX -- returns --> RES{isOutput?}
-    RES -- yes --> OUT([final output - run ends])
-    RES -- no --> HIST[Append result to\nmessage history]
-    HIST --> NEXT[Next tool call\nor next turn]
+    A[Model Requests Tool Call] --> B[Validate Arguments]
+    B -- invalid --> C[Return Error to Model]
+    B -- valid --> D{Approval Required?}
+    D -- yes --> E([Pause for Human Approval])
+    D -- no --> F[Execute Tool]
+    F -- error --> G{Retries left?}
+    G -- yes --> F
+    G -- no --> H([Propagate Error])
+    F -- success --> I{Terminal Tool?}
+    I -- yes --> J([End Run with Output])
+    I -- no --> K[Append Result to History]
+    K --> L[Continue to Next Turn]
 ```
 
 ## tool() - Tools with Dependencies

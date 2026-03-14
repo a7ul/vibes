@@ -65,21 +65,21 @@ Vibes is a thin orchestration layer over the Vercel AI SDK. You install Vibes on
 
 ```mermaid
 graph LR
-    subgraph "@vibes/framework"
+    subgraph "Vibes Framework"
         Agent --> Tools
-        Agent --> DI["Dependency Injection"]
+        Agent --> DI[Dependency Injection]
         Agent --> Validation
     end
-    subgraph "Vercel AI SDK"
-        Agent --> Model["LanguageModel"]
+    subgraph "AI SDK"
+        Agent --> Model[Language Model]
     end
     subgraph Providers
-        Model --> Anthropic["@ai-sdk/anthropic"]
-        Model --> OpenAI["@ai-sdk/openai"]
-        Model --> Google["@ai-sdk/google"]
-        Model --> Groq["@ai-sdk/groq"]
-        Model --> Mistral["@ai-sdk/mistral"]
-        Model --> Ollama["ollama-ai-provider"]
+        Model --> Anthropic
+        Model --> OpenAI
+        Model --> Google
+        Model --> Groq
+        Model --> Mistral
+        Model --> Ollama
     end
 ```
 

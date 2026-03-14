@@ -11,27 +11,22 @@ An agent can mix static `tools` and any number of `toolsets`. All are merged int
 
 ```mermaid
 graph TD
-    A[agent per-turn] --> B[resolveTools]
-    B --> C[agent.tools array\nstatic ToolDefinitions]
-    B --> D[agent.toolsets array]
-    D --> E[FunctionToolset.tools ctx]
-    D --> F[FilteredToolset.tools ctx]
-    D --> G[CombinedToolset.tools ctx]
-    D --> H[PreparedToolset.tools ctx]
-    D --> I[ExternalToolset.tools ctx]
-    F --> J{predicate ctx}
-    J -- false --> K[empty list]
-    J -- true --> L[inner.tools ctx]
-    G --> M[merge toolsets\nlast name wins]
-    H --> N[inner.tools ctx]
-    N --> O[prepare ctx, tools]
-    B --> P[Flat ToolDefinition list\nsent to model]
-    C --> P
-    E --> P
-    K --> P
-    L --> P
-    M --> P
-    O --> P
+    A[Per-Turn Tool Resolution] --> B[Static Tools]
+    A --> C[Toolsets]
+    C --> D[Function Toolset]
+    C --> E[Filtered Toolset]
+    C --> F[Combined Toolset]
+    C --> G[Prepared Toolset]
+    E --> H{Condition met?}
+    H -- no --> I[No tools exposed]
+    H -- yes --> J[Inner tools exposed]
+    F --> K[Merged tool list]
+    B --> L[Final Tool List sent to Model]
+    D --> L
+    I --> L
+    J --> L
+    K --> L
+    G --> L
 ```
 
 ## FunctionToolset - Basic Toolset
