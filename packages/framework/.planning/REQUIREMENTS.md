@@ -12,8 +12,8 @@
 
 ### Getting Started
 
-- [ ] **GS-01**: Install page enhanced with supported provider list and Mermaid provider architecture diagram
-- [ ] **GS-02**: Single progressive hello-world tutorial that builds ONE example from scratch: bare agent → add tools → add structured output → test it (replaces 4 fragmented pages: first-agent, adding-tools, structured-output, testing)
+- [x] **GS-01**: Install page enhanced with supported provider list and Mermaid provider architecture diagram
+- [x] **GS-02**: Single progressive hello-world tutorial that builds ONE example from scratch: bare agent → add tools → add structured output → test it (replaces 4 fragmented pages: first-agent, adding-tools, structured-output, testing)
 
 ### Concepts
 
@@ -96,8 +96,8 @@
 |---|---|---|
 | LAND-01 | Phase 1 | Pending |
 | LAND-02 | Phase 1 | Pending |
-| GS-01 | Phase 1 | Pending |
-| GS-02 | Phase 1 | Pending |
+| GS-01 | Phase 1 | Complete |
+| GS-02 | Phase 1 | Complete |
 | CONCEPT-01 | Phase 2 | Pending |
 | CONCEPT-02 | Phase 2 | Pending |
 | CONCEPT-03 | Phase 2 | Pending |
