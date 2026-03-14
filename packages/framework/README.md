@@ -62,6 +62,22 @@ Add to your `deno.json`:
 }
 ```
 
+## Agent Skill
+
+Install the `@vibes/framework` agent skill so your coding assistant has full API knowledge built-in:
+
+```bash
+# Project-level (recommended)
+mkdir -p .claude/agents && curl -fsSL https://raw.githubusercontent.com/vibe-ts/vibes/main/packages/framework/skills/vibes-framework.md -o .claude/agents/vibes-framework.md
+```
+
+```bash
+# Global (available in all projects)
+mkdir -p ~/.claude/agents && curl -fsSL https://raw.githubusercontent.com/vibe-ts/vibes/main/packages/framework/skills/vibes-framework.md -o ~/.claude/agents/vibes-framework.md
+```
+
+See [skills/README.md](./skills/README.md) for more options.
+
 ## Feature Highlights
 
 | Feature | Description |

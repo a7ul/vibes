@@ -101,6 +101,7 @@
       {
         "group": "Meta",
         "pages": [
+          "meta/agent-skill",
           "meta/acknowledgments",
           "meta/contributing",
           "meta/changelog",
