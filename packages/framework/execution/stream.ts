@@ -18,6 +18,7 @@ import {
 	resolveModelSettings,
 	modelSettingsToAISDKOptions,
 	resolveEndStrategy,
+	resolveTelemetry,
 	runValidators,
 	checkModelRequestsAllowed,
 	parseTextOutput,
@@ -144,6 +145,7 @@ async function runStreamLoop<TDeps, TOutput>(
 	const modelSettingsRaw = resolveModelSettings(agent, opts);
 	const modelSettings = modelSettingsToAISDKOptions(modelSettingsRaw);
 	const endStrategy = resolveEndStrategy(agent, opts);
+	const telemetry = resolveTelemetry(agent, opts);
 	const outputMode = agent.outputMode;
 	const outputSchema = agent.outputSchema;
 	const schemas = normaliseSchemas(outputSchema);
@@ -190,6 +192,7 @@ async function runStreamLoop<TDeps, TOutput>(
 				messages: msgsForModel,
 				tools,
 				stopWhen: stepCountIs(1),
+				...(telemetry !== undefined ? { experimental_telemetry: telemetry } : {}),
 				...modelSettings,
 			});
 

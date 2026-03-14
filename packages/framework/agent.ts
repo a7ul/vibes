@@ -12,6 +12,7 @@ import type { Toolset } from "./toolsets/toolset.ts";
 import type { UsageLimits } from "./usage_limits.ts";
 import type { HistoryProcessor } from "./history_processor.ts";
 import type { ModelSettings } from "./model_settings.ts";
+import type { TelemetrySettings } from "./otel/otel_types.ts";
 import type { InternalRunOpts } from "./execution/_run_utils.ts";
 import type { AgentStreamEvent } from "./events.ts";
 import type { DeferredToolRequests, DeferredToolResults } from "./deferred.ts";
@@ -99,6 +100,15 @@ export interface AgentOptions<TDeps, TOutput> {
 	 * single model turn. Defaults to unlimited.
 	 */
 	maxConcurrency?: number;
+	/**
+	 * OpenTelemetry telemetry settings passed to every `generateText` /
+	 * `streamText` call as `experimental_telemetry`. When set, the AI SDK
+	 * automatically creates spans for model calls and tool invocations.
+	 *
+	 * Use `instrumentAgent()` from `@vibes/framework/otel` for a convenient
+	 * wrapper that sets this up automatically.
+	 */
+	telemetry?: TelemetrySettings;
 }
 
 /** Options accepted by `agent.run()` and `agent.stream()`. */
@@ -118,6 +128,11 @@ export interface RunOptions<TDeps> {
 	 * Normally not set directly — use `agent.resume()` instead.
 	 */
 	deferredResults?: DeferredToolResults;
+	/**
+	 * Per-run telemetry settings. Overrides the agent-level `telemetry` option.
+	 * Passed to `generateText` / `streamText` as `experimental_telemetry`.
+	 */
+	telemetry?: TelemetrySettings;
 }
 
 /** Options accepted by `agent.override()`. */
@@ -140,6 +155,8 @@ export interface AgentOverrideOptions<TDeps, TOutput> {
 	historyProcessors?: HistoryProcessor<TDeps>[];
 	modelSettings?: ModelSettings;
 	endStrategy?: EndStrategy;
+	/** Override telemetry settings for this run. */
+	telemetry?: TelemetrySettings;
 }
 
 export class Agent<TDeps = undefined, TOutput = string> {
@@ -154,6 +171,7 @@ export class Agent<TDeps = undefined, TOutput = string> {
 	readonly modelSettings: ModelSettings | undefined;
 	readonly endStrategy: EndStrategy;
 	readonly maxConcurrency: number | undefined;
+	readonly telemetry: TelemetrySettings | undefined;
 
 	private _systemPrompts: (string | SystemPromptFn<TDeps>)[];
 	private _instructions: (string | InstructionsFn<TDeps>)[];
@@ -174,6 +192,7 @@ export class Agent<TDeps = undefined, TOutput = string> {
 		this.modelSettings = opts.modelSettings;
 		this.endStrategy = opts.endStrategy ?? "early";
 		this.maxConcurrency = opts.maxConcurrency;
+		this.telemetry = opts.telemetry;
 
 		const sp = opts.systemPrompt;
 		this._systemPrompts = sp
@@ -259,6 +278,7 @@ export class Agent<TDeps = undefined, TOutput = string> {
 			modelSettings: opts?.modelSettings,
 			endStrategy: opts?.endStrategy,
 			deferredResults: opts?.deferredResults,
+			telemetry: opts?.telemetry,
 		});
 	}
 
@@ -319,6 +339,7 @@ export class Agent<TDeps = undefined, TOutput = string> {
 			usageLimits: opts?.usageLimits,
 			modelSettings: opts?.modelSettings,
 			endStrategy: opts?.endStrategy,
+			telemetry: opts?.telemetry,
 		});
 	}
 
@@ -346,6 +367,7 @@ export class Agent<TDeps = undefined, TOutput = string> {
 			usageLimits: opts?.usageLimits,
 			modelSettings: opts?.modelSettings,
 			endStrategy: opts?.endStrategy,
+			telemetry: opts?.telemetry,
 		});
 	}
 
@@ -389,6 +411,7 @@ export class Agent<TDeps = undefined, TOutput = string> {
 			modelSettings: runOpts?.modelSettings,
 			endStrategy: runOpts?.endStrategy,
 			deferredResults: runOpts?.deferredResults,
+			telemetry: runOpts?.telemetry,
 			_bypassModelRequestsCheck: true,
 			_override: {
 				model: overrides.model,
@@ -403,6 +426,7 @@ export class Agent<TDeps = undefined, TOutput = string> {
 				historyProcessors: overrides.historyProcessors,
 				modelSettings: overrides.modelSettings,
 				endStrategy: overrides.endStrategy,
+				telemetry: overrides.telemetry,
 			},
 		});
 
