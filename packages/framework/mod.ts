@@ -212,6 +212,54 @@ export type {
 	ToolCallResult,
 } from "./lib/temporal/types.ts";
 
+// Evaluation framework (Pydantic Evals port)
+export type {
+  Case,
+  CaseResult,
+  EvalScore,
+  EvaluationReason,
+  Evaluator,
+  ExperimentResult,
+  ReportEvaluator,
+} from "./lib/evals/types.ts";
+export { EvalError } from "./lib/evals/types.ts";
+export { EvaluatorContext } from "./lib/evals/context.ts";
+export type { EvaluatorContextOptions } from "./lib/evals/context.ts";
+export { SpanNode, SpanTree } from "./lib/evals/span_tree.ts";
+export type { SpanData } from "./lib/evals/span_tree.ts";
+export { Dataset } from "./lib/evals/dataset.ts";
+export type { DatasetOptions, EvaluateOptions } from "./lib/evals/dataset.ts";
+export {
+  contains,
+  custom,
+  equals,
+  equalsExpected,
+  hasMatchingSpan,
+  isInstance,
+  isValidSchema,
+  maxDuration,
+} from "./lib/evals/builtin_evaluators.ts";
+export {
+  confusionMatrix,
+  kolmogorovSmirnov,
+  precisionRecall,
+  rocAuc,
+} from "./lib/evals/report_evaluators.ts";
+export {
+  judgeInputOutput,
+  judgeInputOutputExpected,
+  judgeOutput,
+  judgeOutputExpected,
+  llmJudge,
+  setDefaultJudgeModel,
+} from "./lib/evals/llm_judge.ts";
+export type { LLMJudgeOptions } from "./lib/evals/llm_judge.ts";
+export { generateDataset } from "./lib/evals/generation.ts";
+export type { GenerateDatasetOptions } from "./lib/evals/generation.ts";
+export { runExperiment } from "./lib/evals/experiment.ts";
+export type { RunExperimentOptions } from "./lib/evals/experiment.ts";
+export { formatReport, toJSON } from "./lib/evals/report.ts";
+
 // MCP (Model Context Protocol) integration
 export type {
 	ElicitationCallback,

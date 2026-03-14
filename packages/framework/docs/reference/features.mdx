@@ -225,14 +225,16 @@ framework. Use it as a backlog when deciding what to port next.
 
 | Feature               | Pydantic AI                                         | Status | Docs | Notes |
 | --------------------- | --------------------------------------------------- | ------ | ---- | ----- |
-| Datasets & Cases      | `Dataset`, `Case` - typed test scenarios            | ❌     | - | Not yet implemented |
-| Built-in evaluators   | Exact match, type validation                        | ❌     | - | Not yet implemented |
-| LLM-as-judge          | LLM-based evaluators for subjective qualities       | ❌     | - | Not yet implemented |
-| Custom evaluators     | Domain-specific scoring functions                   | ❌     | - | Not yet implemented |
-| Span-based evaluation | Score runs via OTel trace spans                     | ❌     | - | Not yet implemented |
-| Experiments           | Run and compare datasets across model/prompt combos | ❌     | - | Not yet implemented |
+| Datasets & Cases      | `Dataset`, `Case` - typed test scenarios            | ✅     | [Evals](/concepts/evals) | `Dataset.fromArray()`, `Dataset.fromJSON()`, `Dataset.fromFile()` |
+| Built-in evaluators   | Exact match, type validation                        | ✅     | [Evals](/concepts/evals) | `equalsExpected()`, `equals()`, `contains()`, `isInstance()`, `isValidSchema()`, `maxDuration()`, `hasMatchingSpan()`, `custom()` |
+| LLM-as-judge          | LLM-based evaluators for subjective qualities       | ✅     | [Evals](/concepts/evals) | `llmJudge({ rubric, model })` + helpers `judgeOutput()`, `judgeInputOutput()`, etc. |
+| Custom evaluators     | Domain-specific scoring functions                   | ✅     | [Evals](/concepts/evals) | `custom(name, fn)` factory or implement `Evaluator` interface directly |
+| Report-level evaluators | Confusion matrix, precision/recall, ROC AUC, KS  | ✅     | [Evals](/concepts/evals) | `confusionMatrix()`, `precisionRecall()`, `rocAuc()`, `kolmogorovSmirnov()` |
+| Span-based evaluation | Score runs via OTel trace spans                     | ✅     | [Evals](/concepts/evals) | `SpanTree`, `hasMatchingSpan()` - build `SpanTree.fromSpanData()` from captured spans |
+| Experiments           | Run and compare datasets across model/prompt combos | ✅     | [Evals](/concepts/evals) | `dataset.evaluate(task, opts)` or `runExperiment({ dataset, task, evaluators })` |
 | Logfire integration   | Visualize eval results in Logfire                   | ❌     | - | Not applicable (Logfire is Python-only) |
-| Async + concurrency   | Configurable concurrency and retries for evals      | ❌     | - | Not yet implemented |
+| Async + concurrency   | Configurable concurrency and retries for evals      | ✅     | [Evals](/concepts/evals) | `maxConcurrency` + `maxRetries` on `EvaluateOptions`; Semaphore-based |
+| Dataset generation    | LLM-generated test cases from Zod schemas           | ✅     | [Evals](/concepts/evals) | `generateDataset({ model, inputSchema, nExamples })` |
 
 ---
 

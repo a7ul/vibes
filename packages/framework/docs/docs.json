@@ -58,6 +58,7 @@
           "concepts/streaming",
           "concepts/human-in-the-loop",
           "concepts/testing",
+          "concepts/evals",
           "concepts/debugging",
           "concepts/multi-agent",
           "concepts/graph",
@@ -110,5 +111,17 @@
   },
   "footerSocials": {
     "github": "https://github.com/a7ul/vibes"
+  },
+  "llms": {
+    "title": "Vibes Agent Framework",
+    "description": "Pydantic AI patterns for TypeScript. Powered by Vercel AI SDK."
+  },
+  "search": {
+    "prompt": "How can I help you build AI agents?"
+  },
+  "feedback": {
+    "suggestEdit": true,
+    "raiseIssue": true,
+    "thumbsRating": true
   }
 }
