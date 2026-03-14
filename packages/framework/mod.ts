@@ -163,6 +163,26 @@ export {
 	recordRunAttributes,
 } from "./otel/spans.ts";
 
+// Temporal durable execution integration
+export { TemporalAgent } from "./temporal/temporal_agent.ts";
+export { MockTemporalAgent } from "./temporal/mock_temporal.ts";
+export {
+	serializeRunState,
+	deserializeRunState,
+	roundTripMessages,
+} from "./temporal/serialization.ts";
+export type {
+	TemporalActivityOptions,
+	TemporalAgentOptions,
+	SerializableRunOptions,
+	SerializableMessage,
+	ModelTurnParams,
+	ModelTurnResult,
+	ToolCallParams,
+	ToolCallResult,
+	ActivityHistoryEntry,
+} from "./temporal/types.ts";
+
 // MCP (Model Context Protocol) integration
 export type {
 	MCPTool,
