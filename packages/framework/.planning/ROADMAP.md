@@ -81,8 +81,8 @@ Plans:
 **Plans**: 2 plans
 
 Plans:
-- [ ] 04-01: TBD
-- [ ] 04-02: TBD
+- [ ] 04-01-PLAN.md — Create mcp-client.mdx, mcp-server.mdx, ag-ui.mdx (INT-01a, INT-01b, INT-02)
+- [ ] 04-02-PLAN.md — Create a2a.mdx, temporal.mdx, vercel-ai-ui.mdx + update docs.json (INT-03, INT-04, INT-05)
 
 ### Phase 5: Examples
 **Goal**: Developers can find and copy-paste nine runnable examples covering the full feature surface, from hello-world to A2A
