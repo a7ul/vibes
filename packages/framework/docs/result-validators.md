@@ -36,11 +36,11 @@ type ResultValidator<TDeps, TOutput> = (
 ) => TOutput | Promise<TOutput>;
 ```
 
-| Parameter | Description |
-|---|---|
-| `ctx` | The current [`RunContext`](./run-context.md), including `deps`, `usage`, `retryCount`, and `runId` |
-| `output` | The Zod-parsed output from the model |
-| **Return** | The accepted output (same or modified). Throw to reject. |
+| Parameter  | Description                                                                                        |
+| ---------- | -------------------------------------------------------------------------------------------------- |
+| `ctx`      | The current [`RunContext`](./run-context.md), including `deps`, `usage`, `retryCount`, and `runId` |
+| `output`   | The Zod-parsed output from the model                                                               |
+| **Return** | The accepted output (same or modified). Throw to reject.                                           |
 
 ## Retry Behaviour
 
@@ -67,7 +67,7 @@ const agent = new Agent<undefined, Output>({
     throw new Error("Output does not meet strict criteria");
   }
   return output;
-}
+};
 ```
 
 ## Transforming Output

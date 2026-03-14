@@ -16,17 +16,17 @@ const agent = new Agent({
 
 ## `AgentOptions`
 
-| Option | Type | Default | Description |
-|---|---|---|---|
-| `model` | `LanguageModelV1` | required | Any Vercel AI SDK model |
-| `name` | `string` | — | Human-readable label for the agent |
-| `systemPrompt` | `string \| string[]` | — | Static system prompt(s), joined with `\n\n` |
-| `dynamicSystemPrompt` | `SystemPromptFn \| SystemPromptFn[]` | — | Function(s) called at run time with [`RunContext`](./run-context.md) |
-| `tools` | `ToolDefinition[]` | — | Tools the model can call |
-| `outputSchema` | `ZodTypeAny` | — | Zod schema for structured output |
-| `resultValidators` | `ResultValidator[]` | — | Validators run after output is parsed |
-| `maxRetries` | `number` | `3` | Max retries for validation failures |
-| `maxTurns` | `number` | `10` | Max tool-call round trips per run |
+| Option                | Type                                 | Default  | Description                                                          |
+| --------------------- | ------------------------------------ | -------- | -------------------------------------------------------------------- |
+| `model`               | `LanguageModelV1`                    | required | Any Vercel AI SDK model                                              |
+| `name`                | `string`                             | —        | Human-readable label for the agent                                   |
+| `systemPrompt`        | `string \| string[]`                 | —        | Static system prompt(s), joined with `\n\n`                          |
+| `dynamicSystemPrompt` | `SystemPromptFn \| SystemPromptFn[]` | —        | Function(s) called at run time with [`RunContext`](./run-context.md) |
+| `tools`               | `ToolDefinition[]`                   | —        | Tools the model can call                                             |
+| `outputSchema`        | `ZodTypeAny`                         | —        | Zod schema for structured output                                     |
+| `resultValidators`    | `ResultValidator[]`                  | —        | Validators run after output is parsed                                |
+| `maxRetries`          | `number`                             | `3`      | Max retries for validation failures                                  |
+| `maxTurns`            | `number`                             | `10`     | Max tool-call round trips per run                                    |
 
 ## Type Parameters
 
@@ -53,17 +53,17 @@ Executes the agent and waits for the final result.
 
 ```ts
 const result = await agent.run("What is the capital of France?");
-console.log(result.output);   // "Paris"
-console.log(result.usage);    // { promptTokens, completionTokens, totalTokens, requests }
+console.log(result.output); // "Paris"
+console.log(result.usage); // { promptTokens, completionTokens, totalTokens, requests }
 console.log(result.messages); // full CoreMessage[] history
-console.log(result.runId);    // unique run identifier
+console.log(result.runId); // unique run identifier
 ```
 
 **Options:**
 
-| Option | Type | Description |
-|---|---|---|
-| `deps` | `TDeps` | Runtime dependencies passed to tools and dynamic prompts |
+| Option           | Type            | Description                                                  |
+| ---------------- | --------------- | ------------------------------------------------------------ |
+| `deps`           | `TDeps`         | Runtime dependencies passed to tools and dynamic prompts     |
 | `messageHistory` | `CoreMessage[]` | Prior messages to prepend (enables multi-turn conversations) |
 
 Returns [`RunResult<TOutput>`](./run-context.md#runresult).
@@ -113,7 +113,9 @@ const agent = new Agent({
 Dynamic prompts receive a [`RunContext`](./run-context.md) and can return a `string` or `Promise<string>`.
 
 ```ts
-type SystemPromptFn<TDeps> = (ctx: RunContext<TDeps>) => string | Promise<string>;
+type SystemPromptFn<TDeps> = (
+  ctx: RunContext<TDeps>,
+) => string | Promise<string>;
 ```
 
 ## Model Selection

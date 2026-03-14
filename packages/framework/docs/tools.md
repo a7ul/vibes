@@ -25,13 +25,13 @@ const search = tool({
 
 ## `ToolDefinition<TDeps>`
 
-| Field | Type | Description |
-|---|---|---|
-| `name` | `string` | Unique identifier. The model uses this to call the tool. |
-| `description` | `string` | Natural language description. This is what the model reads to decide when to use the tool. Write it clearly. |
-| `parameters` | `ZodTypeAny` | Zod schema for the arguments. Validated before `execute` is called. |
-| `execute` | `(ctx, args) => Promise<string \| object>` | The function to run. Receives a [`RunContext`](./run-context.md) and the parsed args. |
-| `maxRetries` | `number` | Optional. How many times to retry `execute` if it throws. See [Retrying Tools](#retrying-tools). |
+| Field         | Type                                       | Description                                                                                                  |
+| ------------- | ------------------------------------------ | ------------------------------------------------------------------------------------------------------------ |
+| `name`        | `string`                                   | Unique identifier. The model uses this to call the tool.                                                     |
+| `description` | `string`                                   | Natural language description. This is what the model reads to decide when to use the tool. Write it clearly. |
+| `parameters`  | `ZodTypeAny`                               | Zod schema for the arguments. Validated before `execute` is called.                                          |
+| `execute`     | `(ctx, args) => Promise<string \| object>` | The function to run. Receives a [`RunContext`](./run-context.md) and the parsed args.                        |
+| `maxRetries`  | `number`                                   | Optional. How many times to retry `execute` if it throws. See [Retrying Tools](#retrying-tools).             |
 
 ## Type Parameters
 
@@ -73,12 +73,12 @@ The first argument to `execute` is a [`RunContext`](./run-context.md):
 
 ```ts
 execute: async (ctx, args) => {
-  console.log(ctx.deps);       // your injected dependencies
-  console.log(ctx.usage);      // token usage so far
-  console.log(ctx.toolName);   // "my_tool" — the current tool's name
-  console.log(ctx.runId);      // unique ID for this run
+  console.log(ctx.deps); // your injected dependencies
+  console.log(ctx.usage); // token usage so far
+  console.log(ctx.toolName); // "my_tool" — the current tool's name
+  console.log(ctx.runId); // unique ID for this run
   return "done";
-}
+};
 ```
 
 ## Tool Return Values

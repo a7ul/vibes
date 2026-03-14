@@ -1,6 +1,6 @@
 import type { z, ZodTypeAny } from "zod";
 import { tool as aiTool, type ToolSet } from "ai";
-import type { RunContext } from "./types/run_context.ts";
+import type { RunContext } from "./types.ts";
 
 export interface ToolDefinition<TDeps = undefined> {
 	name: string;

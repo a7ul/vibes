@@ -1,0 +1,71 @@
+import type { ModelMessage } from "ai";
+
+// ---------------------------------------------------------------------------
+// Usage
+// ---------------------------------------------------------------------------
+
+/** Token usage accumulated across all turns in a run. */
+export interface Usage {
+	inputTokens: number;
+	outputTokens: number;
+	totalTokens: number;
+	requests: number;
+}
+
+export function createUsage(): Usage {
+	return { inputTokens: 0, outputTokens: 0, totalTokens: 0, requests: 0 };
+}
+
+// ---------------------------------------------------------------------------
+// RunContext
+// ---------------------------------------------------------------------------
+
+export interface RunContext<TDeps = undefined> {
+	/** User-supplied dependencies, injected at run time. */
+	deps: TDeps;
+	/** Cumulative token usage for this run so far. */
+	usage: Usage;
+	/** How many times the current result has been retried. */
+	retryCount: number;
+	/** Name of the tool currently executing, or null outside a tool call. */
+	toolName: string | null;
+	/** Unique identifier for this run. */
+	runId: string;
+}
+
+// ---------------------------------------------------------------------------
+// Results
+// ---------------------------------------------------------------------------
+
+/**
+ * A result validator receives the run context and the parsed output.
+ * Return the (optionally modified) output to accept it, or throw to reject and retry.
+ */
+export type ResultValidator<TDeps, TOutput> = (
+	ctx: RunContext<TDeps>,
+	output: TOutput,
+) => TOutput | Promise<TOutput>;
+
+export interface RunResult<TOutput> {
+	/** The typed output from the agent. */
+	output: TOutput;
+	/** Full message history for this run (can be passed back in as messageHistory). */
+	messages: ModelMessage[];
+	/** Cumulative token usage across all turns. */
+	usage: Usage;
+	/** Number of result retries that occurred. */
+	retryCount: number;
+	/** Unique identifier for this run. */
+	runId: string;
+}
+
+export interface StreamResult<TOutput> {
+	/** Async iterable of text deltas as they stream in. */
+	textStream: AsyncIterable<string>;
+	/** Resolves to the final typed output once the run completes. */
+	output: Promise<TOutput>;
+	/** Resolves to the full message history once the run completes. */
+	messages: Promise<ModelMessage[]>;
+	/** Resolves to cumulative token usage once the run completes. */
+	usage: Promise<Usage>;
+}

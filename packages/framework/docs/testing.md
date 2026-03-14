@@ -10,8 +10,8 @@ Add `ai/test` to your import map:
 // deno.json
 {
   "imports": {
-    "ai/test": "npm:ai@^4/test"
-  }
+    "ai/test": "npm:ai@^4/test",
+  },
 }
 ```
 
@@ -25,9 +25,9 @@ deno test --allow-env src/packages/framework/tests/
 
 ```ts
 import {
-  MockLanguageModelV1,   // drop-in model replacement
+  MockLanguageModelV1, // drop-in model replacement
   convertArrayToReadableStream, // build streams for doStream
-  mockValues,            // cycle through multiple responses
+  mockValues, // cycle through multiple responses
 } from "ai/test";
 ```
 
@@ -37,12 +37,13 @@ A `LanguageModelV1` implementation you control. Pass `doGenerate` for `.run()` t
 
 ```ts
 const model = new MockLanguageModelV1({
-  doGenerate: () => Promise.resolve({
-    text: "hello world",
-    finishReason: "stop",
-    usage: { promptTokens: 10, completionTokens: 5 },
-    rawCall: { rawPrompt: null, rawSettings: {} },
-  }),
+  doGenerate: () =>
+    Promise.resolve({
+      text: "hello world",
+      finishReason: "stop",
+      usage: { promptTokens: 10, completionTokens: 5 },
+      rawCall: { rawPrompt: null, rawSettings: {} },
+    }),
 });
 ```
 
@@ -52,7 +53,7 @@ Returns a function that cycles through the provided values one at a time. Use it
 
 ```ts
 const doGenerate = mockValues(
-  firstResponse,  // returned on first call
+  firstResponse, // returned on first call
   secondResponse, // returned on second call
 );
 
@@ -67,13 +68,18 @@ Builds a `ReadableStream` from an array of stream part chunks. Used with `doStre
 
 ```ts
 const model = new MockLanguageModelV1({
-  doStream: () => Promise.resolve({
-    stream: convertArrayToReadableStream([
-      { type: "text-delta", textDelta: "hello" },
-      { type: "finish", finishReason: "stop", usage: { promptTokens: 10, completionTokens: 5 } },
-    ]),
-    rawCall: { rawPrompt: null, rawSettings: {} },
-  }),
+  doStream: () =>
+    Promise.resolve({
+      stream: convertArrayToReadableStream([
+        { type: "text-delta", textDelta: "hello" },
+        {
+          type: "finish",
+          finishReason: "stop",
+          usage: { promptTokens: 10, completionTokens: 5 },
+        },
+      ]),
+      rawCall: { rawPrompt: null, rawSettings: {} },
+    }),
 });
 ```
 
@@ -83,7 +89,7 @@ Use `Awaited<ReturnType<...>>` to type mock response objects correctly:
 
 ```ts
 type DoGenerateResult = Awaited<ReturnType<MockLanguageModelV1["doGenerate"]>>;
-type DoStreamResult   = Awaited<ReturnType<MockLanguageModelV1["doStream"]>>;
+type DoStreamResult = Awaited<ReturnType<MockLanguageModelV1["doStream"]>>;
 ```
 
 This avoids type errors when using `mockValues` with mixed response shapes.
@@ -95,12 +101,13 @@ This avoids type errors when using `mockValues` with mixed response shapes.
 ```ts
 Deno.test("basic text run", async () => {
   const model = new MockLanguageModelV1({
-    doGenerate: () => Promise.resolve({
-      text: "hello world",
-      finishReason: "stop",
-      usage: { promptTokens: 10, completionTokens: 5 },
-      rawCall: { rawPrompt: null, rawSettings: {} },
-    }),
+    doGenerate: () =>
+      Promise.resolve({
+        text: "hello world",
+        finishReason: "stop",
+        usage: { promptTokens: 10, completionTokens: 5 },
+        rawCall: { rawPrompt: null, rawSettings: {} },
+      }),
   });
 
   const agent = new Agent({ model });
@@ -120,17 +127,20 @@ Deno.test("structured output", async () => {
   const OutputSchema = z.object({ capital: z.string() });
 
   const model = new MockLanguageModelV1({
-    doGenerate: () => Promise.resolve({
-      toolCalls: [{
-        toolCallType: "function",
-        toolCallId: "tc1",
-        toolName: "final_result",
-        args: JSON.stringify({ capital: "Paris" }),
-      }],
-      finishReason: "tool-calls",
-      usage: { promptTokens: 10, completionTokens: 5 },
-      rawCall: { rawPrompt: null, rawSettings: {} },
-    }),
+    doGenerate: () =>
+      Promise.resolve({
+        toolCalls: [
+          {
+            toolCallType: "function",
+            toolCallId: "tc1",
+            toolName: "final_result",
+            args: JSON.stringify({ capital: "Paris" }),
+          },
+        ],
+        finishReason: "tool-calls",
+        usage: { promptTokens: 10, completionTokens: 5 },
+        rawCall: { rawPrompt: null, rawSettings: {} },
+      }),
   });
 
   const agent = new Agent<undefined, z.infer<typeof OutputSchema>>({
@@ -147,17 +157,21 @@ Deno.test("structured output", async () => {
 
 ```ts
 Deno.test("tool call then text", async () => {
-  type DoGenerateResult = Awaited<ReturnType<MockLanguageModelV1["doGenerate"]>>;
+  type DoGenerateResult = Awaited<
+    ReturnType<MockLanguageModelV1["doGenerate"]>
+  >;
 
   const doGenerate = mockValues<DoGenerateResult>(
     // Turn 1: model calls the tool
     {
-      toolCalls: [{
-        toolCallType: "function",
-        toolCallId: "tc1",
-        toolName: "get_weather",
-        args: JSON.stringify({ city: "Tokyo" }),
-      }],
+      toolCalls: [
+        {
+          toolCallType: "function",
+          toolCallId: "tc1",
+          toolName: "get_weather",
+          args: JSON.stringify({ city: "Tokyo" }),
+        },
+      ],
       finishReason: "tool-calls",
       usage: { promptTokens: 10, completionTokens: 5 },
       rawCall: { rawPrompt: null, rawSettings: {} },
@@ -195,26 +209,44 @@ Deno.test("tool call then text", async () => {
 ```ts
 Deno.test("validator rejects then retries", async () => {
   type Output = { score: number };
-  type DoGenerateResult = Awaited<ReturnType<MockLanguageModelV1["doGenerate"]>>;
+  type DoGenerateResult = Awaited<
+    ReturnType<MockLanguageModelV1["doGenerate"]>
+  >;
 
   const doGenerate = mockValues<DoGenerateResult>(
     // First attempt: invalid score
     {
-      toolCalls: [{ toolCallType: "function", toolCallId: "tc1", toolName: "final_result", args: JSON.stringify({ score: 0 }) }],
+      toolCalls: [
+        {
+          toolCallType: "function",
+          toolCallId: "tc1",
+          toolName: "final_result",
+          args: JSON.stringify({ score: 0 }),
+        },
+      ],
       finishReason: "tool-calls",
       usage: { promptTokens: 10, completionTokens: 5 },
       rawCall: { rawPrompt: null, rawSettings: {} },
     },
     // Second attempt: valid score
     {
-      toolCalls: [{ toolCallType: "function", toolCallId: "tc2", toolName: "final_result", args: JSON.stringify({ score: 7 }) }],
+      toolCalls: [
+        {
+          toolCallType: "function",
+          toolCallId: "tc2",
+          toolName: "final_result",
+          args: JSON.stringify({ score: 7 }),
+        },
+      ],
       finishReason: "tool-calls",
       usage: { promptTokens: 10, completionTokens: 5 },
       rawCall: { rawPrompt: null, rawSettings: {} },
     },
   );
 
-  const model = new MockLanguageModelV1({ doGenerate: () => Promise.resolve(doGenerate()) });
+  const model = new MockLanguageModelV1({
+    doGenerate: () => Promise.resolve(doGenerate()),
+  });
   const agent = new Agent<undefined, Output>({
     model,
     outputSchema: z.object({ score: z.number() }),
@@ -237,14 +269,19 @@ Deno.test("validator rejects then retries", async () => {
 ```ts
 Deno.test("stream text", async () => {
   const model = new MockLanguageModelV1({
-    doStream: () => Promise.resolve({
-      stream: convertArrayToReadableStream([
-        { type: "text-delta", textDelta: "hello " },
-        { type: "text-delta", textDelta: "world" },
-        { type: "finish", finishReason: "stop", usage: { promptTokens: 10, completionTokens: 5 } },
-      ]),
-      rawCall: { rawPrompt: null, rawSettings: {} },
-    }),
+    doStream: () =>
+      Promise.resolve({
+        stream: convertArrayToReadableStream([
+          { type: "text-delta", textDelta: "hello " },
+          { type: "text-delta", textDelta: "world" },
+          {
+            type: "finish",
+            finishReason: "stop",
+            usage: { promptTokens: 10, completionTokens: 5 },
+          },
+        ]),
+        rawCall: { rawPrompt: null, rawSettings: {} },
+      }),
   });
 
   const agent = new Agent({ model });
@@ -268,8 +305,14 @@ Deno.test("dynamic system prompt is included", async () => {
 
   const model = new MockLanguageModelV1({
     doGenerate: (opts) => {
-      capturedSystem = opts.prompt.find(m => m.role === "system")?.content as string;
-      return Promise.resolve({ text: "ok", finishReason: "stop", usage: { promptTokens: 5, completionTokens: 2 }, rawCall: { rawPrompt: null, rawSettings: {} } });
+      capturedSystem = opts.prompt.find((m) => m.role === "system")
+        ?.content as string;
+      return Promise.resolve({
+        text: "ok",
+        finishReason: "stop",
+        usage: { promptTokens: 5, completionTokens: 2 },
+        rawCall: { rawPrompt: null, rawSettings: {} },
+      });
     },
   });
 

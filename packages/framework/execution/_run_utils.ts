@@ -2,12 +2,15 @@
  * Internal helpers shared between run.ts (non-streaming) and stream.ts (streaming).
  * Not part of the public API.
  */
-import { tool as aiTool, type LanguageModelUsage, type ModelMessage, type ToolSet } from "ai";
-import type { Agent, SystemPromptFn } from "../agent.ts";
-import type { ResultValidator } from "../types/result.ts";
-import type { RunContext } from "../types/run_context.ts";
-import type { Usage } from "../types/usage.ts";
-import { createUsage } from "../types/usage.ts";
+import {
+	tool as aiTool,
+	type LanguageModelUsage,
+	type ModelMessage,
+	type ToolSet,
+} from "ai";
+import type { Agent } from "../agent.ts";
+import type { ResultValidator, RunContext, Usage } from "../types.ts";
+import { createUsage } from "../types.ts";
 import { toAISDKTools } from "../tool.ts";
 import { MaxRetriesError } from "../errors.ts";
 
@@ -25,12 +28,12 @@ export function createRunContext<TDeps>(deps: TDeps): RunContext<TDeps> {
 	};
 }
 
-export async function resolveSystemPrompt<TDeps>(
-	agent: Agent<TDeps, unknown>,
+export async function resolveSystemPrompt<TDeps, TOutput>(
+	agent: Agent<TDeps, TOutput>,
 	ctx: RunContext<TDeps>,
 ): Promise<string | undefined> {
 	const parts: string[] = [];
-	for (const p of agent.systemPrompts as (string | SystemPromptFn<TDeps>)[]) {
+	for (const p of agent.systemPrompts) {
 		parts.push(typeof p === "string" ? p : await p(ctx));
 	}
 	return parts.length > 0 ? parts.join("\n\n") : undefined;
@@ -55,16 +58,21 @@ export function buildResponseMessages(
 ): ModelMessage[] {
 	if (responseMessages.length > 0) return responseMessages;
 	if (accumulatedText.length > 0) {
-		return [{ role: "assistant" as const, content: [{ type: "text" as const, text: accumulatedText }] }];
+		return [
+			{
+				role: "assistant" as const,
+				content: [{ type: "text" as const, text: accumulatedText }],
+			},
+		];
 	}
 	return [];
 }
 
-export function buildToolMap<TDeps>(
-	agent: Agent<TDeps, unknown>,
+export function buildToolMap<TDeps, TOutput>(
+	agent: Agent<TDeps, TOutput>,
 	ctx: RunContext<TDeps>,
 ): ToolSet {
-	const toolMap = toAISDKTools([...agent.tools], () => ctx);
+	const toolMap = toAISDKTools(agent.tools, () => ctx);
 	if (agent.outputSchema) {
 		toolMap[FINAL_RESULT_TOOL] = aiTool({
 			description: "Return the final structured result.",
@@ -85,9 +93,9 @@ export function toolsOrUndefined(toolMap: ToolSet): ToolSet | undefined {
 // ---------------------------------------------------------------------------
 
 export function applyUsage(usage: Usage, reported: LanguageModelUsage): void {
-	usage.inputTokens += (reported.inputTokens ?? 0);
-	usage.outputTokens += (reported.outputTokens ?? 0);
-	usage.totalTokens += (reported.totalTokens ?? 0);
+	usage.inputTokens += reported.inputTokens ?? 0;
+	usage.outputTokens += reported.outputTokens ?? 0;
+	usage.totalTokens += reported.totalTokens ?? 0;
 	usage.requests += 1;
 }
 
@@ -130,7 +138,8 @@ export function nudgeWithValidationError<TDeps>(
 	maxRetries: number,
 	error: Error,
 ): void {
-	if (ctx.retryCount >= maxRetries) throw new MaxRetriesError(maxRetries, error);
+	if (ctx.retryCount >= maxRetries)
+		throw new MaxRetriesError(maxRetries, error);
 	ctx.retryCount++;
 	messages.push({
 		role: "user",

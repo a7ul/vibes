@@ -24,7 +24,7 @@ Your injected runtime dependencies. The type is `TDeps` — whatever you declare
 execute: async (ctx, args) => {
   const user = await ctx.deps.db.users.findById(args.userId);
   return user;
-}
+};
 ```
 
 See [Dependencies](./dependencies.md) for full details.
@@ -39,7 +39,7 @@ Cumulative token usage for the current run, updated after each LLM call. Useful 
 execute: async (ctx, args) => {
   console.log(`Tokens used so far: ${ctx.usage.totalTokens}`);
   return doWork(args);
-}
+};
 ```
 
 `Usage` is:
@@ -82,7 +82,7 @@ The name of the tool currently executing, or `null` when the context is used out
 execute: async (ctx, args) => {
   console.log(`Running tool: ${ctx.toolName}`); // e.g. "search"
   return doWork(args);
-}
+};
 ```
 
 ---
@@ -95,7 +95,7 @@ A UUID generated once per `.run()` or `.stream()` call. Useful for correlating l
 execute: async (ctx, args) => {
   logger.info({ runId: ctx.runId, tool: ctx.toolName }, "Tool called");
   return doWork(args);
-}
+};
 ```
 
 ---
@@ -106,11 +106,11 @@ Returned by `.run()`:
 
 ```ts
 interface RunResult<TOutput> {
-  output: TOutput;         // the final typed result
+  output: TOutput; // the final typed result
   messages: CoreMessage[]; // full message history (user, assistant, tool turns)
-  usage: Usage;            // final cumulative usage
-  retryCount: number;      // total retries that occurred
-  runId: string;           // the run's unique ID
+  usage: Usage; // final cumulative usage
+  retryCount: number; // total retries that occurred
+  runId: string; // the run's unique ID
 }
 ```
 

@@ -22,7 +22,7 @@ const agent = new Agent<undefined, z.infer<typeof CityInfo>>({
 });
 
 const result = await agent.run("Tell me about France.");
-console.log(result.output.capital);    // "Paris"
+console.log(result.output.capital); // "Paris"
 console.log(result.output.population); // 67_000_000
 ```
 
@@ -44,10 +44,12 @@ const AnalysisResult = z.object({
   score: z.number().min(0).max(1),
   topics: z.array(z.string()),
   summary: z.string(),
-  entities: z.array(z.object({
-    name: z.string(),
-    type: z.enum(["person", "place", "organisation"]),
-  })),
+  entities: z.array(
+    z.object({
+      name: z.string(),
+      type: z.enum(["person", "place", "organisation"]),
+    }),
+  ),
 });
 ```
 

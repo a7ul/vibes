@@ -1,12 +1,12 @@
 import type { ModelMessage, LanguageModel } from "ai";
 import type { ZodTypeAny } from "zod";
-import type { RunContext } from "./types/run_context.ts";
-import type { ToolDefinition } from "./tool.ts";
 import type {
 	ResultValidator,
+	RunContext,
 	RunResult,
 	StreamResult,
-} from "./types/result.ts";
+} from "./types.ts";
+import type { ToolDefinition } from "./tool.ts";
 import { executeRun } from "./execution/run.ts";
 import { executeStream } from "./execution/stream.ts";
 
@@ -19,8 +19,8 @@ export interface AgentOptions<TDeps, TOutput> {
 	name?: string;
 	/** Vercel AI SDK model instance (e.g. anthropic("claude-..."), openai("gpt-...")) */
 	model: LanguageModel;
-	/** System prompt(s) — static strings, dynamic functions, or a mix of both. */
-	systemPrompt?: string | SystemPromptFn<TDeps> | (string | SystemPromptFn<TDeps>)[];
+	/** System prompt — a static string or a dynamic function. */
+	systemPrompt?: string | SystemPromptFn<TDeps>;
 	/** Tools available to the model. */
 	tools?: ToolDefinition<TDeps>[];
 	/** Zod schema for structured output. If omitted, output type is string. */
@@ -31,11 +31,6 @@ export interface AgentOptions<TDeps, TOutput> {
 	maxRetries?: number;
 	/** Max tool-call round trips before giving up. Default: 10 */
 	maxTurns?: number;
-}
-
-function normalizeToArray<T>(v: T | T[] | undefined): T[] {
-	if (v === undefined) return [];
-	return Array.isArray(v) ? v : [v];
 }
 
 export class Agent<TDeps = undefined, TOutput = string> {
@@ -55,7 +50,7 @@ export class Agent<TDeps = undefined, TOutput = string> {
 		this.outputSchema = opts.outputSchema;
 		this.maxRetries = opts.maxRetries ?? 3;
 		this.maxTurns = opts.maxTurns ?? 10;
-		this._systemPrompts = normalizeToArray(opts.systemPrompt);
+		this._systemPrompts = opts.systemPrompt ? [opts.systemPrompt] : [];
 		this._tools = opts.tools ? [...opts.tools] : [];
 		this._resultValidators = opts.resultValidators
 			? [...opts.resultValidators]

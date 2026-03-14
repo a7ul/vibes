@@ -1,42 +1,13 @@
 import { assertEquals, assertExists } from "@std/assert";
 import { Agent, type RunContext, tool } from "../mod.ts";
-import { MockLanguageModelV3, mockValues } from "ai/test";
+import {
+	MockLanguageModelV3,
+	mockValues,
+	textResponse,
+	toolCallResponse,
+	type DoGenerateResult,
+} from "./_helpers.ts";
 import { z } from "zod";
-
-// ---------------------------------------------------------------------------
-// Helpers
-// ---------------------------------------------------------------------------
-
-type DoGenerateResult = Awaited<ReturnType<MockLanguageModelV3["doGenerate"]>>;
-
-function makeUsage() {
-	return {
-		inputTokens: { total: 10, noCache: 10, cacheRead: 0, cacheWrite: undefined },
-		outputTokens: { total: 5, text: undefined, reasoning: undefined },
-	};
-}
-
-function textResponse(text: string): DoGenerateResult {
-	return {
-		content: [{ type: "text", text }],
-		finishReason: { unified: "stop" as const, raw: undefined },
-		usage: makeUsage(),
-		warnings: [],
-	};
-}
-
-function toolCallResponse(toolName: string, input: unknown, toolCallId = "tc1"): DoGenerateResult {
-	return {
-		content: [{ type: "tool-call", toolCallId, toolName, input: JSON.stringify(input) }],
-		finishReason: { unified: "tool-calls" as const, raw: undefined },
-		usage: makeUsage(),
-		warnings: [],
-	};
-}
-
-// ---------------------------------------------------------------------------
-// Tests
-// ---------------------------------------------------------------------------
 
 Deno.test("Agent - basic text run", async () => {
 	const model = new MockLanguageModelV3({
@@ -56,7 +27,10 @@ Deno.test("Agent - structured output with Zod schema", async () => {
 	const OutputSchema = z.object({ name: z.string(), capital: z.string() });
 
 	const model = new MockLanguageModelV3({
-		doGenerate: toolCallResponse("final_result", { name: "France", capital: "Paris" }),
+		doGenerate: toolCallResponse("final_result", {
+			name: "France",
+			capital: "Paris",
+		}),
 	});
 
 	const agent = new Agent<undefined, z.infer<typeof OutputSchema>>({
@@ -88,7 +62,9 @@ Deno.test("Agent - tool with deps injection", async () => {
 	});
 	const agent = new Agent<Deps>({ model, tools: [greetTool] });
 
-	const result = await agent.run("What is the greeting?", { deps: { greeting: "Buenos días!" } });
+	const result = await agent.run("What is the greeting?", {
+		deps: { greeting: "Buenos días!" },
+	});
 
 	assertEquals(result.output.toLowerCase().includes("buenos"), true);
 	assertEquals(result.usage.requests, 2);
@@ -105,7 +81,9 @@ Deno.test("Agent - message history passthrough", async () => {
 	const agent = new Agent({ model });
 
 	const first = await agent.run("My name is TestUser123.");
-	const second = await agent.run("What is my name?", { messageHistory: first.messages });
+	const second = await agent.run("What is my name?", {
+		messageHistory: first.messages,
+	});
 
 	assertEquals(second.output.includes("TestUser123"), true);
 	assertEquals(second.messages.length >= 4, true);
@@ -124,7 +102,8 @@ Deno.test("Agent - result validator accepts valid output", async () => {
 		outputSchema: OutputSchema,
 		resultValidators: [
 			(_ctx: RunContext<undefined>, output: Output): Output => {
-				if (output.score < 1 || output.score > 10) throw new Error("Out of range");
+				if (output.score < 1 || output.score > 10)
+					throw new Error("Out of range");
 				return output;
 			},
 		],
@@ -143,7 +122,9 @@ Deno.test("Agent - result validator rejects then retries", async () => {
 		toolCallResponse("final_result", { score: 5 }, "tc2"),
 	);
 
-	const model = new MockLanguageModelV3({ doGenerate: () => Promise.resolve(doGenerate()) });
+	const model = new MockLanguageModelV3({
+		doGenerate: () => Promise.resolve(doGenerate()),
+	});
 
 	const agent = new Agent<undefined, Output>({
 		model,
@@ -167,9 +148,12 @@ Deno.test("Agent - dynamic system prompt receives RunContext deps", async () => 
 
 	const model = new MockLanguageModelV3({
 		doGenerate: (opts) => {
-			const sysMsg = opts.prompt.find((m: { role: string }) => m.role === "system");
-			capturedSystem = typeof sysMsg?.content === "string" ? sysMsg.content : undefined;
-			return Promise.resolve(textResponse(`Hello!`));
+			const sysMsg = opts.prompt.find(
+				(m: { role: string }) => m.role === "system",
+			);
+			capturedSystem =
+				typeof sysMsg?.content === "string" ? sysMsg.content : undefined;
+			return Promise.resolve(textResponse("Hello!"));
 		},
 	});
 
@@ -192,7 +176,8 @@ Deno.test("Agent - tool maxRetries retries on failure", async () => {
 		maxRetries: 1,
 		execute: () => {
 			callCount++;
-			if (callCount === 1) return Promise.reject(new Error("transient failure"));
+			if (callCount === 1)
+				return Promise.reject(new Error("transient failure"));
 			return Promise.resolve("ok");
 		},
 	});

@@ -93,7 +93,9 @@ async function safeRun(agent: Agent, prompt: string) {
   } catch (err) {
     if (err instanceof MaxTurnsError) {
       // Agent looped — simplify the prompt or increase maxTurns
-      throw new Error("Agent could not complete the task within the turn limit");
+      throw new Error(
+        "Agent could not complete the task within the turn limit",
+      );
     }
     if (err instanceof MaxRetriesError) {
       // Output never passed validation — relax validators or improve the prompt

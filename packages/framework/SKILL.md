@@ -27,25 +27,25 @@ src/packages/framework/
 
 ## Concept Mapping: pydantic-ai → AI SDK TypeScript
 
-| pydantic-ai | TypeScript equivalent | Notes |
-|---|---|---|
-| `Agent(model, system_prompt, tools, result_type)` | `new Agent({ model, systemPrompt, tools, outputSchema })` | |
-| `RunContext[Deps]` | `RunContext<TDeps>` | Generic over deps |
-| `@agent.tool` decorator | `tool({ name, description, parameters, execute })` | Factory function |
-| `result_type: BaseModel` | `outputSchema: z.object({...})` | Zod schema |
-| `ResultValidator` | `ResultValidator<TDeps, TOutput>` | Throw to reject & retry |
-| `agent.run(prompt, deps=x)` | `agent.run(prompt, { deps: x })` | |
-| `agent.run_stream(prompt)` | `agent.stream(prompt)` | |
-| `result.data` | `result.output` | |
-| `result.usage()` | `result.usage` | Eager, not lazy |
-| `AgentRunResult.all_messages()` | `result.messages` | |
-| `ModelRetry` exception in tool | `throw` in tool execute | Caught by maxRetries loop |
-| `max_retries` on tool | `maxRetries` on `ToolDefinition` | |
-| `max_retries` on Agent | `maxRetries` on `AgentOptions` | Applies to result validators |
-| `max_result_retries` | same `maxRetries` | |
-| `@agent.system_prompt` decorator | `agent.addSystemPrompt((ctx) => ...)` | See decorator pattern below |
-| `agent.name` | `name` on `AgentOptions` | Optional string |
-| `ModelSettings` | Pass options to AI SDK model constructor | e.g. `anthropic("claude-...", { maxTokens })` |
+| pydantic-ai                                       | TypeScript equivalent                                     | Notes                                         |
+| ------------------------------------------------- | --------------------------------------------------------- | --------------------------------------------- |
+| `Agent(model, system_prompt, tools, result_type)` | `new Agent({ model, systemPrompt, tools, outputSchema })` |                                               |
+| `RunContext[Deps]`                                | `RunContext<TDeps>`                                       | Generic over deps                             |
+| `@agent.tool` decorator                           | `tool({ name, description, parameters, execute })`        | Factory function                              |
+| `result_type: BaseModel`                          | `outputSchema: z.object({...})`                           | Zod schema                                    |
+| `ResultValidator`                                 | `ResultValidator<TDeps, TOutput>`                         | Throw to reject & retry                       |
+| `agent.run(prompt, deps=x)`                       | `agent.run(prompt, { deps: x })`                          |                                               |
+| `agent.run_stream(prompt)`                        | `agent.stream(prompt)`                                    |                                               |
+| `result.data`                                     | `result.output`                                           |                                               |
+| `result.usage()`                                  | `result.usage`                                            | Eager, not lazy                               |
+| `AgentRunResult.all_messages()`                   | `result.messages`                                         |                                               |
+| `ModelRetry` exception in tool                    | `throw` in tool execute                                   | Caught by maxRetries loop                     |
+| `max_retries` on tool                             | `maxRetries` on `ToolDefinition`                          |                                               |
+| `max_retries` on Agent                            | `maxRetries` on `AgentOptions`                            | Applies to result validators                  |
+| `max_result_retries`                              | same `maxRetries`                                         |                                               |
+| `@agent.system_prompt` decorator                  | `agent.addSystemPrompt((ctx) => ...)`                     | See decorator pattern below                   |
+| `agent.name`                                      | `name` on `AgentOptions`                                  | Optional string                               |
+| `ModelSettings`                                   | Pass options to AI SDK model constructor                  | e.g. `anthropic("claude-...", { maxTokens })` |
 
 ## Key Implementation Patterns
 
@@ -63,8 +63,11 @@ result[t.name] = aiTool({
     let lastErr: unknown;
     try {
       for (let i = 0; i < attempts; i++) {
-        try { return await t.execute(ctx, args); }
-        catch (err) { lastErr = err; }
+        try {
+          return await t.execute(ctx, args);
+        } catch (err) {
+          lastErr = err;
+        }
       }
       throw lastErr;
     } finally {
@@ -108,9 +111,14 @@ Use `maxSteps: 1` to get one LLM call per loop iteration — we manage the multi
 ```typescript
 // One streamText call per turn — consume textStream deltas, then await results
 const stream = streamText({ model, system, messages, tools, maxSteps: 1 });
-for await (const delta of stream.textStream) { controller.enqueue(delta); }
+for await (const delta of stream.textStream) {
+  controller.enqueue(delta);
+}
 const [text, usage, toolCalls, toolResults] = await Promise.all([
-  stream.text, stream.usage, stream.toolCalls, stream.toolResults,
+  stream.text,
+  stream.usage,
+  stream.toolCalls,
+  stream.toolResults,
 ]);
 ```
 
@@ -125,7 +133,9 @@ async function* readableToAsyncIterable(stream: ReadableStream<string>) {
       if (done) return;
       yield value;
     }
-  } finally { reader.releaseLock(); }
+  } finally {
+    reader.releaseLock();
+  }
 }
 ```
 
@@ -137,9 +147,9 @@ All execution components are generic over `TDeps`. The context flows through the
 
 ```typescript
 interface RunContext<TDeps = undefined> {
-  deps: TDeps;           // user-supplied dependencies
-  usage: Usage;          // mutable, accumulates across turns
-  retryCount: number;    // mutable
+  deps: TDeps; // user-supplied dependencies
+  usage: Usage; // mutable, accumulates across turns
+  retryCount: number; // mutable
   toolName: string | null;
   runId: string;
 }
@@ -148,7 +158,7 @@ interface RunContext<TDeps = undefined> {
 ### 6. Types — use AI SDK exports, not custom wrappers
 
 ```typescript
-import { type ToolSet } from "ai";  // ✓ for tool maps
+import { type ToolSet } from "ai"; // ✓ for tool maps
 // NOT: Record<string, any>         // ✗
 // NOT: ReturnType<typeof aiTool>   // ✗
 ```
@@ -183,12 +193,14 @@ agent.addSystemPrompt(async (ctx) => {
 });
 
 // @agent.tool
-agent.addTool(tool<Deps>({
-  name: "search",
-  description: "Search the knowledge base",
-  parameters: z.object({ query: z.string() }),
-  execute: async (ctx, { query }) => ctx.deps.searchClient.query(query),
-}));
+agent.addTool(
+  tool<Deps>({
+    name: "search",
+    description: "Search the knowledge base",
+    parameters: z.object({ query: z.string() }),
+    execute: async (ctx, { query }) => ctx.deps.searchClient.query(query),
+  }),
+);
 
 // @agent.result_validator
 agent.addResultValidator((_ctx, output) => {
@@ -224,21 +236,22 @@ Throw from a validator to reject the output and force the model to retry (up to 
 
 ## What's NOT Yet Ported (backlog)
 
-| pydantic-ai feature | Status | Notes |
-|---|---|---|
-| `UsageLimits` (token/request caps) | Not ported | Check usage in turn loop before calling model |
+| pydantic-ai feature                | Status     | Notes                                              |
+| ---------------------------------- | ---------- | -------------------------------------------------- |
+| `UsageLimits` (token/request caps) | Not ported | Check usage in turn loop before calling model      |
 | `Agent.override()` context manager | Not ported | Would override model/system/tools for a single run |
-| `capture_run_messages()` | Not ported | |
-| `TestModel` / `FunctionModel` | Not ported | Needed for unit tests without API calls |
-| Streaming result validators | Not ported | Currently validators only run after full output |
-| `agent.last_run_messages` | Not ported | |
-| Multi-agent orchestration | Not ported | pydantic-ai allows passing agents as tools |
+| `capture_run_messages()`           | Not ported |                                                    |
+| `TestModel` / `FunctionModel`      | Not ported | Needed for unit tests without API calls            |
+| Streaming result validators        | Not ported | Currently validators only run after full output    |
+| `agent.last_run_messages`          | Not ported |                                                    |
+| Multi-agent orchestration          | Not ported | pydantic-ai allows passing agents as tools         |
 
 ## Testing a Ported Feature
 
 Tests live in `src/packages/framework/tests/`. Use `ai/test` — no real API key needed.
 
 ### Import map entry (required)
+
 ```jsonc
 { "imports": { "ai/test": "npm:ai@^4/test" } }
 ```
@@ -246,26 +259,49 @@ Tests live in `src/packages/framework/tests/`. Use `ai/test` — no real API key
 Run with: `deno test --allow-env src/packages/framework/tests/`
 
 ### Helper types
+
 ```typescript
-import { MockLanguageModelV1, convertArrayToReadableStream, mockValues } from "ai/test";
+import {
+  MockLanguageModelV1,
+  convertArrayToReadableStream,
+  mockValues,
+} from "ai/test";
 
 type DoGenerateResult = Awaited<ReturnType<MockLanguageModelV1["doGenerate"]>>;
-type DoStreamResult   = Awaited<ReturnType<MockLanguageModelV1["doStream"]>>;
+type DoStreamResult = Awaited<ReturnType<MockLanguageModelV1["doStream"]>>;
 ```
 
 ### Response builder patterns
+
 ```typescript
 const rawCall = { rawPrompt: null, rawSettings: {} };
-const usage   = { promptTokens: 10, completionTokens: 5 };
+const usage = { promptTokens: 10, completionTokens: 5 };
 
 // Plain text
-const textResponse = (text: string): DoGenerateResult =>
-  ({ text, finishReason: "stop", usage, rawCall });
+const textResponse = (text: string): DoGenerateResult => ({
+  text,
+  finishReason: "stop",
+  usage,
+  rawCall,
+});
 
 // Tool call (including final_result for structured output)
-const toolCallResponse = (toolName: string, args: unknown, toolCallId = "tc1"): DoGenerateResult => ({
-  toolCalls: [{ toolCallType: "function", toolCallId, toolName, args: JSON.stringify(args) }],
-  finishReason: "tool-calls", usage, rawCall,
+const toolCallResponse = (
+  toolName: string,
+  args: unknown,
+  toolCallId = "tc1",
+): DoGenerateResult => ({
+  toolCalls: [
+    {
+      toolCallType: "function",
+      toolCallId,
+      toolName,
+      args: JSON.stringify(args),
+    },
+  ],
+  finishReason: "tool-calls",
+  usage,
+  rawCall,
 });
 
 // Stream: text
@@ -278,9 +314,19 @@ const textStream = (text: string): DoStreamResult => ({
 });
 
 // Stream: tool call
-const toolCallStream = (toolName: string, args: unknown, toolCallId = "tc1"): DoStreamResult => ({
+const toolCallStream = (
+  toolName: string,
+  args: unknown,
+  toolCallId = "tc1",
+): DoStreamResult => ({
   stream: convertArrayToReadableStream([
-    { type: "tool-call", toolCallType: "function", toolCallId, toolName, args: JSON.stringify(args) },
+    {
+      type: "tool-call",
+      toolCallType: "function",
+      toolCallId,
+      toolName,
+      args: JSON.stringify(args),
+    },
     { type: "finish", finishReason: "tool-calls", usage },
   ]),
   rawCall,
@@ -288,15 +334,19 @@ const toolCallStream = (toolName: string, args: unknown, toolCallId = "tc1"): Do
 ```
 
 ### Multi-turn with mockValues
+
 ```typescript
 const doGenerate = mockValues<DoGenerateResult>(
   toolCallResponse("my_tool", { arg: "value" }), // turn 1
-  textResponse("Final answer."),                  // turn 2
+  textResponse("Final answer."), // turn 2
 );
-const model = new MockLanguageModelV1({ doGenerate: () => Promise.resolve(doGenerate()) });
+const model = new MockLanguageModelV1({
+  doGenerate: () => Promise.resolve(doGenerate()),
+});
 ```
 
 ### What to test for every new feature
+
 - Happy path (feature works as expected)
 - The retry/fallback path (validator rejects, tool fails, model doesn't call final_result)
 - That `result.usage.requests` matches expected turn count
@@ -308,33 +358,42 @@ const model = new MockLanguageModelV1({ doGenerate: () => Promise.resolve(doGene
 Docs live in `src/packages/framework/docs/`. Mirror the pydantic-ai docs style: concept first, API reference table, then progressively complex examples.
 
 ### Doc file structure
+
 ```markdown
 # Feature Name
 
 One-sentence summary of what it does.
 
 ## Basic Usage
+
 Minimal working example — copy-pasteable.
 
 ## API Reference
+
 Table: option | type | default | description
 
 ## Type Parameters (if generic)
+
 Explain TDeps / TOutput interaction.
 
 ## Recipes
+
 Named subsections for common patterns:
+
 - "With Dependencies"
 - "Async validators"
 - "Combining with Tools"
 - etc.
 
 ## Error Behaviour
+
 What throws, when, and how to handle it.
 ```
 
 ### Link from index.md
+
 Add a row to the table in `docs/index.md`:
+
 ```markdown
 - [**Feature Name**](./feature-name.md) — one-line description
 ```
@@ -360,8 +419,8 @@ Add a row to the table in `docs/index.md`:
   "imports": {
     "ai": "npm:ai@^4",
     "zod": "npm:zod@^3",
-    "@ai-sdk/anthropic": "npm:@ai-sdk/anthropic@^1"
-  }
+    "@ai-sdk/anthropic": "npm:@ai-sdk/anthropic@^1",
+  },
 }
 ```
 

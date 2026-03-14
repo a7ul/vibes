@@ -16,12 +16,12 @@ for await (const chunk of stream.textStream) {
 
 `.stream()` returns a `StreamResult` immediately (synchronously). It has four properties:
 
-| Property | Type | Description |
-|---|---|---|
-| `textStream` | `AsyncIterable<string>` | Text deltas as they arrive. Iterate with `for await`. |
-| `output` | `Promise<TOutput>` | Resolves to the final output once the run completes. |
-| `messages` | `Promise<CoreMessage[]>` | Resolves to the full message history. |
-| `usage` | `Promise<Usage>` | Resolves to cumulative token usage. |
+| Property     | Type                     | Description                                           |
+| ------------ | ------------------------ | ----------------------------------------------------- |
+| `textStream` | `AsyncIterable<string>`  | Text deltas as they arrive. Iterate with `for await`. |
+| `output`     | `Promise<TOutput>`       | Resolves to the final output once the run completes.  |
+| `messages`   | `Promise<CoreMessage[]>` | Resolves to the full message history.                 |
+| `usage`      | `Promise<Usage>`         | Resolves to cumulative token usage.                   |
 
 The promises resolve after the `textStream` is fully consumed (or after the run completes internally).
 
@@ -71,7 +71,9 @@ console.log(summary.keyPoints);
 ```ts
 const stream = agent.stream("Hello.");
 
-for await (const _ of stream.textStream) { /* drain */ }
+for await (const _ of stream.textStream) {
+  /* drain */
+}
 
 const usage = await stream.usage;
 console.log(usage.promptTokens);

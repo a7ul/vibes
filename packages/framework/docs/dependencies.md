@@ -107,8 +107,12 @@ const sharedDeps = {
 };
 
 // Each run gets its own RunContext, but shares the same db and cache instances
-const r1 = await agent.run("Query 1", { deps: { ...sharedDeps, userId: "u1" } });
-const r2 = await agent.run("Query 2", { deps: { ...sharedDeps, userId: "u2" } });
+const r1 = await agent.run("Query 1", {
+  deps: { ...sharedDeps, userId: "u1" },
+});
+const r2 = await agent.run("Query 2", {
+  deps: { ...sharedDeps, userId: "u2" },
+});
 ```
 
 ## Type Safety
