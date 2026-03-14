@@ -111,12 +111,12 @@ Plans:
   3. docs.json navigation matches the new structure: landing, intro, getting started, concepts, integrations, examples, advanced, meta
   4. All old fragmented reference pages are deleted and zero broken internal links remain (verified by audit)
   5. At least 30 Mermaid diagrams render correctly across concept and integration pages
-**Plans**: 2 plans
+**Plans**: 3 plans
 
 Plans:
-- [ ] 06-01: TBD
-- [ ] 06-02: TBD
-- [ ] 06-03: TBD
+- [ ] 06-01-PLAN.md — Create advanced/multimodal.mdx, advanced/error-handling.mdx, advanced/direct-model-requests.mdx (ADV-01, ADV-02, ADV-03)
+- [ ] 06-02-PLAN.md — Create meta/acknowledgments.mdx, meta/contributing.mdx, meta/changelog.mdx (META-01, META-02, META-03)
+- [ ] 06-03-PLAN.md — Restructure docs.json, delete 23 old pages, fix broken links, audit diagram count (NAV-01, NAV-02, NAV-03, NAV-04, DIAG-01)
 
 ## Progress
 
