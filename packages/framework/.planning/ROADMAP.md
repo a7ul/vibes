@@ -127,7 +127,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Landing and Getting Started | 2/2 | Complete   | 2026-03-14 |
+| 1. Landing and Getting Started | 3/3 | Complete   | 2026-03-14 |
 | 2. Core Concepts Part 1 | 0/3 | Not started | - |
 | 3. Core Concepts Part 2 | 0/2 | Not started | - |
 | 4. Integrations | 0/2 | Not started | - |
