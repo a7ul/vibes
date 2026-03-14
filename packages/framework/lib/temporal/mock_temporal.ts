@@ -155,8 +155,7 @@ export class MockTemporalAgent<TDeps, TOutput> {
    * @param prompt - The original prompt (must match the first run).
    * @param opts - Standard run options.
    */
-  // deno-lint-ignore require-await
-  async simulateReplay(
+  simulateReplay(
     prompt: string,
     opts?: RunOptions<TDeps>,
   ): Promise<RunResult<TOutput>> {

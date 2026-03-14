@@ -4,7 +4,7 @@
  */
 import { tool as aiTool } from "ai";
 import type { ToolSet } from "ai";
-import type { ZodTypeAny } from "zod";
+import type { ZodType } from "zod";
 
 // ---------------------------------------------------------------------------
 // Naming conventions
@@ -44,8 +44,8 @@ export function unionToolIndex(name: string): number | undefined {
  * an array is returned as-is.
  */
 export function normaliseSchemas(
-  outputSchema: ZodTypeAny | ZodTypeAny[] | undefined,
-): ZodTypeAny[] {
+  outputSchema: ZodType | ZodType[] | undefined,
+): ZodType[] {
   if (!outputSchema) return [];
   return Array.isArray(outputSchema) ? outputSchema : [outputSchema];
 }
@@ -54,7 +54,7 @@ export function normaliseSchemas(
  * Returns `true` when `outputSchema` is an array (union mode).
  */
 export function isUnionSchema(
-  outputSchema: ZodTypeAny | ZodTypeAny[] | undefined,
+  outputSchema: ZodType | ZodType[] | undefined,
 ): boolean {
   return Array.isArray(outputSchema) && outputSchema.length > 1;
 }
@@ -74,7 +74,7 @@ export function isUnionSchema(
  */
 export function registerOutputTools(
   toolMap: ToolSet,
-  outputSchema: ZodTypeAny | ZodTypeAny[] | undefined,
+  outputSchema: ZodType | ZodType[] | undefined,
 ): void {
   if (!outputSchema) return;
 
@@ -106,12 +106,12 @@ export function registerOutputTools(
  * Traverses the schema's internal `_def` structure to build a minimal
  * JSON Schema object suitable for system prompt injection.
  */
-export function zodToJsonSchema(schema: ZodTypeAny): Record<string, unknown> {
+export function zodToJsonSchema(schema: ZodType): Record<string, unknown> {
   return extractJsonSchema(schema);
 }
 
 /** Best-effort JSON Schema extraction from a Zod v4 schema object. */
-function extractJsonSchema(schema: ZodTypeAny): Record<string, unknown> {
+function extractJsonSchema(schema: ZodType): Record<string, unknown> {
   // Access Zod's internal `_def` structure to extract type information.
   const schemaInternal = schema as unknown as {
     _def?: Record<string, unknown>;
@@ -142,7 +142,7 @@ function buildFromDef(
     case "ZodArray":
       return {
         type: "array",
-        items: extractJsonSchema(def.type as ZodTypeAny),
+        items: extractJsonSchema(def.type as ZodType),
       };
     case "ZodEnum":
       return {
@@ -150,15 +150,15 @@ function buildFromDef(
         enum: (def.values as string[] | undefined) ?? [],
       };
     case "ZodOptional":
-      return extractJsonSchema(def.innerType as ZodTypeAny);
+      return extractJsonSchema(def.innerType as ZodType);
     case "ZodNullable":
       return {
-        oneOf: [extractJsonSchema(def.innerType as ZodTypeAny), {
+        oneOf: [extractJsonSchema(def.innerType as ZodType), {
           type: "null",
         }],
       };
     case "ZodObject": {
-      const shape = (def.shape as Record<string, ZodTypeAny>) ?? {};
+      const shape = (def.shape as Record<string, ZodType>) ?? {};
       const properties: Record<string, unknown> = {};
       const required: string[] = [];
       for (const [k, v] of Object.entries(shape)) {
@@ -174,7 +174,7 @@ function buildFromDef(
       return result;
     }
     case "ZodUnion": {
-      const options = (def.options as ZodTypeAny[] | undefined) ?? [];
+      const options = (def.options as ZodType[] | undefined) ?? [];
       return { oneOf: options.map(extractJsonSchema) };
     }
     default: {
@@ -197,7 +197,7 @@ function buildFromDef(
  * `outputMode === 'prompted'`.
  */
 export function buildSchemaPrompt(
-  outputSchema: ZodTypeAny | ZodTypeAny[] | undefined,
+  outputSchema: ZodType | ZodType[] | undefined,
 ): string {
   if (!outputSchema) return "";
   const schemas = normaliseSchemas(outputSchema);
@@ -232,7 +232,7 @@ export type ParseTextResult<TOutput> =
  */
 export function parseTextOutput<TOutput>(
   text: string,
-  outputSchema: ZodTypeAny | ZodTypeAny[] | undefined,
+  outputSchema: ZodType | ZodType[] | undefined,
 ): ParseTextResult<TOutput> {
   if (!outputSchema) {
     return { success: false, error: new Error("No output schema") };

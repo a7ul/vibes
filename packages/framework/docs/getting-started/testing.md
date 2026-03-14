@@ -1,3 +1,8 @@
+---
+title: "Testing Your Agent"
+description: "Test agents without making real API calls"
+---
+
 # Testing Your Agent
 
 Vibes is designed to be tested without making real API calls. Tests run in milliseconds, are fully deterministic, and never hit rate limits.
@@ -231,6 +236,6 @@ Deno.test("MyAgent - validates output schema", async () => {
 
 ## Next Steps
 
-- [Testing reference](../testing.md) — full API reference for all test utilities
+- [Testing reference](../reference/core/testing) — full API reference for all test utilities
 - [How Agents Work](../concepts/how-agents-work.md) — understand the loop you're testing
-- [Result Validators](../result-validators.md) — test retry and validation behavior
+- [Result Validators](../reference/core/result-validators) — test retry and validation behavior

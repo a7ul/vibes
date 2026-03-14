@@ -1,3 +1,8 @@
+---
+title: "Multi-Agent Systems"
+description: "Agent-as-tool, delegation, and supervisor patterns"
+---
+
 # Multi-Agent Systems
 
 Complex tasks are often best solved by multiple specialized agents working together. Vibes supports several patterns for composing agents.
@@ -232,4 +237,4 @@ const recursiveAgent = new Agent<Deps>({
 
 - [Dependency Injection](../concepts/dependency-injection.md) — passing deps across agents
 - [Graph Workflows](./graph-workflows.md) — FSM-style multi-step pipelines
-- [Multi-Agent reference](../multi-agent.md) — full API reference
+- [Multi-Agent reference](../reference/advanced/multi-agent) — full API reference

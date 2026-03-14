@@ -1,3 +1,8 @@
+---
+title: "Streaming"
+description: "textStream, partialOutput, and runStreamEvents()"
+---
+
 # Streaming
 
 Call `.stream()` instead of `.run()` to receive text deltas as the model

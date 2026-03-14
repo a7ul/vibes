@@ -1,0 +1,43 @@
+# Deno
+.deno/
+
+# Dependencies / cache
+node_modules/
+npm-debug.log*
+
+# Build output
+dist/
+build/
+out/
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Editor
+.vscode/
+.idea/
+*.suo
+*.user
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Test artifacts
+coverage/
+*.lcov
+
+# Temp / scratch
+tmp/
+temp/
+*.tmp
+*.log
+
+# Claude worktrees
+.claude/worktrees/
+packages/framework/npm/

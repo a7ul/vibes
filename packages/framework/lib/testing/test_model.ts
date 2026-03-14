@@ -17,7 +17,7 @@
  */
 
 import type { MockLanguageModelV3 } from "ai/test";
-import type { ZodTypeAny } from "zod";
+import type { ZodType } from "zod";
 
 // ---------------------------------------------------------------------------
 // Types derived from MockLanguageModelV3 to stay version-compatible
@@ -123,7 +123,7 @@ function generateFromJsonSchema(schema: JsonSchema): unknown {
  * Provides more semantically correct values (enums pick first member, literals
  * return the exact value, etc.).
  */
-function generateFromZodDef(zodType: ZodTypeAny): unknown {
+function generateFromZodDef(zodType: ZodType): unknown {
   const def = (zodType as unknown as { _def: Record<string, unknown> })._def;
   if (!def) return "test";
 
@@ -162,7 +162,7 @@ function generateFromZodDef(zodType: ZodTypeAny): unknown {
       return undefined;
     }
     case "nullable": {
-      const inner = def["innerType"] as ZodTypeAny | undefined;
+      const inner = def["innerType"] as ZodType | undefined;
       return inner ? generateFromZodDef(inner) : null;
     }
     case "default": {
@@ -174,8 +174,8 @@ function generateFromZodDef(zodType: ZodTypeAny): unknown {
     }
     case "object": {
       const shape = def["shape"] as
-        | Record<string, ZodTypeAny>
-        | (() => Record<string, ZodTypeAny>)
+        | Record<string, ZodType>
+        | (() => Record<string, ZodType>)
         | undefined;
       const resolvedShape = typeof shape === "function" ? shape() : shape;
       if (!resolvedShape) return {};
@@ -189,13 +189,13 @@ function generateFromZodDef(zodType: ZodTypeAny): unknown {
       return result;
     }
     case "union": {
-      const options = def["options"] as ZodTypeAny[] | undefined;
+      const options = def["options"] as ZodType[] | undefined;
       if (options && options.length > 0) return generateFromZodDef(options[0]);
       return "test";
     }
     case "intersection": {
-      const left = def["left"] as ZodTypeAny | undefined;
-      const right = def["right"] as ZodTypeAny | undefined;
+      const left = def["left"] as ZodType | undefined;
+      const right = def["right"] as ZodType | undefined;
       const leftVal = left ? generateFromZodDef(left) : {};
       const rightVal = right ? generateFromZodDef(right) : {};
       if (
@@ -208,7 +208,7 @@ function generateFromZodDef(zodType: ZodTypeAny): unknown {
       return leftVal;
     }
     case "tuple": {
-      const items = def["items"] as ZodTypeAny[] | undefined;
+      const items = def["items"] as ZodType[] | undefined;
       return items ? items.map(generateFromZodDef) : [];
     }
     case "record":
@@ -218,7 +218,7 @@ function generateFromZodDef(zodType: ZodTypeAny): unknown {
       return [];
     case "pipe":
     case "transform": {
-      const inner = def["innerType"] as ZodTypeAny | undefined;
+      const inner = def["innerType"] as ZodType | undefined;
       return inner ? generateFromZodDef(inner) : "test";
     }
     case "catch": {
@@ -274,7 +274,7 @@ function buildToolCallContent(
 
 function buildFinalResultContent(
   tool: FunctionTool,
-  schema?: ZodTypeAny,
+  schema?: ZodType,
 ): DoGenerateResult["content"] {
   const args = schema
     ? generateFromZodDef(schema)
@@ -301,10 +301,10 @@ export class TestModel {
 
   private readonly _callTools: boolean;
   private readonly _text: string;
-  private readonly _outputSchema: ZodTypeAny | undefined;
+  private readonly _outputSchema: ZodType | undefined;
   private _turn: number;
 
-  constructor(options?: TestModelOptions & { outputSchema?: ZodTypeAny }) {
+  constructor(options?: TestModelOptions & { outputSchema?: ZodType }) {
     this._callTools = options?.callTools ?? true;
     this._text = options?.text ?? "test response";
     this._outputSchema = options?.outputSchema;
@@ -415,7 +415,7 @@ export class TestModel {
  * ```
  */
 export function createTestModel(
-  options?: TestModelOptions & { outputSchema?: ZodTypeAny },
+  options?: TestModelOptions & { outputSchema?: ZodType },
 ): TestModel {
   return new TestModel(options);
 }

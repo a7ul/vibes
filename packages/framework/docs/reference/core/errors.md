@@ -1,3 +1,8 @@
+---
+title: "Errors"
+description: "All error types thrown by @vibes/framework"
+---
+
 # Errors
 
 The framework throws two custom error types. Both extend `Error` and can be

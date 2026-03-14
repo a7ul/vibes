@@ -15,8 +15,7 @@ import {
 
 const OutputSchema = z.object({ value: z.string() });
 
-// deno-lint-ignore require-await
-Deno.test("endStrategy - defaults to 'early'", async () => {
+Deno.test("endStrategy - defaults to 'early'", () => {
   const model = new MockLanguageModelV3({
     doGenerate: textResponse("hello"),
   });
@@ -31,10 +30,9 @@ Deno.test("endStrategy - 'early' stops on final_result immediately", async () =>
     name: "side_effect",
     description: "A tool with a side effect",
     parameters: z.object({}),
-    // deno-lint-ignore require-await
-    execute: async (_ctx) => {
+    execute: (_ctx) => {
       sideEffectCalled = true;
-      return "done";
+      return Promise.resolve("done");
     },
   });
 
@@ -108,10 +106,9 @@ Deno.test("endStrategy - multi-turn with tool calls completes correctly", async 
     name: "my_tool",
     description: "a regular tool",
     parameters: z.object({}),
-    // deno-lint-ignore require-await
-    execute: async () => {
+    execute: () => {
       toolCalled = true;
-      return "result";
+      return Promise.resolve("result");
     },
   });
 

@@ -1,3 +1,8 @@
+---
+title: "OpenTelemetry"
+description: "Tracing with instrumentAgent()"
+---
+
 # OpenTelemetry
 
 Instrument agents with OpenTelemetry tracing via the Vercel AI SDK's built-in

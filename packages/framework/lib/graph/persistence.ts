@@ -35,19 +35,18 @@ export class MemoryStatePersistence<TState>
   implements StatePersistence<TState> {
   private readonly store = new Map<string, GraphSnapshot<TState>>();
 
-  // deno-lint-ignore require-await
-  async save(graphId: string, nodeId: NodeId, state: TState): Promise<void> {
+  save(graphId: string, nodeId: NodeId, state: TState): Promise<void> {
     this.store.set(graphId, { nodeId, state });
+    return Promise.resolve();
   }
 
-  // deno-lint-ignore require-await
-  async load(graphId: string): Promise<GraphSnapshot<TState> | null> {
-    return this.store.get(graphId) ?? null;
+  load(graphId: string): Promise<GraphSnapshot<TState> | null> {
+    return Promise.resolve(this.store.get(graphId) ?? null);
   }
 
-  // deno-lint-ignore require-await
-  async clear(graphId: string): Promise<void> {
+  clear(graphId: string): Promise<void> {
     this.store.delete(graphId);
+    return Promise.resolve();
   }
 }
 

@@ -134,8 +134,7 @@ Deno.test("MCPToolset - tool execution calls client.callTool", async () => {
 
   // Override callTool to capture args
   const origCallTool = client.callTool.bind(client);
-  // deno-lint-ignore require-await
-  client.callTool = async (name: string, args: Record<string, unknown>) => {
+  client.callTool = (name: string, args: Record<string, unknown>) => {
     calledName = name;
     calledArgs = args;
     return origCallTool(name, args);
@@ -430,8 +429,7 @@ Deno.test("MCPManager - last server wins on name conflict", async () => {
   assertEquals(tools[0].description, "From B");
 });
 
-// deno-lint-ignore require-await
-Deno.test("MCPManager - addServer returns this for chaining", async () => {
+Deno.test("MCPManager - addServer returns this for chaining", () => {
   const client = new MockMCPClient({ tools: [] });
   const manager = new MCPManager();
   const result = manager.addServer(client);

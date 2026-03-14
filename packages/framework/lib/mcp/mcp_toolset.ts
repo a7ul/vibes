@@ -1,4 +1,3 @@
-import type { ZodTypeAny } from "zod";
 import type { RunContext } from "../types/context.ts";
 import type { ToolDefinition } from "../tool.ts";
 import { fromSchema } from "../tool.ts";
@@ -128,8 +127,3 @@ export class MCPToolset<TDeps = undefined> implements Toolset<TDeps> {
   }
 }
 
-// ---------------------------------------------------------------------------
-// Helper: extract the underlying ZodTypeAny from a ToolDefinition (unused
-// outside tests, but exported for inspection)
-// ---------------------------------------------------------------------------
-export type { ZodTypeAny };

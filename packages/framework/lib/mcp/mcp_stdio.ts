@@ -1,5 +1,5 @@
-import { Client } from "npm:@modelcontextprotocol/sdk@^1/client/index.js";
-import { StdioClientTransport } from "npm:@modelcontextprotocol/sdk@^1/client/stdio.js";
+import { Client } from "@modelcontextprotocol/sdk/client/index.js";
+import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js";
 import type { MCPClient } from "./mcp_client.ts";
 import type {
   ElicitationCallback,
@@ -137,19 +137,15 @@ export class MCPStdioClient implements MCPClient {
     // The MCP SDK exposes elicitation via setRequestHandler for elicit requests
     // We use the generic request handler mechanism if available
     try {
-      // deno-lint-ignore no-explicit-any
-      const c = client as any;
-      if (typeof c.setRequestHandler === "function") {
-        c.setRequestHandler(
+      const c = client as unknown as Record<string, unknown>;
+      if (typeof c["setRequestHandler"] === "function") {
+        const setRequestHandler = c["setRequestHandler"] as (
+          schema: { method: string },
+          handler: (req: { params: { message: string; requestedSchema: Record<string, unknown> } }) => Promise<unknown>,
+        ) => void;
+        setRequestHandler(
           { method: "elicitation/create" },
-          async (
-            req: {
-              params: {
-                message: string;
-                requestedSchema: Record<string, unknown>;
-              };
-            },
-          ) => {
+          async (req) => {
             const cb = this._elicitationCallback!;
             const response = await cb({
               message: req.params.message,

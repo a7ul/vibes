@@ -20,8 +20,7 @@ function makeTool(name: string) {
     name,
     description: `${name} tool`,
     parameters: z.object({}),
-    // deno-lint-ignore require-await
-    execute: async () => `${name} result`,
+    execute: () => Promise.resolve(`${name} result`),
   });
 }
 

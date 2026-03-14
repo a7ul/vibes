@@ -1,5 +1,5 @@
 import { jsonSchema as aiJsonSchema } from "ai";
-import type { ZodTypeAny } from "zod";
+import type { ZodType } from "zod";
 import type { RunContext } from "../types/context.ts";
 import type { ToolDefinition } from "../tool.ts";
 import type { Toolset } from "./toolset.ts";
@@ -72,7 +72,7 @@ export class ExternalToolset<TDeps = undefined> implements Toolset<TDeps> {
       // Wrap the raw JSON schema with the AI SDK helper
       const wrappedSchema = aiJsonSchema(
         def.jsonSchema,
-      ) as unknown as ZodTypeAny;
+      ) as unknown as ZodType;
       const toolDef: ToolDefinition<TDeps> = {
         name: def.name,
         description: def.description,
@@ -81,11 +81,12 @@ export class ExternalToolset<TDeps = undefined> implements Toolset<TDeps> {
         // execute should never be called — the tool is marked requiresApproval:true
         // and the run loop intercepts before execution. Provide a fallback that
         // returns an error string in case the deferred mechanism is bypassed.
-        // deno-lint-ignore require-await
-        execute: async (_ctx: RunContext<TDeps>, args: unknown) => {
-          return `External tool "${def.name}" was called but no executor is registered. Args: ${
-            JSON.stringify(args)
-          }`;
+        execute: (_ctx: RunContext<TDeps>, args: unknown) => {
+          return Promise.resolve(
+            `External tool "${def.name}" was called but no executor is registered. Args: ${
+              JSON.stringify(args)
+            }`,
+          );
         },
       };
       return toolDef;

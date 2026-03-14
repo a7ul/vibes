@@ -1,3 +1,8 @@
+---
+title: "Dependencies"
+description: "Injecting runtime context into tools and prompts"
+---
+
 # Dependencies
 
 Dependencies are runtime values you inject into an agent run — things like

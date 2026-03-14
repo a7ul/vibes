@@ -1,3 +1,8 @@
+---
+title: "AG-UI"
+description: "Server-Sent Events adapter for AG-UI protocol"
+---
+
 # AG-UI
 
 The AG-UI adapter streams agent runs as Server-Sent Events (SSE) following the

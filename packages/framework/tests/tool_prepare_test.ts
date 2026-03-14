@@ -22,8 +22,7 @@ Deno.test("tool.prepare - returning tool includes it", async () => {
       prepareCallCount++;
       return ctx ? myTool : undefined; // always include
     },
-    // deno-lint-ignore require-await
-    execute: async () => "executed",
+    execute: () => Promise.resolve("executed"),
   };
 
   const responses = mockValues<DoGenerateResult>(
@@ -58,8 +57,7 @@ Deno.test("tool.prepare - returning null excludes tool from turn", async () => {
     prepare: (ctx: RunContext<Deps>) => {
       return ctx.deps.isAdmin ? adminTool : null;
     },
-    // deno-lint-ignore require-await
-    execute: async () => "admin executed",
+    execute: () => Promise.resolve("admin executed"),
   };
 
   const model = new MockLanguageModelV3({
@@ -94,11 +92,9 @@ Deno.test("tool.prepare - can modify tool description per turn", async () => {
       name: "greet",
       description: `Greet in ${ctx.deps.language}`,
       parameters: z.object({}),
-      // deno-lint-ignore require-await
-      execute: async () => `greet in ${ctx.deps.language}`,
+      execute: () => Promise.resolve(`greet in ${ctx.deps.language}`),
     }),
-    // deno-lint-ignore require-await
-    execute: async () => "greet",
+    execute: () => Promise.resolve("greet"),
   };
 
   const model = new MockLanguageModelV3({

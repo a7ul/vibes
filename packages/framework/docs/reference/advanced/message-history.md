@@ -1,3 +1,8 @@
+---
+title: "Message History"
+description: "Multi-turn conversations, history processors, serialization"
+---
+
 # Message History
 
 Message history lets you persist conversation context across multiple agent runs

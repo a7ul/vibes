@@ -2,7 +2,7 @@
   "workspace": ["./packages/framework", "./packages/vibes"],
   "tasks": {
     "dev": "deno run --watch main.ts",
-    "test": "deno test --allow-env --allow-net"
+    "test": "deno task --filter '*' test"
   },
   "imports": {
     "@std/assert": "jsr:@std/assert@^1.0.19"

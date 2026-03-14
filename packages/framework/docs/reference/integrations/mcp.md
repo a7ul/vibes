@@ -1,3 +1,8 @@
+---
+title: "MCP Servers"
+description: "Model Context Protocol tool server integration"
+---
+
 # MCP (Model Context Protocol)
 
 Connect agents to external MCP tool servers over stdio or HTTP, exposing their

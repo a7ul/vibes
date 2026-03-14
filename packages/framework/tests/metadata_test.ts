@@ -16,10 +16,9 @@ Deno.test("metadata - accessible on RunContext in tools", async () => {
     name: "check_meta",
     description: "Reads metadata",
     parameters: z.object({}),
-    // deno-lint-ignore require-await
-    execute: async (ctx: RunContext) => {
+    execute: (ctx: RunContext) => {
       capturedMeta = ctx.metadata;
-      return "ok";
+      return Promise.resolve("ok");
     },
   });
 
@@ -47,10 +46,9 @@ Deno.test("metadata - defaults to empty object when not provided", async () => {
     name: "peek",
     description: "Peek metadata",
     parameters: z.object({}),
-    // deno-lint-ignore require-await
-    execute: async (ctx: RunContext) => {
+    execute: (ctx: RunContext) => {
       capturedMeta = ctx.metadata;
-      return "ok";
+      return Promise.resolve("ok");
     },
   });
 

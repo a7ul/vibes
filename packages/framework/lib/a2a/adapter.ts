@@ -186,12 +186,12 @@ export class A2AAdapter<TDeps, TOutput> {
     return (req: Request): Promise<Response> => this.handleRequest(req);
   }
 
-  async handleRequest(req: Request): Promise<Response> {
+  handleRequest(req: Request): Promise<Response> {
     const url = new URL(req.url);
 
     // Agent card endpoint
     if (req.method === "GET" && url.pathname === "/.well-known/agent.json") {
-      return jsonResponse(this.card);
+      return Promise.resolve(jsonResponse(this.card));
     }
 
     // JSON-RPC endpoint
@@ -199,7 +199,7 @@ export class A2AAdapter<TDeps, TOutput> {
       return this.handleJsonRpc(req);
     }
 
-    return new Response("Not Found", { status: 404 });
+    return Promise.resolve(new Response("Not Found", { status: 404 }));
   }
 
   private async handleJsonRpc(req: Request): Promise<Response> {
@@ -317,7 +317,7 @@ export class A2AAdapter<TDeps, TOutput> {
     const deps = this.options.deps;
     const abortController = new AbortController();
     this.abortControllers.set(taskId, abortController);
-    const adapters = this;
+    const { abortControllers } = this;
 
     const stream = new ReadableStream<Uint8Array>({
       async start(controller) {
@@ -458,7 +458,7 @@ export class A2AAdapter<TDeps, TOutput> {
             }),
           );
         } finally {
-          adapters.abortControllers.delete(taskId);
+          abortControllers.delete(taskId);
           controller.close();
         }
       },

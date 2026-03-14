@@ -27,8 +27,7 @@ function makeTool(name: string, returnValue?: string) {
     name,
     description: `${name} tool`,
     parameters: z.object({}),
-    // deno-lint-ignore require-await
-    execute: async () => returnValue ?? `${name} result`,
+    execute: () => Promise.resolve(returnValue ?? `${name} result`),
   });
 }
 
@@ -75,8 +74,7 @@ class OverridingWrapper<TDeps = undefined> extends WrapperToolset<TDeps> {
 class CountingWrapper<TDeps = undefined> extends WrapperToolset<TDeps> {
   count = 0;
 
-  // deno-lint-ignore require-await
-  async callTool(
+  callTool(
     ctx: RunContext<TDeps>,
     _toolName: string,
     args: Record<string, unknown>,
@@ -198,8 +196,7 @@ Deno.test("WrapperToolset - preserves tool metadata (name, description) in outpu
     name: "my_tool",
     description: "My special tool",
     parameters: z.object({}),
-    // deno-lint-ignore require-await
-    execute: async () => "result",
+    execute: () => Promise.resolve("result"),
   });
 
   const inner = new FunctionToolset([myTool]);
@@ -225,8 +222,7 @@ Deno.test("WrapperToolset - works with deps via RunContext", async () => {
   const capturedDeps: Deps[] = [];
 
   class DepCapturingWrapper extends WrapperToolset<Deps> {
-    // deno-lint-ignore require-await
-    async callTool(
+    callTool(
       ctx: RunContext<Deps>,
       _toolName: string,
       args: Record<string, unknown>,

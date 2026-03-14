@@ -25,8 +25,7 @@ function makeTool(name: string, description = `${name} tool`) {
     name,
     description,
     parameters: z.object({ input: z.string() }),
-    // deno-lint-ignore require-await
-    execute: async (_ctx, args) => `${name}: ${args.input}`,
+    execute: (_ctx, args) => Promise.resolve(`${name}: ${args.input}`),
   });
 }
 
@@ -124,10 +123,9 @@ Deno.test("ApprovalRequiredToolset - original tool execute is preserved", async 
     name: "my_tool",
     description: "My tool",
     parameters: z.object({}),
-    // deno-lint-ignore require-await
-    execute: async () => {
+    execute: () => {
       executed = true;
-      return "executed";
+      return Promise.resolve("executed");
     },
   });
 

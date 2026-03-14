@@ -408,26 +408,24 @@ export class Agent<TDeps = undefined, TOutput = string> {
       },
     });
 
-    // deno-lint-ignore no-this-alias
-    const self = this;
     return {
-      run(prompt: string, opts?: RunOptions<TDeps>) {
+      run: (prompt: string, opts?: RunOptions<TDeps>) => {
         return executeRun<TDeps, TOutput>(
-          self,
+          this,
           prompt,
           buildOpts(prompt, opts),
         );
       },
-      stream(prompt: string, opts?: RunOptions<TDeps>) {
+      stream: (prompt: string, opts?: RunOptions<TDeps>) => {
         return executeStream<TDeps, TOutput>(
-          self,
+          this,
           prompt,
           buildOpts(prompt, opts),
         );
       },
-      runStreamEvents(prompt: string, opts?: RunOptions<TDeps>) {
+      runStreamEvents: (prompt: string, opts?: RunOptions<TDeps>) => {
         return executeStreamEvents<TDeps, TOutput>(
-          self,
+          this,
           prompt,
           buildOpts(prompt, opts),
         );

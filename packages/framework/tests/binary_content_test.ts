@@ -160,10 +160,9 @@ Deno.test("BinaryContent - tool can return BinaryContent without error", async (
     name: "get_image",
     description: "Get an image",
     parameters: z.object({}),
-    // deno-lint-ignore require-await
-    execute: async (): Promise<
-      import("../multimodal/binary_content.ts").BinaryContent
-    > => ({
+    execute: (): Promise<
+      import("../lib/multimodal/binary_content.ts").BinaryContent
+    > => Promise.resolve({
       type: "binary",
       mimeType: "image/png",
       data: new Uint8Array([137, 80, 78, 71]), // PNG header bytes
@@ -188,10 +187,9 @@ Deno.test("UploadedFile - tool can return UploadedFile without error", async () 
     name: "get_file",
     description: "Get a file",
     parameters: z.object({}),
-    // deno-lint-ignore require-await
-    execute: async (): Promise<
-      import("../multimodal/binary_content.ts").UploadedFile
-    > => ({
+    execute: (): Promise<
+      import("../lib/multimodal/binary_content.ts").UploadedFile
+    > => Promise.resolve({
       type: "uploaded_file",
       fileId: "file-test-123",
       mimeType: "application/pdf",

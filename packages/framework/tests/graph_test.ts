@@ -22,13 +22,12 @@ class IncrementNode extends BaseNode<CountState, number> {
   readonly id = "increment";
   readonly nextNodes = ["double", "done"];
 
-  // deno-lint-ignore require-await
-  async run(state: CountState): Promise<NodeResult<CountState, number>> {
+  run(state: CountState): Promise<NodeResult<CountState, number>> {
     const newState = { count: state.count + 1 };
     if (newState.count < 3) {
-      return next("double", newState);
+      return Promise.resolve(next("double", newState));
     }
-    return output(newState.count);
+    return Promise.resolve(output(newState.count));
   }
 }
 
@@ -37,9 +36,8 @@ class DoubleNode extends BaseNode<CountState, number> {
   readonly id = "double";
   readonly nextNodes = ["increment"];
 
-  // deno-lint-ignore require-await
-  async run(state: CountState): Promise<NodeResult<CountState, number>> {
-    return next("increment", { count: state.count * 2 });
+  run(state: CountState): Promise<NodeResult<CountState, number>> {
+    return Promise.resolve(next("increment", { count: state.count * 2 }));
   }
 }
 
@@ -47,9 +45,8 @@ class DoubleNode extends BaseNode<CountState, number> {
 class TerminalNode extends BaseNode<CountState, number> {
   readonly id = "terminal";
 
-  // deno-lint-ignore require-await
-  async run(state: CountState): Promise<NodeResult<CountState, number>> {
-    return output(state.count * 10);
+  run(state: CountState): Promise<NodeResult<CountState, number>> {
+    return Promise.resolve(output(state.count * 10));
   }
 }
 
@@ -58,9 +55,8 @@ class LoopNode extends BaseNode<CountState, number> {
   readonly id = "loop";
   readonly nextNodes = ["loop"];
 
-  // deno-lint-ignore require-await
-  async run(state: CountState): Promise<NodeResult<CountState, number>> {
-    return next("loop", state);
+  run(state: CountState): Promise<NodeResult<CountState, number>> {
+    return Promise.resolve(next("loop", state));
   }
 }
 
@@ -98,9 +94,8 @@ Deno.test("Graph - throws UnknownNodeError for missing start node", async () => 
 Deno.test("Graph - throws UnknownNodeError for missing transition target", async () => {
   class BadTransitionNode extends BaseNode<CountState, number> {
     readonly id = "bad";
-    // deno-lint-ignore require-await
-    async run(_state: CountState): Promise<NodeResult<CountState, number>> {
-      return next("does_not_exist", { count: 0 });
+    run(_state: CountState): Promise<NodeResult<CountState, number>> {
+      return Promise.resolve(next("does_not_exist", { count: 0 }));
     }
   }
 
@@ -162,14 +157,13 @@ Deno.test("Graph - immutable state (nodes return new state objects)", async () =
 
   class CaptureNode extends BaseNode<CountState, number> {
     readonly id = "capture";
-    // deno-lint-ignore require-await
-    async run(state: CountState): Promise<NodeResult<CountState, number>> {
+    run(state: CountState): Promise<NodeResult<CountState, number>> {
       captured.push(state);
       if (state.count >= 2) {
-        return output(state.count);
+        return Promise.resolve(output(state.count));
       }
       // Return NEW state object, not mutated original
-      return next("capture", { count: state.count + 1 });
+      return Promise.resolve(next("capture", { count: state.count + 1 }));
     }
   }
 
@@ -194,32 +188,29 @@ Deno.test("Graph - multiple nodes in sequence", async () => {
   class Step1 extends BaseNode<PipelineState, string> {
     readonly id = "step1";
     readonly nextNodes = ["step2"];
-    // deno-lint-ignore require-await
-    async run(
+    run(
       state: PipelineState,
     ): Promise<NodeResult<PipelineState, string>> {
-      return next("step2", { value: state.value + "_step1" });
+      return Promise.resolve(next("step2", { value: state.value + "_step1" }));
     }
   }
 
   class Step2 extends BaseNode<PipelineState, string> {
     readonly id = "step2";
     readonly nextNodes = ["step3"];
-    // deno-lint-ignore require-await
-    async run(
+    run(
       state: PipelineState,
     ): Promise<NodeResult<PipelineState, string>> {
-      return next("step3", { value: state.value + "_step2" });
+      return Promise.resolve(next("step3", { value: state.value + "_step2" }));
     }
   }
 
   class Step3 extends BaseNode<PipelineState, string> {
     readonly id = "step3";
-    // deno-lint-ignore require-await
-    async run(
+    run(
       state: PipelineState,
     ): Promise<NodeResult<PipelineState, string>> {
-      return output(state.value + "_step3");
+      return Promise.resolve(output(state.value + "_step3"));
     }
   }
 

@@ -88,7 +88,10 @@ const editFile = tool<CoreAgentDeps, typeof EditFileSchema>({
     const first = text.indexOf(old_text);
     if (first === -1) return "old_text not found in file.";
     if (text.indexOf(old_text, first + 1) !== -1) {
-      return "old_text matches multiple locations. Provide more context to make it unique.";
+      let count = 0;
+      let pos = 0;
+      while ((pos = text.indexOf(old_text, pos)) !== -1) { count++; pos++; }
+      return `old_text matches ${count} locations. Provide more context to make it unique.`;
     }
     await Deno.writeTextFile(file_path, text.replace(old_text, new_text));
     return `Edited ${file_path}`;

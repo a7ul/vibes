@@ -36,8 +36,7 @@ Deno.test("FunctionModel - can use mockValues for multi-turn", async () => {
     name: "search",
     description: "Search for info",
     parameters: z.object({ query: z.string() }),
-    // deno-lint-ignore require-await
-    execute: async (_ctx, args) => `Results for: ${args.query}`,
+    execute: (_ctx, args) => Promise.resolve(`Results for: ${args.query}`),
   });
 
   const model = new FunctionModel(() => Promise.resolve(responses()));
@@ -74,8 +73,7 @@ Deno.test("FunctionModel - turn increments correctly", async () => {
     name: "search",
     description: "Search",
     parameters: z.object({ q: z.string() }),
-    // deno-lint-ignore require-await
-    execute: async () => "result",
+    execute: () => Promise.resolve("result"),
   });
 
   const model = new FunctionModel(({ turn }) => {
@@ -105,8 +103,7 @@ Deno.test("FunctionModel - receives available tools", async () => {
     name: "my_tool",
     description: "My test tool",
     parameters: z.object({ input: z.string() }),
-    // deno-lint-ignore require-await
-    execute: async () => "result",
+    execute: () => Promise.resolve("result"),
   });
 
   const model = new FunctionModel(({ tools }) => {
@@ -213,10 +210,9 @@ Deno.test("FunctionModel - can return tool calls with custom input", async () =>
     name: "calculate",
     description: "Calculate something",
     parameters: z.object({ a: z.number(), b: z.number() }),
-    // deno-lint-ignore require-await
-    execute: async (_ctx, args) => {
+    execute: (_ctx, args) => {
       receivedInput = args;
-      return String(args.a + args.b);
+      return Promise.resolve(String(args.a + args.b));
     },
   });
 

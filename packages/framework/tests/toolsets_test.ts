@@ -28,8 +28,7 @@ function makeTool(name: string) {
     name,
     description: `${name} tool`,
     parameters: z.object({}),
-    // deno-lint-ignore require-await
-    execute: async () => `${name} result`,
+    execute: () => Promise.resolve(`${name} result`),
   });
 }
 
@@ -91,8 +90,7 @@ Deno.test("CombinedToolset - last toolset wins on name conflict", async () => {
       name: "my_tool",
       description: "first",
       parameters: z.object({}),
-      // deno-lint-ignore require-await
-      execute: async () => "1",
+      execute: () => Promise.resolve("1"),
     }),
   ]);
   const ts2 = new FunctionToolset([
@@ -100,8 +98,7 @@ Deno.test("CombinedToolset - last toolset wins on name conflict", async () => {
       name: "my_tool",
       description: "second",
       parameters: z.object({}),
-      // deno-lint-ignore require-await
-      execute: async () => "2",
+      execute: () => Promise.resolve("2"),
     }),
   ]);
 

@@ -14,8 +14,7 @@ Deno.test("plainTool - executes without RunContext", async () => {
     name: "add",
     description: "Add two numbers",
     parameters: z.object({ a: z.number(), b: z.number() }),
-    // deno-lint-ignore require-await
-    execute: async ({ a, b }) => String(a + b),
+    execute: ({ a, b }) => Promise.resolve(String(a + b)),
   });
 
   const responses = mockValues<DoGenerateResult>(
@@ -39,11 +38,10 @@ Deno.test("plainTool - maxRetries works", async () => {
     description: "Fails once",
     parameters: z.object({}),
     maxRetries: 1,
-    // deno-lint-ignore require-await
-    execute: async () => {
+    execute: () => {
       callCount++;
       if (callCount === 1) throw new Error("transient");
-      return "ok";
+      return Promise.resolve("ok");
     },
   });
 

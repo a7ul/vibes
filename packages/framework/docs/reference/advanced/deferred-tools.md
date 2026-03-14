@@ -1,3 +1,8 @@
+---
+title: "Deferred Tools"
+description: "Human-in-the-loop tool approval flows"
+---
+
 # Deferred Tools (Human-in-the-Loop)
 
 Deferred tools pause an agent run when a tool call requires human approval

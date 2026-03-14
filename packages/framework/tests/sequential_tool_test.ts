@@ -14,8 +14,7 @@ Deno.test("sequential tool - isOutput flag not set on regular tool", () => {
     name: "normal",
     description: "Normal tool",
     parameters: z.object({}),
-    // deno-lint-ignore require-await
-    execute: async () => "ok",
+    execute: () => Promise.resolve("ok"),
   });
   assertEquals(t.sequential, undefined);
 });
@@ -26,8 +25,7 @@ Deno.test("sequential tool - sequential flag is stored on ToolDefinition", () =>
     description: "Sequential tool",
     parameters: z.object({}),
     sequential: true,
-    // deno-lint-ignore require-await
-    execute: async () => "ok",
+    execute: () => Promise.resolve("ok"),
   });
   assertEquals(t.sequential, true);
 });
@@ -39,10 +37,9 @@ Deno.test("sequential tool - sequential tool executes correctly when alone", asy
     description: "Sequential tool",
     parameters: z.object({ value: z.number() }),
     sequential: true,
-    // deno-lint-ignore require-await
-    execute: async (_ctx, args) => {
+    execute: (_ctx, args) => {
       executed = true;
-      return String(args.value * 2);
+      return Promise.resolve(String(args.value * 2));
     },
   });
 

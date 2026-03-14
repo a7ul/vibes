@@ -60,6 +60,7 @@ export function makeDeps(sandboxRoot: string, workflowId = "test-wf"): CoreAgent
 
 /** Build a minimal RunContext<CoreAgentDeps>. */
 export function makeCtx(deps: CoreAgentDeps): RunContext<CoreAgentDeps> {
+  const toolResultMetadata = new Map<string, Record<string, unknown>>();
   return {
     deps,
     usage: createUsage(),
@@ -67,5 +68,9 @@ export function makeCtx(deps: CoreAgentDeps): RunContext<CoreAgentDeps> {
     runId: "test-run-id",
     retryCount: 0,
     metadata: {},
+    toolResultMetadata,
+    attachMetadata(toolCallId: string, meta: Record<string, unknown>): void {
+      toolResultMetadata.set(toolCallId, { ...meta });
+    },
   };
 }

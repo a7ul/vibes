@@ -1,3 +1,8 @@
+---
+title: "RunContext"
+description: "The context object available during a run"
+---
+
 # RunContext
 
 `RunContext<TDeps>` is passed to every tool `execute` function, dynamic system
@@ -30,7 +35,7 @@ execute: (async (ctx, args) => {
 });
 ```
 
-See [Dependencies](./dependencies.md) for full details.
+See [Dependencies](../core/dependencies) for full details.
 
 ---
 
@@ -146,4 +151,4 @@ interface StreamResult<TOutput> {
 }
 ```
 
-See [Streaming](./streaming.md) for full details.
+See [Streaming](../core/streaming) for full details.

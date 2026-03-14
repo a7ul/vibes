@@ -30,8 +30,7 @@ Deno.test("requiresApproval: true — agent.run() throws ApprovalRequiredError",
     name: "delete_user",
     description: "Delete a user account",
     parameters: z.object({ userId: z.string() }),
-    // deno-lint-ignore require-await
-    execute: async (_ctx, args) => `Deleted user ${args.userId}`,
+    execute: (_ctx, args) => Promise.resolve(`Deleted user ${args.userId}`),
     requiresApproval: true,
   });
 
@@ -56,8 +55,7 @@ Deno.test("ApprovalRequiredError contains correct deferred request info", async 
     name: "send_email",
     description: "Send an email",
     parameters: z.object({ to: z.string(), body: z.string() }),
-    // deno-lint-ignore require-await
-    execute: async () => "Email sent",
+    execute: () => Promise.resolve("Email sent"),
     requiresApproval: true,
   });
 
@@ -101,11 +99,10 @@ Deno.test("requiresApproval function: returns false — tool executes normally",
     name: "admin_action",
     description: "Perform admin action",
     parameters: z.object({ action: z.string() }),
-    // deno-lint-ignore require-await
-    execute: async (_ctx, args) => {
+    execute: (_ctx, args) => {
       toolExecuted = true;
       const a = args as { action: string };
-      return `Done: ${a.action}`;
+      return Promise.resolve(`Done: ${a.action}`);
     },
     // Admin users don't need approval
     requiresApproval: (ctx) => !ctx.deps.isAdmin,
@@ -136,10 +133,9 @@ Deno.test("requiresApproval function: returns true — throws ApprovalRequiredEr
     name: "admin_action",
     description: "Perform admin action",
     parameters: z.object({ action: z.string() }),
-    // deno-lint-ignore require-await
-    execute: async (_ctx, args) => {
+    execute: (_ctx, args) => {
       const a = args as { action: string };
-      return `Done: ${a.action}`;
+      return Promise.resolve(`Done: ${a.action}`);
     },
     requiresApproval: (ctx) => !ctx.deps.isAdmin,
   });
@@ -169,8 +165,7 @@ Deno.test("agent.resume() — injects approved result and completes run", async 
     name: "charge_card",
     description: "Charge a credit card",
     parameters: z.object({ amount: z.number() }),
-    // deno-lint-ignore require-await
-    execute: async (_ctx, args) => `Charged $${args.amount}`,
+    execute: (_ctx, args) => Promise.resolve(`Charged $${args.amount}`),
     requiresApproval: true,
   });
 
@@ -231,8 +226,7 @@ Deno.test("agent.resume() — DeferredToolRequests stores correct resume state",
     name: "wipe_database",
     description: "Wipe the database",
     parameters: z.object({ confirm: z.boolean() }),
-    // deno-lint-ignore require-await
-    execute: async () => "Database wiped",
+    execute: () => Promise.resolve("Database wiped"),
     requiresApproval: true,
   });
 
@@ -270,10 +264,9 @@ Deno.test("normal tools execute; approval-required tool throws", async () => {
     name: "log_action",
     description: "Log an action",
     parameters: z.object({ msg: z.string() }),
-    // deno-lint-ignore require-await
-    execute: async (_ctx, args) => {
+    execute: (_ctx, args) => {
       normalToolCalled = true;
-      return `Logged: ${args.msg}`;
+      return Promise.resolve(`Logged: ${args.msg}`);
     },
   });
 
@@ -281,8 +274,7 @@ Deno.test("normal tools execute; approval-required tool throws", async () => {
     name: "deploy_prod",
     description: "Deploy to production",
     parameters: z.object({ version: z.string() }),
-    // deno-lint-ignore require-await
-    execute: async () => "Deployed",
+    execute: () => Promise.resolve("Deployed"),
     requiresApproval: true,
   });
 
@@ -313,10 +305,9 @@ Deno.test("DeferredToolResult.argsOverride — re-executes tool with modified ar
     name: "charge",
     description: "Charge amount",
     parameters: z.object({ amount: z.number() }),
-    // deno-lint-ignore require-await
-    execute: async (_ctx, args) => {
+    execute: (_ctx, args) => {
       executedArgs.push({ amount: args.amount });
-      return `Charged $${args.amount}`;
+      return Promise.resolve(`Charged $${args.amount}`);
     },
     requiresApproval: true,
   });

@@ -43,8 +43,7 @@ const writeFileDef: ExternalToolDefinition = {
   },
 };
 
-// deno-lint-ignore require-await
-Deno.test("ExternalToolset - exposes tools to model with requiresApproval", async () => {
+Deno.test("ExternalToolset - exposes tools to model with requiresApproval", () => {
   const toolset = new ExternalToolset([readFileDef]);
   const ctx = {
     deps: undefined as undefined,

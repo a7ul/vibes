@@ -10,7 +10,7 @@
   },
   "compilerOptions": {
     "jsx": "react-jsx",
-    "jsxImportSource": "npm:react@^18"
+    "jsxImportSource": "react"
   },
   "imports": {
     "@vibes/framework": "../framework/mod.ts",

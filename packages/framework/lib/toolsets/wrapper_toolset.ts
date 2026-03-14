@@ -1,4 +1,4 @@
-import type { z, ZodTypeAny } from "zod";
+import type { z, ZodType } from "zod";
 import type { RunContext } from "../types/context.ts";
 import type { ToolDefinition } from "../tool.ts";
 import type { Toolset } from "./toolset.ts";
@@ -66,11 +66,11 @@ export abstract class WrapperToolset<TDeps = undefined>
 
       return {
         ...t,
-        // The ToolDefinition.execute signature uses `z.infer<ZodTypeAny>`
+        // The ToolDefinition.execute signature uses `z.infer<ZodType>`
         // which resolves to `unknown`. We accept `unknown` here and cast to
         // `Record<string, unknown>` when forwarding to callTool, since the AI
         // SDK will always supply a parsed object at runtime.
-        execute: (execCtx: RunContext<TDeps>, args: z.infer<ZodTypeAny>) => {
+        execute: (execCtx: RunContext<TDeps>, args: z.infer<ZodType>) => {
           const argsRecord = args as Record<string, unknown>;
           const next: ToolCallNext<TDeps> = (nextCtx, nextArgs) =>
             originalExecute(nextCtx, nextArgs);

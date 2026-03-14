@@ -1,3 +1,8 @@
+---
+title: "Usage Limits"
+description: "Capping tokens and requests per run"
+---
+
 # Usage Limits
 
 Usage limits let you cap how many tokens or model requests an agent can consume

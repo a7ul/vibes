@@ -92,10 +92,9 @@ Deno.test("TestModel - calls regular tools on turn 1", async () => {
     name: "my_tool",
     description: "A test tool",
     parameters: z.object({ input: z.string() }),
-    // deno-lint-ignore require-await
-    execute: async (_ctx, args) => {
+    execute: (_ctx, args) => {
       toolCallCount++;
-      return `echo: ${args.input}`;
+      return Promise.resolve(`echo: ${args.input}`);
     },
   });
 
@@ -113,10 +112,9 @@ Deno.test("TestModel - skips tool calls when callTools=false", async () => {
     name: "my_tool",
     description: "A test tool",
     parameters: z.object({ input: z.string() }),
-    // deno-lint-ignore require-await
-    execute: async () => {
+    execute: () => {
       toolCallCount++;
-      return "called";
+      return Promise.resolve("called");
     },
   });
 
@@ -134,10 +132,9 @@ Deno.test("TestModel - calls multiple tools on turn 1", async () => {
     name: "tool_a",
     description: "Tool A",
     parameters: z.object({ x: z.string() }),
-    // deno-lint-ignore require-await
-    execute: async () => {
+    execute: () => {
       calledTools.push("a");
-      return "a result";
+      return Promise.resolve("a result");
     },
   });
 
@@ -145,10 +142,9 @@ Deno.test("TestModel - calls multiple tools on turn 1", async () => {
     name: "tool_b",
     description: "Tool B",
     parameters: z.object({ y: z.number() }),
-    // deno-lint-ignore require-await
-    execute: async () => {
+    execute: () => {
       calledTools.push("b");
-      return "b result";
+      return Promise.resolve("b result");
     },
   });
 
