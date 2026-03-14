@@ -40,11 +40,9 @@
         "group": "Getting Started",
         "pages": [
           "index",
+          "introduction",
           "getting-started/install",
-          "getting-started/first-agent",
-          "getting-started/adding-tools",
-          "getting-started/structured-output",
-          "getting-started/testing"
+          "getting-started/hello-world"
         ]
       },
       {
