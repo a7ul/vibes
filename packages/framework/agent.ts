@@ -6,6 +6,7 @@ import type {
 	RunResult,
 	StreamResult,
 } from "./types.ts";
+import type { OutputMode } from "./output_mode.ts";
 import type { ToolDefinition } from "./tool.ts";
 import type { Toolset } from "./toolsets/toolset.ts";
 import type { UsageLimits } from "./usage_limits.ts";
@@ -56,7 +57,19 @@ export interface AgentOptions<TDeps, TOutput> {
 	/** Composable toolsets (resolved per-turn). Combined with `tools`. */
 	toolsets?: Toolset<TDeps>[];
 	/** Zod schema for structured output. If omitted, output type is string. */
-	outputSchema?: ZodTypeAny;
+	outputSchema?: ZodTypeAny | ZodTypeAny[];
+	/**
+	 * How structured output is delivered to the model.
+	 * - `'tool'` (default): Inject a `final_result` tool the model must call.
+	 * - `'native'`: Use the AI SDK's native structured-output mode (JSON mode).
+	 * - `'prompted'`: Inject the JSON schema into the system prompt; parse text response.
+	 */
+	outputMode?: OutputMode;
+	/**
+	 * When `false`, suppress schema injection into the system prompt.
+	 * Defaults to `true`. Works with any `outputMode`.
+	 */
+	outputTemplate?: boolean;
 	/** Validators run after structured output is parsed. Throw to reject and retry. */
 	resultValidators?: ResultValidator<TDeps, TOutput>[];
 	/** Max retries for result validation failures. Default: 3 */
@@ -124,7 +137,9 @@ export interface AgentOverrideOptions<TDeps, TOutput> {
 export class Agent<TDeps = undefined, TOutput = string> {
 	readonly name: string | undefined;
 	readonly model: LanguageModel;
-	readonly outputSchema: ZodTypeAny | undefined;
+	readonly outputSchema: ZodTypeAny | ZodTypeAny[] | undefined;
+	readonly outputMode: OutputMode;
+	readonly outputTemplate: boolean;
 	readonly maxRetries: number;
 	readonly maxTurns: number;
 	readonly usageLimits: UsageLimits | undefined;
@@ -143,6 +158,8 @@ export class Agent<TDeps = undefined, TOutput = string> {
 		this.name = opts.name;
 		this.model = opts.model;
 		this.outputSchema = opts.outputSchema;
+		this.outputMode = opts.outputMode ?? "tool";
+		this.outputTemplate = opts.outputTemplate ?? true;
 		this.maxRetries = opts.maxRetries ?? 3;
 		this.maxTurns = opts.maxTurns ?? 10;
 		this.usageLimits = opts.usageLimits;

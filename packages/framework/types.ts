@@ -86,4 +86,10 @@ export interface StreamResult<TOutput> {
 	newMessages: Promise<ModelMessage[]>;
 	/** Resolves to cumulative token usage once the run completes. */
 	usage: Promise<Usage>;
+	/**
+	 * Async iterable of partial output objects emitted progressively as the
+	 * `final_result` tool args stream in. Emits only when Zod parse succeeds
+	 * (best-effort). Only populated when `outputMode` is `'tool'`.
+	 */
+	partialOutput: AsyncIterable<TOutput>;
 }
