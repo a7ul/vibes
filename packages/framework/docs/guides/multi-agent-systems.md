@@ -3,15 +3,13 @@ title: "Multi-Agent Systems"
 description: "Agent-as-tool, delegation, and supervisor patterns"
 ---
 
-# Multi-Agent Systems
-
 Complex tasks are often best solved by multiple specialized agents working together. Vibes supports several patterns for composing agents.
 
 > **Coming from pydantic-ai?** This mirrors pydantic-ai's multi-agent patterns exactly. Agent-as-tool is the primary pattern in both frameworks.
 
 ## Pattern 1: Agent as Tool
 
-The simplest pattern — one agent delegates to another by calling it as a tool.
+The simplest pattern - one agent delegates to another by calling it as a tool.
 
 ```ts
 import { Agent, tool } from "@vibes/framework";
@@ -235,6 +233,6 @@ const recursiveAgent = new Agent<Deps>({
 
 ## Next Steps
 
-- [Dependency Injection](../concepts/dependency-injection.md) — passing deps across agents
-- [Graph Workflows](./graph-workflows.md) — FSM-style multi-step pipelines
-- [Multi-Agent reference](../reference/advanced/multi-agent) — full API reference
+- [Dependency Injection](../concepts/dependency-injection.md) - passing deps across agents
+- [Graph Workflows](./graph-workflows.md) - FSM-style multi-step pipelines
+- [Multi-Agent reference](../reference/advanced/multi-agent) - full API reference

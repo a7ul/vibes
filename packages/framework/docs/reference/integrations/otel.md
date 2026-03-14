@@ -3,8 +3,6 @@ title: "OpenTelemetry"
 description: "Tracing with instrumentAgent()"
 ---
 
-# OpenTelemetry
-
 Instrument agents with OpenTelemetry tracing via the Vercel AI SDK's built-in
 telemetry support, without manual span management.
 
@@ -47,7 +45,7 @@ Spans appear in whatever OpenTelemetry-compatible backend you have configured
 | ---------------- | --------------------------------------------- | ---------- | ------------------------------------------------------- |
 | `isEnabled`      | `boolean`                                     | `true`     | Enable or disable telemetry                             |
 | `functionId`     | `string`                                      | agent name | Span function identifier                                |
-| `metadata`       | `Record<string, string \| number \| boolean>` | —          | Extra attributes added to every span                    |
+| `metadata`       | `Record<string, string \| number \| boolean>` | -          | Extra attributes added to every span                    |
 | `excludeContent` | `boolean`                                     | `false`    | Omit prompt/completion content from spans (for privacy) |
 
 ## `TelemetrySettings`
@@ -135,12 +133,12 @@ import { instrumentAgent, setAllowModelRequests } from "@vibes/framework";
 setAllowModelRequests(false);
 
 const instrumented = instrumentAgent(agent, { isEnabled: false });
-// Use with a mock model — no spans created
+// Use with a mock model - no spans created
 ```
 
 ## Error Behavior
 
-- `instrumentAgent()` does not throw if OTel is not configured — it falls back
+- `instrumentAgent()` does not throw if OTel is not configured - it falls back
   to a no-op tracer silently.
 - Errors in the wrapped agent propagate unchanged through the instrumented
   proxy.

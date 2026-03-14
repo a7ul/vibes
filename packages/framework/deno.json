@@ -4,7 +4,9 @@
   "exports": "./mod.ts",
   "tasks": {
     "test": "deno test -A",
-    "build:npm": "deno run -A scripts/build_npm.ts"
+    "build:npm": "deno run -A scripts/build_npm.ts",
+    "docs:dev": "cd docs && mintlify dev",
+    "docs:build": "cd docs && mintlify build"
   },
   "imports": {
     "ai": "npm:ai@^6",

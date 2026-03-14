@@ -3,8 +3,6 @@ title: "How Agents Work"
 description: "The agent loop, turns, and message history explained"
 ---
 
-# How Agents Work
-
 Understanding the agent loop helps you write better agents, debug issues, and optimize performance.
 
 ## The Agent Loop
@@ -89,7 +87,7 @@ Final:
 
 ## History Processors
 
-History processors run before every model call and can transform the message list. They do not mutate messages — they return new arrays.
+History processors run before every model call and can transform the message list. They do not mutate messages - they return new arrays.
 
 ```ts
 import { trimHistoryProcessor } from "@vibes/framework";
@@ -103,9 +101,9 @@ const agent = new Agent({
 ```
 
 Built-in processors:
-- `trimHistoryProcessor(n)` — keep the last n messages
-- `tokenTrimHistoryProcessor(maxTokens)` — trim to stay under a token budget
-- `summarizeHistoryProcessor(...)` — replace old messages with a summary
+- `trimHistoryProcessor(n)` - keep the last n messages
+- `tokenTrimHistoryProcessor(maxTokens)` - trim to stay under a token budget
+- `summarizeHistoryProcessor(...)` - replace old messages with a summary
 
 See [Message History](../reference/advanced/message-history) for full details.
 
@@ -117,7 +115,7 @@ Both `systemPrompt` and `instructions` are resolved before the first turn:
 2. `instructions` is evaluated the same way
 3. Both are joined and injected as the system message
 
-`instructions` is the escape hatch for per-run dynamic content. It maps to pydantic-ai's `instructions` parameter — a function that runs every turn with the current `RunContext`.
+`instructions` is the escape hatch for per-run dynamic content. It maps to pydantic-ai's `instructions` parameter - a function that runs every turn with the current `RunContext`.
 
 ## Tool Execution
 
@@ -126,7 +124,7 @@ When the model returns tool calls, Vibes:
 1. Looks up each tool by name
 2. Validates the model's arguments against the tool's Zod schema
 3. Runs `argsValidator` if defined
-4. Calls `execute(ctx, args)` — concurrently for all tools in the turn
+4. Calls `execute(ctx, args)` - concurrently for all tools in the turn
 5. If `sequential: true` on a tool, acquires the run-level mutex first
 6. Appends all results to the message history
 7. Checks endStrategy

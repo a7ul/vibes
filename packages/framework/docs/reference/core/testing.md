@@ -3,8 +3,6 @@ title: "Testing"
 description: "TestModel, FunctionModel, setAllowModelRequests()"
 ---
 
-# Testing
-
 The Vercel AI SDK ships a `ai/test` module with mock model implementations that
 let you unit test agents without making real API calls. Tests run in
 milliseconds and are fully deterministic.
@@ -307,7 +305,7 @@ Deno.test("stream text", async () => {
 });
 ```
 
-### `setAllowModelRequests` — Guard Against Accidental API Calls
+### `setAllowModelRequests` - Guard Against Accidental API Calls
 
 Call this at the top of a test file to ensure any non-mocked agent run throws
 immediately instead of making a real API call:
@@ -320,7 +318,7 @@ setAllowModelRequests(false); // throws ModelRequestsDisabledError for real call
 // Use agent.override({ model: mockModel }) for the runs you do want to execute
 ```
 
-### `captureRunMessages` — Inspect Messages Sent to the Model
+### `captureRunMessages` - Inspect Messages Sent to the Model
 
 Wrap any agent call to record the exact messages sent to the model on each turn:
 
@@ -336,7 +334,7 @@ const { result, messages } = await captureRunMessages(() =>
 assertEquals(messages[0].some((m) => m.role === "system"), true);
 ```
 
-### `TestModel` — Schema-Aware Mock
+### `TestModel` - Schema-Aware Mock
 
 `TestModel` is a higher-level mock that understands the agent's tool schema. It
 lets you specify tool call sequences without manually constructing raw SDK
@@ -366,7 +364,7 @@ const result = await agent.run("What is vibes?");
 assertEquals(result.output.answer.includes("Vibes"), true);
 ```
 
-### `FunctionModel` — Programmatic Control
+### `FunctionModel` - Programmatic Control
 
 `FunctionModel` gives you full control by accepting a function that receives the
 current prompt and returns a response. Useful for testing behaviour that depends

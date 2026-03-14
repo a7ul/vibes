@@ -3,9 +3,7 @@ title: "Multi-Agent"
 description: "Agent-as-tool and programmatic hand-off patterns"
 ---
 
-# Multi-Agent
-
-Build systems where agents delegate to other agents — either as tools the model
+Build systems where agents delegate to other agents - either as tools the model
 can invoke, or via programmatic hand-off in application code.
 
 ## Agent-as-Tool Pattern
@@ -175,7 +173,7 @@ const supervisorTool = tool({
 
 ## Error Behavior
 
-- Child agent errors propagate as tool errors — the parent model sees the error
+- Child agent errors propagate as tool errors - the parent model sees the error
   message and can retry or fall back.
 - `MaxTurnsError` and `UsageLimitError` from child agents are **not**
   automatically caught. Wrap child `agent.run()` calls in try/catch if you want

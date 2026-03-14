@@ -3,10 +3,8 @@ title: "Model Settings"
 description: "Temperature, max tokens, and per-run overrides"
 ---
 
-# Model Settings
-
-Model settings control generation parameters — temperature, token limits, stop
-sequences — passed to the underlying model API on every request.
+Model settings control generation parameters - temperature, token limits, stop
+sequences - passed to the underlying model API on every request.
 
 ## Basic Usage
 
@@ -48,8 +46,8 @@ precedence over agent-level values for any fields they specify.
 | `topK`             | `number`   | model default | Top-K sampling (model-dependent)                          |
 | `presencePenalty`  | `number`   | model default | Penalise tokens already present in context                |
 | `frequencyPenalty` | `number`   | model default | Penalise frequently used tokens                           |
-| `stopSequences`    | `string[]` | —             | Stop generation at these sequences                        |
-| `seed`             | `number`   | —             | Seed for deterministic generation (model-dependent)       |
+| `stopSequences`    | `string[]` | -             | Stop generation at these sequences                        |
+| `seed`             | `number`   | -             | Seed for deterministic generation (model-dependent)       |
 
 All fields are optional. Omit any field to use the model's default.
 
@@ -114,7 +112,7 @@ const result = await agent.run(longDocumentPrompt, {
   fields are silently ignored by the Vercel AI SDK.
 - `seed` support varies by provider. Check provider docs for determinism
   guarantees.
-- `temperature` and `topP` interact — many providers recommend setting only one.
+- `temperature` and `topP` interact - many providers recommend setting only one.
 
 ## Error Behavior
 

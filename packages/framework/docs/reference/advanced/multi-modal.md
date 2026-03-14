@@ -3,8 +3,6 @@ title: "Multi-Modal"
 description: "Images, audio, and file inputs"
 ---
 
-# Multi-Modal
-
 Tools can return images, audio, and file references in addition to plain strings
 and objects. The framework converts these to the appropriate AI SDK content
 parts before feeding them back to the model.
@@ -176,6 +174,6 @@ execute: async (_ctx, args) => {
   support (e.g. `video/mp4` to a text-only model) will cause a provider API
   error.
 - `isUploadedFile` / `isBinaryContent` return `false` for `null` or non-object
-  values — always check before accessing fields.
+  values - always check before accessing fields.
 - Large `Uint8Array` values are base64-encoded inline. For files larger than ~5
   MB, prefer the `UploadedFile` pattern with a pre-uploaded file ID.

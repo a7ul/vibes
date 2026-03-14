@@ -3,8 +3,6 @@ title: "MCP Servers"
 description: "Model Context Protocol tool server integration"
 ---
 
-# MCP (Model Context Protocol)
-
 Connect agents to external MCP tool servers over stdio or HTTP, exposing their
 tools as native framework tools.
 
@@ -81,7 +79,7 @@ const agent = new Agent({
 
 ## `MCPManager`
 
-Manages multiple MCP clients as a single unit — connect, use, and disconnect all
+Manages multiple MCP clients as a single unit - connect, use, and disconnect all
 clients together:
 
 ```ts
@@ -167,7 +165,7 @@ Example `mcp-config.json`:
 - `connect()` throws if the server process fails to start or the HTTP endpoint
   is unreachable.
 - Tool call errors from the MCP server are returned as `MCPCallResult` with
-  `isError: true` — the framework surfaces these as tool error messages to the
+  `isError: true` - the framework surfaces these as tool error messages to the
   model.
 - Always call `disconnect()` (or `manager.disconnectAll()`) after use to avoid
   orphaned subprocesses.

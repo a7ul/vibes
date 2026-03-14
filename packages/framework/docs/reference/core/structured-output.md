@@ -3,8 +3,6 @@ title: "Structured Output"
 description: "Zod-validated typed responses via outputSchema"
 ---
 
-# Structured Output
-
 By default an agent returns a plain `string`. Provide an `outputSchema` to get a
 fully typed, Zod-validated object back instead.
 
@@ -32,7 +30,7 @@ console.log(result.output.capital); // "Paris"
 console.log(result.output.population); // 67_000_000
 ```
 
-`result.output` is typed as `z.infer<typeof CityInfo>` — no casting needed.
+`result.output` is typed as `z.infer<typeof CityInfo>` - no casting needed.
 
 ## How It Works
 
@@ -46,7 +44,7 @@ pydantic-ai enforces structured output.
 
 ## Nested and Complex Schemas
 
-Any Zod schema works — nested objects, arrays, unions, discriminated unions:
+Any Zod schema works - nested objects, arrays, unions, discriminated unions:
 
 ```ts
 const AnalysisResult = z.object({
@@ -69,7 +67,7 @@ The second type parameter `TOutput` on `Agent<TDeps, TOutput>` is inferred when
 you provide `outputSchema`:
 
 ```ts
-// Explicit — preferred for clarity
+// Explicit - preferred for clarity
 const agent = new Agent<undefined, z.infer<typeof MySchema>>({ ... });
 
 // TypeScript infers TOutput = z.infer<typeof MySchema>

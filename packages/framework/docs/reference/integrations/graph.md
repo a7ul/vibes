@@ -3,8 +3,6 @@ title: "Graph Workflows"
 description: "Finite-state machine workflows with BaseNode"
 ---
 
-# Graph
-
 A `Graph` is a finite-state machine (FSM) where each node can run an agent, call
 an API, or do any async work, then transition to another node or emit a final
 output.
@@ -27,7 +25,7 @@ type State = { query: string; results?: string[] };
 
 class FetchNode extends BaseNode<State, string> {
   readonly id = "fetch";
-  readonly nextNodes = ["summarise"]; // optional — for Mermaid diagrams
+  readonly nextNodes = ["summarise"]; // optional - for Mermaid diagrams
 
   async run(state: State) {
     const results = await searchWeb(state.query);
@@ -47,8 +45,8 @@ class SummariseNode extends BaseNode<State, string> {
 
 `run()` must return one of:
 
-- `this.next(nodeId, newState)` — transition to another node with updated state
-- `this.output(value)` — end the graph and emit `value` as the final output
+- `this.next(nodeId, newState)` - transition to another node with updated state
+- `this.output(value)` - end the graph and emit `value` as the final output
 
 ## `Graph`
 
@@ -210,9 +208,9 @@ class RouterNode extends BaseNode<State, never> {
 
 ## Error Behavior
 
-- `MaxGraphIterationsError` — thrown when a single node is visited more than
+- `MaxGraphIterationsError` - thrown when a single node is visited more than
   `maxIterations` times. Indicates an infinite loop in your transition logic.
-- `UnknownNodeError` — thrown when `this.next()` references a node ID not
+- `UnknownNodeError` - thrown when `this.next()` references a node ID not
   registered in the graph.
 - Node errors propagate out of `graph.run()` / `GraphRun.next()` unchanged. Use
   try/catch around node logic to implement error-handling transitions.

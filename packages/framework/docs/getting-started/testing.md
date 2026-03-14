@@ -3,8 +3,6 @@ title: "Testing Your Agent"
 description: "Test agents without making real API calls"
 ---
 
-# Testing Your Agent
-
 Vibes is designed to be tested without making real API calls. Tests run in milliseconds, are fully deterministic, and never hit rate limits.
 
 > **Coming from pydantic-ai?** This maps to pydantic-ai's `TestModel` and `FunctionModel`. The pattern is nearly identical: swap the real model for a mock at test time.
@@ -35,7 +33,7 @@ Deno.test("basic text response", async () => {
 });
 ```
 
-`agent.override()` returns a new agent — the original is unchanged.
+`agent.override()` returns a new agent - the original is unchanged.
 
 ## TestModel
 
@@ -114,7 +112,7 @@ Deno.test("structured output", async () => {
 
 ## FunctionModel
 
-`FunctionModel` gives you full control — provide a function that receives the prompt and returns any response:
+`FunctionModel` gives you full control - provide a function that receives the prompt and returns any response:
 
 ```ts
 import { FunctionModel } from "@vibes/framework/testing";
@@ -149,7 +147,7 @@ import { setAllowModelRequests } from "@vibes/framework";
 setAllowModelRequests(false);
 
 // Any agent.run() without a mocked model will now throw ModelRequestsDisabledError
-// Safe to use agent.override({ model: mockModel }).run(...) — that still works
+// Safe to use agent.override({ model: mockModel }).run(...) - that still works
 ```
 
 This is a safety net to prevent accidentally hitting real APIs during tests.
@@ -236,6 +234,6 @@ Deno.test("MyAgent - validates output schema", async () => {
 
 ## Next Steps
 
-- [Testing reference](../reference/core/testing) — full API reference for all test utilities
-- [How Agents Work](../concepts/how-agents-work.md) — understand the loop you're testing
-- [Result Validators](../reference/core/result-validators) — test retry and validation behavior
+- [Testing reference](../reference/core/testing) - full API reference for all test utilities
+- [How Agents Work](../concepts/how-agents-work.md) - understand the loop you're testing
+- [Result Validators](../reference/core/result-validators) - test retry and validation behavior

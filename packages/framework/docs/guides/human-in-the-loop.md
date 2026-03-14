@@ -3,8 +3,6 @@ title: "Human-in-the-Loop"
 description: "Pause runs for human approval using deferred tools"
 ---
 
-# Human-in-the-Loop
-
 Vibes supports pausing an agent run to get human approval before executing sensitive tools. The run is suspended, your code shows the pending actions to a user, and then the run resumes with the user's decision.
 
 > **Coming from pydantic-ai?** This maps to pydantic-ai's `allow_model_requests=False` and `run_context` patterns for human approval, but as a first-class feature with `requiresApproval` on tools and `agent.resume()`.
@@ -52,7 +50,7 @@ try {
     const userApproved = await promptUser("Approve these actions? (y/n): ");
 
     if (userApproved) {
-      // Resume with approval — tools will execute
+      // Resume with approval - tools will execute
       const result = await agent.resume(deferred, {
         results: deferred.requests.map((r) => ({
           toolCallId: r.toolCallId,
@@ -77,7 +75,7 @@ When resuming, you have three choices per tool call:
 results: [{
   toolCallId: "tc1",
   result: "Manually approved: email sent at 14:30",
-  // execute() is NOT called — this string becomes the tool result
+  // execute() is NOT called - this string becomes the tool result
 }]
 ```
 
@@ -86,7 +84,7 @@ results: [{
 ```ts
 results: [{
   toolCallId: "tc1",
-  // No result, no argsOverride — execute() runs with original args
+  // No result, no argsOverride - execute() runs with original args
 }]
 ```
 
@@ -204,5 +202,5 @@ async function chat(req: Request) {
 
 ## Next Steps
 
-- [Deferred Tools reference](../reference/advanced/deferred-tools) — full API reference
-- [Error Handling](../concepts/error-handling.md) — `ApprovalRequiredError` details
+- [Deferred Tools reference](../reference/advanced/deferred-tools) - full API reference
+- [Error Handling](../concepts/error-handling.md) - `ApprovalRequiredError` details

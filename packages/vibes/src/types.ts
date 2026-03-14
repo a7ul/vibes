@@ -6,9 +6,12 @@ export interface CoreAgentDeps {
   runId: string;
 }
 
-export const CoreAgentOutputSchema = z.object({
+export type CoreAgentOutput = {
+  taskStatus: "completed" | "failed";
+  taskSummary: string;
+};
+
+export const CoreAgentOutputSchema: z.ZodType<CoreAgentOutput> = z.object({
   taskStatus: z.enum(["completed", "failed"]),
   taskSummary: z.string(),
 });
-
-export type CoreAgentOutput = z.infer<typeof CoreAgentOutputSchema>;

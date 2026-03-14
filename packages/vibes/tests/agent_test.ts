@@ -4,7 +4,6 @@ import { MAX_RETRIES, MAX_TURNS } from "../src/constants.ts";
 import {
   MockLanguageModelV3,
   mockValues,
-  textResponse,
   toolCallResponse,
   type DoGenerateResult,
 } from "./_helpers.ts";

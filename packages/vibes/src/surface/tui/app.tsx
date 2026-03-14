@@ -1,4 +1,5 @@
-import React, { useState, useCallback, useEffect, useMemo } from "react";
+import { useState, useCallback, useEffect, useMemo } from "react";
+import process from "node:process";
 import { Box, useApp, useInput } from "ink";
 import { createCoreAgent } from "../../agents/core_agent/agent.ts";
 import { ensureSandboxDirs, sandboxDir } from "../../file_system.ts";

@@ -1,4 +1,3 @@
-import React from "react";
 import { Box, Text } from "ink";
 import { AssistantMessage } from "./assistant_message.tsx";
 import type { TuiMessage } from "../types.ts";
@@ -33,7 +32,7 @@ export function MessageList({ messages, streamedText, isStreaming }: MessageList
         ),
       )}
       {isStreaming && streamedText && (
-        <AssistantMessage content={streamedText} isStreaming={true} />
+        <AssistantMessage content={streamedText} isStreaming />
       )}
     </Box>
   );

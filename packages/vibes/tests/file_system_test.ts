@@ -1,4 +1,4 @@
-import { assertEquals, assertRejects } from "@std/assert";
+import { assertEquals } from "@std/assert";
 import { join } from "@std/path";
 import { sandboxDir, tasksDir, ensureSandboxDirs } from "../src/file_system.ts";
 import { SANDBOX_ROOT } from "../src/constants.ts";
