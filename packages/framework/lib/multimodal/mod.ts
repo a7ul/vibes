@@ -1,15 +1,19 @@
 export type {
   BinaryContent,
   BinaryImage,
+  BinaryImageOutputSentinel,
   MultiModalContent,
   UploadedFile,
 } from "./binary_content.ts";
 export {
+  BINARY_IMAGE_OUTPUT,
   binaryContentSchema,
   binaryContentToBase64,
   binaryContentToToolResult,
+  extractBinaryImageFromToolOutput,
   isAudioContent,
   isBinaryContent,
+  isBinaryImageOutput,
   isDocumentContent,
   isImageContent,
   isMultiModalContent,

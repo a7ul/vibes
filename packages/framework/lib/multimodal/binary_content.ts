@@ -190,3 +190,56 @@ export function uploadedFileToToolResult(file: UploadedFile): {
     text: `[file:${file.fileId}${label} mime=${file.mimeType}]`,
   };
 }
+
+// ---------------------------------------------------------------------------
+// BinaryImage output sentinel — use as outputSchema for image-generating agents
+// ---------------------------------------------------------------------------
+
+/** Sentinel value: pass as `outputSchema` to indicate the agent should return
+ *  a `BinaryContent` (image) as its final output instead of text or JSON.
+ *  The first tool result with an image/* MIME type becomes the output. */
+export const BINARY_IMAGE_OUTPUT: unique symbol = Symbol("BINARY_IMAGE_OUTPUT");
+export type BinaryImageOutputSentinel = typeof BINARY_IMAGE_OUTPUT;
+
+export function isBinaryImageOutput(
+  schema: unknown,
+): schema is BinaryImageOutputSentinel {
+  return schema === BINARY_IMAGE_OUTPUT;
+}
+
+/**
+ * Try to extract a `BinaryContent` from a tool output that was produced by
+ * converting a `BinaryContent` via `binaryContentToToolResult`. That function
+ * produces `{ type: "image", image: "data:<mime>;base64,<data>", mimeType }`.
+ * Returns `null` if the output does not look like a converted binary image.
+ */
+export function extractBinaryImageFromToolOutput(
+  output: unknown,
+): BinaryContent | null {
+  if (
+    typeof output !== "object" ||
+    output === null ||
+    (output as Record<string, unknown>)["type"] !== "image"
+  ) {
+    return null;
+  }
+  const obj = output as Record<string, unknown>;
+  const image = obj["image"];
+  const mimeType = obj["mimeType"];
+  if (
+    typeof image !== "string" ||
+    typeof mimeType !== "string" ||
+    !mimeType.startsWith("image/")
+  ) {
+    return null;
+  }
+  const commaIdx = image.indexOf(",");
+  if (commaIdx === -1) return null;
+  const base64 = image.slice(commaIdx + 1);
+  const binaryString = atob(base64);
+  const data = new Uint8Array(binaryString.length);
+  for (let i = 0; i < binaryString.length; i++) {
+    data[i] = binaryString.charCodeAt(i);
+  }
+  return { type: "binary", mimeType, data };
+}
