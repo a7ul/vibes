@@ -1,6 +1,6 @@
 ---
 title: Models
-description: Vibes uses the Vercel AI SDK model abstraction, accepting any LanguageModel-compatible provider. Swap models at construction time or override per run.
+description: Vibes uses the Vercel AI SDK model abstraction, accepting any AI SDK-compatible provider. Swap models at construction time or override per run.
 ---
 
 Vibes accepts any [Vercel AI SDK](https://sdk.vercel.ai) `LanguageModel` instance as its `model` option. This means every provider that ships a Vercel AI SDK adapter - Anthropic, OpenAI, Google, Groq, Mistral, Ollama, and custom OpenAI-compatible endpoints - works with Vibes out of the box. The model is passed at agent construction and can be overridden per run.
@@ -12,19 +12,14 @@ For installation and initial setup, see [Getting Started](/getting-started/insta
 ```mermaid
 flowchart TD
     A[Your Application] --> B[Agent]
-    B --> C[Language Model]
-    C --> Providers
-
-    subgraph Providers[Providers]
-        direction LR
-        D[Anthropic]
-        E[OpenAI]
-        F[Google]
-        G[Groq]
-        H[Mistral]
-        I[Ollama]
-        J[Custom Endpoint]
-    end
+    B --> C[AI SDK]
+    C --> D[Anthropic]
+    C --> E[OpenAI]
+    C --> F[Google]
+    C --> G[Groq]
+    C --> H[Mistral]
+    C --> I[Ollama]
+    C --> J[Custom Endpoint]
 ```
 
 ## Provider Quickstarts
