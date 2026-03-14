@@ -14,24 +14,24 @@ framework. Use it as a backlog when deciding what to port next.
 
 | Feature                 | Pydantic AI                                  | Status | Docs | Notes |
 | ----------------------- | -------------------------------------------- | ------ | ---- | ----- |
-| `agent.run()`           | `agent.run(prompt, deps=x)`                  | ✅     | [Agents](/reference/core/agents) | `agent.run(prompt, { deps: x })` |
-| `agent.run_stream()`    | `agent.run_stream(prompt)`                   | ✅     | [Streaming](/reference/core/streaming) | `agent.stream(prompt)` |
-| Agent name              | `agent.name`                                 | ✅     | [Agents](/reference/core/agents) | `name` on `AgentOptions` |
-| System prompt (static)  | `system_prompt="..."`                        | ✅     | [Agents](/reference/core/agents) | `systemPrompt: "..."` |
-| System prompt (dynamic) | `@agent.system_prompt` decorator             | ✅     | [Agents](/reference/core/agents) | `agent.addSystemPrompt(fn)` or `systemPrompt: [fn]` |
-| Tools                   | `@agent.tool` / `tools=[...]`                | ✅     | [Tools](/reference/core/tools) | `agent.addTool(tool({...}))` |
-| Structured output       | `result_type: BaseModel`                     | ✅     | [Structured Output](/reference/core/structured-output) | `outputSchema: z.object({...})` |
-| Result validators       | `@agent.result_validator`                    | ✅     | [Result Validators](/reference/core/result-validators) | `agent.addResultValidator(fn)` |
-| Max retries             | `max_retries` / `max_result_retries`         | ✅     | [Agents](/reference/core/agents) | `maxRetries` on `AgentOptions` |
-| Max turns               | `max_turns`                                  | ✅     | [Agents](/reference/core/agents) | `maxTurns` on `AgentOptions` |
-| Message history         | `message_history=`                           | ✅     | [Message History](/reference/advanced/message-history) | `{ messageHistory: [...] }` on `run()` |
-| Metadata tagging        | `metadata=` on run                           | ✅     | [Agents](/reference/core/agents) | `{ metadata: {...} }` on `run()`/`stream()` - accessible via `ctx.metadata` |
-| `Agent.override()`      | Context manager swapping model/deps/toolsets | ✅     | [Testing](/reference/core/testing) | `agent.override({ model, tools, ... }).run(prompt)` |
-| Event-stream run        | `agent.run_stream_events()`                  | ✅     | [Streaming](/reference/core/streaming) | `agent.runStreamEvents(prompt)` - async iterable of typed `AgentStreamEvent` objects |
-| End strategy            | `end_strategy`                               | ✅     | [Agents](/reference/core/agents) | `endStrategy: 'early' \| 'exhaustive'` on `AgentOptions`/`RunOptions` |
-| Max concurrency         | `max_concurrency`                            | ✅     | [Agents](/reference/core/agents) | `maxConcurrency` on `AgentOptions` - semaphore-based cap on concurrent tool executions |
-| `instructions` field    | `@agent.instructions` decorator              | ✅     | [Agents](/reference/core/agents) | `instructions` on `AgentOptions`/`RunOptions`; re-injected each turn, not stored in message history |
-| Model-specific settings | `model_settings=` on `run()`                 | ✅     | [Model Settings](/reference/advanced/model-settings) | `modelSettings: { temperature, maxTokens, ... }` on `AgentOptions` or `RunOptions` |
+| `agent.run()`           | `agent.run(prompt, deps=x)`                  | ✅     | [Agents](/concepts/agents) | `agent.run(prompt, { deps: x })` |
+| `agent.run_stream()`    | `agent.run_stream(prompt)`                   | ✅     | [Streaming](/concepts/streaming) | `agent.stream(prompt)` |
+| Agent name              | `agent.name`                                 | ✅     | [Agents](/concepts/agents) | `name` on `AgentOptions` |
+| System prompt (static)  | `system_prompt="..."`                        | ✅     | [Agents](/concepts/agents) | `systemPrompt: "..."` |
+| System prompt (dynamic) | `@agent.system_prompt` decorator             | ✅     | [Agents](/concepts/agents) | `agent.addSystemPrompt(fn)` or `systemPrompt: [fn]` |
+| Tools                   | `@agent.tool` / `tools=[...]`                | ✅     | [Tools](/concepts/tools) | `agent.addTool(tool({...}))` |
+| Structured output       | `result_type: BaseModel`                     | ✅     | [Structured Output](/concepts/results) | `outputSchema: z.object({...})` |
+| Result validators       | `@agent.result_validator`                    | ✅     | [Result Validators](/concepts/results) | `agent.addResultValidator(fn)` |
+| Max retries             | `max_retries` / `max_result_retries`         | ✅     | [Agents](/concepts/agents) | `maxRetries` on `AgentOptions` |
+| Max turns               | `max_turns`                                  | ✅     | [Agents](/concepts/agents) | `maxTurns` on `AgentOptions` |
+| Message history         | `message_history=`                           | ✅     | [Message History](/concepts/messages) | `{ messageHistory: [...] }` on `run()` |
+| Metadata tagging        | `metadata=` on run                           | ✅     | [Agents](/concepts/agents) | `{ metadata: {...} }` on `run()`/`stream()` - accessible via `ctx.metadata` |
+| `Agent.override()`      | Context manager swapping model/deps/toolsets | ✅     | [Testing](/concepts/testing) | `agent.override({ model, tools, ... }).run(prompt)` |
+| Event-stream run        | `agent.run_stream_events()`                  | ✅     | [Streaming](/concepts/streaming) | `agent.runStreamEvents(prompt)` - async iterable of typed `AgentStreamEvent` objects |
+| End strategy            | `end_strategy`                               | ✅     | [Agents](/concepts/agents) | `endStrategy: 'early' \| 'exhaustive'` on `AgentOptions`/`RunOptions` |
+| Max concurrency         | `max_concurrency`                            | ✅     | [Agents](/concepts/agents) | `maxConcurrency` on `AgentOptions` - semaphore-based cap on concurrent tool executions |
+| `instructions` field    | `@agent.instructions` decorator              | ✅     | [Agents](/concepts/agents) | `instructions` on `AgentOptions`/`RunOptions`; re-injected each turn, not stored in message history |
+| Model-specific settings | `model_settings=` on `run()`                 | ✅     | [Models](/concepts/models) | `modelSettings: { temperature, maxTokens, ... }` on `AgentOptions` or `RunOptions` |
 | Sync run                | `agent.run_sync()`                           | ❌     | - | Deno is async-native - not applicable |
 | Node-level iteration    | `agent.iter()` / `AgentRun`                  | ❌     | - | Not applicable - use `runStreamEvents()` for step-by-step observation in async TypeScript |
 | Last run messages       | `agent.last_run_messages`                    | ❌     | - | Removed from Pydantic AI; superseded by `result.newMessages` |
@@ -42,19 +42,19 @@ framework. Use it as a backlog when deciding what to port next.
 
 | Feature                | Pydantic AI                                     | Status | Docs | Notes |
 | ---------------------- | ----------------------------------------------- | ------ | ---- | ----- |
-| Tools with context     | `@agent.tool`                                   | ✅     | [Tools](/reference/core/tools) | `tool({ execute: (ctx, args) => ... })` |
-| Tool `maxRetries`      | `retries=` on `@agent.tool`                     | ✅     | [Tools](/reference/core/tools) | `maxRetries` on `ToolDefinition` |
-| Plain tools (no ctx)   | `@agent.tool_plain`                             | ✅     | [Tools](/reference/core/tools) | `plainTool({ name, description, parameters, execute })` |
-| Tool `prepare` method  | `prepare=` on `Tool` class                      | ✅     | [Tools](/reference/core/tools) | `prepare: (ctx) => tool \| null` on `ToolDefinition` |
-| `args_validator`       | `args_validator=` on tool                       | ✅     | [Tools](/reference/core/tools) | `argsValidator: (args) => void` on `ToolDefinition` |
-| `Tool.from_schema()`   | Build tool from raw JSON schema                 | ✅     | [Tools](/reference/core/tools) | `fromSchema({ name, description, jsonSchema, execute })` |
-| Multi-modal returns    | Return images / audio / binary from tools       | ✅     | [Multi-Modal](/reference/advanced/multi-modal) | `BinaryContent` / `BinaryImage` - returned from `execute`, auto-converted |
-| `UploadedFile` support | `UploadedFile` for provider file uploads        | ✅     | [Multi-Modal](/reference/advanced/multi-modal) | `UploadedFile` type + `uploadedFileSchema` for tool parameters |
-| Tool result metadata   | Attach metadata keyed by `tool_call_id`         | ✅     | [Tools](/reference/core/tools) | `ctx.attachMetadata(toolCallId, meta)` - exposed on `result.toolMetadata` |
-| Output functions       | Final-action tools (no model feedback loop)     | ✅     | [Structured Output](/reference/core/structured-output) | `outputTool({ ... })` - sets `isOutput: true`, ends run on call |
-| Sequential execution   | `sequential=True` on tool                       | ✅     | [Tools](/reference/core/tools) | `sequential: true` on `ToolDefinition` - acquires mutex before executing |
-| Deferred tools         | Tools requiring human approval before execution | ✅     | [Deferred Tools](/reference/advanced/deferred-tools) | `requiresApproval: true` on `ToolDefinition` - see Deferred Tools section |
-| MCP server tools       | Connect external MCP servers as tool providers  | ✅     | [MCP](/reference/integrations/mcp) | `MCPToolset` wraps any `MCPClient` - see MCP section |
+| Tools with context     | `@agent.tool`                                   | ✅     | [Tools](/concepts/tools) | `tool({ execute: (ctx, args) => ... })` |
+| Tool `maxRetries`      | `retries=` on `@agent.tool`                     | ✅     | [Tools](/concepts/tools) | `maxRetries` on `ToolDefinition` |
+| Plain tools (no ctx)   | `@agent.tool_plain`                             | ✅     | [Tools](/concepts/tools) | `plainTool({ name, description, parameters, execute })` |
+| Tool `prepare` method  | `prepare=` on `Tool` class                      | ✅     | [Tools](/concepts/tools) | `prepare: (ctx) => tool \| null` on `ToolDefinition` |
+| `args_validator`       | `args_validator=` on tool                       | ✅     | [Tools](/concepts/tools) | `argsValidator: (args) => void` on `ToolDefinition` |
+| `Tool.from_schema()`   | Build tool from raw JSON schema                 | ✅     | [Tools](/concepts/tools) | `fromSchema({ name, description, jsonSchema, execute })` |
+| Multi-modal returns    | Return images / audio / binary from tools       | ✅     | [Multi-Modal](/advanced/multimodal) | `BinaryContent` / `BinaryImage` - returned from `execute`, auto-converted |
+| `UploadedFile` support | `UploadedFile` for provider file uploads        | ✅     | [Multi-Modal](/advanced/multimodal) | `UploadedFile` type + `uploadedFileSchema` for tool parameters |
+| Tool result metadata   | Attach metadata keyed by `tool_call_id`         | ✅     | [Tools](/concepts/tools) | `ctx.attachMetadata(toolCallId, meta)` - exposed on `result.toolMetadata` |
+| Output functions       | Final-action tools (no model feedback loop)     | ✅     | [Structured Output](/concepts/results) | `outputTool({ ... })` - sets `isOutput: true`, ends run on call |
+| Sequential execution   | `sequential=True` on tool                       | ✅     | [Tools](/concepts/tools) | `sequential: true` on `ToolDefinition` - acquires mutex before executing |
+| Deferred tools         | Tools requiring human approval before execution | ✅     | [Human-in-the-Loop](/concepts/human-in-the-loop) | `requiresApproval: true` on `ToolDefinition` - see Deferred Tools section |
+| MCP server tools       | Connect external MCP servers as tool providers  | ✅     | [MCP](/integrations/mcp-client) | `MCPToolset` wraps any `MCPClient` - see MCP section |
 | Docstring extraction   | Auto-doc from Python docstrings                 | ❌     | - | No runtime equivalent in TypeScript - use `description` field explicitly |
 
 ---
@@ -63,17 +63,17 @@ framework. Use it as a backlog when deciding what to port next.
 
 | Feature                   | Pydantic AI                                 | Status | Docs | Notes |
 | ------------------------- | ------------------------------------------- | ------ | ---- | ----- |
-| `FunctionToolset`         | Group locally defined function tools        | ✅     | [Toolsets](/reference/core/toolsets) | `new FunctionToolset([tool1, tool2])` |
-| `CombinedToolset`         | Merge multiple toolsets into one            | ✅     | [Toolsets](/reference/core/toolsets) | `new CombinedToolset(ts1, ts2)` |
-| `FilteredToolset`         | Filter a toolset based on context           | ✅     | [Toolsets](/reference/core/toolsets) | `new FilteredToolset(ts, (ctx) => boolean)` |
-| `PrefixedToolset`         | Add prefix to tool names                    | ✅     | [Toolsets](/reference/core/toolsets) | `new PrefixedToolset(ts, "prefix_")` |
-| `RenamedToolset`          | Map new names onto existing tools           | ✅     | [Toolsets](/reference/core/toolsets) | `new RenamedToolset(ts, { old: "new" })` |
-| Toolset reuse             | Share toolsets across agents                | ✅     | [Toolsets](/reference/core/toolsets) | `Toolset` is a plain interface - pass the same instance to multiple agents |
-| Runtime swap              | Replace toolsets during testing             | ✅     | [Testing](/reference/core/testing) | `agent.override({ toolsets: [...] }).run(prompt)` |
-| `PreparedToolset`         | Modify entire tool list before each step    | ✅     | [Toolsets](/reference/core/toolsets) | `new PreparedToolset(inner, (ctx, tools) => tools)` - dynamic per-turn |
-| `ApprovalRequiredToolset` | Enforce human approval on a toolset         | ✅     | [Deferred Tools](/reference/advanced/deferred-tools) | `new ApprovalRequiredToolset(inner)` - all tools get `requiresApproval` |
-| `WrapperToolset`          | Custom execution behaviour around a toolset | ✅     | [Toolsets](/reference/core/toolsets) | `class MyWrapper extends WrapperToolset { callTool(...) { ... } }` |
-| `ExternalToolset`         | Deferred execution outside agent process    | ✅     | [Deferred Tools](/reference/advanced/deferred-tools) | `new ExternalToolset([{ name, description, jsonSchema }])` - schema-only |
+| `FunctionToolset`         | Group locally defined function tools        | ✅     | [Toolsets](/concepts/toolsets) | `new FunctionToolset([tool1, tool2])` |
+| `CombinedToolset`         | Merge multiple toolsets into one            | ✅     | [Toolsets](/concepts/toolsets) | `new CombinedToolset(ts1, ts2)` |
+| `FilteredToolset`         | Filter a toolset based on context           | ✅     | [Toolsets](/concepts/toolsets) | `new FilteredToolset(ts, (ctx) => boolean)` |
+| `PrefixedToolset`         | Add prefix to tool names                    | ✅     | [Toolsets](/concepts/toolsets) | `new PrefixedToolset(ts, "prefix_")` |
+| `RenamedToolset`          | Map new names onto existing tools           | ✅     | [Toolsets](/concepts/toolsets) | `new RenamedToolset(ts, { old: "new" })` |
+| Toolset reuse             | Share toolsets across agents                | ✅     | [Toolsets](/concepts/toolsets) | `Toolset` is a plain interface - pass the same instance to multiple agents |
+| Runtime swap              | Replace toolsets during testing             | ✅     | [Testing](/concepts/testing) | `agent.override({ toolsets: [...] }).run(prompt)` |
+| `PreparedToolset`         | Modify entire tool list before each step    | ✅     | [Toolsets](/concepts/toolsets) | `new PreparedToolset(inner, (ctx, tools) => tools)` - dynamic per-turn |
+| `ApprovalRequiredToolset` | Enforce human approval on a toolset         | ✅     | [Human-in-the-Loop](/concepts/human-in-the-loop) | `new ApprovalRequiredToolset(inner)` - all tools get `requiresApproval` |
+| `WrapperToolset`          | Custom execution behaviour around a toolset | ✅     | [Toolsets](/concepts/toolsets) | `class MyWrapper extends WrapperToolset { callTool(...) { ... } }` |
+| `ExternalToolset`         | Deferred execution outside agent process    | ✅     | [Human-in-the-Loop](/concepts/human-in-the-loop) | `new ExternalToolset([{ name, description, jsonSchema }])` - schema-only |
 
 ---
 
@@ -81,13 +81,13 @@ framework. Use it as a backlog when deciding what to port next.
 
 | Feature                      | Pydantic AI                                      | Status | Docs | Notes |
 | ---------------------------- | ------------------------------------------------ | ------ | ---- | ----- |
-| `requires_approval=True`     | Mark a tool as approval-required                 | ✅     | [Deferred Tools](/reference/advanced/deferred-tools) | `requiresApproval: true` on `ToolDefinition` or `tool()` options |
-| `ApprovalRequired` exception | Pause agent, surface pending calls to caller     | ✅     | [Human in the Loop](/guides/human-in-the-loop) | `ApprovalRequiredError` - catch it, inspect `.requests`, resume with results |
-| `DeferredToolRequests`       | Container of pending tool calls needing approval | ✅     | [Deferred Tools](/reference/advanced/deferred-tools) | `DeferredToolRequests` class with `.requests` array |
-| `DeferredToolResults`        | Provide approved (or overridden) results         | ✅     | [Human in the Loop](/guides/human-in-the-loop) | `agent.resume(deferred, { results: [...] })` or `run(..., { deferredResults })` |
-| Argument override on resume  | Modify args during approval before execution     | ✅     | [Deferred Tools](/reference/advanced/deferred-tools) | `argsOverride` field on `DeferredToolResult` |
-| `CallDeferred` exception     | Defer a tool call to an external process         | ✅     | [Deferred Tools](/reference/advanced/deferred-tools) | `ExternalToolset` raises `ApprovalRequiredError` for all tools |
-| `ExternalToolset`            | Accept raw JSON schema tools for deferred calls  | ✅     | [Toolsets](/reference/core/toolsets) | `new ExternalToolset([{ name, description, jsonSchema }])` |
+| `requires_approval=True`     | Mark a tool as approval-required                 | ✅     | [Human-in-the-Loop](/concepts/human-in-the-loop) | `requiresApproval: true` on `ToolDefinition` or `tool()` options |
+| `ApprovalRequired` exception | Pause agent, surface pending calls to caller     | ✅     | [Human-in-the-Loop](/concepts/human-in-the-loop) | `ApprovalRequiredError` - catch it, inspect `.requests`, resume with results |
+| `DeferredToolRequests`       | Container of pending tool calls needing approval | ✅     | [Human-in-the-Loop](/concepts/human-in-the-loop) | `DeferredToolRequests` class with `.requests` array |
+| `DeferredToolResults`        | Provide approved (or overridden) results         | ✅     | [Human-in-the-Loop](/concepts/human-in-the-loop) | `agent.resume(deferred, { results: [...] })` or `run(..., { deferredResults })` |
+| Argument override on resume  | Modify args during approval before execution     | ✅     | [Human-in-the-Loop](/concepts/human-in-the-loop) | `argsOverride` field on `DeferredToolResult` |
+| `CallDeferred` exception     | Defer a tool call to an external process         | ✅     | [Human-in-the-Loop](/concepts/human-in-the-loop) | `ExternalToolset` raises `ApprovalRequiredError` for all tools |
+| `ExternalToolset`            | Accept raw JSON schema tools for deferred calls  | ✅     | [Toolsets](/concepts/toolsets) | `new ExternalToolset([{ name, description, jsonSchema }])` |
 
 ---
 
@@ -95,18 +95,18 @@ framework. Use it as a backlog when deciding what to port next.
 
 | Feature                     | Pydantic AI                          | Status | Docs | Notes |
 | --------------------------- | ------------------------------------ | ------ | ---- | ----- |
-| Single schema output        | `result_type: BaseModel`             | ✅     | [Structured Output](/reference/core/structured-output) | `outputSchema: z.object({...})` via `final_result` tool |
-| Result validators           | `@agent.result_validator`            | ✅     | [Result Validators](/reference/core/result-validators) | `addResultValidator(fn)` - throw to retry |
-| `result.all_messages()`     | Full message history                 | ✅     | [Message History](/reference/advanced/message-history) | `result.messages` (full) + `result.newMessages` (this run) |
-| `result.new_messages()`     | Messages added in _this_ run only    | ✅     | [Message History](/reference/advanced/message-history) | `result.newMessages` on `RunResult` and `StreamResult` |
-| `@agent.output_validator`   | Validate output post-parse           | ✅     | [Result Validators](/reference/core/result-validators) | Covered by `addResultValidator` |
-| Union output types          | `output_type=[TypeA, TypeB]`         | ✅     | [Structured Output](/reference/core/structured-output) | `outputSchema: [schemaA, schemaB]` - registers `final_result_0`, `_1`… |
-| Native structured output    | `NativeOutput` marker class          | ✅     | [Structured Output](/reference/core/structured-output) | `outputMode: 'native'` - uses AI SDK `Output.object()` / JSON mode |
-| Prompted output mode        | `PromptedOutput` marker class        | ✅     | [Structured Output](/reference/core/structured-output) | `outputMode: 'prompted'` - schema injected into system prompt |
-| Streaming structured output | Partial validation as output streams | ✅     | [Streaming](/reference/core/streaming) | `result.partialOutput` async iterable on `StreamResult` |
-| Message serialization       | `ModelMessagesTypeAdapter`           | ✅     | [Message History](/reference/advanced/message-history) | `serializeMessages(msgs)` / `deserializeMessages(json)` |
-| Disable schema prompt       | `template=False` on output marker    | ✅     | [Structured Output](/reference/core/structured-output) | `outputTemplate: false` on `AgentOptions` |
-| `BinaryImage` output        | Generate images as output type       | ✅     | [Multi-Modal](/reference/advanced/multi-modal) | `outputSchema: BINARY_IMAGE_OUTPUT` - first tool result with `image/*` MIME type becomes the run output as `BinaryContent` |
+| Single schema output        | `result_type: BaseModel`             | ✅     | [Structured Output](/concepts/results) | `outputSchema: z.object({...})` via `final_result` tool |
+| Result validators           | `@agent.result_validator`            | ✅     | [Result Validators](/concepts/results) | `addResultValidator(fn)` - throw to retry |
+| `result.all_messages()`     | Full message history                 | ✅     | [Message History](/concepts/messages) | `result.messages` (full) + `result.newMessages` (this run) |
+| `result.new_messages()`     | Messages added in _this_ run only    | ✅     | [Message History](/concepts/messages) | `result.newMessages` on `RunResult` and `StreamResult` |
+| `@agent.output_validator`   | Validate output post-parse           | ✅     | [Result Validators](/concepts/results) | Covered by `addResultValidator` |
+| Union output types          | `output_type=[TypeA, TypeB]`         | ✅     | [Structured Output](/concepts/results) | `outputSchema: [schemaA, schemaB]` - registers `final_result_0`, `_1`… |
+| Native structured output    | `NativeOutput` marker class          | ✅     | [Structured Output](/concepts/results) | `outputMode: 'native'` - uses AI SDK `Output.object()` / JSON mode |
+| Prompted output mode        | `PromptedOutput` marker class        | ✅     | [Structured Output](/concepts/results) | `outputMode: 'prompted'` - schema injected into system prompt |
+| Streaming structured output | Partial validation as output streams | ✅     | [Streaming](/concepts/streaming) | `result.partialOutput` async iterable on `StreamResult` |
+| Message serialization       | `ModelMessagesTypeAdapter`           | ✅     | [Message History](/concepts/messages) | `serializeMessages(msgs)` / `deserializeMessages(json)` |
+| Disable schema prompt       | `template=False` on output marker    | ✅     | [Structured Output](/concepts/results) | `outputTemplate: false` on `AgentOptions` |
+| `BinaryImage` output        | Generate images as output type       | ✅     | [Multi-Modal](/advanced/multimodal) | `outputSchema: BINARY_IMAGE_OUTPUT` - first tool result with `image/*` MIME type becomes the run output as `BinaryContent` |
 
 ---
 
@@ -114,14 +114,14 @@ framework. Use it as a backlog when deciding what to port next.
 
 | Feature                   | Pydantic AI                                   | Status | Docs | Notes |
 | ------------------------- | --------------------------------------------- | ------ | ---- | ----- |
-| Pass history to next run  | `message_history=result.all_messages()`       | ✅     | [Message History](/reference/advanced/message-history) | `{ messageHistory: result.messages }` |
-| `new_messages()`          | Slice of messages from current run only       | ✅     | [Message History](/reference/advanced/message-history) | `result.newMessages` on `RunResult` and `StreamResult` |
-| Cross-model compatibility | Messages work across providers                | ✅     | [Message History](/reference/advanced/message-history) | AI SDK `CoreMessage` is provider-agnostic |
-| History processors        | `history_processors=[...]`                    | ✅     | [Message History](/reference/advanced/message-history) | `historyProcessors: [trimHistoryProcessor(n), ...]` on `AgentOptions` |
-| Message serialization     | JSON roundtrip via `ModelMessagesTypeAdapter` | ✅     | [Message History](/reference/advanced/message-history) | `serializeMessages()` / `deserializeMessages()` |
-| Token-aware trimming      | Keep last N messages by token count           | ✅     | [Message History](/reference/advanced/message-history) | `tokenTrimHistoryProcessor(maxTokens, tokenCounter?)` |
-| LLM-based summarization   | Summarize old turns via a model call          | ✅     | [Message History](/reference/advanced/message-history) | `summarizeHistoryProcessor(model, { maxMessages?, summarizePrompt? })` |
-| Privacy filtering         | Strip sensitive fields before model call      | ✅     | [Message History](/reference/advanced/message-history) | `privacyFilterProcessor(rules)` - regex + field-path redaction |
+| Pass history to next run  | `message_history=result.all_messages()`       | ✅     | [Message History](/concepts/messages) | `{ messageHistory: result.messages }` |
+| `new_messages()`          | Slice of messages from current run only       | ✅     | [Message History](/concepts/messages) | `result.newMessages` on `RunResult` and `StreamResult` |
+| Cross-model compatibility | Messages work across providers                | ✅     | [Message History](/concepts/messages) | AI SDK `CoreMessage` is provider-agnostic |
+| History processors        | `history_processors=[...]`                    | ✅     | [Message History](/concepts/messages) | `historyProcessors: [trimHistoryProcessor(n), ...]` on `AgentOptions` |
+| Message serialization     | JSON roundtrip via `ModelMessagesTypeAdapter` | ✅     | [Message History](/concepts/messages) | `serializeMessages()` / `deserializeMessages()` |
+| Token-aware trimming      | Keep last N messages by token count           | ✅     | [Message History](/concepts/messages) | `tokenTrimHistoryProcessor(maxTokens, tokenCounter?)` |
+| LLM-based summarization   | Summarize old turns via a model call          | ✅     | [Message History](/concepts/messages) | `summarizeHistoryProcessor(model, { maxMessages?, summarizePrompt? })` |
+| Privacy filtering         | Strip sensitive fields before model call      | ✅     | [Message History](/concepts/messages) | `privacyFilterProcessor(rules)` - regex + field-path redaction |
 
 ---
 
@@ -129,12 +129,12 @@ framework. Use it as a backlog when deciding what to port next.
 
 | Feature                 | Pydantic AI                            | Status | Docs | Notes |
 | ----------------------- | -------------------------------------- | ------ | ---- | ----- |
-| Typed deps              | `RunContext[MyDeps]`                   | ✅     | [Dependencies](/reference/core/dependencies) | `Agent<MyDeps, TOutput>` - deps typed via generic parameter |
-| Deps in tools           | `ctx: RunContext[MyDeps]` in tool      | ✅     | [Dependencies](/reference/core/dependencies) | `ctx.deps` in `execute(ctx, args)` |
-| Deps in system prompts  | `@agent.system_prompt` with context   | ✅     | [Dependencies](/reference/core/dependencies) | `agent.addSystemPrompt((ctx) => ...)` |
-| Deps in result validators | `@agent.result_validator` with context | ✅    | [Dependencies](/reference/core/dependencies) | `agent.addResultValidator((ctx, result) => ...)` |
-| `RunContext` accessors  | `.deps`, `.usage`, `.metadata`         | ✅     | [Run Context](/reference/core/run-context) | Full `RunContext<TDeps>` type with all accessors |
-| Override deps in tests  | Pass fake deps via `agent.override()`  | ✅     | [Testing](/reference/core/testing) | `agent.override({ deps: fakeDeps }).run(prompt)` |
+| Typed deps              | `RunContext[MyDeps]`                   | ✅     | [Dependencies](/concepts/dependencies) | `Agent<MyDeps, TOutput>` - deps typed via generic parameter |
+| Deps in tools           | `ctx: RunContext[MyDeps]` in tool      | ✅     | [Dependencies](/concepts/dependencies) | `ctx.deps` in `execute(ctx, args)` |
+| Deps in system prompts  | `@agent.system_prompt` with context   | ✅     | [Dependencies](/concepts/dependencies) | `agent.addSystemPrompt((ctx) => ...)` |
+| Deps in result validators | `@agent.result_validator` with context | ✅    | [Dependencies](/concepts/dependencies) | `agent.addResultValidator((ctx, result) => ...)` |
+| `RunContext` accessors  | `.deps`, `.usage`, `.metadata`         | ✅     | [Dependencies](/concepts/dependencies) | Full `RunContext<TDeps>` type with all accessors |
+| Override deps in tests  | Pass fake deps via `agent.override()`  | ✅     | [Testing](/concepts/testing) | `agent.override({ deps: fakeDeps }).run(prompt)` |
 
 ---
 
@@ -142,8 +142,8 @@ framework. Use it as a backlog when deciding what to port next.
 
 | Feature        | Pydantic AI                                                | Status | Docs | Notes |
 | -------------- | ---------------------------------------------------------- | ------ | ---- | ----- |
-| Usage tracking | `result.usage()`                                           | ✅     | [Usage Limits](/reference/advanced/usage-limits) | `result.usage` - prompt/completion tokens + requests |
-| `UsageLimits`  | Cap request count, input tokens, output tokens, tool calls | ✅     | [Usage Limits](/reference/advanced/usage-limits) | `usageLimits: { maxRequests, maxInputTokens, ... }` on `AgentOptions` or `run()` |
+| Usage tracking | `result.usage()`                                           | ✅     | [Results](/concepts/results) | `result.usage` - prompt/completion tokens + requests |
+| `UsageLimits`  | Cap request count, input tokens, output tokens, tool calls | ✅     | [Results](/concepts/results) | `usageLimits: { maxRequests, maxInputTokens, ... }` on `AgentOptions` or `run()` |
 
 ---
 
@@ -151,13 +151,13 @@ framework. Use it as a backlog when deciding what to port next.
 
 | Feature               | Pydantic AI                      | Status | Docs | Notes |
 | --------------------- | -------------------------------- | ------ | ---- | ----- |
-| `UserError`           | Raised for bad agent config      | ✅     | [Errors](/reference/core/errors) | |
-| `UnexpectedModelBehavior` | Malformed model response     | ✅     | [Errors](/reference/core/errors) | |
-| `MaxRetriesExceeded`  | Too many tool/output retries     | ✅     | [Errors](/reference/core/errors) | |
-| `MaxTurnsReached`     | Hit `maxTurns` cap               | ✅     | [Errors](/reference/core/errors) | |
-| `UsageLimitExceeded`  | Hit a `UsageLimits` cap          | ✅     | [Usage Limits](/reference/advanced/usage-limits) | |
-| `ApprovalRequiredError` | Tool requires human approval   | ✅     | [Human in the Loop](/guides/human-in-the-loop) | |
-| `ModelRequestsDisabledError` | Fired when `setAllowModelRequests(false)` | ✅ | [Testing](/reference/core/testing) | |
+| `UserError`           | Raised for bad agent config      | ✅     | [Error Handling](/advanced/error-handling) | |
+| `UnexpectedModelBehavior` | Malformed model response     | ✅     | [Error Handling](/advanced/error-handling) | |
+| `MaxRetriesExceeded`  | Too many tool/output retries     | ✅     | [Error Handling](/advanced/error-handling) | |
+| `MaxTurnsReached`     | Hit `maxTurns` cap               | ✅     | [Error Handling](/advanced/error-handling) | |
+| `UsageLimitExceeded`  | Hit a `UsageLimits` cap          | ✅     | [Results](/concepts/results) | |
+| `ApprovalRequiredError` | Tool requires human approval   | ✅     | [Human-in-the-Loop](/concepts/human-in-the-loop) | |
+| `ModelRequestsDisabledError` | Fired when `setAllowModelRequests(false)` | ✅ | [Testing](/concepts/testing) | |
 
 ---
 
@@ -165,15 +165,15 @@ framework. Use it as a backlog when deciding what to port next.
 
 | Feature                   | Pydantic AI                                   | Status | Docs | Notes |
 | ------------------------- | --------------------------------------------- | ------ | ---- | ----- |
-| `MCPServerStdio`          | Subprocess stdio transport                    | ✅     | [MCP](/reference/integrations/mcp) | `MCPStdioClient` using `@modelcontextprotocol/sdk` |
-| `MCPServerStreamableHTTP` | HTTP Streamable transport                     | ✅     | [MCP](/reference/integrations/mcp) | `MCPHttpClient` using `StreamableHTTPClientTransport` |
+| `MCPServerStdio`          | Subprocess stdio transport                    | ✅     | [MCP](/integrations/mcp-client) | `MCPStdioClient` using `@modelcontextprotocol/sdk` |
+| `MCPServerStreamableHTTP` | HTTP Streamable transport                     | ✅     | [MCP](/integrations/mcp-client) | `MCPHttpClient` using `StreamableHTTPClientTransport` |
 | `MCPServerSSE`            | Server-Sent Events transport (deprecated)     | ❌     | - | Prefer `MCPHttpClient` (StreamableHTTP) |
-| Dynamic tool discovery    | Auto-convert MCP tools to Pydantic AI tools   | ✅     | [MCP](/reference/integrations/mcp) | `MCPToolset.tools()` fetches and converts MCP tools automatically |
-| Elicitation support       | MCP server can request structured input       | ✅     | [MCP](/reference/integrations/mcp) | `elicitationCallback` option on `MCPToolset` |
-| Server instructions       | Access MCP server `instructions` post-connect | ✅     | [MCP](/reference/integrations/mcp) | `mcpToolset.getServerInstructions()` |
-| Tool caching              | Cache discovered tools with invalidation      | ✅     | [MCP](/reference/integrations/mcp) | `toolCacheTtlMs` option on `MCPToolset` (default 60 s) |
-| Multi-server support      | Mount multiple MCP servers simultaneously     | ✅     | [MCP](/reference/integrations/mcp) | `MCPManager` - add servers, call `.connect()`, use as a `Toolset` |
-| Config file loading       | Load MCP config with env variable references  | ✅     | [MCP](/reference/integrations/mcp) | `loadMCPConfig(path)` - supports `${ENV_VAR}` interpolation |
+| Dynamic tool discovery    | Auto-convert MCP tools to Pydantic AI tools   | ✅     | [MCP](/integrations/mcp-client) | `MCPToolset.tools()` fetches and converts MCP tools automatically |
+| Elicitation support       | MCP server can request structured input       | ✅     | [MCP](/integrations/mcp-client) | `elicitationCallback` option on `MCPToolset` |
+| Server instructions       | Access MCP server `instructions` post-connect | ✅     | [MCP](/integrations/mcp-client) | `mcpToolset.getServerInstructions()` |
+| Tool caching              | Cache discovered tools with invalidation      | ✅     | [MCP](/integrations/mcp-client) | `toolCacheTtlMs` option on `MCPToolset` (default 60 s) |
+| Multi-server support      | Mount multiple MCP servers simultaneously     | ✅     | [MCP](/integrations/mcp-client) | `MCPManager` - add servers, call `.connect()`, use as a `Toolset` |
+| Config file loading       | Load MCP config with env variable references  | ✅     | [MCP](/integrations/mcp-client) | `loadMCPConfig(path)` - supports `${ENV_VAR}` interpolation |
 
 ---
 
@@ -181,14 +181,14 @@ framework. Use it as a backlog when deciding what to port next.
 
 | Feature                      | Pydantic AI                                                       | Status | Docs | Notes |
 | ---------------------------- | ----------------------------------------------------------------- | ------ | ---- | ----- |
-| Mock model                   | `MockLanguageModelV1` (from `ai/test`)                            | ✅     | [Testing](/reference/core/testing) | Equivalent to Pydantic AI's `TestModel` |
-| Multi-turn mock              | `mockValues(...)`                                                 | ✅     | [Testing](/reference/core/testing) | Cycle through responses across turns |
-| Stream mock                  | `convertArrayToReadableStream`                                    | ✅     | [Testing](/reference/core/testing) | Build mock stream chunks |
-| `Agent.override()`           | Swap model/deps/toolsets in tests without modifying app code      | ✅     | [Testing](/reference/core/testing) | `agent.override({ model: mockModel }).run(prompt)` |
-| `capture_run_messages()`     | Context manager to inspect all model request/response objects     | ✅     | [Testing](/reference/core/testing) | `captureRunMessages(() => agent.run(...))` returns `messages[][]` |
-| `ALLOW_MODEL_REQUESTS=False` | Global flag to prevent accidental real API calls                  | ✅     | [Testing](/reference/core/testing) | `setAllowModelRequests(false)` - throws `ModelRequestsDisabledError` |
-| `TestModel`                  | Auto-generates valid structured data from schema, calls all tools | ✅     | [Testing](/reference/core/testing) | `new TestModel()` / `createTestModel({ outputSchema })` - schema-aware |
-| `FunctionModel`              | Custom function drives model responses                            | ✅     | [Testing](/reference/core/testing) | `new FunctionModel((params) => result)` - full control per turn |
+| Mock model                   | `MockLanguageModelV1` (from `ai/test`)                            | ✅     | [Testing](/concepts/testing) | Equivalent to Pydantic AI's `TestModel` |
+| Multi-turn mock              | `mockValues(...)`                                                 | ✅     | [Testing](/concepts/testing) | Cycle through responses across turns |
+| Stream mock                  | `convertArrayToReadableStream`                                    | ✅     | [Testing](/concepts/testing) | Build mock stream chunks |
+| `Agent.override()`           | Swap model/deps/toolsets in tests without modifying app code      | ✅     | [Testing](/concepts/testing) | `agent.override({ model: mockModel }).run(prompt)` |
+| `capture_run_messages()`     | Context manager to inspect all model request/response objects     | ✅     | [Testing](/concepts/testing) | `captureRunMessages(() => agent.run(...))` returns `messages[][]` |
+| `ALLOW_MODEL_REQUESTS=False` | Global flag to prevent accidental real API calls                  | ✅     | [Testing](/concepts/testing) | `setAllowModelRequests(false)` - throws `ModelRequestsDisabledError` |
+| `TestModel`                  | Auto-generates valid structured data from schema, calls all tools | ✅     | [Testing](/concepts/testing) | `new TestModel()` / `createTestModel({ outputSchema })` - schema-aware |
+| `FunctionModel`              | Custom function drives model responses                            | ✅     | [Testing](/concepts/testing) | `new FunctionModel((params) => result)` - full control per turn |
 
 ---
 
@@ -196,13 +196,13 @@ framework. Use it as a backlog when deciding what to port next.
 
 | Feature                    | Pydantic AI                                             | Status | Docs | Notes |
 | -------------------------- | ------------------------------------------------------- | ------ | ---- | ----- |
-| Agent-as-tool              | Tool that calls `child.run(usage=ctx.usage)` internally | ✅     | [Multi-Agent](/reference/advanced/multi-agent) | Pattern: `tool({ execute: async (ctx, { prompt }) => { const r = await child.run(prompt, { deps: ctx.deps }); ... } })` |
-| Usage aggregation          | Pass `usage=ctx.usage` to sub-agent to merge costs      | ✅     | [Multi-Agent](/reference/advanced/multi-agent) | Manually add sub-agent usage to `ctx.usage` inside the tool |
-| Programmatic hand-off      | App code dispatches agents sequentially                 | ✅     | [Multi-Agent Systems](/guides/multi-agent-systems) | Documented pattern |
-| `pydantic_graph` - FSM     | Typed state machine with `BaseNode`                     | ✅     | [Graph](/reference/integrations/graph) | `Graph`, `BaseNode`, `GraphRun` |
-| Graph state persistence    | `SimpleStatePersistence`, `FileStatePersistence`        | ✅     | [Graph](/reference/integrations/graph) | `MemoryStatePersistence`, `FileStatePersistence` - pause/resume across restarts |
-| Graph visualization        | Mermaid diagram generation                              | ✅     | [Graph](/reference/integrations/graph) | `toMermaid(graph, nodes)` returns Mermaid flowchart string |
-| `Graph.iter()` / `.next()` | Manual stepping through graph nodes                     | ✅     | [Graph](/reference/integrations/graph) | `graph.runIter(state, startNode)` returns `GraphRun` with `.next()` method |
+| Agent-as-tool              | Tool that calls `child.run(usage=ctx.usage)` internally | ✅     | [Multi-Agent](/concepts/multi-agent) | Pattern: `tool({ execute: async (ctx, { prompt }) => { const r = await child.run(prompt, { deps: ctx.deps }); ... } })` |
+| Usage aggregation          | Pass `usage=ctx.usage` to sub-agent to merge costs      | ✅     | [Multi-Agent](/concepts/multi-agent) | Manually add sub-agent usage to `ctx.usage` inside the tool |
+| Programmatic hand-off      | App code dispatches agents sequentially                 | ✅     | [Multi-Agent](/concepts/multi-agent) | Documented pattern |
+| `pydantic_graph` - FSM     | Typed state machine with `BaseNode`                     | ✅     | [Graph](/concepts/graph) | `Graph`, `BaseNode`, `GraphRun` |
+| Graph state persistence    | `SimpleStatePersistence`, `FileStatePersistence`        | ✅     | [Graph](/concepts/graph) | `MemoryStatePersistence`, `FileStatePersistence` - pause/resume across restarts |
+| Graph visualization        | Mermaid diagram generation                              | ✅     | [Graph](/concepts/graph) | `toMermaid(graph, nodes)` returns Mermaid flowchart string |
+| `Graph.iter()` / `.next()` | Manual stepping through graph nodes                     | ✅     | [Graph](/concepts/graph) | `graph.runIter(state, startNode)` returns `GraphRun` with `.next()` method |
 | A2A protocol               | `agent.to_a2a()` - expose agent as ASGI A2A server      | ✅     | - *(docs coming soon)* | `new A2AAdapter(agent, opts)` - JSON-RPC handler with `tasks/send`, `tasks/get`, `tasks/cancel`, agent card at `/.well-known/agent.json` |
 
 ---
@@ -212,12 +212,12 @@ framework. Use it as a backlog when deciding what to port next.
 | Feature                 | Pydantic AI                             | Status | Docs | Notes |
 | ----------------------- | --------------------------------------- | ------ | ---- | ----- |
 | Logfire integration     | Auto-traces runs, turns, and tool calls | ❌     | - | Not applicable (Logfire is Python-only) |
-| OpenTelemetry support   | OTel Gen-AI semantic conventions        | ✅     | [OpenTelemetry](/reference/integrations/otel) | `instrumentAgent(agent, opts)` - uses AI SDK `experimental_telemetry` |
-| Run-level spans         | Structured spans per run with metadata  | ✅     | [OpenTelemetry](/reference/integrations/otel) | AI SDK auto-creates run spans when telemetry is enabled |
-| Tool-level spans        | Span per tool call with args and result | ✅     | [OpenTelemetry](/reference/integrations/otel) | AI SDK auto-creates tool spans when telemetry is enabled |
+| OpenTelemetry support   | OTel Gen-AI semantic conventions        | ✅     | [OpenTelemetry](/concepts/debugging) | `instrumentAgent(agent, opts)` - uses AI SDK `experimental_telemetry` |
+| Run-level spans         | Structured spans per run with metadata  | ✅     | [OpenTelemetry](/concepts/debugging) | AI SDK auto-creates run spans when telemetry is enabled |
+| Tool-level spans        | Span per tool call with args and result | ✅     | [OpenTelemetry](/concepts/debugging) | AI SDK auto-creates tool spans when telemetry is enabled |
 | HTTPX instrumentation   | Capture raw HTTP request/response       | ❌     | - | Not applicable (no HTTPX in Deno/Node) |
-| Custom `TracerProvider` | Bring your own OTel tracer              | ✅     | [OpenTelemetry](/reference/integrations/otel) | Pass `tracer` in `TelemetrySettings` via `instrumentAgent` or `modelSettings` |
-| Content exclusion       | Strip prompt/response from spans        | ✅     | [OpenTelemetry](/reference/integrations/otel) | `excludeContent: true` on `InstrumentationOptions` → `recordInputs/Outputs: false` |
+| Custom `TracerProvider` | Bring your own OTel tracer              | ✅     | [OpenTelemetry](/concepts/debugging) | Pass `tracer` in `TelemetrySettings` via `instrumentAgent` or `modelSettings` |
+| Content exclusion       | Strip prompt/response from spans        | ✅     | [OpenTelemetry](/concepts/debugging) | `excludeContent: true` on `InstrumentationOptions` → `recordInputs/Outputs: false` |
 
 ---
 
@@ -240,7 +240,7 @@ framework. Use it as a backlog when deciding what to port next.
 
 | Feature              | Pydantic AI                                               | Status | Docs | Notes |
 | -------------------- | --------------------------------------------------------- | ------ | ---- | ----- |
-| Temporal integration | `TemporalAgent` - offloads model/tool calls to activities | ✅     | [Temporal](/reference/integrations/temporal) | `TemporalAgent` + `MockTemporalAgent` - requires Node.js for Temporal worker |
+| Temporal integration | `TemporalAgent` - offloads model/tool calls to activities | ✅     | [Temporal](/integrations/temporal) | `TemporalAgent` + `MockTemporalAgent` - requires Node.js for Temporal worker |
 | DBOS integration     | Postgres-backed state checkpointing                       | ❌     | - | Not implemented (skipped by design) |
 | Prefect integration  | Transactional task semantics with cache keys              | ❌     | - | Not implemented (skipped by design) |
 
@@ -250,9 +250,9 @@ framework. Use it as a backlog when deciding what to port next.
 
 | Feature                | Pydantic AI                                     | Status | Docs | Notes |
 | ---------------------- | ----------------------------------------------- | ------ | ---- | ----- |
-| AG-UI event streaming  | `AGUIAdapter.run_stream()` - agent-to-UI events | ✅     | [AG-UI](/reference/integrations/ag-ui) | `AGUIAdapter.handleRequest(input)` returns SSE `Response` |
-| Follow-up messaging    | Continue conversation after tool call results   | ✅     | [AG-UI](/reference/integrations/ag-ui) | `input.messages` history passed as `messageHistory` automatically |
-| Structured event types | Typed event payloads for all agent actions      | ✅     | [AG-UI](/reference/integrations/ag-ui) | `AGUIEvent` discriminated union with 16 event variants |
+| AG-UI event streaming  | `AGUIAdapter.run_stream()` - agent-to-UI events | ✅     | [AG-UI](/integrations/ag-ui) | `AGUIAdapter.handleRequest(input)` returns SSE `Response` |
+| Follow-up messaging    | Continue conversation after tool call results   | ✅     | [AG-UI](/integrations/ag-ui) | `input.messages` history passed as `messageHistory` automatically |
+| Structured event types | Typed event payloads for all agent actions      | ✅     | [AG-UI](/integrations/ag-ui) | `AGUIEvent` discriminated union with 16 event variants |
 
 ---
 
@@ -260,8 +260,8 @@ framework. Use it as a backlog when deciding what to port next.
 
 | Feature              | Pydantic AI                              | Status | Docs | Notes |
 | -------------------- | ---------------------------------------- | ------ | ---- | ----- |
-| Image input to tools | Pass images into tool parameters         | ✅     | [Multi-Modal](/reference/advanced/multi-modal) | `binaryContentSchema` in tool `parameters`; `BinaryContent` in `execute` |
-| Audio / video input  | Audio and video as tool parameters       | ✅     | [Multi-Modal](/reference/advanced/multi-modal) | `BinaryContent` with audio/video MIME types; `isAudioContent()` type guard |
-| Document input       | PDFs and documents as tool parameters    | ✅     | [Multi-Modal](/reference/advanced/multi-modal) | `BinaryContent` with `application/pdf` etc.; `isDocumentContent()` guard |
-| `UploadedFile`       | File reference for provider file uploads | ✅     | [Multi-Modal](/reference/advanced/multi-modal) | `UploadedFile` type + `uploadedFileSchema` + `uploadedFileToToolResult()` |
-| `BinaryImage` output | Agent returns a generated image          | ✅     | [Multi-Modal](/reference/advanced/multi-modal) | `outputSchema: BINARY_IMAGE_OUTPUT` - agent returns `BinaryContent` when a tool produces an `image/*` result |
+| Image input to tools | Pass images into tool parameters         | ✅     | [Multi-Modal](/advanced/multimodal) | `binaryContentSchema` in tool `parameters`; `BinaryContent` in `execute` |
+| Audio / video input  | Audio and video as tool parameters       | ✅     | [Multi-Modal](/advanced/multimodal) | `BinaryContent` with audio/video MIME types; `isAudioContent()` type guard |
+| Document input       | PDFs and documents as tool parameters    | ✅     | [Multi-Modal](/advanced/multimodal) | `BinaryContent` with `application/pdf` etc.; `isDocumentContent()` guard |
+| `UploadedFile`       | File reference for provider file uploads | ✅     | [Multi-Modal](/advanced/multimodal) | `UploadedFile` type + `uploadedFileSchema` + `uploadedFileToToolResult()` |
+| `BinaryImage` output | Agent returns a generated image          | ✅     | [Multi-Modal](/advanced/multimodal) | `outputSchema: BINARY_IMAGE_OUTPUT` - agent returns `BinaryContent` when a tool produces an `image/*` result |
