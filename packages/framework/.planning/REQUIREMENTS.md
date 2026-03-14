@@ -17,10 +17,10 @@
 
 ### Concepts
 
-- [ ] **CONCEPT-01**: Agents page — Agent class deep dive, constructor options, type params `<TDeps,TOutput>`, system prompts, instructions, `agent.override()`, full agent loop Mermaid flowchart
-- [ ] **CONCEPT-02**: Models page — Vercel AI SDK model layer explanation, quickstarts for Anthropic/OpenAI/Google/Groq/Mistral/Ollama/OpenAI-compatible, ModelSettings
-- [ ] **CONCEPT-03**: Dependencies page — RunContext DI as signature feature, fan-out diagram showing deps flowing through tools/prompts/validators/toolsets, testing with fake deps
-- [ ] **CONCEPT-04**: Tools page — `tool()`, `plainTool()`, `outputTool()`, `fromSchema()`, `prepare`, `argsValidator`, `requiresApproval`, `sequential`, multi-modal returns, execution pipeline Mermaid diagram
+- [x] **CONCEPT-01**: Agents page — Agent class deep dive, constructor options, type params `<TDeps,TOutput>`, system prompts, instructions, `agent.override()`, full agent loop Mermaid flowchart
+- [x] **CONCEPT-02**: Models page — Vercel AI SDK model layer explanation, quickstarts for Anthropic/OpenAI/Google/Groq/Mistral/Ollama/OpenAI-compatible, ModelSettings
+- [x] **CONCEPT-03**: Dependencies page — RunContext DI as signature feature, fan-out diagram showing deps flowing through tools/prompts/validators/toolsets, testing with fake deps
+- [x] **CONCEPT-04**: Tools page — `tool()`, `plainTool()`, `outputTool()`, `fromSchema()`, `prepare`, `argsValidator`, `requiresApproval`, `sequential`, multi-modal returns, execution pipeline Mermaid diagram
 - [ ] **CONCEPT-05**: Toolsets page — all toolset types with composition diagram and per-turn resolution sequence diagram
 - [ ] **CONCEPT-06**: Results page — `outputSchema`, union types, output modes (tool/native/prompted) comparison Mermaid diagram, result validators, retry flow
 - [ ] **CONCEPT-07**: Messages and Chat History page — `result.messages`, `result.newMessages`, `messageHistory`, all 4 history processors, `serializeMessages`/`deserializeMessages`, multi-turn sequence diagram
@@ -98,10 +98,10 @@
 | LAND-02 | Phase 1 | Pending |
 | GS-01 | Phase 1 | Complete |
 | GS-02 | Phase 1 | Complete |
-| CONCEPT-01 | Phase 2 | Pending |
-| CONCEPT-02 | Phase 2 | Pending |
-| CONCEPT-03 | Phase 2 | Pending |
-| CONCEPT-04 | Phase 2 | Pending |
+| CONCEPT-01 | Phase 2 | Complete |
+| CONCEPT-02 | Phase 2 | Complete |
+| CONCEPT-03 | Phase 2 | Complete |
+| CONCEPT-04 | Phase 2 | Complete |
 | CONCEPT-05 | Phase 2 | Pending |
 | CONCEPT-06 | Phase 2 | Pending |
 | CONCEPT-07 | Phase 2 | Pending |
