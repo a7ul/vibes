@@ -10,15 +10,15 @@ import type { Toolset } from "./toolset.ts";
  * outside the agent (e.g. in the client, browser, or another service).
  */
 export type ExternalToolDefinition = {
-	/** The tool name exposed to the model. */
-	name: string;
-	/** Human-readable description of what the tool does. */
-	description: string;
-	/**
-	 * JSON Schema object describing the tool's input parameters.
-	 * Must be a valid JSON Schema (type: "object" at the top level is recommended).
-	 */
-	jsonSchema: Record<string, unknown>;
+  /** The tool name exposed to the model. */
+  name: string;
+  /** Human-readable description of what the tool does. */
+  description: string;
+  /**
+   * JSON Schema object describing the tool's input parameters.
+   * Must be a valid JSON Schema (type: "object" at the top level is recommended).
+   */
+  jsonSchema: Record<string, unknown>;
 };
 
 /**
@@ -61,29 +61,34 @@ export type ExternalToolDefinition = {
  * ```
  */
 export class ExternalToolset<TDeps = undefined> implements Toolset<TDeps> {
-	private readonly _definitions: ExternalToolDefinition[];
+  private readonly _definitions: ExternalToolDefinition[];
 
-	constructor(definitions: ExternalToolDefinition[]) {
-		this._definitions = [...definitions];
-	}
+  constructor(definitions: ExternalToolDefinition[]) {
+    this._definitions = [...definitions];
+  }
 
-	tools(_ctx: RunContext<TDeps>): ToolDefinition<TDeps>[] {
-		return this._definitions.map((def) => {
-			// Wrap the raw JSON schema with the AI SDK helper
-			const wrappedSchema = aiJsonSchema(def.jsonSchema) as unknown as ZodTypeAny;
-			const toolDef: ToolDefinition<TDeps> = {
-				name: def.name,
-				description: def.description,
-				parameters: wrappedSchema,
-				requiresApproval: true as const,
-				// execute should never be called — the tool is marked requiresApproval:true
-				// and the run loop intercepts before execution. Provide a fallback that
-				// returns an error string in case the deferred mechanism is bypassed.
-				execute: async (_ctx: RunContext<TDeps>, args: unknown) => {
-					return `External tool "${def.name}" was called but no executor is registered. Args: ${JSON.stringify(args)}`;
-				},
-			};
-			return toolDef;
-		});
-	}
+  tools(_ctx: RunContext<TDeps>): ToolDefinition<TDeps>[] {
+    return this._definitions.map((def) => {
+      // Wrap the raw JSON schema with the AI SDK helper
+      const wrappedSchema = aiJsonSchema(
+        def.jsonSchema,
+      ) as unknown as ZodTypeAny;
+      const toolDef: ToolDefinition<TDeps> = {
+        name: def.name,
+        description: def.description,
+        parameters: wrappedSchema,
+        requiresApproval: true as const,
+        // execute should never be called — the tool is marked requiresApproval:true
+        // and the run loop intercepts before execution. Provide a fallback that
+        // returns an error string in case the deferred mechanism is bypassed.
+        // deno-lint-ignore require-await
+        execute: async (_ctx: RunContext<TDeps>, args: unknown) => {
+          return `External tool "${def.name}" was called but no executor is registered. Args: ${
+            JSON.stringify(args)
+          }`;
+        },
+      };
+      return toolDef;
+    });
+  }
 }

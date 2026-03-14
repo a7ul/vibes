@@ -1,73 +1,73 @@
 import type { z, ZodTypeAny } from "zod";
-import { tool as aiTool, jsonSchema as aiJsonSchema, type ToolSet } from "ai";
+import { jsonSchema as aiJsonSchema, tool as aiTool, type ToolSet } from "ai";
 import type { RunContext } from "./types.ts";
 import { Semaphore } from "./concurrency.ts";
 import type { BinaryContent, UploadedFile } from "./binary_content.ts";
 import {
-	isBinaryContent,
-	isUploadedFile,
-	binaryContentToToolResult,
-	uploadedFileToToolResult,
+  binaryContentToToolResult,
+  isBinaryContent,
+  isUploadedFile,
+  uploadedFileToToolResult,
 } from "./binary_content.ts";
 
 /** All possible return types from a tool's execute function. */
 export type ToolExecuteReturn = string | object | BinaryContent | UploadedFile;
 
 export interface ToolDefinition<TDeps = undefined> {
-	name: string;
-	description: string;
-	parameters: ZodTypeAny;
-	execute: (
-		ctx: RunContext<TDeps>,
-		args: z.infer<ZodTypeAny>,
-	) => Promise<ToolExecuteReturn>;
-	/** Max times to retry this tool on failure before propagating the error. */
-	maxRetries?: number;
-	/**
-	 * Cross-field validation run before `execute`. Throw to reject the args and
-	 * surface an error without consuming a retry.
-	 */
-	argsValidator?: (args: z.infer<ZodTypeAny>) => void | Promise<void>;
-	/**
-	 * Called once per model turn before the tools are sent to the model.
-	 * Return the (possibly modified) tool definition to include it, or
-	 * `null`/`undefined` to exclude it from this turn.
-	 */
-	prepare?: (
-		ctx: RunContext<TDeps>,
-	) =>
-		| ToolDefinition<TDeps>
-		| null
-		| undefined
-		| Promise<ToolDefinition<TDeps> | null | undefined>;
-	/**
-	 * When true, calling this tool ends the run — the tool's return value
-	 * becomes the final run output. Equivalent to pydantic-ai's output tools.
-	 */
-	isOutput?: boolean;
-	/**
-	 * When true, this tool acquires a run-level exclusive mutex during
-	 * execution so that no two sequential tools run concurrently. Non-sequential
-	 * tools are not affected.
-	 */
-	sequential?: boolean;
-	/**
-	 * When set, the tool requires human approval before execution.
-	 *
-	 * - `true`: Always requires approval.
-	 * - A function: Called with the run context and proposed args. Return `true`
-	 *   to require approval, `false` to proceed without it.
-	 *
-	 * When approval is required, `agent.run()` throws an `ApprovalRequiredError`
-	 * containing a `DeferredToolRequests` object. The caller resolves the
-	 * requests and calls `agent.resume(deferred, results)` to continue.
-	 */
-	requiresApproval?:
-		| boolean
-		| ((
-				ctx: RunContext<TDeps>,
-				args: Record<string, unknown>,
-		  ) => boolean | Promise<boolean>);
+  name: string;
+  description: string;
+  parameters: ZodTypeAny;
+  execute: (
+    ctx: RunContext<TDeps>,
+    args: z.infer<ZodTypeAny>,
+  ) => Promise<ToolExecuteReturn>;
+  /** Max times to retry this tool on failure before propagating the error. */
+  maxRetries?: number;
+  /**
+   * Cross-field validation run before `execute`. Throw to reject the args and
+   * surface an error without consuming a retry.
+   */
+  argsValidator?: (args: z.infer<ZodTypeAny>) => void | Promise<void>;
+  /**
+   * Called once per model turn before the tools are sent to the model.
+   * Return the (possibly modified) tool definition to include it, or
+   * `null`/`undefined` to exclude it from this turn.
+   */
+  prepare?: (
+    ctx: RunContext<TDeps>,
+  ) =>
+    | ToolDefinition<TDeps>
+    | null
+    | undefined
+    | Promise<ToolDefinition<TDeps> | null | undefined>;
+  /**
+   * When true, calling this tool ends the run — the tool's return value
+   * becomes the final run output. Equivalent to pydantic-ai's output tools.
+   */
+  isOutput?: boolean;
+  /**
+   * When true, this tool acquires a run-level exclusive mutex during
+   * execution so that no two sequential tools run concurrently. Non-sequential
+   * tools are not affected.
+   */
+  sequential?: boolean;
+  /**
+   * When set, the tool requires human approval before execution.
+   *
+   * - `true`: Always requires approval.
+   * - A function: Called with the run context and proposed args. Return `true`
+   *   to require approval, `false` to proceed without it.
+   *
+   * When approval is required, `agent.run()` throws an `ApprovalRequiredError`
+   * containing a `DeferredToolRequests` object. The caller resolves the
+   * requests and calls `agent.resume(deferred, results)` to continue.
+   */
+  requiresApproval?:
+    | boolean
+    | ((
+      ctx: RunContext<TDeps>,
+      args: Record<string, unknown>,
+    ) => boolean | Promise<boolean>);
 }
 
 /**
@@ -84,35 +84,35 @@ export interface ToolDefinition<TDeps = undefined> {
  * ```
  */
 export function tool<
-	TDeps = undefined,
-	TParams extends ZodTypeAny = ZodTypeAny,
+  TDeps = undefined,
+  TParams extends ZodTypeAny = ZodTypeAny,
 >(opts: {
-	name: string;
-	description: string;
-	parameters: TParams;
-	execute: (
-		ctx: RunContext<TDeps>,
-		args: z.infer<TParams>,
-	) => Promise<ToolExecuteReturn>;
-	maxRetries?: number;
-	argsValidator?: (args: z.infer<TParams>) => void | Promise<void>;
-	prepare?: (
-		ctx: RunContext<TDeps>,
-	) =>
-		| ToolDefinition<TDeps>
-		| null
-		| undefined
-		| Promise<ToolDefinition<TDeps> | null | undefined>;
-	isOutput?: boolean;
-	sequential?: boolean;
-	requiresApproval?:
-		| boolean
-		| ((
-				ctx: RunContext<TDeps>,
-				args: Record<string, unknown>,
-		  ) => boolean | Promise<boolean>);
+  name: string;
+  description: string;
+  parameters: TParams;
+  execute: (
+    ctx: RunContext<TDeps>,
+    args: z.infer<TParams>,
+  ) => Promise<ToolExecuteReturn>;
+  maxRetries?: number;
+  argsValidator?: (args: z.infer<TParams>) => void | Promise<void>;
+  prepare?: (
+    ctx: RunContext<TDeps>,
+  ) =>
+    | ToolDefinition<TDeps>
+    | null
+    | undefined
+    | Promise<ToolDefinition<TDeps> | null | undefined>;
+  isOutput?: boolean;
+  sequential?: boolean;
+  requiresApproval?:
+    | boolean
+    | ((
+      ctx: RunContext<TDeps>,
+      args: Record<string, unknown>,
+    ) => boolean | Promise<boolean>);
 }): ToolDefinition<TDeps> {
-	return opts as ToolDefinition<TDeps>;
+  return opts as ToolDefinition<TDeps>;
 }
 
 /**
@@ -131,23 +131,25 @@ export function tool<
  * ```
  */
 export function plainTool<TParams extends ZodTypeAny = ZodTypeAny>(opts: {
-	name: string;
-	description: string;
-	parameters: TParams;
-	execute: (args: z.infer<TParams>) => Promise<ToolExecuteReturn>;
-	maxRetries?: number;
-	argsValidator?: (args: z.infer<TParams>) => void | Promise<void>;
+  name: string;
+  description: string;
+  parameters: TParams;
+  execute: (args: z.infer<TParams>) => Promise<ToolExecuteReturn>;
+  maxRetries?: number;
+  argsValidator?: (args: z.infer<TParams>) => void | Promise<void>;
 }): ToolDefinition<undefined> {
-	return {
-		name: opts.name,
-		description: opts.description,
-		parameters: opts.parameters,
-		maxRetries: opts.maxRetries,
-		argsValidator: opts.argsValidator
-			? (args: z.infer<ZodTypeAny>) => opts.argsValidator!(args as z.infer<TParams>)
-			: undefined,
-		execute: (_ctx, args: z.infer<ZodTypeAny>) => opts.execute(args as z.infer<TParams>),
-	};
+  return {
+    name: opts.name,
+    description: opts.description,
+    parameters: opts.parameters,
+    maxRetries: opts.maxRetries,
+    argsValidator: opts.argsValidator
+      ? (args: z.infer<ZodTypeAny>) =>
+        opts.argsValidator!(args as z.infer<TParams>)
+      : undefined,
+    execute: (_ctx, args: z.infer<ZodTypeAny>) =>
+      opts.execute(args as z.infer<TParams>),
+  };
 }
 
 /**
@@ -165,22 +167,25 @@ export function plainTool<TParams extends ZodTypeAny = ZodTypeAny>(opts: {
  * ```
  */
 export function fromSchema<TDeps = undefined>(opts: {
-	name: string;
-	description: string;
-	jsonSchema: Record<string, unknown>;
-	execute: (ctx: RunContext<TDeps>, args: Record<string, unknown>) => Promise<ToolExecuteReturn>;
-	maxRetries?: number;
+  name: string;
+  description: string;
+  jsonSchema: Record<string, unknown>;
+  execute: (
+    ctx: RunContext<TDeps>,
+    args: Record<string, unknown>,
+  ) => Promise<ToolExecuteReturn>;
+  maxRetries?: number;
 }): ToolDefinition<TDeps> {
-	// Wrap the raw JSON schema with the AI SDK helper so it satisfies ZodTypeAny-like interface
-	const wrappedSchema = aiJsonSchema(opts.jsonSchema) as unknown as ZodTypeAny;
-	return {
-		name: opts.name,
-		description: opts.description,
-		parameters: wrappedSchema,
-		maxRetries: opts.maxRetries,
-		execute: (ctx: RunContext<TDeps>, args: z.infer<ZodTypeAny>) =>
-			opts.execute(ctx, args as Record<string, unknown>),
-	};
+  // Wrap the raw JSON schema with the AI SDK helper so it satisfies ZodTypeAny-like interface
+  const wrappedSchema = aiJsonSchema(opts.jsonSchema) as unknown as ZodTypeAny;
+  return {
+    name: opts.name,
+    description: opts.description,
+    parameters: wrappedSchema,
+    maxRetries: opts.maxRetries,
+    execute: (ctx: RunContext<TDeps>, args: z.infer<ZodTypeAny>) =>
+      opts.execute(ctx, args as Record<string, unknown>),
+  };
 }
 
 /**
@@ -199,25 +204,25 @@ export function fromSchema<TDeps = undefined>(opts: {
  * ```
  */
 export function outputTool<
-	TDeps = undefined,
-	TParams extends ZodTypeAny = ZodTypeAny,
+  TDeps = undefined,
+  TParams extends ZodTypeAny = ZodTypeAny,
 >(opts: {
-	name: string;
-	description: string;
-	parameters: TParams;
-	execute: (
-		ctx: RunContext<TDeps>,
-		args: z.infer<TParams>,
-	) => Promise<string | object>;
+  name: string;
+  description: string;
+  parameters: TParams;
+  execute: (
+    ctx: RunContext<TDeps>,
+    args: z.infer<TParams>,
+  ) => Promise<string | object>;
 }): ToolDefinition<TDeps> {
-	return {
-		name: opts.name,
-		description: opts.description,
-		parameters: opts.parameters,
-		isOutput: true,
-		execute: (ctx: RunContext<TDeps>, args: z.infer<ZodTypeAny>) =>
-			opts.execute(ctx, args as z.infer<TParams>),
-	};
+  return {
+    name: opts.name,
+    description: opts.description,
+    parameters: opts.parameters,
+    isOutput: true,
+    execute: (ctx: RunContext<TDeps>, args: z.infer<ZodTypeAny>) =>
+      opts.execute(ctx, args as z.infer<TParams>),
+  };
 }
 
 // ---------------------------------------------------------------------------
@@ -235,62 +240,62 @@ export function outputTool<
  * @param sequentialMutex - Optional shared mutex for sequential tools.
  */
 export function toAISDKTools<TDeps>(
-	tools: ReadonlyArray<ToolDefinition<TDeps>>,
-	getCtx: () => RunContext<TDeps>,
-	maxConcurrency?: number,
-	sequentialMutex?: Semaphore,
+  tools: ReadonlyArray<ToolDefinition<TDeps>>,
+  getCtx: () => RunContext<TDeps>,
+  maxConcurrency?: number,
+  sequentialMutex?: Semaphore,
 ): ToolSet {
-	const semaphore = maxConcurrency !== undefined
-		? new Semaphore(maxConcurrency)
-		: undefined;
+  const semaphore = maxConcurrency !== undefined
+    ? new Semaphore(maxConcurrency)
+    : undefined;
 
-	const result: ToolSet = {};
-	for (const t of tools) {
-		result[t.name] = aiTool({
-			description: t.description,
-			inputSchema: t.parameters,
-			execute: async (args: z.infer<ZodTypeAny>) => {
-				const run = async () => {
-					const ctx = getCtx();
-					const prev = ctx.toolName;
-					ctx.toolName = t.name;
-					const attempts = (t.maxRetries ?? 0) + 1;
-					let lastErr: unknown;
-					try {
-						if (t.argsValidator) {
-							await t.argsValidator(args);
-						}
-						for (let i = 0; i < attempts; i++) {
-							try {
-								const rawResult = await t.execute(ctx, args);
-								// Convert multi-modal returns to AI SDK-compatible formats
-								if (isBinaryContent(rawResult)) {
-									return binaryContentToToolResult(rawResult);
-								}
-								if (isUploadedFile(rawResult)) {
-									return uploadedFileToToolResult(rawResult);
-								}
-								return rawResult;
-							} catch (err) {
-								lastErr = err;
-							}
-						}
-						throw lastErr;
-					} finally {
-						ctx.toolName = prev;
-					}
-				};
+  const result: ToolSet = {};
+  for (const t of tools) {
+    result[t.name] = aiTool({
+      description: t.description,
+      inputSchema: t.parameters,
+      execute: (args: z.infer<ZodTypeAny>) => {
+        const run = async () => {
+          const ctx = getCtx();
+          const prev = ctx.toolName;
+          ctx.toolName = t.name;
+          const attempts = (t.maxRetries ?? 0) + 1;
+          let lastErr: unknown;
+          try {
+            if (t.argsValidator) {
+              await t.argsValidator(args);
+            }
+            for (let i = 0; i < attempts; i++) {
+              try {
+                const rawResult = await t.execute(ctx, args);
+                // Convert multi-modal returns to AI SDK-compatible formats
+                if (isBinaryContent(rawResult)) {
+                  return binaryContentToToolResult(rawResult);
+                }
+                if (isUploadedFile(rawResult)) {
+                  return uploadedFileToToolResult(rawResult);
+                }
+                return rawResult;
+              } catch (err) {
+                lastErr = err;
+              }
+            }
+            throw lastErr;
+          } finally {
+            ctx.toolName = prev;
+          }
+        };
 
-				// Sequential tool — acquire the run-level mutex
-				const withSequential = t.sequential && sequentialMutex !== undefined
-					? () => sequentialMutex.run(run)
-					: run;
+        // Sequential tool — acquire the run-level mutex
+        const withSequential = t.sequential && sequentialMutex !== undefined
+          ? () => sequentialMutex.run(run)
+          : run;
 
-				return semaphore !== undefined
-					? semaphore.run(withSequential)
-					: withSequential();
-			},
-		});
-	}
-	return result;
+        return semaphore !== undefined
+          ? semaphore.run(withSequential)
+          : withSequential();
+      },
+    });
+  }
+  return result;
 }
