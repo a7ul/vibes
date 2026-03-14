@@ -14,7 +14,7 @@ import type { ResultValidator, RunContext, Usage } from "../types.ts";
 import type { ToolDefinition } from "../tool.ts";
 import type { Toolset } from "../toolsets/toolset.ts";
 import type { UsageLimits } from "../usage_limits.ts";
-import type { ModelSettings } from "../model_settings.ts";
+import type { ModelSettings } from "../types/model_settings.ts";
 import type { TelemetrySettings } from "../otel/otel_types.ts";
 import { createUsage } from "../types.ts";
 import { toAISDKTools } from "../tool.ts";
@@ -280,7 +280,7 @@ export function buildToolMap<TDeps>(
     | import("zod").ZodTypeAny
     | import("zod").ZodTypeAny[]
     | undefined,
-  outputMode: import("../output_mode.ts").OutputMode,
+  outputMode: import("../types/output_mode.ts").OutputMode,
   ctx: RunContext<TDeps>,
   maxConcurrency?: number,
   sequentialMutex?: Semaphore,
@@ -610,7 +610,7 @@ export function buildDeferredAwareToolMap<TDeps>(
     | import("zod").ZodTypeAny
     | import("zod").ZodTypeAny[]
     | undefined,
-  outputMode: import("../output_mode.ts").OutputMode,
+  outputMode: import("../types/output_mode.ts").OutputMode,
   ctx: RunContext<TDeps>,
   pendingApprovals: DeferredToolRequest[],
   maxConcurrency?: number,

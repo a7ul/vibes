@@ -13,7 +13,7 @@
 import type { TelemetrySettings } from "ai";
 import type { Agent, RunOptions } from "../agent.ts";
 import type { RunResult, StreamResult } from "../types.ts";
-import type { AgentStreamEvent } from "../events.ts";
+import type { AgentStreamEvent } from "../types/events.ts";
 import type { InstrumentationOptions } from "./otel_types.ts";
 
 // ---------------------------------------------------------------------------
@@ -26,31 +26,31 @@ import type { InstrumentationOptions } from "./otel_types.ts";
  * to `generateText` / `streamText`.
  */
 export function createTelemetrySettings(
-	agentName: string | undefined,
-	options: InstrumentationOptions,
+  agentName: string | undefined,
+  options: InstrumentationOptions,
 ): TelemetrySettings {
-	const settings: TelemetrySettings = {
-		isEnabled: options.isEnabled ?? true,
-	};
+  const settings: TelemetrySettings = {
+    isEnabled: options.isEnabled ?? true,
+  };
 
-	// functionId: explicit option > agent name > fallback
-	settings.functionId = options.functionId ?? agentName ?? "vibes-agent";
+  // functionId: explicit option > agent name > fallback
+  settings.functionId = options.functionId ?? agentName ?? "vibes-agent";
 
-	if (options.metadata !== undefined) {
-		settings.metadata = { ...options.metadata };
-	}
+  if (options.metadata !== undefined) {
+    settings.metadata = { ...options.metadata };
+  }
 
-	if (options.tracer !== undefined) {
-		settings.tracer = options.tracer;
-	}
+  if (options.tracer !== undefined) {
+    settings.tracer = options.tracer;
+  }
 
-	// excludeContent maps to AI SDK's recordInputs/recordOutputs flags
-	if (options.excludeContent === true) {
-		settings.recordInputs = false;
-		settings.recordOutputs = false;
-	}
+  // excludeContent maps to AI SDK's recordInputs/recordOutputs flags
+  if (options.excludeContent === true) {
+    settings.recordInputs = false;
+    settings.recordOutputs = false;
+  }
 
-	return settings;
+  return settings;
 }
 
 // ---------------------------------------------------------------------------
@@ -76,17 +76,20 @@ export function createTelemetrySettings(
  * ```
  */
 export function instrumentAgent<TDeps, TOutput>(
-	agent: Agent<TDeps, TOutput>,
-	options: InstrumentationOptions = {},
+  agent: Agent<TDeps, TOutput>,
+  options: InstrumentationOptions = {},
 ): {
-	run: (prompt: string, opts?: RunOptions<TDeps>) => Promise<RunResult<TOutput>>;
-	stream: (prompt: string, opts?: RunOptions<TDeps>) => StreamResult<TOutput>;
-	runStreamEvents: (
-		prompt: string,
-		opts?: RunOptions<TDeps>,
-	) => AsyncIterable<AgentStreamEvent<TOutput>>;
+  run: (
+    prompt: string,
+    opts?: RunOptions<TDeps>,
+  ) => Promise<RunResult<TOutput>>;
+  stream: (prompt: string, opts?: RunOptions<TDeps>) => StreamResult<TOutput>;
+  runStreamEvents: (
+    prompt: string,
+    opts?: RunOptions<TDeps>,
+  ) => AsyncIterable<AgentStreamEvent<TOutput>>;
 } {
-	const telemetry = createTelemetrySettings(agent.name, options);
+  const telemetry = createTelemetrySettings(agent.name, options);
 
-	return agent.override({ telemetry });
+  return agent.override({ telemetry });
 }

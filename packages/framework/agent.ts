@@ -6,15 +6,15 @@ import type {
   RunResult,
   StreamResult,
 } from "./types.ts";
-import type { OutputMode } from "./output_mode.ts";
+import type { OutputMode } from "./types/output_mode.ts";
 import type { ToolDefinition } from "./tool.ts";
 import type { Toolset } from "./toolsets/toolset.ts";
 import type { UsageLimits } from "./usage_limits.ts";
 import type { HistoryProcessor } from "./history_processor.ts";
-import type { ModelSettings } from "./model_settings.ts";
+import type { ModelSettings } from "./types/model_settings.ts";
 import type { TelemetrySettings } from "./otel/otel_types.ts";
 import type { InternalRunOpts } from "./execution/_run_utils.ts";
-import type { AgentStreamEvent } from "./events.ts";
+import type { AgentStreamEvent } from "./types/events.ts";
 import type { DeferredToolRequests, DeferredToolResults } from "./deferred.ts";
 import { executeRun } from "./execution/run.ts";
 import { executeStream } from "./execution/stream.ts";

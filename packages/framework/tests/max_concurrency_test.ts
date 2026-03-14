@@ -3,7 +3,8 @@
  * Verifies that tool executions are capped by the semaphore.
  */
 import { assertEquals, assertRejects } from "@std/assert";
-import { Agent, Semaphore, tool } from "../mod.ts";
+import { Agent, tool } from "../mod.ts";
+import { Semaphore } from "../concurrency.ts";
 import { z } from "zod";
 import {
   type DoGenerateResult,
