@@ -1,0 +1,32 @@
+<svg viewBox="0 0 520 150" xmlns="http://www.w3.org/2000/svg" font-family="'Geist', ui-sans-serif, system-ui, sans-serif">
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 1 L 9 5 L 0 9 z" fill="#64748b"/>
+    </marker>
+    <style>
+      .bg { fill: #0f172a; }
+      .node-blue { fill: #1e3a5f; stroke: #4a9eed; }
+      .node-green { fill: #1a4d2e; stroke: #22c55e; }
+      .label-blue { fill: #bfdbfe; }
+      .label-green { fill: #bbf7d0; }
+      .arrow { stroke: #64748b; }
+      @media (prefers-color-scheme: light) {
+        .bg { fill: #f8fafc; }
+        .node-blue { fill: #dbeafe; stroke: #4a9eed; }
+        .node-green { fill: #dcfce7; stroke: #22c55e; }
+        .label-blue { fill: #1e40af; }
+        .label-green { fill: #166534; }
+        .arrow { stroke: #94a3b8; }
+      }
+    </style>
+  </defs>
+  <rect class="bg" x="0" y="0" width="520" height="150" rx="12"/>
+  <!-- fetch node -->
+  <rect class="node-blue" x="40" y="45" width="160" height="60" rx="10" stroke-width="1.5"/>
+  <text class="label-blue" x="120" y="80" text-anchor="middle" dominant-baseline="middle" font-size="18" font-weight="500">fetch</text>
+  <!-- arrow -->
+  <line class="arrow" x1="202" y1="75" x2="318" y2="75" stroke-width="1.5" marker-end="url(#arr)"/>
+  <!-- summarise node -->
+  <rect class="node-green" x="320" y="45" width="160" height="60" rx="10" stroke-width="1.5"/>
+  <text class="label-green" x="400" y="80" text-anchor="middle" dominant-baseline="middle" font-size="18" font-weight="500">summarise</text>
+</svg>

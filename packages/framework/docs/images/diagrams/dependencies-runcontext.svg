@@ -1,0 +1,66 @@
+<svg viewBox="0 0 820 400" xmlns="http://www.w3.org/2000/svg" font-family="'Geist', ui-sans-serif, system-ui, sans-serif">
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 1 L 9 5 L 0 9 z" fill="#475569"/>
+    </marker>
+    <style>
+      .bg { fill: #0f172a; }
+      .node-teal { fill: #1a4d4d; stroke: #06b6d4; }
+      .node-purple { fill: #2d1b69; stroke: #8b5cf6; }
+      .node-blue { fill: #1e3a5f; stroke: #4a9eed; }
+      .label-teal { fill: #a5f3fc; }
+      .label-purple { fill: #ddd6fe; }
+      .label-blue { fill: #bfdbfe; }
+      .label-muted { fill: #94a3b8; }
+      .arrow { stroke: #475569; }
+      @media (prefers-color-scheme: light) {
+        .bg { fill: #f8fafc; }
+        .node-teal { fill: #ccfbf1; stroke: #06b6d4; }
+        .node-purple { fill: #ede9fe; stroke: #8b5cf6; }
+        .node-blue { fill: #dbeafe; stroke: #4a9eed; }
+        .label-teal { fill: #0e7490; }
+        .label-purple { fill: #4c1d95; }
+        .label-blue { fill: #1e40af; }
+        .label-muted { fill: #64748b; }
+        .arrow { stroke: #94a3b8; }
+      }
+    </style>
+  </defs>
+  <rect class="bg" x="0" y="0" width="820" height="400" rx="12"/>
+  <!-- agent.run / stream -->
+  <rect class="node-blue" x="15" y="155" width="150" height="70" rx="10" stroke-width="1.5"/>
+  <text class="label-blue" x="90" y="180" text-anchor="middle" dominant-baseline="middle" font-size="14" font-weight="500">agent.run</text>
+  <text class="label-blue" x="90" y="200" text-anchor="middle" dominant-baseline="middle" font-size="14" font-weight="500">agent.stream</text>
+  <!-- arrow to RunContext -->
+  <line class="arrow" x1="165" y1="190" x2="198" y2="190" stroke-width="1.5" marker-end="url(#arr)"/>
+  <!-- RunContext box -->
+  <rect class="node-purple" x="200" y="120" width="175" height="140" rx="10" stroke-width="1.5"/>
+  <text class="label-purple" x="287" y="145" text-anchor="middle" dominant-baseline="middle" font-size="14" font-weight="600">RunContext</text>
+  <text class="label-muted" x="287" y="165" text-anchor="middle" dominant-baseline="middle" font-size="12">deps</text>
+  <text class="label-muted" x="287" y="182" text-anchor="middle" dominant-baseline="middle" font-size="12">usage, runId</text>
+  <text class="label-muted" x="287" y="199" text-anchor="middle" dominant-baseline="middle" font-size="12">retryCount</text>
+  <text class="label-muted" x="287" y="216" text-anchor="middle" dominant-baseline="middle" font-size="12">toolName, metadata</text>
+  <!-- fan arrows to callbacks -->
+  <path class="arrow" d="M 375 148 L 450 48" stroke-width="1.5" fill="none" marker-end="url(#arr)"/>
+  <path class="arrow" d="M 375 160 L 450 103" stroke-width="1.5" fill="none" marker-end="url(#arr)"/>
+  <path class="arrow" d="M 375 172 L 450 158" stroke-width="1.5" fill="none" marker-end="url(#arr)"/>
+  <path class="arrow" d="M 375 190 L 450 213" stroke-width="1.5" fill="none" marker-end="url(#arr)"/>
+  <path class="arrow" d="M 375 208 L 450 268" stroke-width="1.5" fill="none" marker-end="url(#arr)"/>
+  <path class="arrow" d="M 375 222 L 450 323" stroke-width="1.5" fill="none" marker-end="url(#arr)"/>
+  <path class="arrow" d="M 375 235 L 450 355" stroke-width="1.5" fill="none" marker-end="url(#arr)"/>
+  <!-- Callback boxes -->
+  <rect class="node-teal" x="450" y="22" width="350" height="46" rx="8" stroke-width="1.5"/>
+  <text class="label-teal" x="625" y="45" text-anchor="middle" dominant-baseline="middle" font-size="14" font-weight="500">systemPrompt(ctx)  instructions(ctx)</text>
+  <rect class="node-teal" x="450" y="80" width="350" height="46" rx="8" stroke-width="1.5"/>
+  <text class="label-teal" x="625" y="103" text-anchor="middle" dominant-baseline="middle" font-size="14" font-weight="500">tool.execute(ctx, args)</text>
+  <rect class="node-teal" x="450" y="135" width="350" height="46" rx="8" stroke-width="1.5"/>
+  <text class="label-teal" x="625" y="158" text-anchor="middle" dominant-baseline="middle" font-size="14" font-weight="500">tool.prepare(ctx)</text>
+  <rect class="node-teal" x="450" y="190" width="350" height="46" rx="8" stroke-width="1.5"/>
+  <text class="label-teal" x="625" y="213" text-anchor="middle" dominant-baseline="middle" font-size="14" font-weight="500">tool.requiresApproval(ctx, args)</text>
+  <rect class="node-teal" x="450" y="245" width="350" height="46" rx="8" stroke-width="1.5"/>
+  <text class="label-teal" x="625" y="268" text-anchor="middle" dominant-baseline="middle" font-size="14" font-weight="500">resultValidators(ctx, output)</text>
+  <rect class="node-teal" x="450" y="300" width="350" height="46" rx="8" stroke-width="1.5"/>
+  <text class="label-teal" x="625" y="323" text-anchor="middle" dominant-baseline="middle" font-size="14" font-weight="500">toolset.tools(ctx)</text>
+  <rect class="node-teal" x="450" y="332" width="350" height="46" rx="8" stroke-width="1.5"/>
+  <text class="label-teal" x="625" y="355" text-anchor="middle" dominant-baseline="middle" font-size="14" font-weight="500">historyProcessors(messages, ctx)</text>
+</svg>
