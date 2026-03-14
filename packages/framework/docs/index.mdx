@@ -1,69 +1,64 @@
 ---
 title: "Vibes Agent Framework"
-description: "A TypeScript agent framework built to closely match pydantic-ai, powered by Vercel AI SDK."
+description: "TypeScript agent framework inspired by pydantic-ai. Type-safe tools, dependency injection, streaming, testing utilities. Powered by Vercel AI SDK."
 ---
 
-Vibes is a TypeScript agent framework built to closely match [pydantic-ai](https://ai.pydantic.dev/), powered by the [Vercel AI SDK](https://sdk.vercel.ai/).
+## TypeScript Agent Framework, the pydantic-ai way
 
-It brings production-grade agent patterns and the flexibility of pydantic-ai to TypeScript projects - type-safe tools, dependency injection, result validators, streaming, and first-class testing utilities.
+**Powered by Vercel AI SDK.** Build production-grade AI agents with type-safe tools, dependency injection, structured output, and first-class testing.
+
+## Why Vibes?
+
+1. **Type-safe tools with Zod schemas** — Every tool parameter is validated at runtime. No `any` types leaking into your agent logic.
+2. **Dependency injection via RunContext** — Carry databases, HTTP clients, and config through the entire call chain. Test by swapping deps, not mocking modules.
+3. **Model-agnostic via Vercel AI SDK** — Switch between Anthropic, OpenAI, Google, Groq, Mistral, Ollama, and 50+ other providers by changing one line.
+4. **Structured output with schema validation and retries** — Define a Zod schema, get back a typed object. Vibes retries automatically on validation failure.
+5. **First-class testing utilities** — `TestModel`, `FunctionModel`, `agent.override()`, `setAllowModelRequests(false)`. Every agent is testable without real API calls.
+6. **Protocol-ready: MCP, AG-UI, A2A built-in** — Connect to MCP servers, build AG-UI streaming agents, and compose agents with A2A out of the box.
+
+## Architecture
+
+```mermaid
+graph TD
+    A["Your Code"] --> B["@vibes/framework"]
+    B --> C["Vercel AI SDK"]
+    C --> D["Anthropic"]
+    C --> E["OpenAI"]
+    C --> F["Google"]
+    C --> G["Groq / Mistral / Ollama / ..."]
+```
+
+## Hello World
 
 ```ts
-import { Agent, tool } from "@vibes/framework";
+import { Agent } from "@vibes/framework";
 import { anthropic } from "@ai-sdk/anthropic";
-import { z } from "zod";
-
-const weather = tool({
-  name: "get_weather",
-  description: "Get the current weather for a city",
-  parameters: z.object({ city: z.string() }),
-  execute: async (_ctx, { city }) => `${city}: 22°C, sunny`,
-});
 
 const agent = new Agent({
   model: anthropic("claude-haiku-4-5-20251001"),
-  systemPrompt: "You are a helpful weather assistant.",
-  tools: [weather],
+  systemPrompt: "You are a helpful assistant.",
 });
 
-const result = await agent.run("What's the weather in Tokyo?");
-// "The weather in Tokyo is currently 22°C and sunny."
+const result = await agent.run("What is the capital of France?");
+console.log(result.output); // "Paris"
 ```
 
-## How it fits together
+## Acknowledgments
 
-```
-Your code
-   ↕
-@vibes/framework   ← agent loop, tools, toolsets, DI, validation, testing
-   ↕
-Vercel AI SDK      ← models, streaming, structured output, providers
-   ↕
-Any LLM provider   ← Anthropic, OpenAI, Google, Mistral, Ollama, ...
-```
+Vibes is inspired by [pydantic-ai](https://ai.pydantic.dev/) — the agent framework by Samuel Colvin and the Pydantic team. pydantic-ai showed that agent frameworks can be type-safe, testable, and dependency-injection-friendly without sacrificing simplicity. Vibes borrows its API design, agent loop architecture, and teaching philosophy, adapted for TypeScript.
 
-## Start here
+The model layer is powered by [Vercel AI SDK](https://sdk.vercel.ai/), which provides a unified interface to 50+ LLM providers. Without the AI SDK, Vibes would require maintaining its own provider integrations.
 
-- [Installation](/getting-started/install) - set up Deno or Node.js and verify with a hello-world agent
-- [Your First Agent](/getting-started/first-agent) - create an agent, run it, understand what each part does
-- [Adding Tools](/getting-started/adding-tools) - give your agent real capabilities
-- [Structured Output](/getting-started/structured-output) - get typed, validated JSON responses using Zod schemas
+See the [Introduction](/introduction) for the full story.
 
-## pydantic-ai comparison
-
-Vibes mirrors pydantic-ai closely. If you're porting a Python agent, most concepts transfer directly.
-
-| Concept | pydantic-ai | @vibes/framework |
-|---------|------------|-----------------|
-| Core class | `Agent` | `Agent` |
-| Run | `agent.run_sync()` | `agent.run()` |
-| Streaming | `agent.run_stream()` | `agent.stream()` |
-| Tools | `@agent.tool` decorator | `tool()` factory |
-| Dependencies | `deps: TDeps` | `deps: TDeps` |
-| Typed output | `result_type: MyModel` | `outputSchema: z.object(...)` |
-| Type validation | Pydantic | Zod |
-| Result validators | `@agent.result_validator` | `resultValidators: [...]` |
-| Testing | `TestModel` / `FunctionModel` | `TestModel` / `FunctionModel` |
-| Language | Python | TypeScript |
-| Model layer | pydantic-ai providers | Vercel AI SDK |
-
-See [Feature Parity](/reference/features) for the full comparison.
+<CardGroup cols={3}>
+  <Card title="Introduction" href="/introduction" icon="book-open">
+    Learn about Vibes' design philosophy and what inspired it
+  </Card>
+  <Card title="Install" href="/getting-started/install" icon="download">
+    Set up Vibes in under 2 minutes
+  </Card>
+  <Card title="Hello World" href="/getting-started/hello-world" icon="rocket">
+    Build your first agent
+  </Card>
+</CardGroup>
