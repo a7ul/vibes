@@ -1,24 +1,31 @@
 import type { Usage } from "@vibes/framework";
 
-export type MessageRole = "user" | "assistant";
+export type TurnItem =
+  | { kind: "text"; content: string }
+  | {
+    kind: "tool-call";
+    toolName: string;
+    toolCallId: string;
+    args: Record<string, unknown>;
+    result?: unknown;
+    status: "running" | "done";
+  };
 
-export interface TuiMessage {
-  id: string;
-  role: MessageRole;
-  content: string;
-  timestamp: Date;
-}
+export type ConversationEntry =
+  | { kind: "user"; id: string; content: string }
+  | {
+    kind: "assistant";
+    id: string;
+    items: TurnItem[];
+    status: "streaming" | "complete" | "error";
+    errorMessage?: string;
+  };
 
-export type AgentState = "idle" | "streaming" | "complete" | "error";
+export type AgentSessionState = "idle" | "streaming" | "error";
 
 export interface TuiConfig {
   workflowId: string;
   contextDir: string;
 }
 
-export interface AgentStateSnapshot {
-  state: AgentState;
-  streamedText: string;
-  usage: Usage | null;
-  error: string | null;
-}
+export type { Usage };

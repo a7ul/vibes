@@ -1,12 +1,12 @@
 import { Box, Text } from "ink";
 import TextInput from "ink-text-input";
-import type { AgentState } from "../types.ts";
+import type { AgentSessionState } from "../types.ts";
 
 interface InputBoxProps {
   value: string;
   onChange: (value: string) => void;
   onSubmit: (value: string) => void;
-  agentState: AgentState;
+  agentState: AgentSessionState;
 }
 
 export function InputBox({ value, onChange, onSubmit, agentState }: InputBoxProps) {

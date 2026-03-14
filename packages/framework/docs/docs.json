@@ -13,6 +13,7 @@
     "light": "#F9FAFB",
     "dark": "#E5E7EB"
   },
+  "css": ["/custom.css"],
   "modeToggle": {
     "default": "dark"
   },
