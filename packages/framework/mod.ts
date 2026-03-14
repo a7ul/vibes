@@ -154,6 +154,15 @@ export type {
 } from "./ag_ui/adapter.ts";
 export type { AGUIEvent } from "./ag_ui/types.ts";
 
+// OpenTelemetry instrumentation
+export type { TelemetrySettings, InstrumentationOptions } from "./otel/otel_types.ts";
+export { createTelemetrySettings, instrumentAgent } from "./otel/instrumentation.ts";
+export {
+	withAgentSpan,
+	recordUsageAttributes,
+	recordRunAttributes,
+} from "./otel/spans.ts";
+
 // MCP (Model Context Protocol) integration
 export type {
 	MCPTool,

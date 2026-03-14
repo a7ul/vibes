@@ -19,6 +19,7 @@ import {
 	resolveModelSettings,
 	modelSettingsToAISDKOptions,
 	resolveEndStrategy,
+	resolveTelemetry,
 	resolveTools,
 	buildDeferredAwareToolMap,
 	toolsOrUndefined,
@@ -51,6 +52,7 @@ export async function executeRun<TDeps, TOutput>(
 	const modelSettingsRaw = resolveModelSettings(agent, opts);
 	const modelSettings = modelSettingsToAISDKOptions(modelSettingsRaw);
 	const endStrategy = resolveEndStrategy(agent, opts);
+	const telemetry = resolveTelemetry(agent, opts);
 	const outputMode = agent.outputMode;
 	const outputSchema = agent.outputSchema;
 	const schemas = normaliseSchemas(outputSchema);
@@ -141,6 +143,7 @@ export async function executeRun<TDeps, TOutput>(
 				tools: effectiveTools,
 				stopWhen: stepCountIs(1),
 				output: aiOutput.object({ schema: primarySchema }),
+				...(telemetry !== undefined ? { experimental_telemetry: telemetry } : {}),
 				...modelSettings,
 			});
 
@@ -237,6 +240,7 @@ export async function executeRun<TDeps, TOutput>(
 				messages: msgsForModel,
 				tools: effectiveTools,
 				stopWhen: stepCountIs(1),
+				...(telemetry !== undefined ? { experimental_telemetry: telemetry } : {}),
 				...modelSettings,
 			});
 
@@ -326,6 +330,7 @@ export async function executeRun<TDeps, TOutput>(
 			messages: msgsForModel,
 			tools: effectiveTools,
 			stopWhen: stepCountIs(1),
+			...(telemetry !== undefined ? { experimental_telemetry: telemetry } : {}),
 			...modelSettings,
 		});
 

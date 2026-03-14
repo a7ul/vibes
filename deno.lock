@@ -10,6 +10,7 @@
     "npm:@ai-sdk/provider@^3.0.0-0": "3.0.8",
     "npm:@anthropic-ai/sandbox-runtime@*": "0.0.42",
     "npm:@modelcontextprotocol/sdk@1": "1.26.0_zod@4.3.6_hono@4.11.8_ajv@8.17.1_express@5.2.1",
+    "npm:@opentelemetry/api@1": "1.9.0",
     "npm:ai@6": "6.0.116_zod@4.3.6",
     "npm:zod@4": "4.3.6"
   },
@@ -656,6 +657,7 @@
           "jsr:@std/assert@^1.0.19",
           "npm:@ai-sdk/provider@^3.0.0-0",
           "npm:@modelcontextprotocol/sdk@1",
+          "npm:@opentelemetry/api@1",
           "npm:ai@6",
           "npm:zod@4"
         ]

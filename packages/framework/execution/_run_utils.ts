@@ -15,6 +15,7 @@ import type { ToolDefinition } from "../tool.ts";
 import type { Toolset } from "../toolsets/toolset.ts";
 import type { UsageLimits } from "../usage_limits.ts";
 import type { ModelSettings } from "../model_settings.ts";
+import type { TelemetrySettings } from "../otel/otel_types.ts";
 import { createUsage } from "../types.ts";
 import { toAISDKTools } from "../tool.ts";
 import { Semaphore } from "../concurrency.ts";
@@ -59,6 +60,11 @@ export interface InternalRunOpts<TDeps, TOutput> {
 	/** Per-run end strategy (overrides agent-level endStrategy). */
 	endStrategy?: EndStrategy;
 	/**
+	 * Telemetry settings passed to `generateText` / `streamText` as
+	 * `experimental_telemetry`. Per-run value overrides agent-level setting.
+	 */
+	telemetry?: TelemetrySettings;
+	/**
 	 * Deferred tool results supplied by the caller when resuming after human
 	 * approval. Injected into message history before the next model turn.
 	 */
@@ -91,6 +97,7 @@ export interface InternalRunOpts<TDeps, TOutput> {
 		usageLimits?: UsageLimits;
 		modelSettings?: ModelSettings;
 		endStrategy?: EndStrategy;
+		telemetry?: TelemetrySettings;
 	};
 	/** When true, bypasses the ALLOW_MODEL_REQUESTS guard (set by agent.override()). */
 	_bypassModelRequestsCheck?: boolean;
@@ -489,6 +496,19 @@ export function resolveEndStrategy<TDeps, TOutput>(
 	opts: InternalRunOpts<TDeps, TOutput>,
 ): import("../agent.ts").EndStrategy {
 	return opts._override?.endStrategy ?? opts.endStrategy ?? agent.endStrategy;
+}
+
+/**
+ * Resolve effective telemetry settings.
+ *
+ * Priority: override-level > per-run level > agent-level.
+ * Returns `undefined` if none are configured.
+ */
+export function resolveTelemetry<TDeps, TOutput>(
+	agent: Agent<TDeps, TOutput>,
+	opts: InternalRunOpts<TDeps, TOutput>,
+): TelemetrySettings | undefined {
+	return opts._override?.telemetry ?? opts.telemetry ?? agent.telemetry;
 }
 
 // ---------------------------------------------------------------------------
