@@ -67,11 +67,11 @@
 
 ### Navigation & Quality
 
-- [ ] **NAV-01**: `docs.json` navigation restructured to match new Pydantic AI-inspired nav (landing → intro → getting started → concepts → integrations → examples → advanced → meta)
-- [ ] **NAV-02**: All old fragmented reference pages deleted (getting-started/first-agent, adding-tools, structured-output, testing, concepts/how-agents-work, concepts/dependency-injection, concepts/error-handling, guides/*, reference/core/*, reference/advanced/*, reference/integrations/*)
-- [ ] **NAV-03**: Zero broken internal links - every link in every MDX file resolves to an existing page in `docs.json`
-- [ ] **NAV-04**: features.mdx (reference/features) updated to link to new page locations
-- [ ] **DIAG-01**: Minimum 30 Mermaid diagrams rendered across concept and integration pages
+- [x] **NAV-01**: `docs.json` navigation restructured to match new Pydantic AI-inspired nav (landing → intro → getting started → concepts → integrations → examples → advanced → meta)
+- [x] **NAV-02**: All old fragmented reference pages deleted (getting-started/first-agent, adding-tools, structured-output, testing, concepts/how-agents-work, concepts/dependency-injection, concepts/error-handling, guides/*, reference/core/*, reference/advanced/*, reference/integrations/*)
+- [x] **NAV-03**: Zero broken internal links - every link in every MDX file resolves to an existing page in `docs.json`
+- [x] **NAV-04**: features.mdx (reference/features) updated to link to new page locations
+- [x] **DIAG-01**: Minimum 30 Mermaid diagrams rendered across concept and integration pages
 
 ## v2 Requirements
 
@@ -133,11 +133,11 @@
 | META-01 | Phase 6 | Complete |
 | META-02 | Phase 6 | Complete |
 | META-03 | Phase 6 | Complete |
-| NAV-01 | Phase 6 | Pending |
-| NAV-02 | Phase 6 | Pending |
-| NAV-03 | Phase 6 | Pending |
-| NAV-04 | Phase 6 | Pending |
-| DIAG-01 | Phase 6 | Pending |
+| NAV-01 | Phase 6 | Complete |
+| NAV-02 | Phase 6 | Complete |
+| NAV-03 | Phase 6 | Complete |
+| NAV-04 | Phase 6 | Complete |
+| DIAG-01 | Phase 6 | Complete |
 
 **Coverage:**
 - v1 requirements: 44 total
