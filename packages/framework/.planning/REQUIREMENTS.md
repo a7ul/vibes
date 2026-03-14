@@ -25,9 +25,9 @@
 - [x] **CONCEPT-06**: Results page — `outputSchema`, union types, output modes (tool/native/prompted) comparison Mermaid diagram, result validators, retry flow
 - [x] **CONCEPT-07**: Messages and Chat History page — `result.messages`, `result.newMessages`, `messageHistory`, all 4 history processors, `serializeMessages`/`deserializeMessages`, multi-turn sequence diagram
 - [x] **CONCEPT-08**: Streaming page — `agent.stream()`, `agent.runStreamEvents()`, `textStream`, `partialOutput`, event types, when to use each, event timeline sequence diagram
-- [ ] **CONCEPT-09**: Human-in-the-Loop page — `requiresApproval`, `ApprovalRequiredError`, `DeferredToolRequests`, `DeferredToolResults`, `agent.resume()`, `ExternalToolset`, approval sequence Mermaid diagram
-- [ ] **CONCEPT-10**: Testing page — `TestModel`, `createTestModel()`, `FunctionModel`, `setAllowModelRequests(false)`, `captureRunMessages()`, `agent.override()`, real test code examples
-- [ ] **CONCEPT-11**: Debugging and Monitoring page — `instrumentAgent()`, `TelemetrySettings`, OTel span hierarchy Mermaid diagram, content exclusion
+- [x] **CONCEPT-09**: Human-in-the-Loop page — `requiresApproval`, `ApprovalRequiredError`, `DeferredToolRequests`, `DeferredToolResults`, `agent.resume()`, `ExternalToolset`, approval sequence Mermaid diagram
+- [x] **CONCEPT-10**: Testing page — `TestModel`, `createTestModel()`, `FunctionModel`, `setAllowModelRequests(false)`, `captureRunMessages()`, `agent.override()`, real test code examples
+- [x] **CONCEPT-11**: Debugging and Monitoring page — `instrumentAgent()`, `TelemetrySettings`, OTel span hierarchy Mermaid diagram, content exclusion
 - [ ] **CONCEPT-12**: Multi-Agent page — agent-as-tool pattern, usage aggregation, programmatic handoff, agent delegation sequence diagram
 - [ ] **CONCEPT-13**: Graph page — `BaseNode`, `Graph`, `GraphRun`, fixed API (constructor + free functions), `toMermaid()`, `runIter()`, `FileStatePersistence`, FSM Mermaid diagram
 - [ ] **CONCEPT-14**: Thinking page — extended reasoning config for Anthropic (`thinking.budgetTokens`) and Google models
@@ -106,9 +106,9 @@
 | CONCEPT-06 | Phase 2 | Complete |
 | CONCEPT-07 | Phase 2 | Complete |
 | CONCEPT-08 | Phase 2 | Complete |
-| CONCEPT-09 | Phase 3 | Pending |
-| CONCEPT-10 | Phase 3 | Pending |
-| CONCEPT-11 | Phase 3 | Pending |
+| CONCEPT-09 | Phase 3 | Complete |
+| CONCEPT-10 | Phase 3 | Complete |
+| CONCEPT-11 | Phase 3 | Complete |
 | CONCEPT-12 | Phase 3 | Pending |
 | CONCEPT-13 | Phase 3 | Pending |
 | CONCEPT-14 | Phase 3 | Pending |
