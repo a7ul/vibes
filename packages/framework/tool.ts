@@ -1,7 +1,17 @@
 import type { z, ZodTypeAny } from "zod";
-import { tool as aiTool, type ToolSet } from "ai";
+import { tool as aiTool, jsonSchema as aiJsonSchema, type ToolSet } from "ai";
 import type { RunContext } from "./types.ts";
 import { Semaphore } from "./concurrency.ts";
+import type { BinaryContent, UploadedFile } from "./binary_content.ts";
+import {
+	isBinaryContent,
+	isUploadedFile,
+	binaryContentToToolResult,
+	uploadedFileToToolResult,
+} from "./binary_content.ts";
+
+/** All possible return types from a tool's execute function. */
+export type ToolExecuteReturn = string | object | BinaryContent | UploadedFile;
 
 export interface ToolDefinition<TDeps = undefined> {
 	name: string;
@@ -10,7 +20,7 @@ export interface ToolDefinition<TDeps = undefined> {
 	execute: (
 		ctx: RunContext<TDeps>,
 		args: z.infer<ZodTypeAny>,
-	) => Promise<string | object>;
+	) => Promise<ToolExecuteReturn>;
 	/** Max times to retry this tool on failure before propagating the error. */
 	maxRetries?: number;
 	/**
@@ -30,6 +40,17 @@ export interface ToolDefinition<TDeps = undefined> {
 		| null
 		| undefined
 		| Promise<ToolDefinition<TDeps> | null | undefined>;
+	/**
+	 * When true, calling this tool ends the run — the tool's return value
+	 * becomes the final run output. Equivalent to pydantic-ai's output tools.
+	 */
+	isOutput?: boolean;
+	/**
+	 * When true, this tool acquires a run-level exclusive mutex during
+	 * execution so that no two sequential tools run concurrently. Non-sequential
+	 * tools are not affected.
+	 */
+	sequential?: boolean;
 }
 
 /**
@@ -55,7 +76,7 @@ export function tool<
 	execute: (
 		ctx: RunContext<TDeps>,
 		args: z.infer<TParams>,
-	) => Promise<string | object>;
+	) => Promise<ToolExecuteReturn>;
 	maxRetries?: number;
 	argsValidator?: (args: z.infer<TParams>) => void | Promise<void>;
 	prepare?: (
@@ -65,6 +86,8 @@ export function tool<
 		| null
 		| undefined
 		| Promise<ToolDefinition<TDeps> | null | undefined>;
+	isOutput?: boolean;
+	sequential?: boolean;
 }): ToolDefinition<TDeps> {
 	return opts as ToolDefinition<TDeps>;
 }
@@ -88,7 +111,7 @@ export function plainTool<TParams extends ZodTypeAny = ZodTypeAny>(opts: {
 	name: string;
 	description: string;
 	parameters: TParams;
-	execute: (args: z.infer<TParams>) => Promise<string | object>;
+	execute: (args: z.infer<TParams>) => Promise<ToolExecuteReturn>;
 	maxRetries?: number;
 	argsValidator?: (args: z.infer<TParams>) => void | Promise<void>;
 }): ToolDefinition<undefined> {
@@ -105,6 +128,80 @@ export function plainTool<TParams extends ZodTypeAny = ZodTypeAny>(opts: {
 }
 
 /**
+ * Build a tool from a raw JSON Schema object instead of a Zod schema.
+ * Useful when integrating with external schema registries or OpenAPI specs.
+ *
+ * @example
+ * ```ts
+ * const search = fromSchema({
+ *   name: "search",
+ *   description: "Search documents",
+ *   jsonSchema: { type: "object", properties: { query: { type: "string" } }, required: ["query"] },
+ *   execute: async (ctx, args) => doSearch(args.query as string),
+ * });
+ * ```
+ */
+export function fromSchema<TDeps = undefined>(opts: {
+	name: string;
+	description: string;
+	jsonSchema: Record<string, unknown>;
+	execute: (ctx: RunContext<TDeps>, args: Record<string, unknown>) => Promise<ToolExecuteReturn>;
+	maxRetries?: number;
+}): ToolDefinition<TDeps> {
+	// Wrap the raw JSON schema with the AI SDK helper so it satisfies ZodTypeAny-like interface
+	const wrappedSchema = aiJsonSchema(opts.jsonSchema) as unknown as ZodTypeAny;
+	return {
+		name: opts.name,
+		description: opts.description,
+		parameters: wrappedSchema,
+		maxRetries: opts.maxRetries,
+		execute: (ctx: RunContext<TDeps>, args: z.infer<ZodTypeAny>) =>
+			opts.execute(ctx, args as Record<string, unknown>),
+	};
+}
+
+/**
+ * Define an output tool — when the model calls this tool, its return value
+ * becomes the final run output and the run ends immediately.
+ * Equivalent to pydantic-ai's output tools / `final_result` pattern.
+ *
+ * @example
+ * ```ts
+ * const done = outputTool({
+ *   name: "done",
+ *   description: "Return the final answer",
+ *   parameters: z.object({ answer: z.string() }),
+ *   execute: async (ctx, args) => args.answer,
+ * });
+ * ```
+ */
+export function outputTool<
+	TDeps = undefined,
+	TParams extends ZodTypeAny = ZodTypeAny,
+>(opts: {
+	name: string;
+	description: string;
+	parameters: TParams;
+	execute: (
+		ctx: RunContext<TDeps>,
+		args: z.infer<TParams>,
+	) => Promise<string | object>;
+}): ToolDefinition<TDeps> {
+	return {
+		name: opts.name,
+		description: opts.description,
+		parameters: opts.parameters,
+		isOutput: true,
+		execute: (ctx: RunContext<TDeps>, args: z.infer<ZodTypeAny>) =>
+			opts.execute(ctx, args as z.infer<TParams>),
+	};
+}
+
+// ---------------------------------------------------------------------------
+// toAISDKTools — internal conversion used by the run loop
+// ---------------------------------------------------------------------------
+
+/**
  * Convert our ToolDefinition array into the format expected by Vercel AI SDK's
  * generateText/streamText `tools` option. Execution is wired through the provided
  * RunContext so tools have access to deps, usage, etc.
@@ -112,11 +209,13 @@ export function plainTool<TParams extends ZodTypeAny = ZodTypeAny>(opts: {
  * @param tools - Tool definitions to convert.
  * @param getCtx - Factory that returns the current RunContext.
  * @param maxConcurrency - Optional cap on concurrent tool executions per turn.
+ * @param sequentialMutex - Optional shared mutex for sequential tools.
  */
 export function toAISDKTools<TDeps>(
 	tools: ReadonlyArray<ToolDefinition<TDeps>>,
 	getCtx: () => RunContext<TDeps>,
 	maxConcurrency?: number,
+	sequentialMutex?: Semaphore,
 ): ToolSet {
 	const semaphore = maxConcurrency !== undefined
 		? new Semaphore(maxConcurrency)
@@ -140,7 +239,15 @@ export function toAISDKTools<TDeps>(
 						}
 						for (let i = 0; i < attempts; i++) {
 							try {
-								return await t.execute(ctx, args);
+								const rawResult = await t.execute(ctx, args);
+								// Convert multi-modal returns to AI SDK-compatible formats
+								if (isBinaryContent(rawResult)) {
+									return binaryContentToToolResult(rawResult);
+								}
+								if (isUploadedFile(rawResult)) {
+									return uploadedFileToToolResult(rawResult);
+								}
+								return rawResult;
 							} catch (err) {
 								lastErr = err;
 							}
@@ -151,9 +258,14 @@ export function toAISDKTools<TDeps>(
 					}
 				};
 
+				// Sequential tool — acquire the run-level mutex
+				const withSequential = t.sequential && sequentialMutex !== undefined
+					? () => sequentialMutex.run(run)
+					: run;
+
 				return semaphore !== undefined
-					? semaphore.run(run)
-					: run();
+					? semaphore.run(withSequential)
+					: withSequential();
 			},
 		});
 	}

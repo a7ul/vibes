@@ -7,6 +7,7 @@ import {
 	buildInitialMessages,
 	buildResponseMessages,
 	createRunContext,
+	createSequentialMutex,
 	FINAL_RESULT_TOOL,
 	nudgeForFinalResult,
 	nudgeWithValidationError,
@@ -132,6 +133,9 @@ async function runStreamLoop<TDeps, TOutput>(
 	const modelSettings = modelSettingsToAISDKOptions(modelSettingsRaw);
 	const endStrategy = resolveEndStrategy(agent, opts);
 
+	// Shared mutex for sequential tools — created once per run
+	const sequentialMutex = createSequentialMutex();
+
 	// systemPrompt resolved once; instructions resolved per-turn inside prepareTurn
 	const systemPrompt = await resolveSystemPrompt(
 		agent,
@@ -144,12 +148,13 @@ async function runStreamLoop<TDeps, TOutput>(
 
 	try {
 		for (let turn = 0; turn < maxTurns; turn++) {
-			const { tools, msgsForModel, system } = await prepareTurn(
+			const { tools, msgsForModel, system, outputToolNames } = await prepareTurn(
 				agent,
 				opts,
 				ctx,
 				messages,
 				systemPrompt,
+				sequentialMutex,
 			);
 
 			const stream = streamText({
@@ -181,6 +186,37 @@ async function runStreamLoop<TDeps, TOutput>(
 				(responseData.messages ?? []) as ModelMessage[],
 				accumulatedText,
 			);
+
+			// Check for output tool result (user-defined tools that end the run)
+			const outputResult = toolResults.find(
+				(r) => outputToolNames.has(r.toolName),
+			);
+			if (outputResult) {
+				const rawOutput = (outputResult as unknown as { output: unknown }).output as TOutput;
+				try {
+					const output = await runValidators(
+						resultValidators,
+						ctx,
+						rawOutput,
+					);
+					void endStrategy;
+					const allMessages = [...messages, ...newMessages];
+					streamClosed = true;
+					textController.close();
+					deferred.resolve({
+						output,
+						messages: allMessages,
+						newMessages: allMessages.slice(inputOffset),
+						usage: { ...usage },
+					});
+					return;
+				} catch (err) {
+					const error = err instanceof Error ? err : new Error(String(err));
+					messages.push(...newMessages);
+					nudgeWithValidationError(ctx, messages, maxRetries, error);
+					continue;
+				}
+			}
 
 			// Check for final_result tool result
 			const finalResult = toolResults.find(

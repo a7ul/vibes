@@ -6,6 +6,7 @@ import {
 	applyUsage,
 	buildInitialMessages,
 	createRunContext,
+	createSequentialMutex,
 	FINAL_RESULT_TOOL,
 	nudgeForFinalResult,
 	nudgeWithValidationError,
@@ -48,16 +49,20 @@ export async function executeRun<TDeps, TOutput>(
 		opts._override?.systemPrompts,
 	);
 
+	// Shared mutex for sequential tools — created once per run
+	const sequentialMutex = createSequentialMutex();
+
 	const inputOffset = opts.messageHistory?.length ?? 0;
 	const messages = buildInitialMessages(opts.messageHistory, prompt);
 
 	for (let turn = 0; turn < maxTurns; turn++) {
-		const { tools, msgsForModel, system } = await prepareTurn(
+		const { tools, msgsForModel, system, outputToolNames } = await prepareTurn(
 			agent,
 			opts,
 			ctx,
 			messages,
 			systemPrompt,
+			sequentialMutex,
 		);
 
 		const response = await generateText({
@@ -72,6 +77,37 @@ export async function executeRun<TDeps, TOutput>(
 		applyUsage(usage, response.usage);
 
 		const newMessages = response.response.messages as ModelMessage[];
+
+		// Check for output tool result (user-defined tools that end the run)
+		const outputResult = response.toolResults.find(
+			(r) => outputToolNames.has(r.toolName),
+		);
+		if (outputResult) {
+			const rawOutput = (outputResult as unknown as { output: unknown }).output as TOutput;
+			try {
+				const output = await runValidators(
+					resultValidators,
+					ctx,
+					rawOutput,
+				);
+				void endStrategy;
+				const allMessages = [...messages, ...newMessages];
+				return {
+					output,
+					messages: allMessages,
+					newMessages: allMessages.slice(inputOffset),
+					usage: { ...usage },
+					retryCount: ctx.retryCount,
+					runId,
+					toolMetadata: new Map(ctx.toolResultMetadata),
+				};
+			} catch (err) {
+				const error = err instanceof Error ? err : new Error(String(err));
+				messages.push(...newMessages);
+				nudgeWithValidationError(ctx, messages, maxRetries, error);
+				continue;
+			}
+		}
 
 		// Check for final_result tool result
 		const finalResult = response.toolResults.find(
@@ -104,6 +140,7 @@ export async function executeRun<TDeps, TOutput>(
 					usage: { ...usage },
 					retryCount: ctx.retryCount,
 					runId,
+					toolMetadata: new Map(ctx.toolResultMetadata),
 				};
 			} catch (err) {
 				const error = err instanceof Error ? err : new Error(String(err));
@@ -128,6 +165,7 @@ export async function executeRun<TDeps, TOutput>(
 				usage: { ...usage },
 				retryCount: ctx.retryCount,
 				runId,
+				toolMetadata: new Map(ctx.toolResultMetadata),
 			};
 		}
 
