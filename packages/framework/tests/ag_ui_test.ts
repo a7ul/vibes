@@ -1,5 +1,5 @@
 /**
- * Tests for the AG-UI adapter — Phase 12.
+ * Tests for the AG-UI adapter - Phase 12.
  *
  * Covers:
  * - SSE response format and Content-Type header
@@ -72,7 +72,7 @@ function makeInput(overrides: Partial<AGUIRunInput> = {}): AGUIRunInput {
 }
 
 // ---------------------------------------------------------------------------
-// Tests — response format
+// Tests - response format
 // ---------------------------------------------------------------------------
 
 Deno.test("AGUIAdapter - response has text/event-stream Content-Type", async () => {
@@ -116,7 +116,7 @@ Deno.test("AGUIAdapter - SSE lines are data: prefixed with double newline", asyn
 });
 
 // ---------------------------------------------------------------------------
-// Tests — lifecycle events
+// Tests - lifecycle events
 // ---------------------------------------------------------------------------
 
 Deno.test("AGUIAdapter - emits RUN_STARTED as first event", async () => {
@@ -174,7 +174,7 @@ Deno.test("AGUIAdapter - generates runId when not provided", async () => {
 });
 
 // ---------------------------------------------------------------------------
-// Tests — text message events
+// Tests - text message events
 // ---------------------------------------------------------------------------
 
 Deno.test("AGUIAdapter - emits TEXT_MESSAGE_START before TEXT_MESSAGE_CONTENT", async () => {
@@ -268,7 +268,7 @@ Deno.test("AGUIAdapter - TEXT_MESSAGE_* share the same messageId", async () => {
 });
 
 // ---------------------------------------------------------------------------
-// Tests — step events
+// Tests - step events
 // ---------------------------------------------------------------------------
 
 Deno.test("AGUIAdapter - emits STEP_STARTED for each turn", async () => {
@@ -317,7 +317,7 @@ Deno.test("AGUIAdapter - STEP_STARTED names follow turn-N pattern", async () => 
 });
 
 // ---------------------------------------------------------------------------
-// Tests — tool call events
+// Tests - tool call events
 // ---------------------------------------------------------------------------
 
 Deno.test("AGUIAdapter - emits TOOL_CALL_START with correct name", async () => {
@@ -453,7 +453,7 @@ Deno.test("AGUIAdapter - TOOL_CALL_START/ARGS/END share same toolCallId", async 
 });
 
 // ---------------------------------------------------------------------------
-// Tests — STATE_SNAPSHOT
+// Tests - STATE_SNAPSHOT
 // ---------------------------------------------------------------------------
 
 Deno.test("AGUIAdapter - emits STATE_SNAPSHOT from getState callback", async () => {
@@ -500,7 +500,7 @@ Deno.test("AGUIAdapter - emits initial STATE_SNAPSHOT from input.state", async (
 });
 
 // ---------------------------------------------------------------------------
-// Tests — RAW usage events
+// Tests - RAW usage events
 // ---------------------------------------------------------------------------
 
 Deno.test("AGUIAdapter - emits RAW usage event after each turn", async () => {
@@ -522,7 +522,7 @@ Deno.test("AGUIAdapter - emits RAW usage event after each turn", async () => {
 });
 
 // ---------------------------------------------------------------------------
-// Tests — error handling
+// Tests - error handling
 // ---------------------------------------------------------------------------
 
 Deno.test("AGUIAdapter - emits RUN_ERROR when agent exceeds maxTurns", async () => {
@@ -555,7 +555,7 @@ Deno.test("AGUIAdapter - RUN_ERROR has non-empty message", async () => {
 });
 
 // ---------------------------------------------------------------------------
-// Tests — handler()
+// Tests - handler()
 // ---------------------------------------------------------------------------
 
 Deno.test("AGUIAdapter handler() - rejects non-POST with 405", async () => {
@@ -635,7 +635,7 @@ Deno.test("AGUIAdapter handler() - streams SSE on valid POST", async () => {
 });
 
 // ---------------------------------------------------------------------------
-// Tests — multi-turn conversation
+// Tests - multi-turn conversation
 // ---------------------------------------------------------------------------
 
 Deno.test("AGUIAdapter - multi-turn messages build history correctly", async () => {

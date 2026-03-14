@@ -104,7 +104,7 @@ Deno.test("toolResultMetadata - attachMetadata creates immutable copy", async ()
     parameters: z.object({}),
     execute: (ctx) => {
       ctx.attachMetadata("snap-1", meta);
-      // Mutate original — should not affect stored copy
+      // Mutate original - should not affect stored copy
       meta.value = "mutated";
       return Promise.resolve("ok");
     },

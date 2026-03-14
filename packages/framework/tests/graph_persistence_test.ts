@@ -104,7 +104,7 @@ Deno.test("Graph - resumes from persisted state", async () => {
     data: "pre_step1_step2",
   });
 
-  // Now run with persistence — should resume from step=2 and immediately output
+  // Now run with persistence - should resume from step=2 and immediately output
   const result = await graph.run(
     { step: 0, data: "pre" }, // initial state ignored when persistence has saved state
     "workflow",

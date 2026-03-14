@@ -46,7 +46,7 @@ export type DeferredToolResults = {
 };
 
 // ---------------------------------------------------------------------------
-// Resume state — internal, opaque to callers
+// Resume state - internal, opaque to callers
 // ---------------------------------------------------------------------------
 
 /**
@@ -61,7 +61,7 @@ export type ResumeState = {
 };
 
 // ---------------------------------------------------------------------------
-// DeferredToolRequests — returned to callers when approval is needed
+// DeferredToolRequests - returned to callers when approval is needed
 // ---------------------------------------------------------------------------
 
 /**
@@ -76,7 +76,7 @@ export class DeferredToolRequests {
   readonly requests: DeferredToolRequest[];
 
   /**
-   * Internal resume state. Opaque — pass back to `agent.resume()` unchanged.
+   * Internal resume state. Opaque - pass back to `agent.resume()` unchanged.
    * @internal
    */
   readonly _resumeState: ResumeState;

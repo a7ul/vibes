@@ -6,7 +6,7 @@ import type { Toolset } from "./toolset.ts";
  * Wraps a toolset with a per-turn predicate. On each turn the predicate
  * receives the run context and returns `true` to expose the full toolset or
  * `false` to hide it entirely.
- * Equivalent to pydantic-ai's `FilteredToolset`.
+ * Equivalent to Pydantic AI's `FilteredToolset`.
  *
  * @example
  * ```ts

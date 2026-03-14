@@ -6,10 +6,10 @@
 
 ```
 packages/framework/
-├── mod.ts                        # Public API — single re-export barrel
+├── mod.ts                        # Public API - single re-export barrel
 ├── deno.json                     # Package manifest, import map, tasks
 ├── README.md                     # Project readme
-├── docs_parity.md                # Parity tracker vs pydantic-ai (✅/⚠️/❌)
+├── docs_parity.md                # Parity tracker vs Pydantic AI (✅/⚠️/❌)
 │
 ├── lib/                          # All implementation code
 │   ├── agent.ts                  # Agent class + AgentOptions, RunOptions
@@ -27,9 +27,9 @@ packages/framework/
 │   │   └── mod.ts                # Re-exports from types/
 │   │
 │   ├── execution/                # Multi-turn run loop
-│   │   ├── run.ts                # executeRun() — non-streaming
-│   │   ├── stream.ts             # executeStream() — StreamResult
-│   │   ├── event_stream.ts       # executeStreamEvents() — AsyncIterable<AgentStreamEvent>
+│   │   ├── run.ts                # executeRun() - non-streaming
+│   │   ├── stream.ts             # executeStream() - StreamResult
+│   │   ├── event_stream.ts       # executeStreamEvents() - AsyncIterable<AgentStreamEvent>
 │   │   ├── _run_utils.ts         # Shared helpers: prepareTurn, resolveTools, buildToolMap, nudge*
 │   │   ├── output_schema.ts      # final_result tool injection, schema prompt building
 │   │   └── deferred.ts           # DeferredToolRequests, DeferredToolResult (human-in-the-loop)
@@ -134,21 +134,21 @@ packages/framework/
 - Key entry: `lib/agent.ts` is the heart; `lib/execution/` is the engine
 
 **`lib/execution/`:**
-- Purpose: The multi-turn agent loop — the most critical directory in the framework
+- Purpose: The multi-turn agent loop - the most critical directory in the framework
 - Contains: Three loop variants (`run.ts`, `stream.ts`, `event_stream.ts`) + shared utilities
 - Key note: `_run_utils.ts` (underscore prefix = internal) contains all shared per-turn logic; `output_schema.ts` manages how structured output is communicated
 
 **`lib/toolsets/`:**
 - Purpose: Composable tool group abstractions
 - Contains: Eight concrete toolset implementations + the `Toolset<TDeps>` interface
-- Key note: All toolsets implement a single-method interface `tools(ctx)` — they are resolved fresh every turn
+- Key note: All toolsets implement a single-method interface `tools(ctx)` - they are resolved fresh every turn
 
 **`lib/types/`:**
-- Purpose: Pure TypeScript types shared across the framework — no business logic
+- Purpose: Pure TypeScript types shared across the framework - no business logic
 - Contains: Interfaces and type aliases only; types are imported broadly throughout `lib/`
 
 **`lib/graph/`:**
-- Purpose: Optional FSM layer for complex multi-agent workflows — independent of the core agent loop
+- Purpose: Optional FSM layer for complex multi-agent workflows - independent of the core agent loop
 - Contains: Self-contained; `Graph` + `BaseNode` + persistence + Mermaid export
 
 **`lib/a2a/` and `lib/ag_ui/`:**
@@ -156,33 +156,33 @@ packages/framework/
 - Contains: HTTP handlers, SSE event serializers, protocol type definitions
 
 **`tests/`:**
-- Purpose: All Deno test files — flat directory, one file per feature area
+- Purpose: All Deno test files - flat directory, one file per feature area
 - Naming: `{feature}_test.ts` pattern (e.g., `graph_test.ts`, `toolsets_test.ts`)
 - Key file: `_helpers.ts` provides shared test utilities
 
 **`docs/`:**
 - Purpose: Mintlify MDX documentation site
 - Contains: Navigation configured in `docs.json`; content in `.mdx` files
-- Key file: `docs_parity.md` (project root, not in `docs/`) tracks what docs exist vs. what's missing vs. pydantic-ai
+- Key file: `docs_parity.md` (project root, not in `docs/`) tracks what docs exist vs. what's missing vs. Pydantic AI
 
 ## Key File Locations
 
 **Entry Points:**
-- `mod.ts`: Public library entry — all exports consumers use
+- `mod.ts`: Public library entry - all exports consumers use
 - `lib/agent.ts`: `Agent` class definition
-- `lib/execution/run.ts`: `executeRun()` — the non-streaming loop
-- `lib/execution/stream.ts`: `executeStream()` — streaming loop
-- `lib/execution/event_stream.ts`: `executeStreamEvents()` — event stream loop
+- `lib/execution/run.ts`: `executeRun()` - the non-streaming loop
+- `lib/execution/stream.ts`: `executeStream()` - streaming loop
+- `lib/execution/event_stream.ts`: `executeStreamEvents()` - event stream loop
 
 **Configuration:**
 - `deno.json`: Package name (`@vibes/framework`), version, import map, tasks
 - `docs/docs.json`: Mintlify navigation structure
 
 **Core Logic:**
-- `lib/execution/_run_utils.ts`: `prepareTurn()`, `resolveTools()`, `buildToolMap()` — shared by all three execution paths
+- `lib/execution/_run_utils.ts`: `prepareTurn()`, `resolveTools()`, `buildToolMap()` - shared by all three execution paths
 - `lib/execution/output_schema.ts`: `final_result` tool registration and schema prompt injection
 - `lib/execution/deferred.ts`: Human-in-the-loop pause/resume data structures
-- `lib/tool.ts`: `toAISDKTools()` — converts framework tool definitions to Vercel AI SDK format
+- `lib/tool.ts`: `toAISDKTools()` - converts framework tool definitions to Vercel AI SDK format
 
 **Testing:**
 - `lib/testing/mod.ts`: `TestModel`, `FunctionModel`, `captureRunMessages`, `setAllowModelRequests`

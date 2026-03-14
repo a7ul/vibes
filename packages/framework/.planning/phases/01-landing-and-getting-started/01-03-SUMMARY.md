@@ -23,7 +23,7 @@ key-files:
     - docs/getting-started/hello-world.mdx
 
 key-decisions:
-  - "Added anthropic import to Step 4 only — Steps 1-3 were already correct and untouched"
+  - "Added anthropic import to Step 4 only - Steps 1-3 were already correct and untouched"
 
 patterns-established: []
 
@@ -63,7 +63,7 @@ Each task was committed atomically:
 - `docs/getting-started/hello-world.mdx` - Added `import { anthropic } from "@ai-sdk/anthropic"` as fourth import in Step 4 code block
 
 ## Decisions Made
-- Added import to Step 4 only — Steps 1, 2, and 3 already had correct imports; no other changes made
+- Added import to Step 4 only - Steps 1, 2, and 3 already had correct imports; no other changes made
 
 ## Deviations from Plan
 

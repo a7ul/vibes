@@ -64,7 +64,7 @@ const adapter = new AGUIAdapter(agent, {
 
 | Option | Type | Description |
 |--------|------|-------------|
-| `deps` | `TDeps` | Static dependencies injected into every agent run. Not a factory — computed once at construction. |
+| `deps` | `TDeps` | Static dependencies injected into every agent run. Not a factory - computed once at construction. |
 | `getState` | `() => Record<string, unknown> \| Promise<Record<string, unknown>>` | Called at run start and end to capture a state snapshot for the frontend |
 
 ## Deno HTTP Server
@@ -179,7 +179,7 @@ const input1: AGUIRunInput = {
 };
 const response1 = adapter.handleRequest(input1);
 
-// Second turn — include full message history
+// Second turn - include full message history
 const input2: AGUIRunInput = {
   threadId: "thread-123",
   messages: [

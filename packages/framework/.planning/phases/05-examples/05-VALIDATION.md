@@ -2,12 +2,12 @@
 phase: 05
 slug: examples
 status: draft
-nyquist_compliant: false
-wave_0_complete: false
+nyquist_compliant: true
+wave_0_complete: true
 created: 2026-03-14
 ---
 
-# Phase 05 — Validation Strategy
+# Phase 05 - Validation Strategy
 
 > Per-phase validation contract for feedback sampling during execution.
 
@@ -51,7 +51,7 @@ created: 2026-03-14
 
 ## Wave 0 Requirements
 
-- None — MDX files are created in Wave 1 tasks directly.
+- None - MDX files are created in Wave 1 tasks directly.
 
 *Existing infrastructure covers all phase requirements.*
 

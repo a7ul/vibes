@@ -3,7 +3,7 @@ title: Thinking / Extended Reasoning
 description: Enable extended reasoning for Anthropic and Google models by configuring thinking at the model constructor level via provider-specific options.
 ---
 
-Extended reasoning lets a model spend additional tokens on internal reasoning before generating a response. This produces more deliberate, multi-step outputs for complex problems — at the cost of higher token usage and latency.
+Extended reasoning lets a model spend additional tokens on internal reasoning before generating a response. This produces more deliberate, multi-step outputs for complex problems - at the cost of higher token usage and latency.
 
 Use extended reasoning for complex multi-step problems, mathematical reasoning, and deep analytical tasks where a more careful thought process improves answer quality.
 
@@ -42,7 +42,7 @@ console.log(result.output);
 
 ## Google Extended Thinking
 
-Some Gemini models enable extended reasoning by model selection — simply choosing a "thinking" model variant is sufficient. No additional configuration is required.
+Some Gemini models enable extended reasoning by model selection - simply choosing a "thinking" model variant is sufficient. No additional configuration is required.
 
 ```typescript
 import { google } from "@ai-sdk/google";
@@ -63,13 +63,13 @@ For other Gemini models that support configurable thinking, use the `@ai-sdk/goo
 
 ## Why Is Thinking Not on AgentOptions?
 
-The framework's `ModelSettings` maps to Vercel AI SDK's top-level `generateText` options — fields like `maxTokens`, `temperature`, and `topP`. These are standard options supported by all providers.
+The framework's `ModelSettings` maps to Vercel AI SDK's top-level `generateText` options - fields like `maxTokens`, `temperature`, and `topP`. These are standard options supported by all providers.
 
-Provider-specific features like `thinking` go through the model constructor's `providerOptions`, which the AI SDK processes before the framework is involved. The Vibes framework does not intercept or re-expose these options — they flow from the model constructor directly to the provider.
+Provider-specific features like `thinking` go through the model constructor's `providerOptions`, which the AI SDK processes before the framework is involved. The Vibes framework does not intercept or re-expose these options - they flow from the model constructor directly to the provider.
 
 This means:
 - **Correct:** configure thinking on the model constructor: `anthropic("model", { thinking: ... })`
-- **Incorrect:** look for a `thinking` key on `AgentOptions` or `modelSettings` — it does not exist
+- **Incorrect:** look for a `thinking` key on `AgentOptions` or `modelSettings` - it does not exist
 
 ## API Reference
 

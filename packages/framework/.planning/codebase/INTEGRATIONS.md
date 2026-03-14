@@ -7,7 +7,7 @@
 **Vercel AI SDK (`ai@^6`):**
 - Purpose: Core model abstraction. All LLM calls are routed through `generateText` / `streamText` from the AI SDK.
 - Usage: `lib/execution/run.ts`, `lib/execution/stream.ts`, `lib/execution/event_stream.ts`
-- Model interface: `LanguageModel` from `ai` — callers pass any AI-SDK-compatible model instance (Anthropic, OpenAI, Gemini, etc.) to `AgentOptions.model`
+- Model interface: `LanguageModel` from `ai` - callers pass any AI-SDK-compatible model instance (Anthropic, OpenAI, Gemini, etc.) to `AgentOptions.model`
 - Auth: No credentials in this package. Model instances are constructed by the consumer (e.g. `anthropic("claude-3-5-sonnet")`, `openai("gpt-4o")`).
 - Key AI SDK features used:
   - `generateText` / `streamText` with `tools`, `maxSteps`, `experimental_telemetry`, `providerOptions`
@@ -53,28 +53,28 @@
 
 ## A2A (Agent-to-Agent Protocol)
 
-**Implementation:** Custom — no external A2A SDK. Implements the Google A2A spec manually.
+**Implementation:** Custom - no external A2A SDK. Implements the Google A2A spec manually.
 
 **`A2AAdapter`** (`lib/a2a/adapter.ts`):
 - Wraps any framework `Agent` as an HTTP server responding to the A2A JSON-RPC protocol
 - Endpoints:
-  - `GET /.well-known/agent.json` — agent card discovery
-  - `POST /` — JSON-RPC endpoint for `message/send`, `message/stream`, `tasks/send`, `tasks/sendSubscribe`, `tasks/get`, `tasks/cancel`
+  - `GET /.well-known/agent.json` - agent card discovery
+  - `POST /` - JSON-RPC endpoint for `message/send`, `message/stream`, `tasks/send`, `tasks/sendSubscribe`, `tasks/get`, `tasks/cancel`
 - Streaming responses use Server-Sent Events (SSE)
 - Task state managed via pluggable `TaskStore` interface; default: `MemoryTaskStore` (`lib/a2a/task_store.ts`)
 - Returns a Deno-compatible `(req: Request) => Promise<Response>` handler via `.handler()`
-- Types: `lib/a2a/types.ts` — `A2ATask`, `A2AMessage`, `A2APart`, `AgentCard`, `A2ATaskState`, JSON-RPC envelopes
+- Types: `lib/a2a/types.ts` - `A2ATask`, `A2AMessage`, `A2APart`, `AgentCard`, `A2ATaskState`, JSON-RPC envelopes
 
 ## AG-UI Protocol
 
-**Implementation:** Custom — no external AG-UI SDK. Implements the CopilotKit AG-UI spec manually.
+**Implementation:** Custom - no external AG-UI SDK. Implements the CopilotKit AG-UI spec manually.
 
 **`AGUIAdapter`** (`lib/ag_ui/adapter.ts`):
 - Wraps any framework `Agent` to produce AG-UI Server-Sent Events responses
 - Input: `AGUIRunInput` (`{ threadId, runId?, messages, state? }`)
 - SSE event types emitted: `RUN_STARTED`, `STATE_SNAPSHOT`, `STEP_STARTED`, `TEXT_MESSAGE_START`, `TEXT_MESSAGE_CONTENT`, `TEXT_MESSAGE_END`, `TOOL_CALL_START`, `TOOL_CALL_ARGS`, `TOOL_CALL_END`, `STEP_FINISHED`, `RUN_FINISHED`, `RUN_ERROR`, `RAW`
 - Returns a Deno-compatible handler via `.handler()` (POST endpoint)
-- Types: `lib/ag_ui/types.ts` — `AGUIEvent` discriminated union
+- Types: `lib/ag_ui/types.ts` - `AGUIEvent` discriminated union
 
 ## OpenTelemetry (OTel)
 
@@ -83,7 +83,7 @@
 **Integration approach:** Delegates entirely to Vercel AI SDK's `experimental_telemetry` option on `generateText` / `streamText`. The framework does NOT create spans directly.
 
 **`instrumentAgent`** (`lib/otel/instrumentation.ts`):
-- Wraps an agent via `agent.override({ telemetry })` — no mutation
+- Wraps an agent via `agent.override({ telemetry })` - no mutation
 - Injects `TelemetrySettings` on every `run()` / `stream()` / `runStreamEvents()` call
 - Options: `functionId`, `metadata`, `excludeContent` (maps to `recordInputs/recordOutputs: false`), `isEnabled`, `tracer`
 
@@ -96,7 +96,7 @@
 
 ## Temporal Durable Execution
 
-**SDK:** `@temporalio/worker` + `@temporalio/workflow` — NOT bundled in this package. Must be installed by the consumer in a Node.js worker process.
+**SDK:** `@temporalio/worker` + `@temporalio/workflow` - NOT bundled in this package. Must be installed by the consumer in a Node.js worker process.
 
 **`TemporalAgent`** (`lib/temporal/temporal_agent.ts`):
 - Wraps an `Agent` with Temporal activity-boundary semantics
@@ -109,22 +109,22 @@
 - Test double that records activity call history without requiring Temporal infrastructure
 
 **Serialization** (`lib/temporal/serialization.ts`):
-- `serializeRunState` / `deserializeRunState` — converts `ModelMessage[]` to JSON-safe format for Temporal payload boundaries
-- `roundTripMessages` — test utility
+- `serializeRunState` / `deserializeRunState` - converts `ModelMessage[]` to JSON-safe format for Temporal payload boundaries
+- `roundTripMessages` - test utility
 
-**Types:** `lib/temporal/types.ts` — `TemporalAgentOptions`, `SerializableRunOptions`, `ModelTurnParams`, `ModelTurnResult`, `ToolCallParams`, `ToolCallResult`, `ActivityHistoryEntry`
+**Types:** `lib/temporal/types.ts` - `TemporalAgentOptions`, `SerializableRunOptions`, `ModelTurnParams`, `ModelTurnResult`, `ToolCallParams`, `ToolCallResult`, `ActivityHistoryEntry`
 
 ## Graph / State Machine
 
-**Implementation:** Built-in — no external FSM library.
+**Implementation:** Built-in - no external FSM library.
 
 **`Graph` / `GraphRun`** (`lib/graph/graph.ts`):
 - Typed state machine where each node is a `BaseNode` subclass (`lib/graph/node.ts`)
 - Nodes return `next(nextNodeId, state)` or `output(value)` to control transitions
 - State persistence via pluggable `StatePersistence` interface
-  - `MemoryStatePersistence` — in-memory snapshots
-  - `FileStatePersistence` — persists snapshots to disk via `Deno.readTextFile` / `Deno.writeTextFile`
-- `toMermaid()` (`lib/graph/mermaid.ts`) — generates Mermaid diagram source from graph definition
+  - `MemoryStatePersistence` - in-memory snapshots
+  - `FileStatePersistence` - persists snapshots to disk via `Deno.readTextFile` / `Deno.writeTextFile`
+- `toMermaid()` (`lib/graph/mermaid.ts`) - generates Mermaid diagram source from graph definition
 
 ## Docs
 
@@ -155,7 +155,7 @@
 
 ## Authentication & Identity
 
-**Auth Provider:** None built-in. MCP HTTP client supports custom headers (for bearer tokens, etc.) via `MCPHttpConfig.headers`. A2A and AG-UI adapters expose raw `Request` objects — auth must be applied by the consumer's HTTP server layer.
+**Auth Provider:** None built-in. MCP HTTP client supports custom headers (for bearer tokens, etc.) via `MCPHttpConfig.headers`. A2A and AG-UI adapters expose raw `Request` objects - auth must be applied by the consumer's HTTP server layer.
 
 ## Monitoring & Observability
 
@@ -169,7 +169,7 @@
 
 **Hosting:** Not applicable (library package).
 
-**Publish target:** npm (`@vibes/framework`) — built to `npm/` via `deno task build:npm`, then `cd npm && npm publish --access public`.
+**Publish target:** npm (`@vibes/framework`) - built to `npm/` via `deno task build:npm`, then `cd npm && npm publish --access public`.
 
 ---
 

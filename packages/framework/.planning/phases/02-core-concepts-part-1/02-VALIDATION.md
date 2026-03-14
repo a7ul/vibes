@@ -7,7 +7,7 @@ wave_0_complete: false
 created: 2026-03-14
 ---
 
-# Phase 02 — Validation Strategy
+# Phase 02 - Validation Strategy
 
 > Per-phase validation contract for feedback sampling during execution.
 
@@ -51,7 +51,7 @@ created: 2026-03-14
 
 ## Wave 0 Requirements
 
-- None — MDX files are created in Wave 1 and Wave 2 tasks directly.
+- None - MDX files are created in Wave 1 and Wave 2 tasks directly.
 
 *Existing infrastructure covers all phase requirements.*
 

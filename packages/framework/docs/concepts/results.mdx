@@ -59,10 +59,10 @@ console.log(result.output.confidence);  // 0.99
 const agent = new Agent({
   model,
   outputSchema: Schema,
-  outputMode: "tool",    // default — uses final_result tool
+  outputMode: "tool",    // default - uses final_result tool
   // outputMode: "native",   // provider JSON mode
   // outputMode: "prompted", // schema in system prompt
-  outputTemplate: true,  // default — injects schema description into system prompt
+  outputTemplate: true,  // default - injects schema description into system prompt
 });
 ```
 
@@ -101,7 +101,7 @@ const agent = new Agent<undefined, z.infer<typeof Schema>>({
   resultValidators: [
     (ctx, output) => {
       if (output.confidence < 0.5) {
-        throw new Error("Confidence too low — please try again.");
+        throw new Error("Confidence too low - please try again.");
       }
     },
   ],

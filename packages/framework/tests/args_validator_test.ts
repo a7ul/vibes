@@ -65,7 +65,7 @@ Deno.test("argsValidator - rejects invalid args before execute", async () => {
   try {
     await agent.run("send -5");
   } catch {
-    // May throw MaxTurnsError if model keeps retrying — that's fine
+    // May throw MaxTurnsError if model keeps retrying - that's fine
   }
   assertEquals(executeCalled, false);
 });

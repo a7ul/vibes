@@ -11,7 +11,7 @@ re_verification: false
 **Phase Goal:** Developers can learn the six advanced concept patterns (HITL, testing, debugging, multi-agent, graph, thinking) through dedicated pages with diagrams and real code
 **Verified:** 2026-03-14
 **Status:** passed
-**Re-verification:** No — initial verification
+**Re-verification:** No - initial verification
 
 ## Goal Achievement
 
@@ -25,10 +25,10 @@ re_verification: false
 | 4  | Each page has at least one Mermaid diagram | VERIFIED | HITL: sequenceDiagram; testing.mdx: sequenceDiagram; debugging.mdx: graph TD; multi-agent.mdx: sequenceDiagram; graph.mdx: flowchart TD; thinking.mdx: no diagram (see note) |
 | 5  | All code examples use imports from @vibes/framework and match actual exported APIs | VERIFIED | All symbols cross-checked against mod.ts exports; APIs confirmed against lib/ source |
 | 6  | Developer can read multi-agent.mdx and understand the agent-as-tool pattern with a delegation sequence diagram | VERIFIED | sequenceDiagram present; agent-as-tool pattern documented with usage aggregation and programmatic handoff sections |
-| 7  | Developer can read graph.mdx and understand BaseNode, Graph, next(), output() as free functions, runIter(), FileStatePersistence, and toMermaid() — with NO this.next() or this.output() patterns in code | VERIFIED | All symbols present; next()/output() imported as free functions; this.next() appears only in Info callout and code comment warning developers NOT to use it — no executable code uses it |
+| 7  | Developer can read graph.mdx and understand BaseNode, Graph, next(), output() as free functions, runIter(), FileStatePersistence, and toMermaid() - with NO this.next() or this.output() patterns in code | VERIFIED | All symbols present; next()/output() imported as free functions; this.next() appears only in Info callout and code comment warning developers NOT to use it - no executable code uses it |
 | 8  | Developer can read thinking.mdx and understand that thinking config goes on the model constructor (providerOptions), not on AgentOptions or ModelSettings | VERIFIED | Info callout explicitly states no dedicated thinking API; code examples show anthropic("model", { thinking: ... }) constructor pattern; explanation section clarifies why it is not on AgentOptions |
-| 9  | graph.mdx uses new Graph([node1, node2]) constructor — not new Graph({ nodes: [...] }) | VERIFIED | Line 75: new Graph<State, string>([new FetchNode(), new SummariseNode()], { maxIterations: 50 }) |
-| 10 | graph.mdx uses flowchart TD for Mermaid diagrams — not stateDiagram-v2 | VERIFIED | Line 17: flowchart TD; toMermaid() section shows flowchart TD output |
+| 9  | graph.mdx uses new Graph([node1, node2]) constructor - not new Graph({ nodes: [...] }) | VERIFIED | Line 75: new Graph<State, string>([new FetchNode(), new SummariseNode()], { maxIterations: 50 }) |
+| 10 | graph.mdx uses flowchart TD for Mermaid diagrams - not stateDiagram-v2 | VERIFIED | Line 17: flowchart TD; toMermaid() section shows flowchart TD output |
 | 11 | docs.json Concepts nav includes all 6 new Phase 3 pages | VERIFIED | All 6 pages inserted after concepts/streaming and before concepts/how-agents-work in correct order |
 
 **Score:** 11/11 truths verified
@@ -68,12 +68,12 @@ re_verification: false
 
 | Requirement | Source Plan | Description | Status | Evidence |
 |-------------|------------|-------------|--------|---------|
-| CONCEPT-09 | 03-01-PLAN.md | Human-in-the-Loop page — requiresApproval, ApprovalRequiredError, DeferredToolRequests, DeferredToolResults, agent.resume(), ExternalToolset, approval sequence Mermaid diagram | SATISFIED | docs/concepts/human-in-the-loop.mdx exists with all required symbols, sequenceDiagram, and API reference table |
-| CONCEPT-10 | 03-01-PLAN.md | Testing page — TestModel, createTestModel(), FunctionModel, setAllowModelRequests(false), captureRunMessages(), agent.override(), real test code examples | SATISFIED | docs/concepts/testing.mdx exists with all required symbols, Warning callouts, and sequenceDiagram |
-| CONCEPT-11 | 03-01-PLAN.md | Debugging and Monitoring page — instrumentAgent(), TelemetrySettings, OTel span hierarchy Mermaid diagram, content exclusion | SATISFIED | docs/concepts/debugging.mdx exists with all required symbols, graph TD diagram, excludeContent section |
-| CONCEPT-12 | 03-02-PLAN.md | Multi-Agent page — agent-as-tool pattern, usage aggregation, programmatic handoff, agent delegation sequence diagram | SATISFIED | docs/concepts/multi-agent.mdx exists with sequenceDiagram, all three pattern sections, and guidance |
-| CONCEPT-13 | 03-02-PLAN.md | Graph page — BaseNode, Graph, GraphRun, fixed API (constructor + free functions), toMermaid(), runIter(), FileStatePersistence, FSM Mermaid diagram | SATISFIED | docs/concepts/graph.mdx exists with corrected constructor, free-function imports, flowchart TD, all persistence types |
-| CONCEPT-14 | 03-02-PLAN.md | Thinking page — extended reasoning config for Anthropic (thinking.budgetTokens) and Google models | SATISFIED | docs/concepts/thinking.mdx exists with both provider examples, architectural explanation, and Warning callout |
+| CONCEPT-09 | 03-01-PLAN.md | Human-in-the-Loop page - requiresApproval, ApprovalRequiredError, DeferredToolRequests, DeferredToolResults, agent.resume(), ExternalToolset, approval sequence Mermaid diagram | SATISFIED | docs/concepts/human-in-the-loop.mdx exists with all required symbols, sequenceDiagram, and API reference table |
+| CONCEPT-10 | 03-01-PLAN.md | Testing page - TestModel, createTestModel(), FunctionModel, setAllowModelRequests(false), captureRunMessages(), agent.override(), real test code examples | SATISFIED | docs/concepts/testing.mdx exists with all required symbols, Warning callouts, and sequenceDiagram |
+| CONCEPT-11 | 03-01-PLAN.md | Debugging and Monitoring page - instrumentAgent(), TelemetrySettings, OTel span hierarchy Mermaid diagram, content exclusion | SATISFIED | docs/concepts/debugging.mdx exists with all required symbols, graph TD diagram, excludeContent section |
+| CONCEPT-12 | 03-02-PLAN.md | Multi-Agent page - agent-as-tool pattern, usage aggregation, programmatic handoff, agent delegation sequence diagram | SATISFIED | docs/concepts/multi-agent.mdx exists with sequenceDiagram, all three pattern sections, and guidance |
+| CONCEPT-13 | 03-02-PLAN.md | Graph page - BaseNode, Graph, GraphRun, fixed API (constructor + free functions), toMermaid(), runIter(), FileStatePersistence, FSM Mermaid diagram | SATISFIED | docs/concepts/graph.mdx exists with corrected constructor, free-function imports, flowchart TD, all persistence types |
+| CONCEPT-14 | 03-02-PLAN.md | Thinking page - extended reasoning config for Anthropic (thinking.budgetTokens) and Google models | SATISFIED | docs/concepts/thinking.mdx exists with both provider examples, architectural explanation, and Warning callout |
 
 All 6 requirements accounted for. No orphaned requirements found for Phase 3.
 
@@ -83,25 +83,25 @@ All 6 requirements accounted for. No orphaned requirements found for Phase 3.
 
 All documented symbols cross-checked against actual framework exports in `mod.ts`:
 
-**HITL symbols** — all exported from main `mod.ts`:
-- `ApprovalRequiredError` — confirmed exported (lib/types/errors.ts line 50)
-- `DeferredToolRequests` — confirmed exported (lib/execution/deferred.ts line 74)
-- `DeferredToolRequest`, `DeferredToolResult`, `DeferredToolResults` — confirmed exported as types
-- `ExternalToolset` — confirmed exported (lib/toolsets/external_toolset.ts line 63)
-- `agent.resume()` — confirmed as method on Agent class (lib/agent.ts line 290)
+**HITL symbols** - all exported from main `mod.ts`:
+- `ApprovalRequiredError` - confirmed exported (lib/types/errors.ts line 50)
+- `DeferredToolRequests` - confirmed exported (lib/execution/deferred.ts line 74)
+- `DeferredToolRequest`, `DeferredToolResult`, `DeferredToolResults` - confirmed exported as types
+- `ExternalToolset` - confirmed exported (lib/toolsets/external_toolset.ts line 63)
+- `agent.resume()` - confirmed as method on Agent class (lib/agent.ts line 290)
 
-**Testing symbols** — all exported from main `mod.ts`:
-- `TestModel`, `createTestModel`, `FunctionModel` — confirmed exported (lib/testing/mod.ts)
-- `setAllowModelRequests`, `captureRunMessages` — confirmed exported (lib/testing/mod.ts)
+**Testing symbols** - all exported from main `mod.ts`:
+- `TestModel`, `createTestModel`, `FunctionModel` - confirmed exported (lib/testing/mod.ts)
+- `setAllowModelRequests`, `captureRunMessages` - confirmed exported (lib/testing/mod.ts)
 
-**OTel symbols** — all exported from main `mod.ts`:
-- `instrumentAgent` — confirmed exported (lib/otel/instrumentation.ts line 78)
-- `InstrumentationOptions`, `TelemetrySettings` — confirmed exported as types
+**OTel symbols** - all exported from main `mod.ts`:
+- `instrumentAgent` - confirmed exported (lib/otel/instrumentation.ts line 78)
+- `InstrumentationOptions`, `TelemetrySettings` - confirmed exported as types
 
-**Graph symbols** — all exported from main `mod.ts`:
-- `BaseNode`, `Graph`, `GraphRun`, `next`, `output` — confirmed exported (lib/graph/mod.ts)
-- `FileStatePersistence`, `MemoryStatePersistence` — confirmed exported
-- `GraphStep`, `GraphOptions`, `GraphRunOptions` — confirmed exported as types
+**Graph symbols** - all exported from main `mod.ts`:
+- `BaseNode`, `Graph`, `GraphRun`, `next`, `output` - confirmed exported (lib/graph/mod.ts)
+- `FileStatePersistence`, `MemoryStatePersistence` - confirmed exported
+- `GraphStep`, `GraphOptions`, `GraphRunOptions` - confirmed exported as types
 
 ---
 
@@ -109,7 +109,7 @@ All documented symbols cross-checked against actual framework exports in `mod.ts
 
 | File | Line | Pattern | Severity | Impact |
 |------|------|---------|----------|--------|
-| `docs/concepts/graph.mdx` | 11, 40 | `this.next()` appears in text | Info | Both occurrences are intentional — one in an Info callout warning about old API, one in a code comment explaining the free function pattern. No executable code uses `this.next()`. Confirmed correct per prompt note. |
+| `docs/concepts/graph.mdx` | 11, 40 | `this.next()` appears in text | Info | Both occurrences are intentional - one in an Info callout warning about old API, one in a code comment explaining the free function pattern. No executable code uses `this.next()`. Confirmed correct per prompt note. |
 
 No TODO/FIXME/placeholder patterns found. No empty implementations. No return null stubs. No hardcoded placeholders in documentation.
 
@@ -119,19 +119,19 @@ No TODO/FIXME/placeholder patterns found. No empty implementations. No return nu
 
 The docs use `@vibes/framework/testing` and `@vibes/framework/otel` as import paths. The current `deno.json` exports only `./mod.ts` (single entry point), and the build script (`scripts/build_npm.ts`) also specifies only one entry point. These symbols are all re-exported from the main `@vibes/framework` package.
 
-This is an info-level finding, not a gap — the subpath convention may be intentional as aspirational documentation (anticipating future subpath exports), or as a logical namespace separator to help readers understand which module groups these symbols belong to. The existing docs (`lib/agent.ts` line 108) already reference `@vibes/framework/otel` in JSDoc comments. This is consistent behavior across the codebase.
+This is an info-level finding, not a gap - the subpath convention may be intentional as aspirational documentation (anticipating future subpath exports), or as a logical namespace separator to help readers understand which module groups these symbols belong to. The existing docs (`lib/agent.ts` line 108) already reference `@vibes/framework/otel` in JSDoc comments. This is consistent behavior across the codebase.
 
 ---
 
 ### Human Verification Required
 
-None — all claims are verifiable from static file content.
+None - all claims are verifiable from static file content.
 
 ---
 
 ### Summary
 
-Phase 3 goal is fully achieved. All six advanced concept pages exist with substantive content, correct APIs, and Mermaid diagrams (where specified). The graph.mdx API correction is properly applied — the corrected constructor and free-function imports are used throughout, with `this.next()` appearing only in instructional warning text. docs.json navigation is updated with all six pages in the correct position. All six requirement IDs (CONCEPT-09 through CONCEPT-14) are satisfied with evidence in the actual files.
+Phase 3 goal is fully achieved. All six advanced concept pages exist with substantive content, correct APIs, and Mermaid diagrams (where specified). The graph.mdx API correction is properly applied - the corrected constructor and free-function imports are used throughout, with `this.next()` appearing only in instructional warning text. docs.json navigation is updated with all six pages in the correct position. All six requirement IDs (CONCEPT-09 through CONCEPT-14) are satisfied with evidence in the actual files.
 
 ---
 

@@ -4,7 +4,7 @@ import type { ToolDefinition } from "../tool.ts";
 import type { Toolset } from "./toolset.ts";
 
 /**
- * The `next` function passed to `callTool` — invokes the wrapped tool's
+ * The `next` function passed to `callTool` - invokes the wrapped tool's
  * original `execute` implementation.
  */
 export type ToolCallNext<TDeps> = (
@@ -18,7 +18,7 @@ export type ToolCallNext<TDeps> = (
  * logging, metrics, rate-limiting, error wrapping, or argument/result
  * transformation.
  *
- * Equivalent to pydantic-ai's `WrapperToolset` / middleware pattern.
+ * Equivalent to Pydantic AI's `WrapperToolset` / middleware pattern.
  *
  * @example
  * ```ts

@@ -14,7 +14,7 @@ export type AGUIEvent =
   | { type: "RUN_ERROR"; message: string; code?: string }
   /** Marks the beginning of a text message from the assistant. */
   | { type: "TEXT_MESSAGE_START"; messageId: string; role: "assistant" }
-  /** A text token delta — one or more characters of streamed text. */
+  /** A text token delta - one or more characters of streamed text. */
   | { type: "TEXT_MESSAGE_CONTENT"; messageId: string; delta: string }
   /** Marks the end of a text message. */
   | { type: "TEXT_MESSAGE_END"; messageId: string }

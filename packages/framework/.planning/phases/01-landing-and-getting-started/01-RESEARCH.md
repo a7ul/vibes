@@ -1,23 +1,23 @@
 # Phase 1: Landing and Getting Started - Research
 
 **Researched:** 2026-03-14
-**Domain:** Documentation (Mintlify MDX), developer onboarding, pydantic-ai pedagogical style
+**Domain:** Documentation (Mintlify MDX), developer onboarding, Pydantic AI pedagogical style
 **Confidence:** HIGH
 
 ## Summary
 
-Phase 1 rewrites the first-impression pages of the Vibes Agent Framework docs: a benefits-first landing page (index.mdx), a new introduction page, an enhanced install page with provider architecture diagram, and a single progressive hello-world tutorial that replaces four fragmented getting-started pages. The north star is pydantic-ai's landing and install pages, adapted for TypeScript/Deno.
+Phase 1 rewrites the first-impression pages of the Vibes Agent Framework docs: a benefits-first landing page (index.mdx), a new introduction page, an enhanced install page with provider architecture diagram, and a single progressive hello-world tutorial that replaces four fragmented getting-started pages. The north star is Pydantic AI's landing and install pages, adapted for TypeScript/Deno.
 
 The existing docs have decent content but are fragmented (4 separate getting-started pages), lack visual aids (no Mermaid diagrams), and miss the "why" (no benefits hero, no acknowledgments, no design philosophy). The public API surface needed for hello-world examples is small and stable: `Agent`, `tool`, `TestModel`, `agent.override()`, `outputSchema` with Zod, and `setAllowModelRequests`.
 
-**Primary recommendation:** Consolidate the four getting-started pages into one progressive tutorial that builds a weather agent from scratch: bare agent -> add tools -> add structured output -> test it. Use Mermaid diagrams on the landing page (architecture) and install page (provider layer). Credit pydantic-ai and Vercel AI SDK prominently.
+**Primary recommendation:** Consolidate the four getting-started pages into one progressive tutorial that builds a weather agent from scratch: bare agent -> add tools -> add structured output -> test it. Use Mermaid diagrams on the landing page (architecture) and install page (provider layer). Credit Pydantic AI and Vercel AI SDK prominently.
 
 <phase_requirements>
 ## Phase Requirements
 
 | ID | Description | Research Support |
 |----|-------------|-----------------|
-| LAND-01 | Landing page with benefits-first hero, Mermaid architecture diagram, pydantic-ai/Vercel AI SDK acknowledgment | Pydantic-ai landing page structure studied; existing index.mdx analyzed; Mermaid syntax for architecture diagrams documented below |
+| LAND-01 | Landing page with benefits-first hero, Mermaid architecture diagram, Pydantic AI/Vercel AI SDK acknowledgment | Pydantic-ai landing page structure studied; existing index.mdx analyzed; Mermaid syntax for architecture diagrams documented below |
 | LAND-02 | Introduction page with design philosophy and "Standing on the Shoulders of Giants" section | Pydantic-ai positioning studied ("that FastAPI feeling"); existing comparison table in index.mdx provides content to move here |
 | GS-01 | Install page enhanced with supported provider list and Mermaid provider architecture diagram | Existing install.mdx has Deno/Node tabs; needs provider list (Anthropic, OpenAI, Google, Groq, Mistral, Ollama, OpenAI-compatible) and Mermaid diagram |
 | GS-02 | Single progressive hello-world tutorial replacing 4 fragmented pages | All 4 existing pages analyzed; progressive weather agent example designed below; API surface verified against mod.ts |
@@ -62,7 +62,7 @@ docs/
 
 ### Pattern 1: Pydantic-ai Landing Page Structure
 **What:** Benefits-first hero section followed by code examples, then navigation links
-**Structure observed from pydantic-ai:**
+**Structure observed from Pydantic AI:**
 1. Logo + tagline ("GenAI Agent Framework, the Pydantic way")
 2. "Why use X" section with numbered benefits
 3. Minimal hello-world code example
@@ -71,16 +71,16 @@ docs/
 6. Sidebar navigation to deeper content
 
 **Adapted for Vibes:**
-1. Hero: "TypeScript Agent Framework, the pydantic-ai way. Powered by Vercel AI SDK."
+1. Hero: "TypeScript Agent Framework, the Pydantic AI way. Powered by Vercel AI SDK."
 2. Benefits list (type-safe tools, DI, model-agnostic via AI SDK, testing utilities, streaming, MCP/A2A/AG-UI)
 3. Mermaid architecture diagram showing the layer stack
 4. Minimal hello-world (5 lines)
-5. Acknowledgments blurb crediting pydantic-ai and Vercel AI SDK
+5. Acknowledgments blurb crediting Pydantic AI and Vercel AI SDK
 6. Card links to Install and Hello World tutorial
 
 ### Pattern 2: Progressive Tutorial Structure
 **What:** One example built incrementally across sections, not separate pages
-**pydantic-ai approach:** Hello world -> bank support agent in a single flow
+**Pydantic AI approach:** Hello world -> bank support agent in a single flow
 **Vibes adaptation for GS-02:**
 
 Section progression using a weather agent:
@@ -89,7 +89,7 @@ Section progression using a weather agent:
 3. **Add structured output** - `outputSchema` with `z.object`, typed `result.output`
 4. **Test it** - `TestModel`, `agent.override()`, `setAllowModelRequests(false)`
 
-This mirrors pydantic-ai's teaching approach: start simple, layer complexity, end with testing.
+This mirrors Pydantic AI's teaching approach: start simple, layer complexity, end with testing.
 
 ### Pattern 3: Mermaid Diagrams in Mintlify
 **What:** Mintlify renders Mermaid natively inside fenced code blocks with `mermaid` language tag.
@@ -311,10 +311,10 @@ Note: 50+ providers supported via Vercel AI SDK. These 7 are the most common and
 
 | Old Approach (current docs) | New Approach (Phase 1) | Impact |
 |----------------------------|------------------------|--------|
-| 4 fragmented getting-started pages | 1 progressive tutorial | Matches pydantic-ai pedagogy |
+| 4 fragmented getting-started pages | 1 progressive tutorial | Matches Pydantic AI pedagogy |
 | ASCII text diagram on landing | Mermaid rendered diagrams | Visual, maintainable |
 | No design philosophy page | Dedicated introduction.mdx | Builds trust, explains "why" |
-| No acknowledgments | Hero blurb + dedicated section | Credits pydantic-ai and Vercel AI SDK |
+| No acknowledgments | Hero blurb + dedicated section | Credits Pydantic AI and Vercel AI SDK |
 | No provider list on install | Full provider table with env vars | Answers "which models work?" immediately |
 
 ## Validation Architecture
@@ -378,7 +378,7 @@ Note: 50+ providers supported via Vercel AI SDK. These 7 are the most common and
 
 **Confidence breakdown:**
 - Standard stack: HIGH - all from project files, no external research needed
-- Architecture: HIGH - pydantic-ai structure directly observed, existing pages analyzed
+- Architecture: HIGH - Pydantic AI structure directly observed, existing pages analyzed
 - Pitfalls: HIGH - derived from analyzing current docs structure and code
 - Code examples: HIGH - all API calls verified against mod.ts exports
 

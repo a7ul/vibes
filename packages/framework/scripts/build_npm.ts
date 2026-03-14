@@ -19,18 +19,18 @@ await build({
     deno: true,
   },
   // Run the test suite in Node after build
-  test: false, // tests use Deno.test — skip for now
+  test: false, // tests use Deno.test - skip for now
   package: {
     name: "@vibes/framework",
     version,
     description:
-      "pydantic-ai patterns for TypeScript. Powered by Vercel AI SDK.",
+      "Pydantic AI patterns for TypeScript. Powered by Vercel AI SDK.",
     license: "MIT",
     keywords: [
       "ai",
       "agent",
       "llm",
-      "pydantic-ai",
+      "Pydantic AI",
       "vercel-ai-sdk",
       "typescript",
       "framework",

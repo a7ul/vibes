@@ -16,7 +16,7 @@ tech-stack:
   patterns:
     - "Mintlify MDX: CardGroup + Card for navigation, Info callout for acknowledgments"
     - "Mermaid graph TD for architecture diagrams in docs pages"
-    - "pydantic-ai landing page structure: benefits first, then code, then acknowledgments, then nav cards"
+    - "Pydantic AI landing page structure: benefits first, then code, then acknowledgments, then nav cards"
 
 key-files:
   created:
@@ -27,7 +27,7 @@ key-files:
 key-decisions:
   - "Moved comparison table from index.mdx to introduction.mdx to keep landing page focused and inviting"
   - "Used 3-card CardGroup on landing (introduction, install, hello-world) matching plan spec"
-  - "Used Info callouts for pydantic-ai and Vercel AI SDK acknowledgments in introduction.mdx"
+  - "Used Info callouts for Pydantic AI and Vercel AI SDK acknowledgments in introduction.mdx"
 
 patterns-established:
   - "Landing page pattern: hero tagline -> benefits list -> Mermaid diagram -> hello-world -> acknowledgments -> CardGroup nav"
@@ -43,7 +43,7 @@ completed: 2026-03-14
 
 # Phase 1 Plan 01: Landing and Getting Started - Landing Page Summary
 
-**Benefits-first landing page with Mermaid architecture diagram crediting pydantic-ai and Vercel AI SDK, plus new introduction page with design philosophy and comparison table**
+**Benefits-first landing page with Mermaid architecture diagram crediting Pydantic AI and Vercel AI SDK, plus new introduction page with design philosophy and comparison table**
 
 ## Performance
 
@@ -56,8 +56,8 @@ completed: 2026-03-14
 ## Accomplishments
 
 - Rewrote docs/index.mdx with 6-benefit hero, Mermaid architecture diagram, minimal hello-world, acknowledgments blurb, and CardGroup navigation
-- Created docs/introduction.mdx with 5 design philosophy principles, Standing on the Shoulders of Giants section with Info callouts for pydantic-ai and Vercel AI SDK, and comparison table
-- Moved comparison table from index.mdx to introduction.mdx — landing page is now focused and inviting, not reference-heavy
+- Created docs/introduction.mdx with 5 design philosophy principles, Standing on the Shoulders of Giants section with Info callouts for Pydantic AI and Vercel AI SDK, and comparison table
+- Moved comparison table from index.mdx to introduction.mdx - landing page is now focused and inviting, not reference-heavy
 
 ## Task Commits
 
@@ -71,13 +71,13 @@ Each task was committed atomically:
 ## Files Created/Modified
 
 - `docs/index.mdx` - Benefits-first landing with Mermaid arch diagram, hello-world, acknowledgments, 3-card CardGroup nav
-- `docs/introduction.mdx` - Design philosophy (5 principles), Standing on the Shoulders of Giants (pydantic-ai + Vercel AI SDK), comparison table, next-steps CardGroup
+- `docs/introduction.mdx` - Design philosophy (5 principles), Standing on the Shoulders of Giants (Pydantic AI + Vercel AI SDK), comparison table, next-steps CardGroup
 
 ## Decisions Made
 
 - Moved comparison table from index.mdx to introduction.mdx to keep landing page high-level and inviting; comparison detail belongs on the philosophy page
 - Used 3-card layout (introduction, install, hello-world) on landing page per plan spec
-- Used Mintlify `<Info>` callouts for pydantic-ai and Vercel AI SDK acknowledgments in introduction.mdx — visually distinct and fits Mintlify design system
+- Used Mintlify `<Info>` callouts for Pydantic AI and Vercel AI SDK acknowledgments in introduction.mdx - visually distinct and fits Mintlify design system
 
 ## Deviations from Plan
 

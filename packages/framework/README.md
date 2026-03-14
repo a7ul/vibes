@@ -2,15 +2,15 @@
 
 A TypeScript agent framework for [Deno](https://deno.land), built as a thin layer on top of the [Vercel AI SDK](https://sdk.vercel.ai/).
 
-> **Heavily inspired by [pydantic-ai](https://ai.pydantic.dev/)** — Vibes closely mirrors pydantic-ai's philosophy, API design, and flexibility, but for the TypeScript/Deno ecosystem. If you've used pydantic-ai, you'll feel at home immediately. If you haven't, you'll find the same focus on type safety, composability, and testability that makes pydantic-ai the gold standard for Python agents.
+> **Heavily inspired by [Pydantic AI](https://ai.pydantic.dev/)** - Vibes closely mirrors Pydantic AI's philosophy, API design, and flexibility, but for the TypeScript/Deno ecosystem. If you've used Pydantic AI, you'll feel at home immediately. If you haven't, you'll find the same focus on type safety, composability, and testability that makes Pydantic AI the gold standard for Python agents.
 
 ## Why Vibes?
 
 **The best of both worlds:**
 
-- **pydantic-ai's philosophy** — type-safe dependency injection, composable toolsets, result validators, streaming, testing without API calls, and a clean mental model for how agents work
-- **Vercel AI SDK's features** — every model provider (Anthropic, OpenAI, Google, Mistral, etc.), streaming primitives, structured output, and the entire ecosystem of provider packages
-- **Stays thin** — Vibes adds the agent orchestration layer that AI SDK deliberately leaves out. It doesn't reinvent streaming, tokenization, or provider adapters. This keeps maintenance low and lets you benefit from AI SDK improvements automatically.
+- **Pydantic AI's philosophy** - type-safe dependency injection, composable toolsets, result validators, streaming, testing without API calls, and a clean mental model for how agents work
+- **Vercel AI SDK's features** - every model provider (Anthropic, OpenAI, Google, Mistral, etc.), streaming primitives, structured output, and the entire ecosystem of provider packages
+- **Stays thin** - Vibes adds the agent orchestration layer that AI SDK deliberately leaves out. It doesn't reinvent streaming, tokenization, or provider adapters. This keeps maintenance low and lets you benefit from AI SDK improvements automatically.
 
 ```
 Your code
@@ -66,19 +66,19 @@ Add to your `deno.json`:
 
 | Feature | Description |
 |---------|-------------|
-| **Multi-provider** | Works with any Vercel AI SDK model — Anthropic, OpenAI, Google, Ollama, and more |
-| **Toolsets** | Composable, context-aware tool groups — filter, prefix, wrap, combine |
+| **Multi-provider** | Works with any Vercel AI SDK model - Anthropic, OpenAI, Google, Ollama, and more |
+| **Toolsets** | Composable, context-aware tool groups - filter, prefix, wrap, combine |
 | **Structured output** | Zod-validated typed responses via a `final_result` tool |
 | **Dependency injection** | Type-safe `deps` pattern flows through tools, prompts, and validators |
 | **Streaming** | `.stream()`, `textStream`, `partialOutput`, `runStreamEvents()` |
-| **History processors** | Transform message history per-turn — trim, token-limit, summarize |
+| **History processors** | Transform message history per-turn - trim, token-limit, summarize |
 | **Deferred tools** | Human-in-the-loop approval flows with `agent.resume()` |
 | **MCP servers** | Connect to Model Context Protocol tool servers (stdio + HTTP) |
 | **Graph workflows** | FSM-style multi-step pipelines with persistence and Mermaid diagrams |
 | **Temporal** | Durable agent workflows via Temporal.io |
 | **AG-UI** | Server-sent events adapter for AG-UI-compatible frontends |
 | **OpenTelemetry** | First-class tracing with `instrumentAgent()` |
-| **Testing** | `TestModel`, `FunctionModel`, `setAllowModelRequests(false)` — no real API calls needed |
+| **Testing** | `TestModel`, `FunctionModel`, `setAllowModelRequests(false)` - no real API calls needed |
 
 ## Documentation
 
@@ -90,14 +90,14 @@ Add to your `deno.json`:
 - [**Testing Your Agent**](./docs/getting-started/testing.md)
 
 ### Concepts
-- [**How Agents Work**](./docs/concepts/how-agents-work.md) — the agent loop, turns, and message history
-- [**Dependency Injection**](./docs/concepts/dependency-injection.md) — the `TDeps` pattern
-- [**Error Handling**](./docs/concepts/error-handling.md) — all error types and recovery patterns
+- [**How Agents Work**](./docs/concepts/how-agents-work.md) - the agent loop, turns, and message history
+- [**Dependency Injection**](./docs/concepts/dependency-injection.md) - the `TDeps` pattern
+- [**Error Handling**](./docs/concepts/error-handling.md) - all error types and recovery patterns
 
 ### Guides
 - [**Multi-Turn Conversations**](./docs/guides/multi-turn-conversations.md)
 - [**Streaming Responses**](./docs/guides/streaming-responses.md)
-- [**Human-in-the-Loop**](./docs/guides/human-in-the-loop.md) — deferred tool approval
+- [**Human-in-the-Loop**](./docs/guides/human-in-the-loop.md) - deferred tool approval
 - [**Multi-Agent Systems**](./docs/guides/multi-agent-systems.md)
 - [**MCP Servers**](./docs/guides/mcp-servers.md)
 
@@ -110,20 +110,20 @@ Add to your `deno.json`:
 - [OpenTelemetry](./docs/otel.md) · [Temporal](./docs/temporal.md)
 - [Full reference index](./docs/index.md)
 
-## Relationship to pydantic-ai
+## Relationship to Pydantic AI
 
-Vibes is deliberately modeled on [pydantic-ai](https://ai.pydantic.dev/). The core abstractions — agents, tools, dependency injection, result validators, streaming, and testing utilities — map almost directly. The key differences:
+Vibes is deliberately modeled on [Pydantic AI](https://ai.pydantic.dev/). The core abstractions - agents, tools, dependency injection, result validators, streaming, and testing utilities - map almost directly. The key differences:
 
-| | pydantic-ai | @vibes/framework |
+| | Pydantic AI | @vibes/framework |
 |--|------------|-----------------|
 | Language | Python | TypeScript |
 | Runtime | Python 3.9+ | Deno |
-| Model layer | pydantic-ai's own providers | Vercel AI SDK |
+| Model layer | Pydantic AI's own providers | Vercel AI SDK |
 | Type validation | Pydantic | Zod |
 | Async | asyncio | native async/await |
 | Streaming | async generators | AI SDK streams |
 
-If you're porting a pydantic-ai agent to TypeScript, most concepts transfer directly. See [Feature Parity](./docs/features.md) for the current status.
+If you're porting a Pydantic AI agent to TypeScript, most concepts transfer directly. See [Feature Parity](./docs/features.md) for the current status.
 
 ## License
 

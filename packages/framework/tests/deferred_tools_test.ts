@@ -22,10 +22,10 @@ import {
 } from "./_helpers.ts";
 
 // ---------------------------------------------------------------------------
-// Basic approval required — static boolean
+// Basic approval required - static boolean
 // ---------------------------------------------------------------------------
 
-Deno.test("requiresApproval: true — agent.run() throws ApprovalRequiredError", async () => {
+Deno.test("requiresApproval: true - agent.run() throws ApprovalRequiredError", async () => {
   const sensitiveOp = tool({
     name: "delete_user",
     description: "Delete a user account",
@@ -93,7 +93,7 @@ Deno.test("ApprovalRequiredError contains correct deferred request info", async 
 // Dynamic approval predicate
 // ---------------------------------------------------------------------------
 
-Deno.test("requiresApproval function: returns false — tool executes normally", async () => {
+Deno.test("requiresApproval function: returns false - tool executes normally", async () => {
   let toolExecuted = false;
   const conditionalTool = tool<{ isAdmin: boolean }>({
     name: "admin_action",
@@ -128,7 +128,7 @@ Deno.test("requiresApproval function: returns false — tool executes normally",
   assertEquals(result.output, "Action completed");
 });
 
-Deno.test("requiresApproval function: returns true — throws ApprovalRequiredError", async () => {
+Deno.test("requiresApproval function: returns true - throws ApprovalRequiredError", async () => {
   const conditionalTool = tool<{ isAdmin: boolean }>({
     name: "admin_action",
     description: "Perform admin action",
@@ -160,7 +160,7 @@ Deno.test("requiresApproval function: returns true — throws ApprovalRequiredEr
 // Resume after approval
 // ---------------------------------------------------------------------------
 
-Deno.test("agent.resume() — injects approved result and completes run", async () => {
+Deno.test("agent.resume() - injects approved result and completes run", async () => {
   const sensitiveOp = tool({
     name: "charge_card",
     description: "Charge a credit card",
@@ -221,7 +221,7 @@ Deno.test("agent.resume() — injects approved result and completes run", async 
   assertEquals(callCount, 2);
 });
 
-Deno.test("agent.resume() — DeferredToolRequests stores correct resume state", async () => {
+Deno.test("agent.resume() - DeferredToolRequests stores correct resume state", async () => {
   const sensitiveOp = tool({
     name: "wipe_database",
     description: "Wipe the database",
@@ -299,7 +299,7 @@ Deno.test("normal tools execute; approval-required tool throws", async () => {
 // argsOverride in resume
 // ---------------------------------------------------------------------------
 
-Deno.test("DeferredToolResult.argsOverride — re-executes tool with modified args", async () => {
+Deno.test("DeferredToolResult.argsOverride - re-executes tool with modified args", async () => {
   const executedArgs: { amount?: number }[] = [];
   const chargeOp = tool({
     name: "charge",

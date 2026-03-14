@@ -3,7 +3,7 @@ title: "Introduction"
 description: "Why Vibes exists, its design philosophy, and the projects that inspired it."
 ---
 
-Vibes is a TypeScript agent framework that brings [pydantic-ai](https://ai.pydantic.dev/)'s proven patterns to the TypeScript ecosystem, powered by [Vercel AI SDK](https://sdk.vercel.ai/)'s model layer. It is designed for developers who want type safety, testability, and production-readiness without sacrificing simplicity.
+Vibes is a TypeScript agent framework that brings [Pydantic AI](https://ai.pydantic.dev/)'s proven patterns to the TypeScript ecosystem, powered by [Vercel AI SDK](https://sdk.vercel.ai/)'s model layer. It is designed for developers who want type safety, testability, and production-readiness without sacrificing simplicity.
 
 ## Design Philosophy
 
@@ -13,7 +13,7 @@ Every tool parameter is defined with a Zod schema. Every structured output is de
 
 ### Dependency injection, not globals
 
-`RunContext` carries your dependencies — database connections, HTTP clients, feature flags, configuration — through the entire agent call chain. To test an agent, you swap its dependencies; you don't mock modules. This makes agents composable and testable in isolation.
+`RunContext` carries your dependencies - database connections, HTTP clients, feature flags, configuration - through the entire agent call chain. To test an agent, you swap its dependencies; you don't mock modules. This makes agents composable and testable in isolation.
 
 ### Model-agnostic by default
 
@@ -25,33 +25,33 @@ Vibes uses Vercel AI SDK as its model layer. Switching from Anthropic to OpenAI 
 
 ### Progressive complexity
 
-Start with 5 lines. Add tools. Add structured output. Add dependency injection. Add streaming. Each layer is opt-in. You only pay — in code complexity — for what you use.
+Start with 5 lines. Add tools. Add structured output. Add dependency injection. Add streaming. Each layer is opt-in. You only pay - in code complexity - for what you use.
 
 ## Standing on the Shoulders of Giants
 
-### pydantic-ai
+### Pydantic AI
 
 <Info>
-  **pydantic-ai** — by Samuel Colvin and the [Pydantic team](https://pydantic.dev/) — is a Python agent framework built with the same philosophy as Pydantic itself: type safety, validation, and developer experience first. Learn more at [ai.pydantic.dev](https://ai.pydantic.dev/).
+  **Pydantic AI** - by Samuel Colvin and the [Pydantic team](https://pydantic.dev/) - is a Python agent framework built with the same philosophy as Pydantic itself: type safety, validation, and developer experience first. Learn more at [ai.pydantic.dev](https://ai.pydantic.dev/).
 </Info>
 
-Vibes is, in a real sense, pydantic-ai for TypeScript. The `Agent` class API, the dependency injection pattern using a typed context object, the tool registration approach, the structured output model, and the testing utilities (`TestModel`, `FunctionModel`, `agent.override()`) all originate with pydantic-ai. Samuel Colvin and the Pydantic team showed that agent frameworks can be type-safe and testable without sacrificing the simplicity that makes them worth using.
+Vibes is, in a real sense, Pydantic AI for TypeScript. The `Agent` class API, the dependency injection pattern using a typed context object, the tool registration approach, the structured output model, and the testing utilities (`TestModel`, `FunctionModel`, `agent.override()`) all originate with Pydantic AI. Samuel Colvin and the Pydantic team showed that agent frameworks can be type-safe and testable without sacrificing the simplicity that makes them worth using.
 
-If you're familiar with pydantic-ai, you'll feel at home in Vibes immediately. Most concepts transfer directly — see the comparison table below.
+If you're familiar with Pydantic AI, you'll feel at home in Vibes immediately. Most concepts transfer directly - see the comparison table below.
 
 ### Vercel AI SDK
 
 <Info>
-  **Vercel AI SDK** — maintained by the [Vercel team](https://vercel.com/) — provides a unified TypeScript interface to 50+ LLM providers with streaming, structured output, and tool-calling support built in. Learn more at [sdk.vercel.ai](https://sdk.vercel.ai/).
+  **Vercel AI SDK** - maintained by the [Vercel team](https://vercel.com/) - provides a unified TypeScript interface to 50+ LLM providers with streaming, structured output, and tool-calling support built in. Learn more at [sdk.vercel.ai](https://sdk.vercel.ai/).
 </Info>
 
-Vibes uses Vercel AI SDK as its model layer. Every `Agent` accepts a `LanguageModel` from the AI SDK, which means you get access to Anthropic, OpenAI, Google, Groq, Mistral, Ollama, and dozens more providers through a single unified interface. Vibes does not maintain its own provider integrations — the AI SDK does that work, and does it well.
+Vibes uses Vercel AI SDK as its model layer. Every `Agent` accepts a `LanguageModel` from the AI SDK, which means you get access to Anthropic, OpenAI, Google, Groq, Mistral, Ollama, and dozens more providers through a single unified interface. Vibes does not maintain its own provider integrations - the AI SDK does that work, and does it well.
 
 ## How Vibes Compares
 
-Vibes mirrors pydantic-ai closely. If you're porting a Python agent, most concepts transfer directly.
+Vibes mirrors Pydantic AI closely. If you're porting a Python agent, most concepts transfer directly.
 
-| Concept | pydantic-ai | @vibes/framework |
+| Concept | Pydantic AI | @vibes/framework |
 |---------|------------|-----------------|
 | Core class | `Agent` | `Agent` |
 | Run | `agent.run_sync()` | `agent.run()` |
@@ -63,7 +63,7 @@ Vibes mirrors pydantic-ai closely. If you're porting a Python agent, most concep
 | Result validators | `@agent.result_validator` | `resultValidators: [...]` |
 | Testing | `TestModel` / `FunctionModel` | `TestModel` / `FunctionModel` |
 | Language | Python | TypeScript |
-| Model layer | pydantic-ai providers | Vercel AI SDK |
+| Model layer | Pydantic AI providers | Vercel AI SDK |
 
 See [Feature Parity](/reference/features) for the full comparison.
 

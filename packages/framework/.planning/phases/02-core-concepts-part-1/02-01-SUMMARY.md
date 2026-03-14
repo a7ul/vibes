@@ -15,7 +15,7 @@ dependency_graph:
 tech_stack:
   added: []
   patterns:
-    - pydantic-ai teaching style: concept → Mermaid diagram → code examples → reference table
+    - Pydantic AI teaching style: concept → Mermaid diagram → code examples → reference table
 key_files:
   created:
     - docs/concepts/agents.mdx
@@ -24,9 +24,9 @@ key_files:
     - docs/concepts/tools.mdx
   modified: []
 decisions:
-  - "outputTemplate is boolean (true/false), not a string template — documented correctly"
-  - "PrivacyRule uses { pattern, replacement? } for regex rules — no type key, no redactValue"
-  - "RunContext has 7 fields + attachMetadata() — full interface documented, nothing omitted"
+  - "outputTemplate is boolean (true/false), not a string template - documented correctly"
+  - "PrivacyRule uses { pattern, replacement? } for regex rules - no type key, no redactValue"
+  - "RunContext has 7 fields + attachMetadata() - full interface documented, nothing omitted"
   - "Mermaid diagrams copied verbatim from 02-RESEARCH.md to ensure accuracy"
 metrics:
   duration: "3 min"
@@ -43,14 +43,14 @@ requirements_satisfied:
 
 # Phase 02 Plan 01: Core Concepts Part 1 Summary
 
-Four deep-dive concept pages created under `docs/concepts/` using the pydantic-ai teaching style: Mermaid diagram first, then code examples verified against source, then a reference table.
+Four deep-dive concept pages created under `docs/concepts/` using the Pydantic AI teaching style: Mermaid diagram first, then code examples verified against source, then a reference table.
 
 ## Tasks Completed
 
 | Task | Name | Commit | Files |
 |------|------|--------|-------|
-| 1 | Create agents.mdx — Agent class deep dive | 2af392c | docs/concepts/agents.mdx |
-| 2 | Create models.mdx — Vercel AI SDK model layer | 91ed70a | docs/concepts/models.mdx |
+| 1 | Create agents.mdx - Agent class deep dive | 2af392c | docs/concepts/agents.mdx |
+| 2 | Create models.mdx - Vercel AI SDK model layer | 91ed70a | docs/concepts/models.mdx |
 | 3 | Create dependencies.mdx and tools.mdx | e5c21e7 | docs/concepts/dependencies.mdx, docs/concepts/tools.mdx |
 
 ## What Was Built
@@ -84,7 +84,7 @@ Four deep-dive concept pages created under `docs/concepts/` using the pydantic-a
 
 ## Deviations from Plan
 
-None — plan executed exactly as written.
+None - plan executed exactly as written.
 
 ## Verification Results
 
@@ -97,14 +97,14 @@ None — plan executed exactly as written.
 ## Self-Check
 
 **Files created:**
-- `docs/concepts/agents.mdx` — FOUND
-- `docs/concepts/models.mdx` — FOUND
-- `docs/concepts/dependencies.mdx` — FOUND
-- `docs/concepts/tools.mdx` — FOUND
+- `docs/concepts/agents.mdx` - FOUND
+- `docs/concepts/models.mdx` - FOUND
+- `docs/concepts/dependencies.mdx` - FOUND
+- `docs/concepts/tools.mdx` - FOUND
 
 **Commits:**
-- `2af392c` — FOUND
-- `91ed70a` — FOUND
-- `e5c21e7` — FOUND
+- `2af392c` - FOUND
+- `91ed70a` - FOUND
+- `e5c21e7` - FOUND
 
 ## Self-Check: PASSED

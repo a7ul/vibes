@@ -30,7 +30,7 @@ Deno.test("summarizeHistoryProcessor - no-op when history is within limit", asyn
   });
   const processor = summarizeHistoryProcessor(model, { maxMessages: 20 });
 
-  // 10 messages — well under the 20-message limit
+  // 10 messages - well under the 20-message limit
   const messages = buildHistory(5);
   const result = await processor(messages, {} as never);
 

@@ -1,9 +1,9 @@
 ---
 title: Debugging and Monitoring
-description: Instrument agents with OpenTelemetry tracing using instrumentAgent() and TelemetrySettings — structured spans per model call and tool invocation.
+description: Instrument agents with OpenTelemetry tracing using instrumentAgent() and TelemetrySettings - structured spans per model call and tool invocation.
 ---
 
-Vibes provides two ways to add OpenTelemetry tracing to your agents. `instrumentAgent()` is a non-mutating wrapper that adds telemetry to any existing agent without changing its definition. Inline telemetry via `AgentOptions.telemetry` configures tracing directly on the agent at construction time. Both approaches delegate entirely to the Vercel AI SDK's `experimental_telemetry` — Vibes does not create custom spans.
+Vibes provides two ways to add OpenTelemetry tracing to your agents. `instrumentAgent()` is a non-mutating wrapper that adds telemetry to any existing agent without changing its definition. Inline telemetry via `AgentOptions.telemetry` configures tracing directly on the agent at construction time. Both approaches delegate entirely to the Vercel AI SDK's `experimental_telemetry` - Vibes does not create custom spans.
 
 Use `instrumentAgent()` when you want to add tracing to an agent you didn't define (a shared utility, a library agent). Use inline telemetry when you own the agent and prefer to configure tracing at construction time.
 
@@ -47,7 +47,7 @@ const stream = instrumented.stream("Hello");
 for await (const event of instrumented.runStreamEvents("Hello")) { ... }
 ```
 
-`instrumentAgent()` uses `agent.override()` internally — it never mutates the original agent and is safe to reuse across requests.
+`instrumentAgent()` uses `agent.override()` internally - it never mutates the original agent and is safe to reuse across requests.
 
 ## Inline Telemetry on AgentOptions
 
@@ -83,7 +83,7 @@ const instrumented = instrumentAgent(myAgent, {
 });
 ```
 
-With `excludeContent: true`, spans are still created for every turn and tool call — you retain execution structure, latency, and token counts — but the actual text content is omitted from span attributes.
+With `excludeContent: true`, spans are still created for every turn and tool call - you retain execution structure, latency, and token counts - but the actual text content is omitted from span attributes.
 
 ## What Spans Are Created
 
@@ -103,7 +103,7 @@ Vibes does not create custom spans. All span naming follows the Vercel AI SDK te
 |--------|------|-------------|
 | `instrumentAgent` | `(agent, options) => { run, stream, runStreamEvents }` | Wraps an agent with telemetry; returns the same interface as the original agent |
 | `InstrumentationOptions` | `interface` | `{ functionId: string, metadata?: Record<string, unknown>, excludeContent?: boolean, isEnabled?: boolean }` |
-| `TelemetrySettings` | `interface` (from `"ai"`) | `{ isEnabled: boolean, functionId: string, recordInputs: boolean, recordOutputs: boolean }` — passed directly to Vercel AI SDK |
+| `TelemetrySettings` | `interface` (from `"ai"`) | `{ isEnabled: boolean, functionId: string, recordInputs: boolean, recordOutputs: boolean }` - passed directly to Vercel AI SDK |
 
 ---
 

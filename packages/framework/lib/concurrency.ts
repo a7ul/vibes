@@ -42,7 +42,7 @@ export class Semaphore {
   }
 
   /**
-   * Run `fn` under the semaphore — waits for a permit, executes `fn`,
+   * Run `fn` under the semaphore - waits for a permit, executes `fn`,
    * then releases the permit whether `fn` resolves or rejects.
    */
   async run<T>(fn: () => Promise<T>): Promise<T> {

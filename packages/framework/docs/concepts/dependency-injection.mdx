@@ -3,17 +3,17 @@ title: "Dependency Injection & RunContext"
 description: "How RunContext flows through everything - prompts, tools, validators, toolsets, and more"
 ---
 
-This is the feature pydantic-ai is most known for - and Vibes implements the same pattern in TypeScript.
+This is the feature Pydantic AI is most known for - and Vibes implements the same pattern in TypeScript.
 
 The idea: declare what your agent needs as a type (`TDeps`), inject it at run time, and access it from _everywhere_ - system prompts, tools, validators, toolsets, history processors. One consistent interface, zero globals.
 
-> **Coming from pydantic-ai?** `RunContext<TDeps>` maps directly to pydantic-ai's `RunContext[TDeps]`. The `deps` field is your injected state. Everything that received `RunContext` in pydantic-ai receives it here too.
+> **Coming from Pydantic AI?** `RunContext<TDeps>` maps directly to Pydantic AI's `RunContext[TDeps]`. The `deps` field is your injected state. Everything that received `RunContext` in Pydantic AI receives it here too.
 
 ## The Hierarchy
 
 Here's everywhere `RunContext` flows through in Vibes - from least to most granular:
 
-| Where | How | pydantic-ai equivalent |
+| Where | How | Pydantic AI equivalent |
 |---|---|---|
 | Agent construction | `systemPrompt: (ctx) => string` | `system_prompt=` argument |
 | Added dynamically | `agent.addSystemPrompt((ctx) => string)` | `@agent.system_prompt` |
@@ -70,7 +70,7 @@ const agent = new Agent<Deps>({
 
 ### `agent.addSystemPrompt()` - the `@agent.system_prompt` equivalent
 
-This is the direct equivalent of pydantic-ai's `@agent.system_prompt` decorator. Call it any time after construction - in middleware, plugins, or to build agents incrementally:
+This is the direct equivalent of Pydantic AI's `@agent.system_prompt` decorator. Call it any time after construction - in middleware, plugins, or to build agents incrementally:
 
 ```ts
 const agent = new Agent({ model, systemPrompt: "You are a helpful assistant." });
@@ -87,7 +87,7 @@ agent.addSystemPrompt(async (ctx) => {
 });
 ```
 
-> **pydantic-ai mapping:**
+> **Pydantic AI mapping:**
 > ```python
 > @agent.system_prompt
 > async def inject_plan(ctx: RunContext[Deps]) -> str:
@@ -113,7 +113,7 @@ const agent = new Agent<Deps>({
 
 ## 2. Tools
 
-Every tool's `execute` function receives `RunContext` as its first argument. This is the equivalent of pydantic-ai's `@agent.tool` decorator.
+Every tool's `execute` function receives `RunContext` as its first argument. This is the equivalent of Pydantic AI's `@agent.tool` decorator.
 
 ```ts
 type Deps = { db: Database; emailService: EmailService };
@@ -131,7 +131,7 @@ const lookupUser = tool<Deps>({
 });
 ```
 
-> **pydantic-ai mapping:**
+> **Pydantic AI mapping:**
 > ```python
 > @agent.tool
 > async def lookup_user(ctx: RunContext[Deps], email: str) -> User:
@@ -174,7 +174,7 @@ const deleteRecord = tool<Deps>({
 
 ## 3. Result Validators
 
-Result validators are the equivalent of pydantic-ai's `@agent.result_validator`. They receive `RunContext` and the parsed output, and can validate, transform, or throw to trigger a retry.
+Result validators are the equivalent of Pydantic AI's `@agent.result_validator`. They receive `RunContext` and the parsed output, and can validate, transform, or throw to trigger a retry.
 
 ```ts
 type Deps = { db: Database };
@@ -193,7 +193,7 @@ const agent = new Agent<Deps, { itemId: string }>({
 });
 ```
 
-> **pydantic-ai mapping:**
+> **Pydantic AI mapping:**
 > ```python
 > @agent.result_validator
 > async def validate_item(ctx: RunContext[Deps], output: Output) -> Output:

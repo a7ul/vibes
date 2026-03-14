@@ -103,7 +103,7 @@ Deno.test("historyProcessors - multiple processors applied in order", async () =
 });
 
 Deno.test("historyProcessors - processors don't mutate the source messages array", async () => {
-  // A processor that returns a sliced copy — source array must be unchanged
+  // A processor that returns a sliced copy - source array must be unchanged
   let sourceAtCallTime: ModelMessage[] = [];
   const snapshotProcessor: HistoryProcessor = (msgs) => {
     sourceAtCallTime = [...msgs]; // capture a copy

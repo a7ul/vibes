@@ -33,7 +33,7 @@ import {
   isBinaryContent,
 } from "../multimodal/binary_content.ts";
 
-// Silence unused import warnings — these are re-exported via types but used
+// Silence unused import warnings - these are re-exported via types but used
 // only as type-level references in this file.
 void INTERNAL_ERROR;
 void INVALID_REQUEST;

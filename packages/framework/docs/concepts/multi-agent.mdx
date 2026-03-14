@@ -1,6 +1,6 @@
 ---
 title: Multi-Agent Systems
-description: Delegate to specialist agents using the agent-as-tool pattern — compose independent agents without any special multi-agent API.
+description: Delegate to specialist agents using the agent-as-tool pattern - compose independent agents without any special multi-agent API.
 ---
 
 Multi-agent systems let you divide complex tasks across specialist agents, each with its own system prompt, tools, and model. Vibes has no dedicated multi-agent API: you delegate to a child agent by wrapping it in `tool()`. The orchestrating agent calls that tool like any other, and the framework handles usage aggregation automatically.
@@ -59,7 +59,7 @@ console.log(result.output);
 
 ## Usage Aggregation
 
-`RunResult.usage` automatically sums token usage across all nested agent calls. You do not need to track usage manually — the orchestrator's `result.usage` reflects the total cost of the entire delegation chain.
+`RunResult.usage` automatically sums token usage across all nested agent calls. You do not need to track usage manually - the orchestrator's `result.usage` reflects the total cost of the entire delegation chain.
 
 ```typescript
 const result = await orchestratorAgent.run("Research and summarize the history of TypeScript");
@@ -70,7 +70,7 @@ console.log(result.usage.outputTokens.total);  // total output tokens (all agent
 
 ## Programmatic Handoff
 
-You can route to different specialist agents based on runtime conditions. Use a plain TypeScript `if`/`else` inside `tool.execute()` — there is no special routing API.
+You can route to different specialist agents based on runtime conditions. Use a plain TypeScript `if`/`else` inside `tool.execute()` - there is no special routing API.
 
 ```typescript
 const routerTool = tool({
@@ -114,7 +114,7 @@ There is no special multi-agent API in Vibes. Sub-agents are just agents wrapped
 |--------|-------------|
 | `agent.run(prompt, options?)` | Run an agent and return `RunResult<TOutput>` |
 | `RunResult.output` | The agent's final output |
-| `RunResult.usage` | Token usage — summed across all nested agent calls automatically |
+| `RunResult.usage` | Token usage - summed across all nested agent calls automatically |
 | `tool({ execute })` | Wrap any async function as a tool, including `agent.run()` calls |
 
 ---

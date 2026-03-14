@@ -23,7 +23,7 @@ export type ExternalToolDefinition = {
 
 /**
  * A toolset of externally-executed tools. The model can call these tools,
- * but their execution happens outside the agent — the run pauses and throws
+ * but their execution happens outside the agent - the run pauses and throws
  * an `ApprovalRequiredError` with the pending `DeferredToolRequests`.
  *
  * The caller executes the tools externally, then calls `agent.resume()` with
@@ -78,7 +78,7 @@ export class ExternalToolset<TDeps = undefined> implements Toolset<TDeps> {
         description: def.description,
         parameters: wrappedSchema,
         requiresApproval: true as const,
-        // execute should never be called — the tool is marked requiresApproval:true
+        // execute should never be called - the tool is marked requiresApproval:true
         // and the run loop intercepts before execution. Provide a fallback that
         // returns an error string in case the deferred mechanism is bypassed.
         execute: (_ctx: RunContext<TDeps>, args: unknown) => {

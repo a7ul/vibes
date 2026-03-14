@@ -21,7 +21,7 @@ export type PrepareFunction<TDeps = undefined> = (
  * Unlike `FilteredToolset` (all-or-nothing), `PreparedToolset` gives
  * fine-grained per-tool control.
  *
- * Equivalent to pydantic-ai's prepared tool pattern.
+ * Equivalent to Pydantic AI's prepared tool pattern.
  *
  * @example
  * ```ts

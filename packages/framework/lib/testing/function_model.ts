@@ -1,5 +1,5 @@
 /**
- * FunctionModel — a custom-function-driven language model for testing.
+ * FunctionModel - a custom-function-driven language model for testing.
  *
  * Lets you control exactly what the model responds with on each turn.
  * The function receives the current messages, available tools, and turn number,

@@ -4,7 +4,7 @@ import type { ModelMessage } from "ai";
  * Serialize a list of model messages to a JSON string.
  *
  * `ModelMessage` (aka `CoreMessage`) from the AI SDK is already fully
- * JSON-serializable — this function provides a typed, named wrapper so
+ * JSON-serializable - this function provides a typed, named wrapper so
  * callers don't have to cast manually.
  *
  * @example

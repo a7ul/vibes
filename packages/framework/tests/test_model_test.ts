@@ -1,5 +1,5 @@
 /**
- * Tests for TestModel — schema-aware mock language model.
+ * Tests for TestModel - schema-aware mock language model.
  */
 import { assertEquals, assertExists } from "@std/assert";
 import { z } from "zod";

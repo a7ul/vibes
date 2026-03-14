@@ -1,5 +1,5 @@
 // ---------------------------------------------------------------------------
-// Graph FSM — Graph and GraphRun
+// Graph FSM - Graph and GraphRun
 // ---------------------------------------------------------------------------
 
 import type { NodeId } from "./types.ts";
@@ -16,7 +16,7 @@ export interface GraphRunOptions<TState> {
    */
   persistence?: StatePersistence<TState>;
   /**
-   * Identifier for this graph run — required when using `persistence`.
+   * Identifier for this graph run - required when using `persistence`.
    * Used as the key for saving/loading state.
    */
   graphId?: string;
@@ -32,10 +32,10 @@ export interface GraphOptions {
 }
 
 // ---------------------------------------------------------------------------
-// GraphRun — step-by-step iterator
+// GraphRun - step-by-step iterator
 // ---------------------------------------------------------------------------
 
-/** A step in a running graph — either a node transition or the final output. */
+/** A step in a running graph - either a node transition or the final output. */
 export type GraphStep<TState, TOutput> =
   | { readonly kind: "node"; readonly nodeId: NodeId; readonly state: TState }
   | { readonly kind: "output"; readonly output: TOutput };
@@ -78,9 +78,9 @@ export class GraphRun<TState, TOutput> {
    * Execute the current node and advance one step.
    *
    * Returns:
-   * - `{ kind: "node", nodeId, state }` — transitioned to next node
-   * - `{ kind: "output", output }` — graph completed
-   * - `null` — graph was already done before this call
+   * - `{ kind: "node", nodeId, state }` - transitioned to next node
+   * - `{ kind: "output", output }` - graph completed
+   * - `null` - graph was already done before this call
    */
   async next(): Promise<GraphStep<TState, TOutput> | null> {
     if (this.done) {

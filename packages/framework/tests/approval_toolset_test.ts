@@ -1,5 +1,5 @@
 /**
- * Tests for ApprovalRequiredToolset — wraps a toolset and marks all tools
+ * Tests for ApprovalRequiredToolset - wraps a toolset and marks all tools
  * as requiring human approval before execution.
  */
 import { assertEquals, assertInstanceOf } from "@std/assert";

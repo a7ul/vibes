@@ -9,7 +9,7 @@ import type {
 } from "./mcp_types.ts";
 
 // ---------------------------------------------------------------------------
-// MCPStdioClient — stdio transport (subprocess)
+// MCPStdioClient - stdio transport (subprocess)
 // ---------------------------------------------------------------------------
 
 /** Configuration for an stdio-based MCP server. */
@@ -156,7 +156,7 @@ export class MCPStdioClient implements MCPClient {
         );
       }
     } catch {
-      // Elicitation not supported by this server version — ignore
+      // Elicitation not supported by this server version - ignore
     }
   }
 }

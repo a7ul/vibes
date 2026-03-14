@@ -1,7 +1,7 @@
 import type { Usage } from "./context.ts";
 
 // ---------------------------------------------------------------------------
-// AgentStreamEvent — discriminated union of all events emitted by
+// AgentStreamEvent - discriminated union of all events emitted by
 // agent.runStreamEvents().
 // ---------------------------------------------------------------------------
 
@@ -31,7 +31,7 @@ export type AgentStreamEvent<TOutput = string> =
     result: unknown;
   }
   /**
-   * Best-effort partial structured output — emitted progressively as
+   * Best-effort partial structured output - emitted progressively as
    * `final_result` tool args stream in. Only emitted in `'tool'` output mode
    * and only when the accumulated args parse successfully.
    */

@@ -9,9 +9,9 @@ dependency_graph:
     - phase: 03-core-concepts-part-2
       provides: MDX style patterns, Mermaid diagram conventions, Mintlify callout patterns
   provides:
-    - docs/integrations/mcp-client.mdx — MCP client API reference (MCPStdioClient, MCPHttpClient, MCPToolset, MCPManager, createManagerFromConfig)
-    - docs/integrations/mcp-server.mdx — Pattern for exposing a Vibes agent as an MCP server via @modelcontextprotocol/sdk
-    - docs/integrations/ag-ui.mdx — AG-UI integration with corrected AGUIAdapter API (deps/getState, not depsFactory)
+    - docs/integrations/mcp-client.mdx - MCP client API reference (MCPStdioClient, MCPHttpClient, MCPToolset, MCPManager, createManagerFromConfig)
+    - docs/integrations/mcp-server.mdx - Pattern for exposing a Vibes agent as an MCP server via @modelcontextprotocol/sdk
+    - docs/integrations/ag-ui.mdx - AG-UI integration with corrected AGUIAdapter API (deps/getState, not depsFactory)
   affects: [04-integrations, docs/integrations/]
 
 tech-stack:
@@ -31,13 +31,13 @@ key-files:
   modified: []
 
 key-decisions:
-  - "ag-ui.mdx Warning callout mentions depsFactory by name (as the wrong approach) — the plan requires an explicit migration warning, so the word appears once in prose, never in code examples"
-  - "mcp-server.mdx uses Info callout to note there is no built-in Vibes server class — the page documents the @modelcontextprotocol/sdk McpServer pattern directly"
+  - "ag-ui.mdx Warning callout mentions depsFactory by name (as the wrong approach) - the plan requires an explicit migration warning, so the word appears once in prose, never in code examples"
+  - "mcp-server.mdx uses Info callout to note there is no built-in Vibes server class - the page documents the @modelcontextprotocol/sdk McpServer pattern directly"
   - "mcp-client.mdx Warning callout enumerates all four MCPManager anti-patterns: constructor args, connectAll(), toolset() method, MCPManager.fromConfig()"
   - "ag-ui.mdx documents all 15 SSE event types from AGUIEvent union in a reference table"
 
 patterns-established:
-  - "API correction pages: Warning callout at top, then correct API shown immediately — no code with wrong patterns"
+  - "API correction pages: Warning callout at top, then correct API shown immediately - no code with wrong patterns"
   - "Third-party SDK pages: Info callout explaining the pattern, runnable examples for both transport variants"
 
 requirements-completed: [INT-01a, INT-01b, INT-02]
@@ -74,14 +74,14 @@ Each task was committed atomically:
 
 ## Files Created/Modified
 
-- `docs/integrations/mcp-client.mdx` — Full MCP client API: MCPStdioClient, MCPHttpClient, MCPToolset, MCPManager (correct addServer/connect), createManagerFromConfig, lifecycle pattern
-- `docs/integrations/mcp-server.mdx` — McpServer wrapping pattern, stdio transport for Claude Desktop, HTTP/SSE transport for remote access, multi-tool registration
-- `docs/integrations/ag-ui.mdx` — AGUIAdapter with deps/getState, adapter.handler() for Deno, handleRequest(AGUIRunInput), full SSE event sequence diagram, multi-turn and state management sections
+- `docs/integrations/mcp-client.mdx` - Full MCP client API: MCPStdioClient, MCPHttpClient, MCPToolset, MCPManager (correct addServer/connect), createManagerFromConfig, lifecycle pattern
+- `docs/integrations/mcp-server.mdx` - McpServer wrapping pattern, stdio transport for Claude Desktop, HTTP/SSE transport for remote access, multi-tool registration
+- `docs/integrations/ag-ui.mdx` - AGUIAdapter with deps/getState, adapter.handler() for Deno, handleRequest(AGUIRunInput), full SSE event sequence diagram, multi-turn and state management sections
 
 ## Decisions Made
 
 - `ag-ui.mdx` Warning callout mentions `depsFactory` by name as part of the explicit migration warning (required by plan). The word appears once in prose text, never in any code example. The automated `! grep -q "depsFactory"` check produces a false negative because it searches the entire file including the warning text.
-- `mcp-server.mdx` uses Info callout to explain no built-in Vibes server class exists — the page documents the `@modelcontextprotocol/sdk` pattern for user-land MCP server creation.
+- `mcp-server.mdx` uses Info callout to explain no built-in Vibes server class exists - the page documents the `@modelcontextprotocol/sdk` pattern for user-land MCP server creation.
 - `mcp-client.mdx` Warning callout enumerates all four anti-patterns for MCPManager to help developers who found the old broken docs.
 
 ## Deviations from Plan
@@ -90,17 +90,17 @@ Each task was committed atomically:
 
 **1. Automated verification false negative for ag-ui.mdx**
 - **Found during:** Task 3 verification
-- **Issue:** The plan's automated check `! grep -q "depsFactory"` fails because `depsFactory` appears in the Warning callout text ("The `depsFactory` option does **not** exist on `AGUIAdapterOptions`"). This is the correct behavior — the warning is required by the plan.
+- **Issue:** The plan's automated check `! grep -q "depsFactory"` fails because `depsFactory` appears in the Warning callout text ("The `depsFactory` option does **not** exist on `AGUIAdapterOptions`"). This is the correct behavior - the warning is required by the plan.
 - **Resolution:** `depsFactory` appears exactly once, in a Warning callout prose sentence, not in any code example. The intent of the check (no code examples using depsFactory) is satisfied.
-- **No content change required** — the file content is correct.
+- **No content change required** - the file content is correct.
 
 ---
 
-**Total deviations:** 0 code deviations — plan executed exactly as specified. One verification false negative documented above.
+**Total deviations:** 0 code deviations - plan executed exactly as specified. One verification false negative documented above.
 
 ## Issues Encountered
 
-None — all APIs verified against source, plan provided clear interface specifications.
+None - all APIs verified against source, plan provided clear interface specifications.
 
 ## User Setup Required
 

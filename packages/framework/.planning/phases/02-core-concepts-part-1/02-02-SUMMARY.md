@@ -9,7 +9,7 @@ dependency_graph:
   affects: [docs/concepts/, docs/docs.json]
 tech_stack:
   added: []
-  patterns: [Mintlify MDX, Mermaid diagrams, pydantic-ai teaching flow]
+  patterns: [Mintlify MDX, Mermaid diagrams, Pydantic AI teaching flow]
 key_files:
   created:
     - docs/concepts/toolsets.mdx
@@ -19,10 +19,10 @@ key_files:
   modified:
     - docs/docs.json
 key_decisions:
-  - "event.kind (not event.type) is the correct AgentStreamEvent discriminant — warning callout added to streaming.mdx"
-  - "newMessages included in both StreamResult table and code examples — was missing from existing docs"
-  - "PrivacyRule uses { pattern, replacement? } for regex rules — { type: 'regex', redactValue } shape is wrong"
-  - "outputTemplate is boolean not string — warning callout added to results.mdx"
+  - "event.kind (not event.type) is the correct AgentStreamEvent discriminant - warning callout added to streaming.mdx"
+  - "newMessages included in both StreamResult table and code examples - was missing from existing docs"
+  - "PrivacyRule uses { pattern, replacement? } for regex rules - { type: 'regex', redactValue } shape is wrong"
+  - "outputTemplate is boolean not string - warning callout added to results.mdx"
   - "All 8 new concept pages added to docs.json Concepts nav; 3 existing pages retained until Phase 6"
 metrics:
   duration: "3 min"
@@ -83,7 +83,7 @@ requirements_fulfilled: [CONCEPT-05, CONCEPT-06, CONCEPT-07, CONCEPT-08]
 
 ## Deviations from Plan
 
-None — plan executed exactly as written.
+None - plan executed exactly as written.
 
 ## Self-Check: PASSED
 
@@ -92,4 +92,4 @@ None — plan executed exactly as written.
 - docs/concepts/messages.mdx: EXISTS, contains "serializeMessages"
 - docs/concepts/streaming.mdx: EXISTS, uses "event.kind" (not "event.type" in code)
 - docs/docs.json: VALID JSON, contains "concepts/agents" and all 8 new pages
-- Commits: ade7aa7, 54c9e94, 0b977cb — all verified in git log
+- Commits: ade7aa7, 54c9e94, 0b977cb - all verified in git log

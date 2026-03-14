@@ -51,7 +51,7 @@ Deno.test("endStrategy - 'early' stops on final_result immediately", async () =>
   const result = await agent.run("go");
   assertEquals(result.output.value, "result");
   // sideEffectTool was never called in the same response as final_result
-  // (they were separate — final_result was the only tool call returned)
+  // (they were separate - final_result was the only tool call returned)
   assertEquals(sideEffectCalled, false);
 });
 

@@ -3,7 +3,7 @@ title: "A2A (Agent-to-Agent)"
 description: "Expose a Vibes agent as an A2A-compatible server for cross-vendor agent interoperability using A2AAdapter."
 ---
 
-[A2A (Agent-to-Agent)](https://google.github.io/A2A) is Google's open protocol for agent interoperability. It lets agents built on different frameworks — from different vendors — discover and communicate with each other over a standard JSON-RPC HTTP interface. Any A2A-compatible client can find your agent via its `AgentCard` and invoke it without knowing which framework you used.
+[A2A (Agent-to-Agent)](https://google.github.io/A2A) is Google's open protocol for agent interoperability. It lets agents built on different frameworks - from different vendors - discover and communicate with each other over a standard JSON-RPC HTTP interface. Any A2A-compatible client can find your agent via its `AgentCard` and invoke it without knowing which framework you used.
 
 `A2AAdapter` wraps any Vibes agent and serves it as a fully compliant A2A server.
 
@@ -61,12 +61,12 @@ const adapter = new A2AAdapter(agent, {
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
 | `name` | `string` | Agent name | Displayed in AgentCard |
-| `description` | `string` | — | Agent description in AgentCard |
+| `description` | `string` | - | Agent description in AgentCard |
 | `url` | `string` | `"http://localhost:8000"` | Public URL of this server |
 | `version` | `string` | `"1.0.0"` | Agent version string |
 | `skills` | `A2AAgentSkill[]` | `[]` | Capabilities list for discovery |
-| `provider` | `{ organization, url? }` | — | Organization info |
-| `deps` | `TDeps` | — | Static dependencies for every agent run |
+| `provider` | `{ organization, url? }` | - | Organization info |
+| `deps` | `TDeps` | - | Static dependencies for every agent run |
 | `taskStore` | `TaskStore` | `MemoryTaskStore` | Task persistence backend |
 
 ### Deno HTTP Server
@@ -282,7 +282,7 @@ console.log(result.status.state); // "completed"
 
 ### tasks/cancel
 
-Cancel a running task. This signals an abort to the SSE stream — any in-flight `message/stream` response will terminate:
+Cancel a running task. This signals an abort to the SSE stream - any in-flight `message/stream` response will terminate:
 
 ```typescript
 await fetch("https://my-agent.example.com/", {
@@ -299,12 +299,12 @@ await fetch("https://my-agent.example.com/", {
 
 ## Task Store
 
-By default, `A2AAdapter` uses `MemoryTaskStore` — an in-memory implementation that does not persist tasks across process restarts.
+By default, `A2AAdapter` uses `MemoryTaskStore` - an in-memory implementation that does not persist tasks across process restarts.
 
 ```typescript
 import { A2AAdapter, MemoryTaskStore } from "npm:@vibes/framework";
 
-// Default — no need to import MemoryTaskStore for basic usage
+// Default - no need to import MemoryTaskStore for basic usage
 const adapter = new A2AAdapter(agent);
 
 // Explicit in-memory store (same as default)
@@ -392,7 +392,7 @@ interface A2AAdapterOptions<TDeps> {
 
 | Method | Alias | Returns | Description |
 |--------|-------|---------|-------------|
-| `message/send` | `tasks/send` | `A2ATask` | Synchronous — waits for full result |
-| `message/stream` | `tasks/sendSubscribe` | SSE stream | Streaming — emits events as agent processes |
-| `tasks/get` | — | `A2ATask` | Fetch task by ID |
-| `tasks/cancel` | — | `A2ATask` | Cancel a running task |
+| `message/send` | `tasks/send` | `A2ATask` | Synchronous - waits for full result |
+| `message/stream` | `tasks/sendSubscribe` | SSE stream | Streaming - emits events as agent processes |
+| `tasks/get` | - | `A2ATask` | Fetch task by ID |
+| `tasks/cancel` | - | `A2ATask` | Cancel a running task |

@@ -1,5 +1,5 @@
 /**
- * MockTemporalAgent — simulates Temporal's activity-boundary semantics without
+ * MockTemporalAgent - simulates Temporal's activity-boundary semantics without
  * a running Temporal server.
  *
  * Use this in tests to verify that your agent produces the expected output and
@@ -8,7 +8,7 @@
  * - Records each activity invocation and its result in an ordered history.
  * - Simulates Temporal's "replay" semantics by re-using recorded results when
  *   the same activity is called with the same parameters.
- * - Does NOT require a Temporal server, worker, or Node.js — works in Deno.
+ * - Does NOT require a Temporal server, worker, or Node.js - works in Deno.
  *
  * @example
  * ```ts

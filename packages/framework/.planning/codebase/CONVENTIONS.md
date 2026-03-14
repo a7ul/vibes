@@ -81,7 +81,7 @@ All union variants use `readonly` fields and a `kind` discriminant.
 2. Internal type imports: `import type { Agent } from "../agent.ts"`
 3. Internal value imports: `import { executeRun } from "./execution/run.ts"`
 
-**No path aliases** — all imports use relative paths with `.ts` extensions.
+**No path aliases** - all imports use relative paths with `.ts` extensions.
 
 **Barrel re-exports:**
 - `mod.ts` at the root re-exports the full public API
@@ -111,7 +111,7 @@ export class MaxTurnsError extends Error {
 - Unknown errors are always re-thrown
 
 **Validation errors:**
-- Zod's `schema.safeParse()` is used to avoid throwing during parsing — failure leads to a retry nudge
+- Zod's `schema.safeParse()` is used to avoid throwing during parsing - failure leads to a retry nudge
 - `argsValidator` throws to reject args without consuming a retry slot
 
 ## Zod Patterns
@@ -168,7 +168,7 @@ export function tool<TDeps, TParams extends ZodType>(...): ToolDefinition<TDeps>
 ## Module Design
 
 **Exports:**
-- `lib/` files use named exports only — no default exports
+- `lib/` files use named exports only - no default exports
 - `mod.ts` re-exports from `lib/` files explicitly (no `export *` wildcard)
 - Types and values exported separately: `export type { Foo }` and `export { Bar }`
 
@@ -193,8 +193,8 @@ Every page requires `title` and `description` in YAML frontmatter.
 - Examples are self-contained and runnable
 
 **Callouts:**
-- Blockquote `>` used for pydantic-ai migration notes and important tips
-- Format: `> **Coming from pydantic-ai?** ...`
+- Blockquote `>` used for Pydantic AI migration notes and important tips
+- Format: `> **Coming from Pydantic AI?** ...`
 
 **Doc structure pattern:**
 1. Short intro paragraph (1-2 sentences)
@@ -206,7 +206,7 @@ Every page requires `title` and `description` in YAML frontmatter.
 **Navigation:**
 - Defined in `docs/docs.json` under `navigation.groups`
 - Mintlify theme (`"theme": "mint"`)
-- No Mintlify-specific components (Accordion, Tabs, etc.) detected in current pages — plain MDX only
+- No Mintlify-specific components (Accordion, Tabs, etc.) detected in current pages - plain MDX only
 
 ---
 

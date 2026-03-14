@@ -1,5 +1,5 @@
 /**
- * Tests for ExternalToolset — tools executed outside the agent process.
+ * Tests for ExternalToolset - tools executed outside the agent process.
  * All tools require approval so the caller can execute them externally.
  */
 import { assertEquals, assertInstanceOf } from "@std/assert";

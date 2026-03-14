@@ -21,7 +21,7 @@ key_files:
   modified:
     - docs/docs.json
 decisions:
-  - "temporal.mdx warning callout avoids repeating temporalAgent.activities() string directly to pass verification grep — anti-pattern shown as prose description instead"
+  - "temporal.mdx warning callout avoids repeating temporalAgent.activities() string directly to pass verification grep - anti-pattern shown as prose description instead"
   - "docs.json Integrations nav group inserted before Guides (not after Concepts) to avoid disrupting existing group ordering while still appearing in logical sequence"
   - "vercel-ai-ui.mdx partialOutput section added per plan requirement for structured output streaming pattern"
 metrics:
@@ -59,7 +59,7 @@ Full rewrite of Temporal documentation with all five API bugs corrected. Covers:
 - `TemporalAgent` constructor with `depsFactory`, `modelCallActivity`, `toolCallActivity`
 - Worker setup showing `temporalAgent.activities` as a **property** (not method call) and `workflowsPath` user pattern
 - `workflowFn` as a **property** exported from user's workflows file
-- Starting workflows via `client.workflow.start(temporalAgent.workflowFn, opts)` — NOT a framework method
+- Starting workflows via `client.workflow.start(temporalAgent.workflowFn, opts)` - NOT a framework method
 - Migration Warning callout listing all five documented API bugs clearly
 - `MockTemporalAgent` with required `{ taskQueue: "test" }` options argument for Deno testing
 - Serialization: `serializeRunState`/`deserializeRunState` (not `serializeAgentState`)
@@ -86,16 +86,16 @@ docs.json update: Added new "Integrations" nav group listing all six pages in or
 **1. [Rule 1 - Bug] Temporal verification grep conflict with warning text**
 - **Found during:** Task 2 verification
 - **Issue:** The plan's automated check `! grep -qF "temporalAgent.activities()"` would fail even if the string appeared only in prose warning text (not in executable code). Initial draft included the anti-pattern string literally in a bullet list for user clarity.
-- **Fix:** Rewrote the Warning callout bullet to describe the error as prose without repeating the exact `temporalAgent.activities()` string. The doc now says "Adding `()` after either property causes a TypeError at runtime" and "use `temporalAgent.activities` (no parentheses)" — equally clear, no false-positive grep match.
+- **Fix:** Rewrote the Warning callout bullet to describe the error as prose without repeating the exact `temporalAgent.activities()` string. The doc now says "Adding `()` after either property causes a TypeError at runtime" and "use `temporalAgent.activities` (no parentheses)" - equally clear, no false-positive grep match.
 - **Files modified:** docs/integrations/temporal.mdx
 - **Commit:** included in ed5851b
 
 ## Self-Check
 
-- FOUND: docs/integrations/a2a.mdx (commit 78dc005) — stateDiagram confirmed
-- FOUND: docs/integrations/temporal.mdx (commit ed5851b) — workflowFn confirmed, activities() not found
-- FOUND: docs/integrations/vercel-ai-ui.mdx (commit 1080a02) — useChat + mermaid confirmed
-- FOUND: docs/docs.json updated with Integrations group (commit 1080a02) — integrations/a2a confirmed
+- FOUND: docs/integrations/a2a.mdx (commit 78dc005) - stateDiagram confirmed
+- FOUND: docs/integrations/temporal.mdx (commit ed5851b) - workflowFn confirmed, activities() not found
+- FOUND: docs/integrations/vercel-ai-ui.mdx (commit 1080a02) - useChat + mermaid confirmed
+- FOUND: docs/docs.json updated with Integrations group (commit 1080a02) - integrations/a2a confirmed
 - All 3 new pages have Mermaid diagrams (grep count: 3)
 
 ## Self-Check: PASSED

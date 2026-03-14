@@ -16,7 +16,7 @@ import type { SerializableMessage } from "./types.ts";
  * `SerializableMessage[]` format used in Temporal activity parameters and
  * workflow state.
  *
- * The conversion is a structural cast — `ModelMessage` is already
+ * The conversion is a structural cast - `ModelMessage` is already
  * JSON-serializable. The function validates that each message has a `role`
  * field and a `content` field before casting.
  *

@@ -8,7 +8,7 @@
 
 ### Graph Constructor: Object vs Array Signature
 
-- Issue: `docs/reference/integrations/graph.mdx` shows the constructor as `new Graph({ nodes: [...] })` (object with a `nodes` key). The actual signature in `lib/graph/graph.ts` is `new Graph(nodes[], options?)` — nodes are passed as the first positional array argument, options as an optional second argument.
+- Issue: `docs/reference/integrations/graph.mdx` shows the constructor as `new Graph({ nodes: [...] })` (object with a `nodes` key). The actual signature in `lib/graph/graph.ts` is `new Graph(nodes[], options?)` - nodes are passed as the first positional array argument, options as an optional second argument.
 - Files: `docs/reference/integrations/graph.mdx` lines 55–65, `lib/graph/graph.ts` line 150–157
 - Impact: Every reader copying the documented example will get a TypeScript compile error. The object `{ nodes: [...] }` is not assignable to `BaseNode[]`.
 - Fix approach: Change the doc example from `new Graph({ nodes: [...] })` to `new Graph([new FetchNode(), new SummariseNode()])`. The options table shows `{ maxIterations? }` which IS correct as a second arg.
@@ -18,7 +18,7 @@
 - Issue: `docs/reference/integrations/graph.mdx` shows node code calling `this.next(nodeId, state)` and `this.output(value)` as if they are inherited instance methods of `BaseNode`. The actual public API exports `next()` and `output()` as standalone module-level functions from `lib/graph/types.ts`. `BaseNode` in `lib/graph/node.ts` has NO `next` or `output` methods.
 - Files: `docs/reference/integrations/graph.mdx` lines 32–43, `lib/graph/node.ts`, `lib/graph/types.ts`, `lib/graph/mod.ts`
 - Impact: Any developer following the docs will get "Property 'next' does not exist on type 'FetchNode'" at compile time. The real API requires importing `next` and `output` as named exports alongside `BaseNode`.
-- Fix approach: Update all doc examples to import and call `next("summarise", { ...state, results })` and `output(summary.output)` directly. Update the API reference table in the doc — remove `this.next()` and `this.output()` rows from the BaseNode member table and explain that `next` and `output` are imported module functions.
+- Fix approach: Update all doc examples to import and call `next("summarise", { ...state, results })` and `output(summary.output)` directly. Update the API reference table in the doc - remove `this.next()` and `this.output()` rows from the BaseNode member table and explain that `next` and `output` are imported module functions.
 
 ### AG-UI `depsFactory` Option Does Not Exist
 
@@ -29,7 +29,7 @@
 
 ### AG-UI `handleRequest` Takes `AGUIRunInput`, Not `Request`
 
-- Issue: `docs/reference/integrations/ag-ui.mdx` lines 36 and 136 show `adapter.handleRequest(req)` where `req` is a raw `Request` object from `Deno.serve`. The actual signature is `handleRequest(input: AGUIRunInput): Response` — it takes a pre-parsed `AGUIRunInput` object, not a raw HTTP `Request`.
+- Issue: `docs/reference/integrations/ag-ui.mdx` lines 36 and 136 show `adapter.handleRequest(req)` where `req` is a raw `Request` object from `Deno.serve`. The actual signature is `handleRequest(input: AGUIRunInput): Response` - it takes a pre-parsed `AGUIRunInput` object, not a raw HTTP `Request`.
 - Files: `docs/reference/integrations/ag-ui.mdx`, `lib/ag_ui/adapter.ts` line 139
 - Impact: The basic usage example and the CORS recipe both call the API incorrectly. The correct method for raw request handling is `adapter.handler()`, which returns a `(req: Request) => Promise<Response>` function that parses the body internally.
 - Fix approach: Replace `adapter.handleRequest(req)` with `adapter.handler()(req)` in the basic usage and CORS examples, or restructure the "Basic Usage" section around `Deno.serve(adapter.handler())`.
@@ -50,35 +50,35 @@
 
 The following areas have zero documentation pages. See `docs_parity.md` for the full gap analysis.
 
-### A2A (Agent-to-Agent) — Zero Docs
+### A2A (Agent-to-Agent) - Zero Docs
 
-- Issue: The A2A adapter is fully implemented in `lib/a2a/` (adapter, task store, types — ~900 lines) but there is no documentation page anywhere. `docs_parity.md` flags this as one of the 8 biggest gaps.
+- Issue: The A2A adapter is fully implemented in `lib/a2a/` (adapter, task store, types - ~900 lines) but there is no documentation page anywhere. `docs_parity.md` flags this as one of the 8 biggest gaps.
 - Files: `lib/a2a/adapter.ts`, `lib/a2a/task_store.ts`, `lib/a2a/types.ts`, `lib/a2a/mod.ts`
 - Impact: Users cannot discover or use agent-to-agent communication. The `AgentCard`, JSON-RPC endpoint, task lifecycle, streaming subscription, and `tasks/cancel` flows are completely undocumented.
-- Priority: P2 — create `docs/reference/integrations/a2a.mdx`
+- Priority: P2 - create `docs/reference/integrations/a2a.mdx`
 
-### Models & Providers — Zero Per-Provider Pages
+### Models & Providers - Zero Per-Provider Pages
 
 - Issue: There are no per-provider pages for Anthropic, OpenAI, Google (Gemini), Groq, Mistral, Ollama, or OpenAI-compatible models. No models overview page exists either.
-- Impact: Every new user's first question — "how do I use Claude / GPT-4 / Gemini?" — is unanswered in the docs.
-- Priority: P1 — create `docs/concepts/models.mdx` covering all providers
+- Impact: Every new user's first question - "how do I use Claude / GPT-4 / Gemini?" - is unanswered in the docs.
+- Priority: P1 - create `docs/concepts/models.mdx` covering all providers
 
-### Evals — No Section
+### Evals - No Section
 
 - Issue: No evaluation framework documentation exists. `docs_parity.md` identifies this as a ~12-page gap.
 - Impact: Production credibility gap. LLM evals are expected for serious frameworks.
 - Note: This likely requires framework-level feature work before docs can be written. Tracked as future milestone.
 
-### Examples — No Runnable Examples
+### Examples - No Runnable Examples
 
-- Issue: No standalone runnable examples exist. pydantic-ai has 17. Getting-started pages have snippets but no complete copy-paste programs.
+- Issue: No standalone runnable examples exist. Pydantic AI has 17. Getting-started pages have snippets but no complete copy-paste programs.
 - Priority: P3
 
 ### Missing Guide Pages (README links to non-existent files)
 
-- `docs/guides/multi-turn-conversations.mdx` — does not exist (README links to `./docs/guides/multi-turn-conversations.md`)
-- `docs/guides/streaming-responses.mdx` — does not exist (README links to `./docs/guides/streaming-responses.md`)
-- `docs/guides/mcp-servers.mdx` — does not exist (README links to `./docs/guides/mcp-servers.md`)
+- `docs/guides/multi-turn-conversations.mdx` - does not exist (README links to `./docs/guides/multi-turn-conversations.md`)
+- `docs/guides/streaming-responses.mdx` - does not exist (README links to `./docs/guides/streaming-responses.md`)
+- `docs/guides/mcp-servers.mdx` - does not exist (README links to `./docs/guides/mcp-servers.md`)
 
 ### Missing Reference Pages (README links to non-existent files)
 
@@ -97,8 +97,8 @@ All of these flat reference files linked from README do not exist:
 - `docs/ag-ui.md` → actual file is `docs/reference/integrations/ag-ui.mdx`
 - `docs/otel.md` → actual file is `docs/reference/integrations/otel.mdx`
 - `docs/temporal.md` → actual file is `docs/reference/integrations/temporal.mdx`
-- `docs/index.md` — does not exist at all
-- `docs/features.md` — does not exist (actual: `docs/reference/features.mdx`)
+- `docs/index.md` - does not exist at all
+- `docs/features.md` - does not exist (actual: `docs/reference/features.mdx`)
 
 ---
 
@@ -145,30 +145,30 @@ The following pages exist but contain incorrect, incomplete, or misleading conte
 
 ## Fragile Areas
 
-### `lib/execution/_run_utils.ts` — Over File Size Limit
+### `lib/execution/_run_utils.ts` - Over File Size Limit
 
 - Files: `lib/execution/_run_utils.ts` (832 lines)
 - Why fragile: At 832 lines this file exceeds the 800-line guideline. It concentrates core agent loop logic. Changes here risk regressions across streaming, deferred tools, structured output, and tool calling paths simultaneously.
-- Safe modification: Make changes only with full test suite passing. No test coverage for internal utility functions directly — they are exercised indirectly via `agent_test.ts`, `stream_test.ts`, `deferred_tools_test.ts`.
+- Safe modification: Make changes only with full test suite passing. No test coverage for internal utility functions directly - they are exercised indirectly via `agent_test.ts`, `stream_test.ts`, `deferred_tools_test.ts`.
 - Test coverage: Indirect only, no unit tests for `_run_utils.ts` internals directly.
 
-### `lib/ag_ui/adapter.ts` — `handleRequest` Accepts Pre-Parsed Input
+### `lib/ag_ui/adapter.ts` - `handleRequest` Accepts Pre-Parsed Input
 
 - Files: `lib/ag_ui/adapter.ts`
 - Why fragile: `handleRequest(input: AGUIRunInput)` accepts pre-parsed typed input, but the docs and the object docstring example both show it being called with a raw `Request`. The `handler()` method does the parsing. This asymmetry means anyone integrating without reading the source will write a broken integration.
 - Safe modification: Either align the API (have `handleRequest` accept `Request`) or fix all documentation examples.
 
-### `lib/a2a/adapter.ts` — Default URL Hardcoded
+### `lib/a2a/adapter.ts` - Default URL Hardcoded
 
 - Files: `lib/a2a/adapter.ts` line 176
-- Issue: `url: options.url ?? "http://localhost:8000"` — the `AgentCard` gets a localhost URL by default if the caller doesn't pass `url`. An agent deployed to production will advertise a localhost address in its agent card to any discovering client.
+- Issue: `url: options.url ?? "http://localhost:8000"` - the `AgentCard` gets a localhost URL by default if the caller doesn't pass `url`. An agent deployed to production will advertise a localhost address in its agent card to any discovering client.
 - Risk: Discovery-based A2A clients will attempt to contact `localhost:8000` instead of the real deployment URL.
 - Fix approach: Remove the default fallback or replace with `undefined`/empty string and document that `url` is required for production deployments.
 
-### `lib/graph/graph.ts` — `graph.run()` Throws Generic Error on Unexpected State
+### `lib/graph/graph.ts` - `graph.run()` Throws Generic Error on Unexpected State
 
 - Files: `lib/graph/graph.ts` line 195
-- Issue: `throw new Error("Graph ended without producing output.")` — if `GraphRun.next()` returns `null` or a non-output step after the while loop, a generic `Error` (not a typed graph error) is thrown. This can't be caught with a specific error type.
+- Issue: `throw new Error("Graph ended without producing output.")` - if `GraphRun.next()` returns `null` or a non-output step after the while loop, a generic `Error` (not a typed graph error) is thrown. This can't be caught with a specific error type.
 - Fix approach: Define and throw a typed `GraphEndedWithoutOutputError` consistent with `MaxGraphIterationsError` and `UnknownNodeError`.
 
 ---
@@ -231,17 +231,17 @@ The following pages exist but contain incorrect, incomplete, or misleading conte
 | Partial/wrong/thin | 31 |
 | Missing entirely | 47 |
 
-**Total tracked against pydantic-ai: ~80 items**
+**Total tracked against Pydantic AI: ~80 items**
 
 Top 8 gaps by impact (from `docs_parity.md`):
-1. Models/providers — zero per-provider pages
-2. A2A — zero docs for a fully-implemented feature
-3. MCP Server — only client side documented
-4. Examples — zero standalone runnable examples
-5. Thinking/extended reasoning — no docs for Anthropic/Google budget tokens
-6. Vercel AI UI streaming — no `useChat`/`useCompletion` integration docs
-7. Durable execution overview — Temporal page exists but no overview
-8. Evals — 12-page section gap, requires framework feature work first
+1. Models/providers - zero per-provider pages
+2. A2A - zero docs for a fully-implemented feature
+3. MCP Server - only client side documented
+4. Examples - zero standalone runnable examples
+5. Thinking/extended reasoning - no docs for Anthropic/Google budget tokens
+6. Vercel AI UI streaming - no `useChat`/`useCompletion` integration docs
+7. Durable execution overview - Temporal page exists but no overview
+8. Evals - 12-page section gap, requires framework feature work first
 
 Full priority order for addressing gaps is in `docs_parity.md` lines 233–292.
 

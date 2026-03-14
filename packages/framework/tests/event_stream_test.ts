@@ -1,5 +1,5 @@
 /**
- * Tests for agent.runStreamEvents() — Phase 5.
+ * Tests for agent.runStreamEvents() - Phase 5.
  *
  * Covers:
  * - turn-start events
@@ -290,7 +290,7 @@ Deno.test("runStreamEvents - error event on MaxTurns", async () => {
     doStream: () => Promise.resolve(toolCallStream("nonexistent_tool", {})),
   });
 
-  // Agent with no tools — every turn returns a tool call that can't be executed
+  // Agent with no tools - every turn returns a tool call that can't be executed
   // → no text, no final_result → nudge → max retries exceeded
   // But without matching a schema, it loops until maxTurns
   const agent = new Agent({ model, maxTurns: 2 });

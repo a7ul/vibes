@@ -1,5 +1,5 @@
 /**
- * TemporalAgent — wraps an {@link Agent} with Temporal activity-boundary
+ * TemporalAgent - wraps an {@link Agent} with Temporal activity-boundary
  * semantics.
  *
  * ## Node.js constraint
@@ -16,11 +16,11 @@
  *
  * ## What this class provides
  *
- * - `activities` — plain async functions ready to register with a Temporal
+ * - `activities` - plain async functions ready to register with a Temporal
  *   worker (`worker.create({ activities })`)
- * - `workflowFn` — a deterministic Temporal workflow function that drives the
+ * - `workflowFn` - a deterministic Temporal workflow function that drives the
  *   agent turn-loop via activity calls
- * - `run()` — a non-Temporal fallback for local development and testing
+ * - `run()` - a non-Temporal fallback for local development and testing
  */
 
 import type { Agent, RunOptions } from "../agent.ts";
@@ -129,7 +129,7 @@ export class TemporalAgent<TDeps, TOutput> {
       //
       // For a simpler integration, use runModelTurn which wraps the full
       // agent run (including all tool calls) in a single activity.
-      void params; // acknowledged — implementation is caller-specific
+      void params; // acknowledged - implementation is caller-specific
       return Promise.reject(
         new Error(
           "runToolCall: custom per-tool activity wiring is not implemented in " +
@@ -155,7 +155,7 @@ export class TemporalAgent<TDeps, TOutput> {
    *
    * The function drives the agent turn-loop by calling the `runModelTurn`
    * activity via Temporal's activity proxy. This ensures each turn is
-   * durable — if the workflow is interrupted, Temporal will replay from the
+   * durable - if the workflow is interrupted, Temporal will replay from the
    * last committed activity result.
    *
    * NOTE: In production you must wrap activity calls with
