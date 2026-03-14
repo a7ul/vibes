@@ -23,6 +23,8 @@ Vibes uses Vercel AI SDK as its model layer. Switching from Anthropic to OpenAI 
 
 `TestModel`, `FunctionModel`, `agent.override()`, and `setAllowModelRequests(false)` are first-class exports, not afterthoughts. Every agent you write is testable without real API calls, from the first line.
 
+The framework also ships a full [evaluation framework](/concepts/evals): define typed datasets, score outputs with built-in or LLM-as-judge evaluators, and run experiments with configurable concurrency and retries.
+
 ### Progressive complexity
 
 Start with 5 lines. Add tools. Add structured output. Add dependency injection. Add streaming. Each layer is opt-in. You only pay - in code complexity - for what you use.
