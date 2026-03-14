@@ -61,10 +61,7 @@
           "concepts/debugging",
           "concepts/multi-agent",
           "concepts/graph",
-          "concepts/thinking",
-          "concepts/how-agents-work",
-          "concepts/dependency-injection",
-          "concepts/error-handling"
+          "concepts/thinking"
         ]
       },
       {
@@ -93,51 +90,19 @@
         ]
       },
       {
-        "group": "Guides",
+        "group": "Advanced",
         "pages": [
-          "guides/human-in-the-loop",
-          "guides/multi-agent-systems"
-        ]
-      },
-      {
-        "group": "Reference: Core",
-        "pages": [
-          "reference/core/agents",
-          "reference/core/tools",
-          "reference/core/toolsets",
-          "reference/core/structured-output",
-          "reference/core/result-validators",
-          "reference/core/streaming",
-          "reference/core/dependencies",
-          "reference/core/run-context",
-          "reference/core/errors",
-          "reference/core/testing"
-        ]
-      },
-      {
-        "group": "Reference: Advanced",
-        "pages": [
-          "reference/advanced/message-history",
-          "reference/advanced/usage-limits",
-          "reference/advanced/deferred-tools",
-          "reference/advanced/multi-modal",
-          "reference/advanced/multi-agent",
-          "reference/advanced/model-settings"
-        ]
-      },
-      {
-        "group": "Integrations",
-        "pages": [
-          "reference/integrations/mcp",
-          "reference/integrations/graph",
-          "reference/integrations/ag-ui",
-          "reference/integrations/otel",
-          "reference/integrations/temporal"
+          "advanced/multimodal",
+          "advanced/error-handling",
+          "advanced/direct-model-requests"
         ]
       },
       {
         "group": "Meta",
         "pages": [
+          "meta/acknowledgments",
+          "meta/contributing",
+          "meta/changelog",
           "reference/features"
         ]
       }
