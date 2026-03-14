@@ -31,6 +31,8 @@ export interface RunContext<TDeps = undefined> {
 	toolName: string | null;
 	/** Unique identifier for this run. */
 	runId: string;
+	/** Per-run metadata supplied by the caller. */
+	metadata: Record<string, unknown>;
 }
 
 // ---------------------------------------------------------------------------
@@ -51,6 +53,8 @@ export interface RunResult<TOutput> {
 	output: TOutput;
 	/** Full message history for this run (can be passed back in as messageHistory). */
 	messages: ModelMessage[];
+	/** Messages added during this run only (excludes the passed-in messageHistory). */
+	newMessages: ModelMessage[];
 	/** Cumulative token usage across all turns. */
 	usage: Usage;
 	/** Number of result retries that occurred. */
@@ -66,6 +70,8 @@ export interface StreamResult<TOutput> {
 	output: Promise<TOutput>;
 	/** Resolves to the full message history once the run completes. */
 	messages: Promise<ModelMessage[]>;
+	/** Resolves to messages added during this run only (excludes passed-in history). */
+	newMessages: Promise<ModelMessage[]>;
 	/** Resolves to cumulative token usage once the run completes. */
 	usage: Promise<Usage>;
 }
