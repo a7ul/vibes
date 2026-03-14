@@ -1,6 +1,8 @@
 # Testing
 
-The Vercel AI SDK ships a `ai/test` module with mock model implementations that let you unit test agents without making real API calls. Tests run in milliseconds and are fully deterministic.
+The Vercel AI SDK ships a `ai/test` module with mock model implementations that
+let you unit test agents without making real API calls. Tests run in
+milliseconds and are fully deterministic.
 
 ## Setup
 
@@ -10,8 +12,8 @@ Add `ai/test` to your import map:
 // deno.json
 {
   "imports": {
-    "ai/test": "npm:ai@^4/test",
-  },
+    "ai/test": "npm:ai@^4/test"
+  }
 }
 ```
 
@@ -25,15 +27,16 @@ deno test --allow-env src/packages/framework/tests/
 
 ```ts
 import {
-  MockLanguageModelV1, // drop-in model replacement
   convertArrayToReadableStream, // build streams for doStream
+  MockLanguageModelV1, // drop-in model replacement
   mockValues, // cycle through multiple responses
 } from "ai/test";
 ```
 
 ### `MockLanguageModelV1`
 
-A `LanguageModelV1` implementation you control. Pass `doGenerate` for `.run()` tests, `doStream` for `.stream()` tests.
+A `LanguageModelV1` implementation you control. Pass `doGenerate` for `.run()`
+tests, `doStream` for `.stream()` tests.
 
 ```ts
 const model = new MockLanguageModelV1({
@@ -49,7 +52,8 @@ const model = new MockLanguageModelV1({
 
 ### `mockValues(...values)`
 
-Returns a function that cycles through the provided values one at a time. Use it when a test needs multiple different responses across turns:
+Returns a function that cycles through the provided values one at a time. Use it
+when a test needs multiple different responses across turns:
 
 ```ts
 const doGenerate = mockValues(
@@ -64,7 +68,8 @@ const model = new MockLanguageModelV1({
 
 ### `convertArrayToReadableStream(chunks)`
 
-Builds a `ReadableStream` from an array of stream part chunks. Used with `doStream`:
+Builds a `ReadableStream` from an array of stream part chunks. Used with
+`doStream`:
 
 ```ts
 const model = new MockLanguageModelV1({
@@ -295,6 +300,87 @@ Deno.test("stream text", async () => {
   assertEquals(collected, "hello world");
   assertEquals(await stream.output, "hello world");
 });
+```
+
+### `setAllowModelRequests` — Guard Against Accidental API Calls
+
+Call this at the top of a test file to ensure any non-mocked agent run throws
+immediately instead of making a real API call:
+
+```ts
+import { setAllowModelRequests } from "./mod.ts";
+
+setAllowModelRequests(false); // throws ModelRequestsDisabledError for real calls
+
+// Use agent.override({ model: mockModel }) for the runs you do want to execute
+```
+
+### `captureRunMessages` — Inspect Messages Sent to the Model
+
+Wrap any agent call to record the exact messages sent to the model on each turn:
+
+```ts
+import { captureRunMessages } from "./mod.ts";
+
+const { result, messages } = await captureRunMessages(() =>
+  agent.run("Hello", { deps: myDeps })
+);
+
+// messages[0] = messages array for turn 1
+// messages[1] = messages array for turn 2
+assertEquals(messages[0].some((m) => m.role === "system"), true);
+```
+
+### `TestModel` — Schema-Aware Mock
+
+`TestModel` is a higher-level mock that understands the agent's tool schema. It
+lets you specify tool call sequences without manually constructing raw SDK
+response objects:
+
+```ts
+import { TestModel } from "./mod.ts";
+import { z } from "zod";
+
+const OutputSchema = z.object({ answer: z.string() });
+
+const model = new TestModel({
+  responses: [
+    // Turn 1: call a tool
+    { toolCalls: [{ name: "search", args: { query: "vibes framework" } }] },
+    // Turn 2: produce structured output
+    { output: { answer: "Vibes is a TypeScript agent framework." } },
+  ],
+});
+
+const agent = new Agent({ model, outputSchema: OutputSchema, tools: [searchTool] });
+const result = await agent.run("What is vibes?");
+assertEquals(result.output.answer.includes("Vibes"), true);
+```
+
+### `FunctionModel` — Programmatic Control
+
+`FunctionModel` gives you full control by accepting a function that receives
+the current prompt and returns a response. Useful for testing behaviour that
+depends on message content:
+
+```ts
+import { FunctionModel } from "./mod.ts";
+
+const model = new FunctionModel(({ prompt }) => {
+  const lastUser = prompt.findLast((m) => m.role === "user");
+  const content = typeof lastUser?.content === "string"
+    ? lastUser.content
+    : "";
+  return {
+    text: content.includes("hello") ? "Hi there!" : "I don't understand.",
+    finishReason: "stop" as const,
+    usage: { promptTokens: 5, completionTokens: 3 },
+  };
+});
+
+const agent = new Agent({ model });
+const result = await agent.run("hello");
+assertEquals(result.output, "Hi there!");
 ```
 
 ### Inspecting What the Model Received
