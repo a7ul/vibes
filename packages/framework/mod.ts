@@ -128,6 +128,32 @@ export {
 	fileMessage,
 } from "./content.ts";
 
+// Graph FSM (multi-agent typed state machine)
+export type {
+	NodeId,
+	NodeResult,
+	GraphRunOptions,
+	GraphOptions,
+	GraphStep,
+	StatePersistence,
+	GraphSnapshot,
+} from "./graph/mod.ts";
+export { next, output } from "./graph/mod.ts";
+export { BaseNode } from "./graph/mod.ts";
+export { Graph, GraphRun } from "./graph/mod.ts";
+export { MemoryStatePersistence, FileStatePersistence } from "./graph/mod.ts";
+export { MaxGraphIterationsError, UnknownNodeError } from "./graph/mod.ts";
+export { toMermaid } from "./graph/mod.ts";
+
+// AG-UI protocol adapter
+export { AGUIAdapter } from "./ag_ui/adapter.ts";
+export type {
+	AGUIRunInput,
+	AGUIMessage,
+	AGUIAdapterOptions,
+} from "./ag_ui/adapter.ts";
+export type { AGUIEvent } from "./ag_ui/types.ts";
+
 // MCP (Model Context Protocol) integration
 export type {
 	MCPTool,
