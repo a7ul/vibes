@@ -2,7 +2,7 @@
   "$schema": "https://mintlify.com/docs.json",
   "theme": "mint",
   "name": "Vibes Agent Framework",
-  "description": "pydantic-ai patterns for TypeScript. Powered by Vercel AI SDK.",
+  "description": "Pydantic AI patterns for TypeScript. Powered by Vercel AI SDK.",
   "logo": {
     "light": "/logo/light.svg",
     "dark": "/logo/dark.svg"
@@ -76,6 +76,20 @@
           "integrations/a2a",
           "integrations/temporal",
           "integrations/vercel-ai-ui"
+        ]
+      },
+      {
+        "group": "Examples",
+        "pages": [
+          "examples/index",
+          "examples/hello-world",
+          "examples/weather-agent",
+          "examples/chat-app",
+          "examples/bank-support",
+          "examples/rag",
+          "examples/graph-workflow",
+          "examples/human-in-the-loop",
+          "examples/a2a"
         ]
       },
       {

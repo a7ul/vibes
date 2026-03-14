@@ -1,0 +1,112 @@
+---
+title: A2A (Agent-to-Agent)
+description: Two agents communicating via Google's A2A protocol - a research agent server and a client that queries it over HTTP.
+---
+
+This example shows two agents communicating via [Google's A2A protocol](https://google.github.io/A2A). The server wraps a Vibes agent with `A2AAdapter`, exposing it as a JSON-RPC HTTP server. The client uses plain `fetch()` to send a task - showing the wire format every A2A client must produce.
+
+## What You'll Learn
+
+- Wrapping a Vibes agent with `A2AAdapter`
+- Exposing an agent as an A2A-compatible HTTP server with `adapter.handler()`
+- Calling an A2A server using the `message/send` JSON-RPC method
+- The A2A wire format (JSON-RPC 2.0 message structure)
+
+## Prerequisites
+
+- Vibes installed (`npm:@vibes/framework`)
+- `ANTHROPIC_API_KEY` environment variable set (for the server)
+
+## Complete Example
+
+<CodeGroup>
+
+```typescript server.ts
+import { A2AAdapter, Agent } from "npm:@vibes/framework";
+import { anthropic } from "npm:@ai-sdk/anthropic";
+
+// The agent being exposed
+const researchAgent = new Agent({
+  model: anthropic("claude-haiku-4-5-20251001"),
+  systemPrompt: "You are a research assistant. Answer factual questions concisely and accurately.",
+});
+
+// Wrap with A2AAdapter
+const adapter = new A2AAdapter(researchAgent, {
+  name: "Research Agent",
+  description: "Answers factual research questions",
+  url: "http://localhost:8000",
+  version: "1.0.0",
+});
+
+// Start the HTTP server
+Deno.serve({ port: 8000 }, adapter.handler());
+console.log("A2A server running on http://localhost:8000");
+console.log("Agent card available at: http://localhost:8000/.well-known/agent.json");
+```
+
+```typescript client.ts
+// A2A client - plain fetch with JSON-RPC 2.0
+
+const response = await fetch("http://localhost:8000/", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({
+    jsonrpc: "2.0",
+    method: "message/send",
+    id: "req-1",
+    params: {
+      message: {
+        role: "user",
+        parts: [{ kind: "text", text: "What year was the Eiffel Tower built?" }],
+      },
+    },
+  }),
+});
+
+const { result } = await response.json();
+
+// The response contains an A2ATask with artifacts
+const text = result.artifacts?.[0]?.parts?.[0]?.text;
+console.log("Agent response:", text);
+// "The Eiffel Tower was built in 1889..."
+```
+
+</CodeGroup>
+
+## Run It
+
+```bash
+# Terminal 1: start the server
+ANTHROPIC_API_KEY=your-key deno run --allow-net --allow-env server.ts
+
+# Terminal 2: run the client (after server is ready)
+deno run --allow-net --allow-env client.ts
+```
+
+## How It Works
+
+### `A2AAdapter`
+
+Wraps a Vibes agent and handles all A2A protocol details - routing, task lifecycle, JSON-RPC marshaling. The `options` object becomes the AgentCard served at `GET /.well-known/agent.json` for agent discovery.
+
+### `adapter.handler()`
+
+Returns a Deno-compatible `(req: Request) => Promise<Response>` function. Pass directly to `Deno.serve()`.
+
+### JSON-RPC wire format
+
+A2A uses JSON-RPC 2.0. `method: "message/send"` is synchronous - the response body contains the complete `A2ATask` result. Use `method: "message/stream"` for SSE streaming.
+
+### Response shape
+
+The result is an `A2ATask` object. Text responses are in `result.artifacts[0].parts[0].text`. The task state will be `"completed"` for successful runs.
+
+<Info>
+The client uses plain `fetch()` intentionally - this is the A2A wire protocol that any A2A-compatible client must produce. In production, you would typically use an A2A client SDK or another Vibes agent as the caller.
+</Info>
+
+## Next Steps
+
+- [A2A integration page](/integrations/a2a) - streaming (message/stream), task cancellation, MemoryTaskStore
+- [Multi-Agent concept page](/concepts/multi-agent) - agent-as-tool pattern (simpler, same process)
