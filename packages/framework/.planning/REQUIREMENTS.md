@@ -94,22 +94,56 @@
 
 | Requirement | Phase | Status |
 |---|---|---|
-| LAND-01, LAND-02 | Phase 1 | Pending |
-| GS-01, GS-02 | Phase 1 | Pending |
-| CONCEPT-01 through CONCEPT-08 | Phase 2 | Pending |
-| CONCEPT-09 through CONCEPT-14 | Phase 3 | Pending |
-| INT-01a, INT-01b, INT-02, INT-03 | Phase 4 | Pending |
-| INT-04, INT-05 | Phase 4 | Pending |
-| EX-01 through EX-09 | Phase 5 | Pending |
-| ADV-01, ADV-02, ADV-03 | Phase 6 | Pending |
-| META-01, META-02, META-03 | Phase 6 | Pending |
-| NAV-01, NAV-02, NAV-03, NAV-04, DIAG-01 | Phase 6 | Pending |
+| LAND-01 | Phase 1 | Pending |
+| LAND-02 | Phase 1 | Pending |
+| GS-01 | Phase 1 | Pending |
+| GS-02 | Phase 1 | Pending |
+| CONCEPT-01 | Phase 2 | Pending |
+| CONCEPT-02 | Phase 2 | Pending |
+| CONCEPT-03 | Phase 2 | Pending |
+| CONCEPT-04 | Phase 2 | Pending |
+| CONCEPT-05 | Phase 2 | Pending |
+| CONCEPT-06 | Phase 2 | Pending |
+| CONCEPT-07 | Phase 2 | Pending |
+| CONCEPT-08 | Phase 2 | Pending |
+| CONCEPT-09 | Phase 3 | Pending |
+| CONCEPT-10 | Phase 3 | Pending |
+| CONCEPT-11 | Phase 3 | Pending |
+| CONCEPT-12 | Phase 3 | Pending |
+| CONCEPT-13 | Phase 3 | Pending |
+| CONCEPT-14 | Phase 3 | Pending |
+| INT-01a | Phase 4 | Pending |
+| INT-01b | Phase 4 | Pending |
+| INT-02 | Phase 4 | Pending |
+| INT-03 | Phase 4 | Pending |
+| INT-04 | Phase 4 | Pending |
+| INT-05 | Phase 4 | Pending |
+| EX-01 | Phase 5 | Pending |
+| EX-02 | Phase 5 | Pending |
+| EX-03 | Phase 5 | Pending |
+| EX-04 | Phase 5 | Pending |
+| EX-05 | Phase 5 | Pending |
+| EX-06 | Phase 5 | Pending |
+| EX-07 | Phase 5 | Pending |
+| EX-08 | Phase 5 | Pending |
+| EX-09 | Phase 5 | Pending |
+| ADV-01 | Phase 6 | Pending |
+| ADV-02 | Phase 6 | Pending |
+| ADV-03 | Phase 6 | Pending |
+| META-01 | Phase 6 | Pending |
+| META-02 | Phase 6 | Pending |
+| META-03 | Phase 6 | Pending |
+| NAV-01 | Phase 6 | Pending |
+| NAV-02 | Phase 6 | Pending |
+| NAV-03 | Phase 6 | Pending |
+| NAV-04 | Phase 6 | Pending |
+| DIAG-01 | Phase 6 | Pending |
 
 **Coverage:**
-- v1 requirements: 42 total
-- Mapped to phases: 42
-- Unmapped: 0 ✓
+- v1 requirements: 44 total
+- Mapped to phases: 44
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-03-14*
-*Last updated: 2026-03-14 after initial definition*
+*Last updated: 2026-03-14 after roadmap creation*
