@@ -14,6 +14,7 @@ import type { HistoryProcessor } from "./history_processor.ts";
 import type { ModelSettings } from "./model_settings.ts";
 import type { InternalRunOpts } from "./execution/_run_utils.ts";
 import type { AgentStreamEvent } from "./events.ts";
+import type { DeferredToolRequests, DeferredToolResults } from "./deferred.ts";
 import { executeRun } from "./execution/run.ts";
 import { executeStream } from "./execution/stream.ts";
 import { executeStreamEvents } from "./execution/event_stream.ts";
@@ -112,6 +113,11 @@ export interface RunOptions<TDeps> {
 	modelSettings?: ModelSettings;
 	/** Per-run end strategy (override the agent-level endStrategy). */
 	endStrategy?: EndStrategy;
+	/**
+	 * Deferred tool results to inject when resuming a paused run.
+	 * Normally not set directly — use `agent.resume()` instead.
+	 */
+	deferredResults?: DeferredToolResults;
 }
 
 /** Options accepted by `agent.override()`. */
@@ -252,6 +258,53 @@ export class Agent<TDeps = undefined, TOutput = string> {
 			usageLimits: opts?.usageLimits,
 			modelSettings: opts?.modelSettings,
 			endStrategy: opts?.endStrategy,
+			deferredResults: opts?.deferredResults,
+		});
+	}
+
+	/**
+	 * Resume a paused run after providing human approval for deferred tool calls.
+	 *
+	 * Usage:
+	 * ```ts
+	 * try {
+	 *   const result = await agent.run(prompt);
+	 * } catch (err) {
+	 *   if (err instanceof ApprovalRequiredError) {
+	 *     // Inspect err.deferred.requests, decide to approve/reject/modify
+	 *     const results: DeferredToolResults = {
+	 *       results: [{ toolCallId: "tc1", result: "approved result" }],
+	 *     };
+	 *     const finalResult = await agent.resume(err.deferred, results);
+	 *   }
+	 * }
+	 * ```
+	 *
+	 * @param deferred - The `DeferredToolRequests` from the caught `ApprovalRequiredError`.
+	 * @param results - The human-approved results for each pending tool call.
+	 * @param opts - Additional run options (deps, metadata, etc.).
+	 */
+	resume(
+		deferred: DeferredToolRequests,
+		results: DeferredToolResults,
+		opts?: Omit<RunOptions<TDeps>, "messageHistory" | "deferredResults">,
+	): Promise<RunResult<TOutput>> {
+		// Resume state contains the full message history up to (and including)
+		// the assistant's tool call message that triggered the approval gate.
+		// We pass it as messageHistory with _resumeFromDeferred=true so the
+		// run loop does NOT prepend a new user message.
+		const { messages } = deferred._resumeState;
+
+		return executeRun<TDeps, TOutput>(this, "", {
+			deps: opts?.deps as TDeps,
+			messageHistory: messages,
+			metadata: opts?.metadata,
+			usageLimits: opts?.usageLimits,
+			modelSettings: opts?.modelSettings,
+			endStrategy: opts?.endStrategy,
+			deferredResults: results,
+			_resumeFromDeferred: true,
+			_deferredPendingRequests: deferred.requests,
 		});
 	}
 
@@ -335,6 +388,7 @@ export class Agent<TDeps = undefined, TOutput = string> {
 			usageLimits: runOpts?.usageLimits,
 			modelSettings: runOpts?.modelSettings,
 			endStrategy: runOpts?.endStrategy,
+			deferredResults: runOpts?.deferredResults,
 			_bypassModelRequestsCheck: true,
 			_override: {
 				model: overrides.model,

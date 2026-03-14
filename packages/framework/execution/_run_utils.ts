@@ -36,6 +36,12 @@ import {
 	unionToolIndex,
 	normaliseSchemas,
 } from "../output_schema.ts";
+import {
+	DeferredToolRequests,
+	type DeferredToolRequest,
+	type DeferredToolResults,
+	type ResumeState,
+} from "../deferred.ts";
 
 // ---------------------------------------------------------------------------
 // Public opts type for execute functions
@@ -52,6 +58,25 @@ export interface InternalRunOpts<TDeps, TOutput> {
 	modelSettings?: ModelSettings;
 	/** Per-run end strategy (overrides agent-level endStrategy). */
 	endStrategy?: EndStrategy;
+	/**
+	 * Deferred tool results supplied by the caller when resuming after human
+	 * approval. Injected into message history before the next model turn.
+	 */
+	deferredResults?: DeferredToolResults;
+	/**
+	 * When true, `messageHistory` already contains the full conversation up to
+	 * the pause point (including the assistant's tool call message). The run
+	 * does NOT prepend a new user message from `prompt`. Used by `agent.resume()`.
+	 * @internal
+	 */
+	_resumeFromDeferred?: boolean;
+	/**
+	 * The original pending requests from the deferred tool gate. Passed through
+	 * from `agent.resume()` so `buildResumeToolMessage` can look up toolNames
+	 * by toolCallId for accurate tool-result messages.
+	 * @internal
+	 */
+	_deferredPendingRequests?: ReadonlyArray<DeferredToolRequest>;
 	/** Populated by Agent.override(); replaces corresponding agent fields for this run. */
 	_override?: {
 		model?: LanguageModel;
@@ -485,6 +510,233 @@ export function createSequentialMutex(): Semaphore {
 export function checkModelRequestsAllowed(bypass = false): void {
 	assertModelRequestsAllowed(bypass);
 }
+
+// ---------------------------------------------------------------------------
+// Deferred tools support
+// ---------------------------------------------------------------------------
+
+/**
+ * Check whether a tool requires approval for the given context and args.
+ * Evaluates static booleans or calls the predicate function.
+ */
+export async function checkRequiresApproval<TDeps>(
+	t: ToolDefinition<TDeps>,
+	ctx: RunContext<TDeps>,
+	args: Record<string, unknown>,
+): Promise<boolean> {
+	const flag = t.requiresApproval;
+	if (flag === undefined || flag === false) return false;
+	if (flag === true) return true;
+	return await flag(ctx, args);
+}
+
+/**
+ * Build an AI SDK ToolSet where approval-required tools record themselves into
+ * `pendingApprovals` instead of executing. Normal tools execute as usual.
+ *
+ * After `generateText` completes, check `pendingApprovals`. If non-empty,
+ * call `correlateApprovalIds` to attach the real toolCallIds from the response,
+ * then throw `ApprovalRequiredError` with a `DeferredToolRequests` instance.
+ *
+ * @param tools - All resolved tool definitions for this turn.
+ * @param outputSchema - Optional Zod schema for output tools.
+ * @param outputMode - Output delivery mode.
+ * @param ctx - The current RunContext.
+ * @param pendingApprovals - Mutable array; approval-required calls are pushed here.
+ * @param maxConcurrency - Optional concurrency cap.
+ * @param sequentialMutex - Shared mutex for sequential tools.
+ */
+export function buildDeferredAwareToolMap<TDeps>(
+	tools: ReadonlyArray<ToolDefinition<TDeps>>,
+	outputSchema: import("zod").ZodTypeAny | import("zod").ZodTypeAny[] | undefined,
+	outputMode: import("../output_mode.ts").OutputMode,
+	ctx: RunContext<TDeps>,
+	pendingApprovals: DeferredToolRequest[],
+	maxConcurrency?: number,
+	sequentialMutex?: Semaphore,
+): ToolSet {
+	// Wrap approval-required tools so they record instead of execute.
+	// We intercept in the execute by checking requiresApproval at call time.
+	// The toolCallId is not available here (it's in the AI SDK's execute options),
+	// so we use a sentinel and correlate IDs after generateText via correlateApprovalIds.
+	const wrappedTools: ToolDefinition<TDeps>[] = tools.map((t) => {
+		if (!t.requiresApproval) return t;
+		const wrapped: ToolDefinition<TDeps> = {
+			...t,
+			execute: async (execCtx: RunContext<TDeps>, args: import("zod").infer<import("zod").ZodTypeAny>) => {
+				const argsRecord = args as Record<string, unknown>;
+				const needsApproval = await checkRequiresApproval(t, execCtx, argsRecord);
+				if (!needsApproval) {
+					// Dynamic predicate returned false — run original execute
+					return t.execute(execCtx, args);
+				}
+				// Record this call; toolCallId will be filled in by correlateApprovalIds
+				pendingApprovals.push({
+					toolCallId: `__pending_${pendingApprovals.length}__`,
+					toolName: t.name,
+					args: argsRecord,
+				});
+				// Placeholder result — discarded when we throw ApprovalRequiredError
+				return `__approval_required__`;
+			},
+		};
+		return wrapped;
+	});
+
+	const toolMap = toAISDKTools(wrappedTools, () => ctx, maxConcurrency, sequentialMutex);
+	if (outputSchema && outputMode === "tool") {
+		registerOutputTools(toolMap, outputSchema);
+	}
+	return toolMap;
+}
+
+/**
+ * After `generateText` returns, correlate pending approval records with the
+ * actual tool calls from the response to fill in real toolCallIds.
+ *
+ * Matches by tool name in order of appearance in `toolCalls`.
+ */
+export function correlateApprovalIds(
+	pendingApprovals: DeferredToolRequest[],
+	toolCalls: ReadonlyArray<{ toolCallId: string; toolName: string }>,
+): void {
+	// Build a queue of call IDs per tool name, in order they appear
+	const idQueueByName = new Map<string, string[]>();
+	for (const tc of toolCalls) {
+		const q = idQueueByName.get(tc.toolName) ?? [];
+		q.push(tc.toolCallId);
+		idQueueByName.set(tc.toolName, q);
+	}
+
+	// Match each pending approval to the next ID for its tool name
+	const consumedByName = new Map<string, number>();
+	for (const req of pendingApprovals) {
+		const queue = idQueueByName.get(req.toolName) ?? [];
+		const consumed = consumedByName.get(req.toolName) ?? 0;
+		if (consumed < queue.length) {
+			req.toolCallId = queue[consumed];
+			consumedByName.set(req.toolName, consumed + 1);
+		}
+	}
+}
+
+/**
+ * Re-execute a tool with overridden args (for the argsOverride case in resume).
+ * Returns the serialized result.
+ */
+export async function reExecuteTool<TDeps>(
+	toolName: string,
+	overrideArgs: Record<string, unknown>,
+	tools: ReadonlyArray<ToolDefinition<TDeps>>,
+	ctx: RunContext<TDeps>,
+): Promise<unknown> {
+	const t = tools.find((tool) => tool.name === toolName);
+	if (!t) {
+		return `Error: tool "${toolName}" not found for re-execution`;
+	}
+	try {
+		const rawResult = await t.execute(ctx, overrideArgs);
+		return serializeToolResult(rawResult);
+	} catch (err) {
+		return `Error re-executing tool: ${err instanceof Error ? err.message : String(err)}`;
+	}
+}
+
+/**
+ * Build the tool-result message that injects approved results into the message
+ * history, enabling the run to continue after human approval.
+ *
+ * For results with `argsOverride`, the tool is re-executed with the new args.
+ * For plain `result`, the value is injected directly.
+ *
+ * @param deferredResults - Human-approved results for each pending tool call.
+ * @param pendingRequests - The original deferred requests (provides toolName lookup).
+ * @param tools - Resolved tool definitions (needed for argsOverride re-execution).
+ * @param ctx - The current RunContext.
+ * @returns AI SDK-compatible tool-result message to append to message history.
+ */
+export async function buildResumeToolMessage<TDeps>(
+	deferredResults: DeferredToolResults,
+	pendingRequests: ReadonlyArray<DeferredToolRequest>,
+	tools: ReadonlyArray<ToolDefinition<TDeps>>,
+	ctx: RunContext<TDeps>,
+): Promise<ModelMessage> {
+	const requestByCallId = new Map<string, DeferredToolRequest>();
+	for (const req of pendingRequests) {
+		requestByCallId.set(req.toolCallId, req);
+	}
+
+	const parts: Array<{
+		type: "tool-result";
+		toolCallId: string;
+		toolName: string;
+		output: unknown;
+	}> = [];
+
+	for (const dr of deferredResults.results) {
+		const req = requestByCallId.get(dr.toolCallId);
+		const toolName = req?.toolName ?? dr.toolCallId;
+		let output: unknown;
+
+		if (dr.argsOverride !== undefined && req !== undefined) {
+			output = await reExecuteTool(toolName, dr.argsOverride, tools, ctx);
+		} else {
+			output = dr.result ?? "";
+		}
+
+		// AI SDK v6 requires output to be ToolResultOutput: { type: "text" | "json", value }
+		const formattedOutput: { type: "text"; value: string } | { type: "json"; value: unknown } =
+			typeof output === "string"
+				? { type: "text" as const, value: output }
+				: { type: "json" as const, value: output };
+
+		parts.push({
+			type: "tool-result" as const,
+			toolCallId: dr.toolCallId,
+			toolName,
+			output: formattedOutput,
+		});
+	}
+
+	return {
+		role: "tool" as const,
+		content: parts,
+	} as unknown as ModelMessage;
+}
+
+/**
+ * Strip tool-result messages for deferred tool calls from `responseMessages`.
+ *
+ * When the AI SDK executes tools and encounters a deferred (approval-required)
+ * tool, it records a placeholder tool-result in the response messages. For the
+ * resume state we only want to store the conversation up to the assistant's
+ * tool-call message — NOT the placeholder results (which will be replaced by
+ * the approved results when the run is resumed).
+ *
+ * @param responseMessages - Messages from `response.response.messages`.
+ * @param pendingCallIds - Set of toolCallIds for pending deferred calls.
+ * @returns A new array with tool-result messages for deferred calls removed.
+ */
+export function stripDeferredToolResults(
+	responseMessages: ModelMessage[],
+	pendingCallIds: ReadonlyArray<string>,
+): ModelMessage[] {
+	const pendingSet = new Set(pendingCallIds);
+	// Filter out tool-result messages that contain only deferred tool results.
+	// A tool message may have multiple content parts; we strip any that are
+	// deferred and rebuild the message if it still has non-deferred parts.
+	return responseMessages.filter((msg) => {
+		if (msg.role !== "tool") return true;
+		const parts = (msg as { role: "tool"; content: Array<{ toolCallId: string }> }).content;
+		// Keep this message only if it has at least one non-deferred tool result
+		const nonDeferred = parts.filter((p) => !pendingSet.has(p.toolCallId));
+		return nonDeferred.length > 0;
+	});
+}
+
+// Re-export deferred types for run.ts
+export { DeferredToolRequests };
+export type { DeferredToolRequest, DeferredToolResults, ResumeState };
 
 // ---------------------------------------------------------------------------
 // Re-exported helpers for run.ts / stream.ts
