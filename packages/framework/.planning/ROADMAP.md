@@ -30,11 +30,11 @@ Decimal phases appear between their surrounding integers in numeric order.
   2. An introduction page exists explaining design philosophy and crediting pydantic-ai and Vercel AI SDK
   3. The install page lists all supported providers with a Mermaid provider architecture diagram
   4. A single progressive hello-world tutorial walks from bare agent through tools, structured output, and testing -- replacing the 4 fragmented getting-started pages
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 01-01: TBD
-- [ ] 01-02: TBD
+- [ ] 01-01-PLAN.md — Rewrite landing page (index.mdx) and create introduction.mdx
+- [ ] 01-02-PLAN.md — Enhance install page, create hello-world tutorial, delete old pages, update docs.json
 
 ### Phase 2: Core Concepts Part 1
 **Goal**: Developers can learn the eight foundational concepts (agents, models, deps, tools, toolsets, results, messages, streaming) through deep-dive pages with Mermaid diagrams and working code
@@ -46,7 +46,7 @@ Plans:
   3. The Tools page documents all tool types (tool, plainTool, outputTool, fromSchema) with an execution pipeline diagram
   4. The Streaming page covers both stream() and runStreamEvents() with an event timeline sequence diagram
   5. The Dependencies page positions RunContext DI as a signature feature with a fan-out diagram showing deps flowing through tools, prompts, validators, and toolsets
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
 - [ ] 02-01: TBD
@@ -63,7 +63,7 @@ Plans:
   3. The Graph page uses the corrected API (constructor + free functions, not this.next()), includes an FSM Mermaid diagram, and documents persistence
   4. The Thinking page documents extended reasoning configuration for both Anthropic and Google models
   5. The Multi-Agent page shows agent-as-tool pattern with a delegation flow sequence diagram
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
 - [ ] 03-01: TBD
@@ -79,7 +79,7 @@ Plans:
   3. The A2A page exists as a brand-new page covering A2AAdapter, AgentCard, all JSON-RPC endpoints, task lifecycle, streaming, and a task state machine Mermaid diagram
   4. The Temporal page is rewritten with a durable execution overview and workflow-activities Mermaid diagram
   5. A new Vercel AI UI page documents connecting Vibes agent streams to useChat and useCompletion React hooks
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
 - [ ] 04-01: TBD
@@ -95,7 +95,7 @@ Plans:
   3. The Bank Support example faithfully ports the canonical pydantic-ai teaching example to TypeScript using Vibes APIs
   4. The Graph Workflow and Human-in-the-Loop examples demonstrate end-to-end flows matching their concept page teachings
   5. The A2A example shows two agents communicating via the A2A protocol
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
 - [ ] 05-01: TBD
@@ -112,7 +112,7 @@ Plans:
   3. docs.json navigation matches the new structure: landing, intro, getting started, concepts, integrations, examples, advanced, meta
   4. All old fragmented reference pages are deleted and zero broken internal links remain (verified by audit)
   5. At least 30 Mermaid diagrams render correctly across concept and integration pages
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
 - [ ] 06-01: TBD
