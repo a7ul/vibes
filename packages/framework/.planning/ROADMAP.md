@@ -12,7 +12,7 @@ Rewrite and expand the Vibes Agent Framework documentation to full parity with p
 
 Decimal phases appear between their surrounding integers in numeric order.
 
-- [ ] **Phase 1: Landing and Getting Started** - First-impression pages: hero landing, introduction, install, and progressive hello-world tutorial
+- [x] **Phase 1: Landing and Getting Started** - First-impression pages: hero landing, introduction, install, and progressive hello-world tutorial (completed 2026-03-14)
 - [ ] **Phase 2: Core Concepts Part 1** - Agent fundamentals: agents, models, dependencies, tools, toolsets, results, messages, streaming
 - [ ] **Phase 3: Core Concepts Part 2** - Advanced patterns: human-in-the-loop, testing, debugging, multi-agent, graph, thinking
 - [ ] **Phase 4: Integrations** - Protocol and platform pages: MCP client/server, AG-UI, A2A, Temporal, Vercel AI UI
@@ -127,7 +127,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Landing and Getting Started | 1/2 | In progress | - |
+| 1. Landing and Getting Started | 2/2 | Complete   | 2026-03-14 |
 | 2. Core Concepts Part 1 | 0/3 | Not started | - |
 | 3. Core Concepts Part 2 | 0/2 | Not started | - |
 | 4. Integrations | 0/2 | Not started | - |
