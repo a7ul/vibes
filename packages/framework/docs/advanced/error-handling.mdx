@@ -118,7 +118,7 @@ Thrown when a `UsageLimits` budget defined in `AgentOptions` is exceeded mid-run
 | `err.limit` | `number` | The budget ceiling that was set |
 
 <Warning>
-The correct class name is `UsageLimitError` — **not** `UsageLimitExceededError`. The old `concepts/error-handling` page used the wrong name. Always import from `@vibes/framework` and rely on TypeScript autocomplete to confirm the name.
+The correct class name is `UsageLimitError` — **not** `UsageLimitExceededError`. Always import from `@vibes/framework` and rely on TypeScript autocomplete to confirm the name.
 </Warning>
 
 **Recovery:** Increase the budget in `UsageLimits`, break the task into smaller subtasks, or optimize the prompt to reduce token consumption. See [Results and Usage Limits](/concepts/results) for how to configure limits.
