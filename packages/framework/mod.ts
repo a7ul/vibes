@@ -116,3 +116,28 @@ export {
 	audioMessage,
 	fileMessage,
 } from "./content.ts";
+
+// MCP (Model Context Protocol) integration
+export type {
+	MCPTool,
+	MCPTextContent,
+	MCPImageContent,
+	MCPContentItem,
+	MCPCallResult,
+	MCPServerConfig,
+	ElicitationRequest,
+	ElicitationCallback,
+	MCPClient,
+	MCPStdioConfig,
+	MCPHttpConfig,
+	MCPToolsetOptions,
+} from "./mcp/mod.ts";
+export {
+	MCPStdioClient,
+	MCPHttpClient,
+	MCPToolset,
+	MCPManager,
+	loadMCPConfig,
+	createClientsFromConfig,
+	createManagerFromConfig,
+} from "./mcp/mod.ts";
