@@ -135,6 +135,7 @@ Test the agent without making real API calls using `TestModel`.
 import { assertEquals } from "@std/assert";
 import { Agent, tool, TestModel, setAllowModelRequests } from "@vibes/framework";
 import { z } from "zod";
+import { anthropic } from "@ai-sdk/anthropic";
 
 // Block accidental real API calls in your test suite
 setAllowModelRequests(false);
