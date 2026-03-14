@@ -9,7 +9,16 @@ description: Agent runs return RunResult or StreamResult, carrying the typed out
 
 When you set `outputSchema`, Vibes has three strategies for requesting structured output from the model:
 
-<img src="/images/diagrams/results-output-modes.svg" alt="Output modes: outputSchema defined branches to tool (default), native, and prompted strategies" />
+```mermaid
+flowchart TD
+    A[Structured Output Schema] --> B[Tool Mode]
+    A --> C[Native Mode]
+    A --> D[Prompted Mode]
+
+    B -.- B1[Model calls a special tool to return data]
+    C -.- C1[Provider's built-in JSON mode]
+    D -.- D1[Schema description added to system prompt]
+```
 
 | Mode | How it works | Best for |
 |------|-------------|----------|

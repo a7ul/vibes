@@ -13,14 +13,14 @@ Use sub-agents when a sub-task needs a different persona or toolset, or when the
 sequenceDiagram
     participant App
     participant Orchestrator
-    participant ResearchAgent
+    participant Specialist
 
-    App->>Orchestrator: agent.run("Research and summarize X")
-    Orchestrator->>Orchestrator: model decides to call research tool
-    Orchestrator->>ResearchAgent: researchAgent.run(question)
-    ResearchAgent-->>Orchestrator: RunResult { output: "..." }
-    Orchestrator->>Orchestrator: model generates final summary
-    Orchestrator-->>App: RunResult { output: "final summary" }
+    App->>Orchestrator: run task
+    Orchestrator->>Orchestrator: model decides to delegate
+    Orchestrator->>Specialist: run sub-task
+    Specialist-->>Orchestrator: result
+    Orchestrator->>Orchestrator: model generates final answer
+    Orchestrator-->>App: final result
 ```
 
 ## Agent-as-Tool Pattern

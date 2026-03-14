@@ -9,7 +9,23 @@ For installation and initial setup, see [Getting Started](/getting-started/insta
 
 ## Architecture
 
-<img src="/images/diagrams/models-architecture.svg" alt="Model architecture: Your Application → Agent → LanguageModel interface → provider packages" />
+```mermaid
+flowchart TD
+    A[Your Application] --> B[Agent]
+    B --> C[Language Model]
+    C --> Providers
+
+    subgraph Providers[Providers]
+        direction LR
+        D[Anthropic]
+        E[OpenAI]
+        F[Google]
+        G[Groq]
+        H[Mistral]
+        I[Ollama]
+        J[Custom Endpoint]
+    end
+```
 
 ## Provider Quickstarts
 

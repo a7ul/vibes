@@ -9,18 +9,15 @@ description: "Stream Vibes agent output to React frontends using Vercel AI SDK's
 
 ```mermaid
 sequenceDiagram
-    participant UI as React (useChat)
+    participant UI as React Frontend
     participant API as API Route
-    participant A as agent.stream()
-    participant S as toDataStreamResponse()
+    participant Agent
 
-    UI->>API: POST /api/chat { messages }
-    API->>A: agent.stream(lastMessage.content, { messageHistory })
-    A-->>S: result.textStream (AsyncIterable<string>)
-    S-->>UI: data stream protocol
+    UI->>API: POST with messages
+    API->>Agent: stream response
+    Agent-->>UI: token stream
     UI->>UI: render tokens as they arrive
-    A-->>S: stream complete
-    S-->>UI: [DONE] signal
+    Agent-->>UI: stream complete
 ```
 
 `toDataStreamResponse()` converts a `textStream` into the Vercel AI data stream protocol. The `useChat` and `useCompletion` hooks on the frontend understand this protocol natively.

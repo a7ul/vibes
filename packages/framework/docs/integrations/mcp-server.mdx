@@ -14,16 +14,16 @@ Vibes does not yet include a built-in MCP server class. This page shows how to u
 ```mermaid
 sequenceDiagram
     participant C as MCP Client
-    participant S as McpServer
-    participant A as agent.run()
+    participant S as MCP Server
+    participant A as Agent
 
-    C->>S: tools/list
-    S-->>C: [{ name: "run_agent", ... }]
+    C->>S: list tools
+    S-->>C: available tools
 
-    C->>S: tools/call run_agent { prompt }
-    S->>A: agent.run(prompt)
-    A-->>S: RunResult { output }
-    S-->>C: { content: [{ type: "text", text: output }] }
+    C->>S: call tool with prompt
+    S->>A: run with prompt
+    A-->>S: result
+    S-->>C: text response
 ```
 
 The MCP SDK handles all protocol details: capability negotiation, JSON-RPC framing, tool schema advertisement. You register your agent as one or more tools, and the SDK routes incoming `tools/call` requests to your handler.

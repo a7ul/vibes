@@ -9,16 +9,11 @@ The [Model Context Protocol](https://modelcontextprotocol.io) (MCP) is an open s
 
 ```mermaid
 flowchart TD
-    A[Agent] --> B[MCPToolset / MCPManager]
-    B --> C[MCPClient interface]
-    C --> D[MCPStdioClient\nsubprocess via stdio]
-    C --> E[MCPHttpClient\nremote server via HTTP/SSE]
-
-    F[MCPManager] --> G[MCPToolset A]
-    F --> H[MCPToolset B]
-    G --> I[MCPStdioClient]
-    H --> J[MCPHttpClient]
-    F --> A
+    A[Agent] --> B[MCP Manager]
+    B --> C[MCP Toolset A]
+    B --> D[MCP Toolset B]
+    C --> E[Local Server via Stdio]
+    D --> F[Remote Server via HTTP]
 ```
 
 `MCPStdioClient` and `MCPHttpClient` both implement the `MCPClient` interface. `MCPToolset` wraps one client and bridges it to the agent's `Toolset` interface. `MCPManager` manages multiple `MCPToolset` instances and is itself a `Toolset` - pass it directly to an agent.

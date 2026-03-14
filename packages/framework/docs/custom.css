@@ -3,3 +3,19 @@
 body, html {
   font-family: 'Geist', sans-serif !important;
 }
+
+/* ── Nav active state: light mode ── */
+a[data-active="true"],
+[aria-current="page"],
+[data-state="active"] {
+  background-color: rgba(0, 0, 0, 0.06) !important;
+  color: #18181B !important;
+}
+
+/* ── Nav active state: dark mode ── */
+.dark a[data-active="true"],
+.dark [aria-current="page"],
+.dark [data-state="active"] {
+  background-color: rgba(255, 255, 255, 0.08) !important;
+  color: #FFFFFF !important;
+}

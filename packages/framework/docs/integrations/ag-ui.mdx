@@ -18,25 +18,19 @@ See the corrected API below.
 
 ```mermaid
 sequenceDiagram
-    participant F as AG-UI Frontend
-    participant H as AGUIAdapter.handler()
-    participant R as handleRequest(AGUIRunInput)
-    participant A as agent.runStreamEvents()
-    participant S as SSE Stream
+    participant F as Frontend
+    participant Adapter as AG-UI Adapter
+    participant Agent
 
-    F->>H: POST /agent { threadId, messages[] }
-    H->>R: parse body → AGUIRunInput
-    R->>A: agent.runStreamEvents(prompt, { deps, messageHistory })
-    A-->>S: RUN_STARTED
-    A-->>S: STATE_SNAPSHOT
-    A-->>S: STEP_STARTED
-    A-->>S: TEXT_MESSAGE_START
-    A-->>S: TEXT_MESSAGE_CONTENT (delta)
-    A-->>S: TEXT_MESSAGE_END
-    A-->>S: STEP_FINISHED
-    A-->>S: STATE_SNAPSHOT
-    A-->>S: RUN_FINISHED
-    S-->>F: SSE event stream
+    F->>Adapter: POST with thread and messages
+    Adapter->>Agent: stream events
+    Agent-->>F: Run Started
+    Agent-->>F: State Snapshot
+    Agent-->>F: Turn Started
+    Agent-->>F: Text chunks
+    Agent-->>F: Turn Finished
+    Agent-->>F: State Snapshot
+    Agent-->>F: Run Finished
 ```
 
 ## Setup
@@ -134,35 +128,35 @@ Every agent run emits a fixed sequence of SSE events. Understanding the sequence
 
 ```mermaid
 sequenceDiagram
-    participant A as AGUIAdapter
+    participant Adapter as AG-UI Adapter
     participant F as Frontend
 
-    A->>F: RUN_STARTED (threadId, runId)
-    A->>F: STATE_SNAPSHOT (initial state)
+    Adapter->>F: Run Started
+    Adapter->>F: Initial State Snapshot
 
     loop Per agent turn
-        A->>F: STEP_STARTED (stepName: "turn-N")
+        Adapter->>F: Turn Started
 
         alt Text response
-            A->>F: TEXT_MESSAGE_START
+            Adapter->>F: Text Start
             loop Per chunk
-                A->>F: TEXT_MESSAGE_CONTENT (delta)
+                Adapter->>F: Text Chunk
             end
-            A->>F: TEXT_MESSAGE_END
+            Adapter->>F: Text End
         end
 
         alt Tool call
-            A->>F: TOOL_CALL_START
-            A->>F: TOOL_CALL_ARGS (JSON args as single chunk)
-            A->>F: TOOL_CALL_END
+            Adapter->>F: Tool Call Start
+            Adapter->>F: Tool Call Args
+            Adapter->>F: Tool Call End
         end
 
-        A->>F: RAW (usage metadata)
-        A->>F: STEP_FINISHED
+        Adapter->>F: Usage Metadata
+        Adapter->>F: Turn Finished
     end
 
-    A->>F: STATE_SNAPSHOT (final state)
-    A->>F: RUN_FINISHED (threadId, runId)
+    Adapter->>F: Final State Snapshot
+    Adapter->>F: Run Finished
 ```
 
 On error, `RUN_ERROR` is emitted instead of `RUN_FINISHED`.

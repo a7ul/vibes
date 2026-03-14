@@ -28,12 +28,12 @@ sequenceDiagram
     participant Agent
     participant TestModel
 
-    Test->>Agent: agent.override({ model }).run("Hello")
-    Agent->>TestModel: turn 0: generate
-    TestModel-->>Agent: auto tool calls (if callTools: true)
-    Agent->>TestModel: turn 1: generate
-    TestModel-->>Agent: final_result with test response
-    Agent-->>Test: RunResult<TOutput>
+    Test->>Agent: run with test model
+    Agent->>TestModel: generate turn 0
+    TestModel-->>Agent: simulated tool calls
+    Agent->>TestModel: generate turn 1
+    TestModel-->>Agent: final test response
+    Agent-->>Test: Result
 ```
 
 `TestModel` is the simplest option. It auto-generates schema-valid tool calls for any tools the agent has, then returns a final result.

@@ -13,11 +13,11 @@ import { imageMessage, audioMessage, fileMessage } from "@vibes/framework";
 
 ```mermaid
 flowchart LR
-    IMG[Image\nstring / Uint8Array / URL] --> IM[imageMessage]
-    AUD[Audio\nstring / Uint8Array] --> AM[audioMessage]
-    VID[Video\nstring / Uint8Array] --> FM_V[fileMessage\nvideo/* MIME]
-    DOC[Document\nstring / Uint8Array] --> FM_D[fileMessage\napplication/pdf etc.]
-    IM --> UMM[UserModelMessage]
+    IMG[Image] --> IM[Image Message]
+    AUD[Audio] --> AM[Audio Message]
+    VID[Video] --> FM_V[File Message]
+    DOC[Document] --> FM_D[File Message]
+    IM --> UMM[User Message]
     AM --> UMM
     FM_V --> UMM
     FM_D --> UMM
@@ -220,14 +220,14 @@ sequenceDiagram
     participant Tool
     participant Model
 
-    App->>Agent: agent.run(messages)
+    App->>Agent: run with messages
     Agent->>Model: send conversation
-    Model->>Agent: call screenshotTool(url)
-    Agent->>Tool: execute({ url })
-    Tool-->>Agent: BinaryContent { type: "binary", data, mimeType }
-    Agent->>Model: tool result (binary image)
-    Model-->>Agent: final text response
-    Agent-->>App: RunResult
+    Model->>Agent: call screenshot tool
+    Agent->>Tool: execute
+    Tool-->>Agent: binary image data
+    Agent->>Model: tool result with image
+    Model-->>Agent: final response
+    Agent-->>App: Result
 ```
 
 <Info>

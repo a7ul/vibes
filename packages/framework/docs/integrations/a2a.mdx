@@ -11,17 +11,16 @@ description: "Expose a Vibes agent as an A2A-compatible server for cross-vendor 
 
 ```mermaid
 flowchart TD
-    C[Remote Agent / Client]
-    C -->|GET /.well-known/agent.json| D[AgentCard Discovery]
-    C -->|POST / message/send| E[A2AAdapter]
-    C -->|POST / message/stream| E
-    C -->|POST / tasks/get| E
-    C -->|POST / tasks/cancel| E
-    E --> F[MemoryTaskStore]
+    C[Remote Client]
+    C -->|discover| D[Agent Card]
+    C -->|send message| E[A2A Adapter]
+    C -->|stream message| E
+    C -->|get or cancel task| E
+    E --> F[Task Store]
     E --> G[Agent]
     G -->|result| E
-    E -->|A2ATask| C
-    E -->|SSE stream| C
+    E -->|task result| C
+    E -->|event stream| C
 ```
 
 ## Setup
@@ -199,13 +198,12 @@ Every task progresses through a defined set of states:
 
 ```mermaid
 stateDiagram-v2
-    [*] --> submitted : task created
-    submitted --> working : agent starts processing
-    working --> completed : agent finished successfully
-    working --> failed : unhandled error
-    working --> canceled : tasks/cancel called
-    working --> input-required : agent needs clarification
-    note right of input-required : not yet fully wired
+    [*] --> submitted : created
+    submitted --> working : started
+    working --> completed : success
+    working --> failed : error
+    working --> canceled : canceled
+    working --> input-required : needs clarification
 ```
 
 `A2ATaskState` values:
