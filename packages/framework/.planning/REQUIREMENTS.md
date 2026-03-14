@@ -7,8 +7,8 @@
 
 ### Landing & Introduction
 
-- [ ] **LAND-01**: Landing page (index.mdx) opens with benefits-first hero section, Mermaid architecture diagram, and pydantic-ai/Vercel AI SDK acknowledgment blurb — mirrors pydantic-ai's opening style
-- [ ] **LAND-02**: Introduction page created explaining design philosophy and "Standing on the Shoulders of Giants" section explicitly crediting pydantic-ai and Vercel AI SDK
+- [x] **LAND-01**: Landing page (index.mdx) opens with benefits-first hero section, Mermaid architecture diagram, and pydantic-ai/Vercel AI SDK acknowledgment blurb — mirrors pydantic-ai's opening style
+- [x] **LAND-02**: Introduction page created explaining design philosophy and "Standing on the Shoulders of Giants" section explicitly crediting pydantic-ai and Vercel AI SDK
 
 ### Getting Started
 

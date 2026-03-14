@@ -10,27 +10,27 @@ See: .planning/PROJECT.md (updated 2026-03-14)
 ## Current Position
 
 Phase: 1 of 6 (Landing and Getting Started)
-Plan: 0 of 2 in current phase
-Status: Ready to plan
-Last activity: 2026-03-14 -- Roadmap created
+Plan: 1 of 2 in current phase
+Status: In progress
+Last activity: 2026-03-14 -- Completed 01-01 (landing page + introduction)
 
-Progress: [░░░░░░░░░░] 0%
+Progress: [█░░░░░░░░░] 8%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 0
-- Average duration: -
-- Total execution time: 0 hours
+- Total plans completed: 1
+- Average duration: 2 min
+- Total execution time: 0.03 hours
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
-| - | - | - | - |
+| 01-landing-and-getting-started | 1 | 2 min | 2 min |
 
 **Recent Trend:**
-- Last 5 plans: -
+- Last 5 plans: 2 min
 - Trend: -
 
 *Updated after each plan completion*
@@ -45,6 +45,8 @@ Recent decisions affecting current work:
 - [Roadmap]: 6 phases derived from P0-P5 priority structure in docs_parity.md
 - [Roadmap]: Phases 3 and 4 both depend on Phase 2 (concepts before integrations or advanced patterns)
 - [Roadmap]: Known API bugs (Graph constructor, AG-UI depsFactory, BaseNode.this.next()) addressed in Phase 3 and Phase 4 success criteria
+- [01-01]: Moved comparison table from index.mdx to introduction.mdx to keep landing page focused
+- [01-01]: Used Mintlify Info callouts for pydantic-ai and Vercel AI SDK acknowledgments in introduction.mdx
 
 ### Pending Todos
 
@@ -58,5 +60,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-03-14
-Stopped at: Roadmap created, ready to plan Phase 1
+Stopped at: Completed 01-01-PLAN.md (landing page + introduction page)
 Resume file: None

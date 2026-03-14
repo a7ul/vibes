@@ -33,7 +33,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 **Plans**: 2 plans
 
 Plans:
-- [ ] 01-01-PLAN.md — Rewrite landing page (index.mdx) and create introduction.mdx
+- [x] 01-01-PLAN.md — Rewrite landing page (index.mdx) and create introduction.mdx
 - [ ] 01-02-PLAN.md — Enhance install page, create hello-world tutorial, delete old pages, update docs.json
 
 ### Phase 2: Core Concepts Part 1
@@ -127,7 +127,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Landing and Getting Started | 0/2 | Not started | - |
+| 1. Landing and Getting Started | 1/2 | In progress | - |
 | 2. Core Concepts Part 1 | 0/3 | Not started | - |
 | 3. Core Concepts Part 2 | 0/2 | Not started | - |
 | 4. Integrations | 0/2 | Not started | - |
