@@ -48,6 +48,14 @@
       {
         "group": "Concepts",
         "pages": [
+          "concepts/agents",
+          "concepts/models",
+          "concepts/dependencies",
+          "concepts/tools",
+          "concepts/toolsets",
+          "concepts/results",
+          "concepts/messages",
+          "concepts/streaming",
           "concepts/how-agents-work",
           "concepts/dependency-injection",
           "concepts/error-handling"
