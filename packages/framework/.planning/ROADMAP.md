@@ -94,12 +94,12 @@ Plans:
   3. The Bank Support example faithfully ports the canonical pydantic-ai teaching example to TypeScript using Vibes APIs
   4. The Graph Workflow and Human-in-the-Loop examples demonstrate end-to-end flows matching their concept page teachings
   5. The A2A example shows two agents communicating via the A2A protocol
-**Plans**: 2 plans
+**Plans**: 3 plans
 
 Plans:
-- [ ] 05-01: TBD
-- [ ] 05-02: TBD
-- [ ] 05-03: TBD
+- [ ] 05-01-PLAN.md — Create examples/index.mdx (landing), hello-world.mdx, weather-agent.mdx (EX-01, EX-02, EX-03)
+- [ ] 05-02-PLAN.md — Create chat-app.mdx, bank-support.mdx, rag.mdx (EX-04, EX-05, EX-06)
+- [ ] 05-03-PLAN.md — Create graph-workflow.mdx, human-in-the-loop.mdx, a2a.mdx + update docs.json (EX-07, EX-08, EX-09)
 
 ### Phase 6: Advanced Topics, Meta, and Navigation
 **Goal**: The documentation is complete: advanced topics filled in, project pages published, navigation restructured to match pydantic-ai's flow, all old pages removed, zero broken links, and 30+ Mermaid diagrams across the site
