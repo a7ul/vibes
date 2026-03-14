@@ -8,46 +8,82 @@ This document tracks every pydantic-ai feature and its status in the TypeScript 
 
 ## Agent API
 
-| Feature                 | pydantic-ai                                     | Status | Notes                                                  |
-| ----------------------- | ----------------------------------------------- | ------ | ------------------------------------------------------ |
-| `agent.run()`           | `agent.run(prompt, deps=x)`                     | ✅     | `agent.run(prompt, { deps: x })`                       |
-| `agent.run_stream()`    | `agent.run_stream(prompt)`                      | ✅     | `agent.stream(prompt)`                                 |
-| Agent name              | `agent.name`                                    | ✅     | `name` on `AgentOptions`                               |
-| System prompt (static)  | `system_prompt="..."`                           | ✅     | `systemPrompt: "..."`                                  |
-| System prompt (dynamic) | `@agent.system_prompt` decorator                | ✅     | `agent.addSystemPrompt(fn)` or `systemPrompt: [fn]`    |
-| Tools                   | `@agent.tool` / `tools=[...]`                   | ✅     | `agent.addTool(tool({...}))`                           |
-| Structured output       | `result_type: BaseModel`                        | ✅     | `outputSchema: z.object({...})`                        |
-| Result validators       | `@agent.result_validator`                       | ✅     | `agent.addResultValidator(fn)`                         |
-| Max retries             | `max_retries` / `max_result_retries`            | ✅     | `maxRetries` on `AgentOptions`                         |
-| Max turns               | `max_turns`                                     | ✅     | `maxTurns` on `AgentOptions`                           |
-| Message history         | `message_history=`                              | ✅     | `{ messageHistory: [...] }` on `run()`                 |
-| Sync run                | `agent.run_sync()`                              | ❌     | Deno is async-native — low priority                    |
-| Event-stream run        | `agent.run_stream_events()`                     | ❌     | Returns async iterable of typed events                 |
-| Node-level iteration    | `agent.iter()` / `AgentRun`                     | ❌     | Manual graph traversal step-by-step                    |
-| End strategy            | `end_strategy`                                  | ❌     | Control when agent stops (e.g. on first tool result)   |
-| Max concurrency         | `max_concurrency`                               | ❌     | Cap on parallel runs of the same agent                 |
-| Metadata tagging        | `metadata=` on run                              | ❌     | Per-run tags for tracing/observability                 |
-| `instructions` field    | `instructions=` (separate from `system_prompt`) | ❌     | pydantic-ai injects these differently per model        |
-| Last run messages       | `agent.last_run_messages`                       | ❌     | Messages from the most recent run, accessible on agent |
-| `Agent.override()`      | Context manager swapping model/deps/toolsets    | ❌     | Critical for testing without modifying call sites      |
+| Feature                    | pydantic-ai                                     | Status | Notes                                                        |
+| -------------------------- | ----------------------------------------------- | ------ | ------------------------------------------------------------ |
+| `agent.run()`              | `agent.run(prompt, deps=x)`                     | ✅     | `agent.run(prompt, { deps: x })`                             |
+| `agent.run_stream()`       | `agent.run_stream(prompt)`                      | ✅     | `agent.stream(prompt)`                                       |
+| Agent name                 | `agent.name`                                    | ✅     | `name` on `AgentOptions`                                     |
+| System prompt (static)     | `system_prompt="..."`                           | ✅     | `systemPrompt: "..."`                                        |
+| System prompt (dynamic)    | `@agent.system_prompt` decorator                | ✅     | `agent.addSystemPrompt(fn)` or `systemPrompt: [fn]`          |
+| Tools                      | `@agent.tool` / `tools=[...]`                   | ✅     | `agent.addTool(tool({...}))`                                 |
+| Structured output          | `result_type: BaseModel`                        | ✅     | `outputSchema: z.object({...})`                              |
+| Result validators          | `@agent.result_validator`                       | ✅     | `agent.addResultValidator(fn)`                               |
+| Max retries                | `max_retries` / `max_result_retries`            | ✅     | `maxRetries` on `AgentOptions`                               |
+| Max turns                  | `max_turns`                                     | ✅     | `maxTurns` on `AgentOptions`                                 |
+| Message history            | `message_history=`                              | ✅     | `{ messageHistory: [...] }` on `run()`                       |
+| Metadata tagging           | `metadata=` on run                              | ✅     | `{ metadata: {...} }` on `run()`/`stream()` — accessible via `ctx.metadata` |
+| `Agent.override()`         | Context manager swapping model/deps/toolsets    | ✅     | `agent.override({ model, tools, ... }).run(prompt)`          |
+| Sync run                   | `agent.run_sync()`                              | ❌     | Deno is async-native — low priority                          |
+| Event-stream run           | `agent.run_stream_events()`                     | ❌     | Async iterable of typed `AgentStreamEvent` objects           |
+| Node-level iteration       | `agent.iter()` / `AgentRun`                     | ❌     | Manual graph traversal step-by-step                          |
+| End strategy               | `end_strategy`                                  | ❌     | `'early'` (default) or `'exhaustive'` — controls whether agent continues after finding output alongside pending tool calls |
+| Max concurrency            | `max_concurrency`                               | ❌     | Cap concurrent tool call executions; accepts `int` or `ConcurrencyLimit` |
+| `instructions` field       | `@agent.instructions` decorator                 | ❌     | Dynamic instructions; differs from `system_prompt` in message history handling |
+| Last run messages          | `agent.last_run_messages`                       | ❌     | Removed from pydantic-ai; superseded by `result.new_messages()` |
+| Model-specific settings    | `model_settings=` on `run()`                    | ❌     | Per-run overrides for temperature, max_tokens, timeout       |
 
 ---
 
 ## Tools
 
-| Feature               | pydantic-ai                                     | Status | Notes                                                       |
-| --------------------- | ----------------------------------------------- | ------ | ----------------------------------------------------------- |
-| Tools with context    | `@agent.tool`                                   | ✅     | `tool({ execute: (ctx, args) => ... })`                     |
-| Tool `maxRetries`     | `retries=` on `@agent.tool`                     | ✅     | `maxRetries` on `ToolDefinition`                            |
-| Plain tools (no ctx)  | `@agent.tool_plain`                             | ❌     | No RunContext needed; simpler signature                     |
-| Toolsets              | `toolsets=[...]` on Agent                       | ❌     | Group and reuse tool collections across agents              |
-| Tool `prepare` method | `prepare=` on `Tool` class                      | ❌     | Fn called before each invocation to modify or skip the tool |
-| Docstring extraction  | Auto-doc from Python docstrings                 | ❌     | Generate `description` + param docs from JSDoc              |
-| Multi-modal returns   | Return images / audio / binary from tools       | ❌     | Tools currently must return JSON-serializable values        |
-| Tool result metadata  | Attach metadata to tool results                 | ❌     | Pass extra info alongside tool output                       |
-| Output functions      | Final-action tools (no model feedback loop)     | ❌     | Tool that ends the run instead of returning to model        |
-| Deferred tools        | Tools requiring human approval before execution | ❌     | Human-in-the-loop pattern                                   |
-| MCP server tools      | Connect external MCP servers as tool providers  | ❌     | Mount any MCP server as a tool source                       |
+| Feature                 | pydantic-ai                                     | Status | Notes                                                             |
+| ----------------------- | ----------------------------------------------- | ------ | ----------------------------------------------------------------- |
+| Tools with context      | `@agent.tool`                                   | ✅     | `tool({ execute: (ctx, args) => ... })`                           |
+| Tool `maxRetries`       | `retries=` on `@agent.tool`                     | ✅     | `maxRetries` on `ToolDefinition`                                  |
+| Plain tools (no ctx)    | `@agent.tool_plain`                             | ✅     | `plainTool({ name, description, parameters, execute })`           |
+| Tool `prepare` method   | `prepare=` on `Tool` class                      | ✅     | `prepare: (ctx) => tool \| null` on `ToolDefinition`              |
+| `args_validator`        | `args_validator=` on tool                       | ✅     | `argsValidator: (args) => void` on `ToolDefinition`               |
+| `Tool.from_schema()`    | Build tool from raw JSON schema                 | ❌     | For wrapping external APIs with known schemas                     |
+| Docstring extraction    | Auto-doc from Python docstrings                 | ❌     | Generate `description` + param docs from JSDoc                    |
+| Multi-modal returns     | Return images / audio / binary from tools       | ❌     | `BinaryContent` / `BinaryImage` — tools must return JSON today    |
+| `UploadedFile` support  | `UploadedFile` for provider file uploads        | ❌     | Pass file references between tools and model (added v1.65)        |
+| Tool result metadata    | Attach metadata keyed by `tool_call_id`         | ❌     | Not sent to LLM; useful for logging/debugging                     |
+| Output functions        | Final-action tools (no model feedback loop)     | ❌     | Tool that ends the run via `ToolOutput` marker class              |
+| Sequential execution    | `sequential=True` on tool                       | ❌     | Force serial execution for tools that can't run concurrently      |
+| Deferred tools          | Tools requiring human approval before execution | ❌     | Human-in-the-loop pattern (see Deferred Tools section below)      |
+| MCP server tools        | Connect external MCP servers as tool providers  | ❌     | Mount any MCP server as a tool source (see MCP section below)     |
+
+---
+
+## Toolsets
+
+| Feature                   | pydantic-ai                                  | Status | Notes                                                             |
+| ------------------------- | -------------------------------------------- | ------ | ----------------------------------------------------------------- |
+| `FunctionToolset`         | Group locally defined function tools         | ✅     | `new FunctionToolset([tool1, tool2])`                             |
+| `CombinedToolset`         | Merge multiple toolsets into one             | ✅     | `new CombinedToolset(ts1, ts2)`                                   |
+| `FilteredToolset`         | Filter a toolset based on context            | ✅     | `new FilteredToolset(ts, (ctx) => boolean)`                       |
+| `PrefixedToolset`         | Add prefix to tool names                     | ✅     | `new PrefixedToolset(ts, "prefix_")`                              |
+| `RenamedToolset`          | Map new names onto existing tools            | ✅     | `new RenamedToolset(ts, { old: "new" })`                          |
+| Toolset reuse             | Share toolsets across agents                 | ✅     | `Toolset` is a plain interface — pass the same instance to multiple agents |
+| Runtime swap              | Replace toolsets during testing              | ✅     | `agent.override({ toolsets: [...] }).run(prompt)`                 |
+| `PreparedToolset`         | Modify entire tool list before each step     | ❌     | Dynamic toolset mutation per turn                                 |
+| `ApprovalRequiredToolset` | Enforce human approval on a toolset          | ❌     | Wraps any toolset with approval semantics                         |
+| `WrapperToolset`          | Custom execution behaviour around a toolset  | ❌     | Subclass to override `call_tool()` for middleware-style wrapping  |
+| `ExternalToolset`         | Deferred execution outside agent process     | ❌     | Used with `CallDeferred` for out-of-process tool calls            |
+
+---
+
+## Deferred Tools (Human-in-the-Loop & External Execution)
+
+| Feature                     | pydantic-ai                                       | Status | Notes                                                          |
+| --------------------------- | ------------------------------------------------- | ------ | -------------------------------------------------------------- |
+| `requires_approval=True`    | Mark a tool as approval-required                  | ❌     | Raises `ApprovalRequired` instead of executing                 |
+| `ApprovalRequired` exception | Pause agent, surface pending calls to caller     | ❌     | Caller receives `DeferredToolRequests` with pending calls      |
+| `DeferredToolRequests`      | Container of pending tool calls needing approval  | ❌     | Passed back to calling code with metadata                      |
+| `DeferredToolResults`       | Provide approved (or overridden) results          | ❌     | Resume agent with original history + approved results          |
+| Argument override on resume | Modify args during approval before execution      | ❌     | Approver can sanitise/change args before they execute          |
+| `CallDeferred` exception    | Defer a tool call to an external process          | ❌     | Agent pauses; external system executes and returns results     |
+| `ExternalToolset`           | Accept raw JSON schema tools for deferred calls   | ❌     | No Python function needed; schema-only external tools          |
 
 ---
 
@@ -57,13 +93,16 @@ This document tracks every pydantic-ai feature and its status in the TypeScript 
 | --------------------------- | ------------------------------------ | ------ | ----------------------------------------------------------- |
 | Single schema output        | `result_type: BaseModel`             | ✅     | `outputSchema: z.object({...})` via `final_result` tool     |
 | Result validators           | `@agent.result_validator`            | ✅     | `addResultValidator(fn)` — throw to retry                   |
-| Union output types          | `output_type=[TypeA, TypeB]`         | ❌     | Multiple schemas, each registered as its own tool           |
-| Native structured output    | `output_mode="native"`               | ❌     | Use model's native JSON mode instead of `final_result` tool |
-| Prompted output mode        | `output_mode="prompted"`             | ❌     | Inject schema into instructions, no tool injection          |
+| `result.all_messages()`     | Full message history                 | ✅     | `result.messages` (full) + `result.newMessages` (this run)  |
+| `result.new_messages()`     | Messages added in _this_ run only    | ✅     | `result.newMessages` on `RunResult` and `StreamResult`      |
+| `@agent.output_validator`   | Validate output post-parse           | ✅     | Covered by `addResultValidator`                             |
+| Union output types          | `output_type=[TypeA, TypeB]`         | ❌     | Multiple schemas, each registered as its own `final_result` variant |
+| Native structured output    | `NativeOutput` marker class          | ❌     | Use model's native JSON mode instead of `final_result` tool |
+| Prompted output mode        | `PromptedOutput` marker class        | ❌     | Inject schema into instructions, no tool injection          |
 | Streaming structured output | Partial validation as output streams | ❌     | Progressive Zod parse during streaming                      |
-| `result.new_messages()`     | Messages added in _this_ run only    | ❌     | We only expose `result.messages` (full history)             |
 | Message serialization       | `ModelMessagesTypeAdapter`           | ❌     | Serialize/deserialize messages to JSON for storage          |
-| `result.all_messages()`     | Full message history                 | 🚧     | `result.messages` exists but no `new_messages()` split      |
+| `BinaryImage` output        | Generate images as output type       | ❌     | Agent produces binary image as structured result            |
+| Disable schema prompt       | `template=False` on output marker    | ❌     | Suppress schema injection into model prompt                 |
 
 ---
 
@@ -72,19 +111,38 @@ This document tracks every pydantic-ai feature and its status in the TypeScript 
 | Feature                   | pydantic-ai                                   | Status | Notes                                                                  |
 | ------------------------- | --------------------------------------------- | ------ | ---------------------------------------------------------------------- |
 | Pass history to next run  | `message_history=result.all_messages()`       | ✅     | `{ messageHistory: result.messages }`                                  |
-| History processors        | `history_processors=[...]`                    | ❌     | Filter / summarize / transform history before each model call          |
-| `new_messages()`          | Slice of messages from current run only       | ❌     | Needed to separate what was added vs what was passed in                |
+| `new_messages()`          | Slice of messages from current run only       | ✅     | `result.newMessages` on `RunResult` and `StreamResult`                 |
 | Cross-model compatibility | Messages work across providers                | ✅     | AI SDK `CoreMessage` is provider-agnostic                              |
+| History processors        | `history_processors=[...]`                    | ✅     | `historyProcessors: [trimHistoryProcessor(n), ...]` on `AgentOptions`  |
 | Message serialization     | JSON roundtrip via `ModelMessagesTypeAdapter` | ❌     | No serialization helpers; `CoreMessage` is serializable but no adapter |
+| Token-aware trimming      | Keep last N messages by token count           | 🚧     | `trimHistoryProcessor(n)` trims by count; token-aware not yet ported   |
+| LLM-based summarization   | Summarize old turns via a model call          | ❌     | Built-in processor type; replaces old messages with a model-generated summary |
+| Privacy filtering         | Strip sensitive fields before model call      | ❌     | Built-in processor type for PII removal                                |
 
 ---
 
 ## Usage & Limits
 
-| Feature        | pydantic-ai                                 | Status | Notes                                                |
-| -------------- | ------------------------------------------- | ------ | ---------------------------------------------------- |
-| Usage tracking | `result.usage()`                            | ✅     | `result.usage` — prompt/completion tokens + requests |
-| `UsageLimits`  | Cap tokens, requests, or tool calls per run | ❌     | Check usage in turn loop before calling model        |
+| Feature        | pydantic-ai                                               | Status | Notes                                                |
+| -------------- | --------------------------------------------------------- | ------ | ---------------------------------------------------- |
+| Usage tracking | `result.usage()`                                          | ✅     | `result.usage` — prompt/completion tokens + requests |
+| `UsageLimits`  | Cap request count, input tokens, output tokens, tool calls| ✅     | `usageLimits: { maxRequests, maxInputTokens, ... }` on `AgentOptions` or `run()` |
+
+---
+
+## MCP (Model Context Protocol)
+
+| Feature                        | pydantic-ai                                    | Status | Notes                                                          |
+| ------------------------------ | ---------------------------------------------- | ------ | -------------------------------------------------------------- |
+| `MCPServerStdio`               | Subprocess stdio transport                     | ❌     | Launch local MCP servers as child processes                    |
+| `MCPServerStreamableHTTP`      | HTTP Streamable transport                      | ❌     | Connect to remote MCP servers over HTTP                        |
+| `MCPServerSSE`                 | Server-Sent Events transport (deprecated)      | ❌     | Legacy SSE transport; prefer StreamableHTTP                    |
+| Dynamic tool discovery         | Auto-convert MCP tools to pydantic-ai tools    | ❌     | All MCP-exposed tools become usable tools automatically        |
+| Elicitation support            | MCP server can request structured input        | ❌     | Server prompts user for structured data mid-run via `elicitation_callback` |
+| Server instructions            | Access MCP server `instructions` post-connect  | ❌     | Inject server instructions into system prompt                  |
+| Tool caching                   | Cache discovered tools with invalidation       | ❌     | Avoid re-fetching tool list on every run                       |
+| Multi-server support           | Mount multiple MCP servers simultaneously      | ❌     | One async context manager per server                           |
+| Config file loading            | Load MCP config with env variable references   | ❌     | `mcp.json`-style config with `${ENV_VAR}` interpolation        |
 
 ---
 
@@ -95,58 +153,84 @@ This document tracks every pydantic-ai feature and its status in the TypeScript 
 | Mock model                   | `MockLanguageModelV1` (from `ai/test`)                            | ✅     | Equivalent to pydantic-ai's `TestModel`              |
 | Multi-turn mock              | `mockValues(...)`                                                 | ✅     | Cycle through responses across turns                 |
 | Stream mock                  | `convertArrayToReadableStream`                                    | ✅     | Build mock stream chunks                             |
+| `Agent.override()`           | Swap model/deps/toolsets in tests without modifying app code      | ✅     | `agent.override({ model: mockModel }).run(prompt)`   |
+| `capture_run_messages()`     | Context manager to inspect all model request/response objects     | ✅     | `captureRunMessages(() => agent.run(...))` returns `messages[][]` |
+| `ALLOW_MODEL_REQUESTS=False` | Global flag to prevent accidental real API calls                  | ✅     | `setAllowModelRequests(false)` — throws `ModelRequestsDisabledError` |
 | `TestModel`                  | Auto-generates valid structured data from schema, calls all tools | ❌     | Smarter than `MockLanguageModelV1` — schema-aware    |
 | `FunctionModel`              | Custom function drives model responses                            | ❌     | Full control via user-supplied function              |
-| `Agent.override()`           | Swap model/deps/toolsets in tests without modifying app code      | ❌     | Key pattern for integration testing                  |
-| `capture_run_messages()`     | Context manager to inspect all model request/response objects     | ❌     | Debugging and assertion on raw model traffic         |
-| `ALLOW_MODEL_REQUESTS=False` | Global flag to prevent accidental real API calls                  | ❌     | Test-safety guard; throw if non-test model is called |
 
 ---
 
 ## Multi-Agent
 
-| Feature                  | pydantic-ai                              | Status | Notes                                         |
-| ------------------------ | ---------------------------------------- | ------ | --------------------------------------------- |
-| Agent-as-tool            | Pass an agent as a tool to another agent | ❌     | Parent agent delegates to child via tool call |
-| Programmatic hand-off    | App code dispatches agents sequentially  | ❌     | Pattern, not framework code — but no helpers  |
-| Graph-based control flow | `pydantic_graph` — typed state machine   | ❌     | Separate library; complex to port             |
-| Usage aggregation        | Share `ctx.usage` across sub-agents      | ❌     | Aggregate cost across an agent tree           |
+| Feature               | pydantic-ai                                           | Status | Notes                                                          |
+| --------------------- | ----------------------------------------------------- | ------ | -------------------------------------------------------------- |
+| Agent-as-tool         | Tool that calls `child.run(usage=ctx.usage)` internally | ✅   | Pattern: `tool({ execute: async (ctx, { prompt }) => { const r = await child.run(prompt, { deps: ctx.deps }); ctx.usage.requests += r.usage.requests; return r.output; } })` |
+| Usage aggregation     | Pass `usage=ctx.usage` to sub-agent to merge costs    | ✅     | Manually add sub-agent usage to `ctx.usage` inside the tool   |
+| Programmatic hand-off | App code dispatches agents sequentially               | ❌     | Documented pattern in pydantic-ai — no dedicated helpers       |
+| A2A protocol          | `agent.to_a2a()` — expose agent as ASGI A2A server    | ❌     | Agent-to-Agent interoperability standard (Google, 2025)        |
+| `pydantic_graph` — FSM | Typed state machine with `BaseNode`                  | ❌     | Separate library; type-safe edges and node execution           |
+| Graph state persistence | `SimpleStatePersistence`, `FileStatePersistence`    | ❌     | Pause/resume graph runs across process restarts                |
+| Graph visualization   | Mermaid diagram generation                            | ❌     | Auto-generate flow diagrams from graph definition              |
+| `Graph.iter()` / `.next()` | Manual stepping through graph nodes            | ❌     | Human-in-the-loop control at graph level                       |
 
 ---
 
 ## Observability
 
-| Feature             | pydantic-ai                             | Status | Notes                                                         |
-| ------------------- | --------------------------------------- | ------ | ------------------------------------------------------------- |
-| Logfire integration | Auto-traces runs, turns, and tool calls | ❌     | Would need a TS observability equivalent (e.g. OpenTelemetry) |
-| Run-level spans     | Structured spans per run with metadata  | ❌     |                                                               |
-| Tool-level spans    | Span per tool call with args and result | ❌     |                                                               |
+| Feature                   | pydantic-ai                              | Status | Notes                                                                   |
+| ------------------------- | ---------------------------------------- | ------ | ----------------------------------------------------------------------- |
+| Logfire integration       | Auto-traces runs, turns, and tool calls  | ❌     | Built-in instrumentation with visual flow tracking                      |
+| OpenTelemetry support     | OTel Gen-AI semantic conventions         | ❌     | Pluggable backend: Langfuse, W&B Weave, Arize, custom                   |
+| Run-level spans           | Structured spans per run with metadata   | ❌     |                                                                         |
+| Tool-level spans          | Span per tool call with args and result  | ❌     |                                                                         |
+| HTTPX instrumentation     | Capture raw HTTP request/response        | ❌     | `capture_all=True` for deep debugging                                   |
+| Custom `TracerProvider`   | Bring your own OTel tracer               | ❌     | Override default tracer for custom routing                              |
+| Content exclusion         | Strip prompt/response from spans         | ❌     | Privacy-first observability — record structure but not content          |
 
 ---
 
-## Porting Priority
+## Evaluation Framework (Pydantic Evals)
 
-### High value — port next
+| Feature               | pydantic-ai                                        | Status | Notes                                                          |
+| --------------------- | -------------------------------------------------- | ------ | -------------------------------------------------------------- |
+| Datasets & Cases      | `Dataset`, `Case` — typed test scenarios           | ❌     | Code-first approach; inputs, expected outputs, metadata        |
+| Built-in evaluators   | Exact match, type validation                       | ❌     | Standard scoring functions out of the box                      |
+| LLM-as-judge          | LLM-based evaluators for subjective qualities      | ❌     | Use a model to score another model's output                    |
+| Custom evaluators     | Domain-specific scoring functions                  | ❌     | Arbitrary Python functions returning scores                    |
+| Span-based evaluation | Score runs via OTel trace spans                    | ❌     | Attach evaluators to traced spans                              |
+| Experiments           | Run and compare datasets across model/prompt combos| ❌     | Track results over time; compare A vs B                        |
+| Logfire integration   | Visualize eval results in Logfire                  | ❌     | Dataset result dashboards and comparison views                 |
+| Async + concurrency   | Configurable concurrency and retries for evals     | ❌     | Run many cases in parallel with rate limiting                  |
 
-1. **`UsageLimits`** — production safety guard; check tokens/requests before each model call
-2. **`Agent.override()`** — critical for testable integration patterns
-3. **`capture_run_messages()`** — essential for debugging agent behaviour
-4. **`result.new_messages()`** — needed for multi-turn conversation apps
-5. **Union output types** — common real-world need; each member = separate `final_result` variant
-6. **History processors** — required for long-running conversations (trim/summarize old turns)
-7. **`ALLOW_MODEL_REQUESTS=False` equivalent** — prevent real API calls leaking into tests
+---
 
-### Medium value
+## Durable Execution
 
-8. **Plain tools** (`tool_plain`) — convenience; strip `ctx` from tool signatures when not needed
-9. **Tool `prepare` method** — dynamic tool enabling/disabling per run
-10. **Streaming structured output** — partial Zod parse during streaming
-11. **Agent-as-tool** — foundation for multi-agent delegation
+| Feature               | pydantic-ai                                        | Status | Notes                                                          |
+| --------------------- | -------------------------------------------------- | ------ | -------------------------------------------------------------- |
+| Temporal integration  | `TemporalAgent` — offloads model/tool calls to activities | ❌ | Replay-based fault tolerance; progress preserved across restarts |
+| DBOS integration      | Postgres-backed state checkpointing                | ❌     | Auto-resume from last completed step after crash               |
+| Prefect integration   | Transactional task semantics with cache keys       | ❌     | Skip completed tasks on re-run; resume from failure point      |
 
-### Lower priority / complex
+---
 
-12. **MCP server tools** — depends on MCP client library availability in Deno
-13. **Graph-based flow** — effectively a separate library (`pydantic_graph`)
-14. **Logfire / OpenTelemetry** — observability layer; may be better handled outside the framework
-15. **Native/prompted output modes** — AI SDK may expose model-native JSON mode directly
-16. **Deferred tools** (human-in-the-loop) — requires external state and resumability
+## AG-UI Protocol
+
+| Feature                      | pydantic-ai                                          | Status | Notes                                                    |
+| ---------------------------- | ---------------------------------------------------- | ------ | -------------------------------------------------------- |
+| AG-UI event streaming        | `AGUIAdapter.run_stream()` — agent-to-UI events      | ❌     | Standardised event stream for UI integration (CopilotKit) |
+| Follow-up messaging          | Continue conversation after tool call results        | ❌     | AG-UI follow-up messaging post tool calls                |
+| Structured event types       | Typed event payloads for all agent actions           | ❌     | Tool calls, text deltas, results — all as typed events   |
+
+---
+
+## Multi-Modal Support
+
+| Feature                  | pydantic-ai                               | Status | Notes                                                     |
+| ------------------------ | ----------------------------------------- | ------ | --------------------------------------------------------- |
+| Image input to tools     | Pass images into tool parameters          | ❌     | Tools receive `BinaryContent` with image data             |
+| Audio / video input      | Audio and video as tool parameters        | ❌     | `BinaryContent` supports multiple media types             |
+| Document input           | PDFs and documents as tool parameters     | ❌     | Pass document references into tool execution              |
+| `BinaryImage` output     | Agent returns a generated image           | ❌     | Output type for image-generating agents                   |
+| `UploadedFile`           | File reference for provider file uploads  | ❌     | Upload files to provider, reference by ID (added v1.65)   |

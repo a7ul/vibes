@@ -1,5 +1,5 @@
 {
-  "workspace": ["./packages/framework"],
+  "workspace": ["./packages/framework", "./packages/vibes"],
   "tasks": {
     "dev": "deno run --watch main.ts",
     "test": "deno test --allow-env --allow-net"

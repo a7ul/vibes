@@ -403,13 +403,22 @@ Add a row to the table in `docs/index.md`:
 1. Find the pydantic-ai source (`pydantic_ai/agent.py` or `pydantic_ai/_run.py`)
 2. Map Python types → TypeScript generics (Pydantic models → Zod schemas)
 3. Map Python context managers → async functions or class methods
-4. Keep types strictly from `ai` and `zod` — no `any`, no custom wrappers
+4. Keep types strictly from `ai` and `zod` — **no `any`, no `// deno-lint-ignore no-explicit-any`**
+   - Use wrapper lambdas to bridge generic parameter mismatches (e.g. `(args) => opts.fn(args as z.infer<TParams>)`)
+   - Use `unknown` + structural casts (`x as Record<string, unknown>`) instead of `any`
+   - If you reach for `any`, stop and redesign the type boundary
 5. Add to `AgentOptions` interface if it's a constructor option
 6. Export new public types from `mod.ts`
 7. Run `deno check mod.ts` to verify
-8. Write tests in `src/packages/framework/tests/` using `MockLanguageModelV1`
-9. Write a doc page in `src/packages/framework/docs/` following the structure above
+8. Write tests in `packages/framework/tests/` using `MockLanguageModelV3`
+9. Write a doc page in `packages/framework/docs/` following the structure above
 10. Link the doc page from `docs/index.md`
+11. **After all tests pass — review structure and readability:**
+    - Are new files in the right place? (`toolsets/` for toolset classes, `execution/` for internals, root for public API)
+    - Is each file under ~200 lines? If not, consider splitting
+    - Are helper functions that are only used in one place inlined rather than extracted?
+    - Does `mod.ts` export everything a consumer needs and nothing internal?
+    - Read your new code top-to-bottom as a newcomer — if any section is confusing, simplify it
 
 ## Runtime: Deno + npm imports
 
@@ -417,10 +426,11 @@ Add a row to the table in `docs/index.md`:
 // deno.json
 {
   "imports": {
-    "ai": "npm:ai@^4",
-    "zod": "npm:zod@^3",
-    "@ai-sdk/anthropic": "npm:@ai-sdk/anthropic@^1",
-  },
+    "ai": "npm:ai@^6",
+    "ai/test": "npm:ai@^6/test",
+    "zod": "npm:zod@^4",
+    "@ai-sdk/anthropic": "npm:@ai-sdk/anthropic@^1"
+  }
 }
 ```
 

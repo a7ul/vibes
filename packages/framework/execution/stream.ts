@@ -5,15 +5,16 @@ import type { RunContext, StreamResult, Usage } from "../types.ts";
 import {
 	applyUsage,
 	buildInitialMessages,
-	buildToolMap,
 	buildResponseMessages,
 	createRunContext,
 	FINAL_RESULT_TOOL,
 	nudgeForFinalResult,
 	nudgeWithValidationError,
+	prepareTurn,
 	resolveSystemPrompt,
 	runValidators,
-	toolsOrUndefined,
+	checkModelRequestsAllowed,
+	type InternalRunOpts,
 } from "./_run_utils.ts";
 import { MaxTurnsError } from "../errors.ts";
 
@@ -22,10 +23,16 @@ import { MaxTurnsError } from "../errors.ts";
 // ---------------------------------------------------------------------------
 
 interface DeferredResult<TOutput> {
-	promise: Promise<{ output: TOutput; messages: ModelMessage[]; usage: Usage }>;
+	promise: Promise<{
+		output: TOutput;
+		messages: ModelMessage[];
+		newMessages: ModelMessage[];
+		usage: Usage;
+	}>;
 	resolve: (v: {
 		output: TOutput;
 		messages: ModelMessage[];
+		newMessages: ModelMessage[];
 		usage: Usage;
 	}) => void;
 	reject: (e: unknown) => void;
@@ -37,6 +44,7 @@ function createDeferred<TOutput>(): DeferredResult<TOutput> {
 	const promise = new Promise<{
 		output: TOutput;
 		messages: ModelMessage[];
+		newMessages: ModelMessage[];
 		usage: Usage;
 	}>((res, rej) => {
 		resolve = res;
@@ -71,8 +79,10 @@ async function* readableToAsyncIterable(
 export function executeStream<TDeps, TOutput>(
 	agent: Agent<TDeps, TOutput>,
 	prompt: string,
-	opts: { deps: TDeps; messageHistory?: ModelMessage[] },
+	opts: InternalRunOpts<TDeps, TOutput>,
 ): StreamResult<TOutput> {
+	checkModelRequestsAllowed(opts._bypassModelRequestsCheck);
+
 	const deferred = createDeferred<TOutput>();
 
 	let textController!: ReadableStreamDefaultController<string>;
@@ -88,6 +98,7 @@ export function executeStream<TDeps, TOutput>(
 		textStream: readableToAsyncIterable(textReadable),
 		output: deferred.promise.then((r) => r.output),
 		messages: deferred.promise.then((r) => r.messages),
+		newMessages: deferred.promise.then((r) => r.newMessages),
 		usage: deferred.promise.then((r) => r.usage),
 	};
 }
@@ -99,25 +110,39 @@ export function executeStream<TDeps, TOutput>(
 async function runStreamLoop<TDeps, TOutput>(
 	agent: Agent<TDeps, TOutput>,
 	prompt: string,
-	opts: { deps: TDeps; messageHistory?: ModelMessage[] },
+	opts: InternalRunOpts<TDeps, TOutput>,
 	textController: ReadableStreamDefaultController<string>,
 	deferred: DeferredResult<TOutput>,
 ): Promise<void> {
-	const ctx: RunContext<TDeps> = createRunContext(opts.deps);
+	const ctx: RunContext<TDeps> = createRunContext(
+		opts.deps,
+		opts.metadata ?? {},
+	);
 	const { usage } = ctx;
 	let streamClosed = false;
 
-	const systemPrompt = await resolveSystemPrompt(agent, ctx);
+	const model = opts._override?.model ?? agent.model;
+	const maxTurns = opts._override?.maxTurns ?? agent.maxTurns;
+	const maxRetries = opts._override?.maxRetries ?? agent.maxRetries;
+	const resultValidators = opts._override?.resultValidators ?? agent.resultValidators;
+
+	const systemPrompt = await resolveSystemPrompt(
+		agent,
+		ctx,
+		opts._override?.systemPrompts,
+	);
+
+	const inputOffset = opts.messageHistory?.length ?? 0;
 	const messages = buildInitialMessages(opts.messageHistory, prompt);
-	const toolMap = buildToolMap(agent, ctx);
-	const tools = toolsOrUndefined(toolMap);
 
 	try {
-		for (let turn = 0; turn < agent.maxTurns; turn++) {
+		for (let turn = 0; turn < maxTurns; turn++) {
+			const { tools, msgsForModel } = await prepareTurn(agent, opts, ctx, messages);
+
 			const stream = streamText({
-				model: agent.model,
+				model,
 				system: systemPrompt,
-				messages,
+				messages: msgsForModel,
 				tools,
 				stopWhen: stepCountIs(1),
 			});
@@ -138,8 +163,6 @@ async function runStreamLoop<TDeps, TOutput>(
 
 			applyUsage(usage, streamUsage);
 
-			// response.messages is populated for tool-call turns but empty for text-only turns.
-			// Fall back to constructing the assistant message from accumulated text.
 			const newMessages = buildResponseMessages(
 				(responseData.messages ?? []) as ModelMessage[],
 				accumulatedText,
@@ -156,29 +179,31 @@ async function runStreamLoop<TDeps, TOutput>(
 					nudgeWithValidationError(
 						ctx,
 						messages,
-						agent.maxRetries,
+						maxRetries,
 						parsed.error,
 					);
 					continue;
 				}
 				try {
 					const output = await runValidators(
-						agent.resultValidators,
+						resultValidators,
 						ctx,
 						parsed.data as TOutput,
 					);
+					const allMessages = [...messages, ...newMessages];
 					streamClosed = true;
 					textController.close();
 					deferred.resolve({
 						output,
-						messages: [...messages, ...newMessages],
+						messages: allMessages,
+						newMessages: allMessages.slice(inputOffset),
 						usage: { ...usage },
 					});
 					return;
 				} catch (err) {
 					const error = err instanceof Error ? err : new Error(String(err));
 					messages.push(...newMessages);
-					nudgeWithValidationError(ctx, messages, agent.maxRetries, error);
+					nudgeWithValidationError(ctx, messages, maxRetries, error);
 					continue;
 				}
 			}
@@ -187,14 +212,16 @@ async function runStreamLoop<TDeps, TOutput>(
 			if (toolCalls.length === 0) {
 				if (agent.outputSchema) {
 					messages.push(...newMessages);
-					nudgeForFinalResult(ctx, messages, agent.maxRetries);
+					nudgeForFinalResult(ctx, messages, maxRetries);
 					continue;
 				}
+				const allMessages = [...messages, ...newMessages];
 				streamClosed = true;
 				textController.close();
 				deferred.resolve({
 					output: accumulatedText as TOutput,
-					messages: [...messages, ...newMessages],
+					messages: allMessages,
+					newMessages: allMessages.slice(inputOffset),
 					usage: { ...usage },
 				});
 				return;
@@ -204,7 +231,7 @@ async function runStreamLoop<TDeps, TOutput>(
 			messages.push(...newMessages);
 		}
 
-		throw new MaxTurnsError(agent.maxTurns);
+		throw new MaxTurnsError(maxTurns);
 	} catch (err) {
 		if (!streamClosed) {
 			textController.close();
