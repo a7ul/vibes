@@ -1,11 +1,9 @@
 ---
 title: "Agents"
-description: "Agent class, AgentOptions, run(), stream(), resume()"
+description: "Agent class, AgentOptions, run(), stream(), addSystemPrompt()"
 ---
 
-An `Agent` is the central object in Vibes. It holds a model, system prompts,
-tools, an optional output schema, and result validators. You call `.run()` or
-`.stream()` on it to execute a prompt.
+An `Agent` is the central object in Vibes. It holds a model, system prompts, tools, an optional output schema, and result validators. You call `.run()` or `.stream()` on it to execute a prompt.
 
 ## Creating an Agent
 
@@ -21,17 +19,25 @@ const agent = new Agent({
 
 ## `AgentOptions`
 
-| Option                | Type                                 | Default  | Description                                                          |
-| --------------------- | ------------------------------------ | -------- | -------------------------------------------------------------------- |
-| `model`               | `LanguageModelV1`                    | required | Any Vercel AI SDK model                                              |
-| `name`                | `string`                             | -        | Human-readable label for the agent                                   |
-| `systemPrompt`        | `string \| string[]`                 | -        | Static system prompt(s), joined with `\n\n`                          |
-| `dynamicSystemPrompt` | `SystemPromptFn \| SystemPromptFn[]` | -        | Function(s) called at run time with [`RunContext`](../core/run-context) |
-| `tools`               | `ToolDefinition[]`                   | -        | Tools the model can call                                             |
-| `outputSchema`        | `ZodTypeAny`                         | -        | Zod schema for structured output                                     |
-| `resultValidators`    | `ResultValidator[]`                  | -        | Validators run after output is parsed                                |
-| `maxRetries`          | `number`                             | `3`      | Max retries for validation failures                                  |
-| `maxTurns`            | `number`                             | `10`     | Max tool-call round trips per run                                    |
+| Option             | Type                                        | Default  | Description                                               |
+| ------------------ | ------------------------------------------- | -------- | --------------------------------------------------------- |
+| `model`            | `LanguageModel`                             | required | Any Vercel AI SDK model                                   |
+| `name`             | `string`                                    | -        | Human-readable label for the agent                        |
+| `systemPrompt`     | `string \| SystemPromptFn<TDeps>`           | -        | Static string or function called with `RunContext`        |
+| `instructions`     | `string \| InstructionsFn<TDeps>`           | -        | Dynamic function appended after `systemPrompt`            |
+| `tools`            | `ToolDefinition[]`                          | -        | Tools the model can call                                  |
+| `toolsets`         | `Toolset[]`                                 | -        | Toolset instances (resolved per-turn)                     |
+| `outputSchema`     | `ZodType \| ZodType[]`                      | -        | Zod schema for structured output                          |
+| `outputMode`       | `"tool" \| "native" \| "prompted"`          | `"tool"` | How structured output is requested                        |
+| `resultValidators` | `ResultValidator[]`                         | -        | Validators run after output is parsed                     |
+| `historyProcessors`| `HistoryProcessor[]`                        | -        | Transform message history before each model call          |
+| `maxRetries`       | `number`                                    | `3`      | Max retries for validation failures                       |
+| `maxTurns`         | `number`                                    | `10`     | Max tool-call round trips per run                         |
+| `endStrategy`      | `"early" \| "exhaustive"`                   | `"early"`| When to stop after a tool-only turn                       |
+| `maxConcurrency`   | `number`                                    | -        | Max tools executing in parallel per turn                  |
+| `usageLimits`      | `UsageLimits`                               | -        | Token/request budget guard                                |
+| `modelSettings`    | `ModelSettings`                             | -        | temperature, maxTokens, topP, etc.                        |
+| `telemetry`        | `TelemetrySettings`                         | -        | OpenTelemetry tracing configuration                       |
 
 ## Type Parameters
 
@@ -39,10 +45,8 @@ const agent = new Agent({
 class Agent<TDeps = undefined, TOutput = string>
 ```
 
-- **`TDeps`** - the type of dependencies injected at run time via `deps`.
-  Defaults to `undefined` (no deps).
-- **`TOutput`** - the type of `result.output`. Defaults to `string`. Set by
-  providing an `outputSchema`.
+- **`TDeps`** - the type of dependencies injected at run time via `deps`. Defaults to `undefined` (no deps).
+- **`TOutput`** - the type of `result.output`. Defaults to `string`. Set by providing an `outputSchema`.
 
 ```ts
 type Deps = { db: Database };
@@ -60,25 +64,26 @@ Executes the agent and waits for the final result.
 
 ```ts
 const result = await agent.run("What is the capital of France?");
-console.log(result.output); // "Paris"
-console.log(result.usage); // { promptTokens, completionTokens, totalTokens, requests }
-console.log(result.messages); // full CoreMessage[] history
-console.log(result.runId); // unique run identifier
+console.log(result.output);   // "Paris"
+console.log(result.usage);    // { inputTokens, outputTokens, totalTokens, requests }
+console.log(result.messages); // full ModelMessage[] history
+console.log(result.runId);    // unique run identifier
 ```
 
 **Options:**
 
-| Option           | Type            | Description                                                  |
-| ---------------- | --------------- | ------------------------------------------------------------ |
-| `deps`           | `TDeps`         | Runtime dependencies passed to tools and dynamic prompts     |
-| `messageHistory` | `CoreMessage[]` | Prior messages to prepend (enables multi-turn conversations) |
+| Option           | Type              | Description                                                  |
+| ---------------- | ----------------- | ------------------------------------------------------------ |
+| `deps`           | `TDeps`           | Runtime dependencies passed to tools and dynamic prompts     |
+| `messageHistory` | `ModelMessage[]`  | Prior messages to prepend (enables multi-turn conversations) |
+| `usageLimits`    | `UsageLimits`     | Per-run budget override                                      |
+| `modelSettings`  | `ModelSettings`   | Per-run model settings override                              |
 
-Returns [`RunResult<TOutput>`](../core/run-context#runresult).
+Returns [`RunResult<TOutput>`](./run-context#runresult).
 
 ### `.stream(prompt, opts?)`
 
-Starts the agent and returns a [`StreamResult`](../core/streaming) immediately.
-Text deltas are available as an async iterable.
+Starts the agent and returns a [`StreamResult`](./streaming) immediately. Text deltas are available as an async iterable.
 
 ```ts
 const stream = agent.stream("Tell me a story.");
@@ -90,62 +95,92 @@ for await (const chunk of stream.textStream) {
 const output = await stream.output;
 ```
 
-Same options as `.run()`. See [Streaming](../core/streaming) for full details.
+Same options as `.run()`. See [Streaming](./streaming) for full details.
 
-## Mutating an Agent After Construction
+## Dynamic System Prompts
 
-You can add tools, system prompts, and result validators after construction.
-This is useful for building agents incrementally or in middleware patterns.
+Dynamic system prompts are the equivalent of pydantic-ai's `@agent.system_prompt` decorator - one of the most powerful patterns in the framework.
 
-```ts
-agent.addTool(myTool);
-agent.addSystemPrompt("Always respond in bullet points.");
-agent.addSystemPrompt((ctx) => `User ID: ${ctx.deps.userId}`);
-agent.addResultValidator(myValidator);
-```
-
-## System Prompts
-
-Multiple static and dynamic prompts can be provided. They are all joined with
-`\n\n` at run time.
+`systemPrompt` can be a function that receives a `RunContext` at runtime:
 
 ```ts
-const agent = new Agent({
-  model: ...,
-  systemPrompt: [
-    "You are a helpful assistant.",
-    "Always cite your sources.",
-  ],
-  dynamicSystemPrompt: (ctx) => `Today's date: ${new Date().toISOString()}`,
+type Deps = { username: string; role: string };
+
+const agent = new Agent<Deps>({
+  model,
+  systemPrompt: (ctx) =>
+    `You are an assistant for ${ctx.deps.username}. Their role is: ${ctx.deps.role}.`,
 });
 ```
 
-Dynamic prompts receive a [`RunContext`](../core/run-context) and can return a
-`string` or `Promise<string>`.
+### `addSystemPrompt()`
+
+Add system prompts after construction - the equivalent of pydantic-ai's `@agent.system_prompt` decorator:
 
 ```ts
-type SystemPromptFn<TDeps> = (
-  ctx: RunContext<TDeps>,
-) => string | Promise<string>;
+const agent = new Agent({
+  model,
+  systemPrompt: "You are a helpful assistant.",
+});
+
+// Static addition
+agent.addSystemPrompt("Always respond in bullet points.");
+
+// Dynamic - called every run with the current RunContext
+agent.addSystemPrompt((ctx) => `Today is ${new Date().toDateString()}.`);
+
+// With deps
+agent.addSystemPrompt((ctx) => `Logged-in user: ${ctx.deps.username}`);
+```
+
+All prompts (construction + added) are joined with `\n\n` into a single system message.
+
+> **pydantic-ai mapping:** `agent.addSystemPrompt(fn)` is the equivalent of:
+> ```python
+> @agent.system_prompt
+> def inject_user(ctx: RunContext[Deps]) -> str:
+>     return f"Logged-in user: {ctx.deps.username}"
+> ```
+
+### `instructions` vs `systemPrompt`
+
+Both configure the agent's system instructions and can be strings or functions:
+
+- `systemPrompt` - resolved first
+- `instructions` - resolved after `systemPrompt`, appended to it
+
+```ts
+const agent = new Agent<{ locale: string }>({
+  model,
+  systemPrompt: "You are a helpful assistant.",
+  instructions: (ctx) => `Always respond in ${ctx.deps.locale}.`,
+});
+```
+
+Use `systemPrompt` for stable base configuration and `instructions` for per-run dynamic context.
+
+## Adding Tools and Validators After Construction
+
+```ts
+agent.addTool(myTool);
+agent.addToolset(myToolset);
+agent.addSystemPrompt("Always respond in bullet points.");
+agent.addInstruction((ctx) => `User: ${ctx.deps.username}`);
+agent.addResultValidator(myValidator);
+agent.addHistoryProcessor(trimHistoryProcessor(20));
 ```
 
 ## Model Selection
 
-Any model implementing `LanguageModelV1` from the Vercel AI SDK works:
+Any model implementing `LanguageModel` from the Vercel AI SDK works:
 
 ```ts
 import { anthropic } from "@ai-sdk/anthropic";
 import { openai } from "@ai-sdk/openai";
 
-// Anthropic
 const agent = new Agent({ model: anthropic("claude-sonnet-4-6") });
-
-// OpenAI
 const agent = new Agent({ model: openai("gpt-4o") });
 ```
-
-Pass model-specific options (temperature, max tokens, etc.) directly to the
-provider constructor - they are forwarded to the API automatically.
 
 ## Multi-Turn Conversations
 
@@ -161,37 +196,11 @@ console.log(second.output); // "Your name is Alice."
 
 ## Turn Limit
 
-Each call to `.run()` or `.stream()` runs an internal loop: one LLM call per
-turn, with tool results appended and the loop repeated until the model produces
-a final answer or `maxTurns` is exceeded.
-
-If `maxTurns` is reached, a [`MaxTurnsError`](../core/errors) is thrown.
+Each call to `.run()` or `.stream()` runs an internal loop. If `maxTurns` is reached, a [`MaxTurnsError`](./errors) is thrown.
 
 ```ts
 const agent = new Agent({ model: ..., maxTurns: 5 });
 ```
-
-## `instructions` vs `systemPrompt`
-
-Both configure the agent's system instructions, but they are evaluated
-differently:
-
-- `systemPrompt` - a static string (or array of strings). All strings are joined
-  with `\n\n` before the run starts.
-- `instructions` - a dynamic function called with the `RunContext` on every run,
-  **after** `systemPrompt` is resolved. Use it when instructions must reference
-  run-time data.
-
-```ts
-const agent = new Agent<{ locale: string }>({
-  model,
-  systemPrompt: "You are a helpful assistant.",
-  instructions: (ctx) => `Always respond in ${ctx.deps.locale}.`,
-});
-```
-
-Both can be combined. The resolved `instructions` string is appended after the
-resolved `systemPrompt`.
 
 ## `endStrategy`
 
@@ -206,35 +215,30 @@ Controls when the agent considers a run complete after a tool-only turn:
 const agent = new Agent({ model, endStrategy: "exhaustive" });
 ```
 
-Use `"exhaustive"` when your tools have side effects that all need to complete
-before the model summarises.
+Use `"exhaustive"` when your tools have side effects that all need to complete before the model summarises.
 
 ## `maxConcurrency`
 
-Limits how many tools execute in parallel within a single turn. Defaults to
-unlimited.
+Limits how many tools execute in parallel within a single turn. Defaults to unlimited.
 
 ```ts
 const agent = new Agent({
   model,
   tools: [searchTool, fetchTool, parseTool],
-  maxConcurrency: 2, // at most 2 tools run at once
+  maxConcurrency: 2,
 });
 ```
 
-Combined with `sequential: true` on individual tools, this gives fine-grained
-control over execution order.
-
 ## `runStreamEvents()`
 
-For detailed event-by-event observation of a run (tool calls, tool results, text
-deltas, completion), use `runStreamEvents()`. See
-[Streaming](../core/streaming#runstreamevents) for the full event type reference.
+For detailed event-by-event observation of a run, use `runStreamEvents()`. Each event has a `kind` discriminant:
 
 ```ts
 for await (const event of agent.runStreamEvents("Tell me a joke.")) {
-  if (event.type === "text-delta") process.stdout.write(event.delta);
-  if (event.type === "tool-call") console.log("called", event.toolName);
-  if (event.type === "run-complete") console.log("done", event.result.output);
+  if (event.kind === "text-delta") process.stdout.write(event.delta);
+  if (event.kind === "tool-call-start") console.log("called", event.toolName);
+  if (event.kind === "final-result") console.log("done", event.output);
 }
 ```
+
+See [Streaming](./streaming#runstreamevents) for the full event type reference.

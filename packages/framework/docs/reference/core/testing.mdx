@@ -1,274 +1,172 @@
 ---
 title: "Testing"
-description: "TestModel, FunctionModel, setAllowModelRequests()"
+description: "TestModel, FunctionModel, setAllowModelRequests(), captureRunMessages()"
 ---
 
-The Vercel AI SDK ships a `ai/test` module with mock model implementations that
-let you unit test agents without making real API calls. Tests run in
-milliseconds and are fully deterministic.
+All testing utilities are exported from `@vibes/framework`. Tests run in milliseconds and never hit real APIs.
 
-## Setup
+## `TestModel`
 
-Add `ai/test` to your import map:
+A schema-aware mock model. It understands your agent's tools and output schema, so you don't have to manually construct raw SDK response objects.
 
-```jsonc
-// deno.json
-{
-  "imports": {
-    "ai/test": "npm:ai@^4/test"
+```ts
+import { TestModel } from "@vibes/framework";
+```
+
+### Options
+
+| Option      | Type      | Default | Description                                                   |
+| ----------- | --------- | ------- | ------------------------------------------------------------- |
+| `text`      | `string`  | -       | Return this text as the response                              |
+| `callTools` | `boolean` | `true`  | If true, calls all tools on turn 1, then produces final output |
+
+### Auto-behavior (default)
+
+With no options, `TestModel` auto-generates a valid agent run:
+- **Turn 1**: Calls every non-`final_result` tool once with schema-valid arguments
+- **Turn 2**: Calls `final_result` with schema-valid data, or returns text if no `outputSchema`
+
+```ts
+// Smoke test - just verify tools run without errors
+Deno.test("all tools execute", async () => {
+  const result = await agent
+    .override({ model: new TestModel() })
+    .run("test");
+  assertExists(result.output);
+});
+```
+
+### Specific text response
+
+```ts
+const model = new TestModel({ text: "hello world" });
+const result = await agent.override({ model }).run("say hello");
+assertEquals(result.output, "hello world");
+```
+
+### Skip tool calls
+
+```ts
+const model = new TestModel({ callTools: false });
+// Goes straight to text/structured output without calling tools
+```
+
+---
+
+## `FunctionModel`
+
+Full programmatic control - supply a function that receives the current prompt state and returns a response.
+
+```ts
+import { FunctionModel } from "@vibes/framework";
+```
+
+The function receives `{ messages, tools, turn }` and returns a response object:
+
+```ts
+const model = new FunctionModel(({ messages, tools, turn }) => {
+  const lastUser = messages.findLast((m) => m.role === "user");
+  const text = typeof lastUser?.content === "string" ? lastUser.content : "";
+
+  return {
+    text: text.includes("hello") ? "Hi there!" : "I don't understand.",
+    finishReason: "stop" as const,
+    usage: { inputTokens: 5, outputTokens: 3 },
+  };
+});
+```
+
+Simulate a tool call on turn 1, then text on turn 2:
+
+```ts
+const model = new FunctionModel(({ turn }) => {
+  if (turn === 0) {
+    return {
+      toolCalls: [{
+        toolCallType: "function" as const,
+        toolCallId: "tc1",
+        toolName: "get_weather",
+        args: JSON.stringify({ city: "Tokyo" }),
+      }],
+      finishReason: "tool-calls" as const,
+      usage: { inputTokens: 10, outputTokens: 5 },
+    };
   }
-}
-```
-
-Run tests with `--allow-env` (the SDK reads the `DEBUG` env var at module load):
-
-```bash
-deno test --allow-env src/packages/framework/tests/
-```
-
-## Mock Utilities
-
-```ts
-import {
-  convertArrayToReadableStream, // build streams for doStream
-  MockLanguageModelV1, // drop-in model replacement
-  mockValues, // cycle through multiple responses
-} from "ai/test";
-```
-
-### `MockLanguageModelV1`
-
-A `LanguageModelV1` implementation you control. Pass `doGenerate` for `.run()`
-tests, `doStream` for `.stream()` tests.
-
-```ts
-const model = new MockLanguageModelV1({
-  doGenerate: () =>
-    Promise.resolve({
-      text: "hello world",
-      finishReason: "stop",
-      usage: { promptTokens: 10, completionTokens: 5 },
-      rawCall: { rawPrompt: null, rawSettings: {} },
-    }),
+  return {
+    text: "The weather in Tokyo is 22°C.",
+    finishReason: "stop" as const,
+    usage: { inputTokens: 20, outputTokens: 10 },
+  };
 });
 ```
 
-### `mockValues(...values)`
+---
 
-Returns a function that cycles through the provided values one at a time. Use it
-when a test needs multiple different responses across turns:
+## `MockLanguageModelV3` (from `ai/test`)
 
-```ts
-const doGenerate = mockValues(
-  firstResponse, // returned on first call
-  secondResponse, // returned on second call
-);
-
-const model = new MockLanguageModelV1({
-  doGenerate: () => Promise.resolve(doGenerate()),
-});
-```
-
-### `convertArrayToReadableStream(chunks)`
-
-Builds a `ReadableStream` from an array of stream part chunks. Used with
-`doStream`:
+For detailed response control, use `MockLanguageModelV3` directly from the AI SDK:
 
 ```ts
-const model = new MockLanguageModelV1({
-  doStream: () =>
-    Promise.resolve({
-      stream: convertArrayToReadableStream([
-        { type: "text-delta", textDelta: "hello" },
-        {
-          type: "finish",
-          finishReason: "stop",
-          usage: { promptTokens: 10, completionTokens: 5 },
-        },
-      ]),
-      rawCall: { rawPrompt: null, rawSettings: {} },
-    }),
-});
+import { MockLanguageModelV3, mockValues, convertArrayToReadableStream } from "ai/test";
 ```
 
-## Helper Types
-
-Use `Awaited<ReturnType<...>>` to type mock response objects correctly:
-
-```ts
-type DoGenerateResult = Awaited<ReturnType<MockLanguageModelV1["doGenerate"]>>;
-type DoStreamResult = Awaited<ReturnType<MockLanguageModelV1["doStream"]>>;
-```
-
-This avoids type errors when using `mockValues` with mixed response shapes.
-
-## Testing Recipes
-
-### Plain Text Response
+### Plain text response
 
 ```ts
 Deno.test("basic text run", async () => {
-  const model = new MockLanguageModelV1({
-    doGenerate: () =>
-      Promise.resolve({
-        text: "hello world",
-        finishReason: "stop",
-        usage: { promptTokens: 10, completionTokens: 5 },
-        rawCall: { rawPrompt: null, rawSettings: {} },
-      }),
+  const model = new MockLanguageModelV3({
+    doGenerate: () => Promise.resolve({
+      text: "hello world",
+      finishReason: "stop",
+      usage: { inputTokens: 10, outputTokens: 5 },
+      rawCall: { rawPrompt: null, rawSettings: {} },
+    }),
   });
 
   const agent = new Agent({ model });
   const result = await agent.run("Say hello.");
-
   assertEquals(result.output, "hello world");
   assertEquals(result.usage.requests, 1);
 });
 ```
 
-### Structured Output
+### Multi-turn with `mockValues`
 
-Simulate the model calling `final_result` with your structured data:
-
-```ts
-Deno.test("structured output", async () => {
-  const OutputSchema = z.object({ capital: z.string() });
-
-  const model = new MockLanguageModelV1({
-    doGenerate: () =>
-      Promise.resolve({
-        toolCalls: [
-          {
-            toolCallType: "function",
-            toolCallId: "tc1",
-            toolName: "final_result",
-            args: JSON.stringify({ capital: "Paris" }),
-          },
-        ],
-        finishReason: "tool-calls",
-        usage: { promptTokens: 10, completionTokens: 5 },
-        rawCall: { rawPrompt: null, rawSettings: {} },
-      }),
-  });
-
-  const agent = new Agent<undefined, z.infer<typeof OutputSchema>>({
-    model,
-    outputSchema: OutputSchema,
-  });
-
-  const result = await agent.run("Capital of France?");
-  assertEquals(result.output.capital, "Paris");
-});
-```
-
-### Multi-Turn (Tool Call then Text)
+`mockValues` cycles through values one at a time - use it for multi-turn scenarios:
 
 ```ts
 Deno.test("tool call then text", async () => {
-  type DoGenerateResult = Awaited<
-    ReturnType<MockLanguageModelV1["doGenerate"]>
-  >;
+  type R = Awaited<ReturnType<MockLanguageModelV3["doGenerate"]>>;
 
-  const doGenerate = mockValues<DoGenerateResult>(
+  const doGenerate = mockValues<R>(
     // Turn 1: model calls the tool
     {
-      toolCalls: [
-        {
-          toolCallType: "function",
-          toolCallId: "tc1",
-          toolName: "get_weather",
-          args: JSON.stringify({ city: "Tokyo" }),
-        },
-      ],
+      toolCalls: [{
+        toolCallType: "function",
+        toolCallId: "tc1",
+        toolName: "get_weather",
+        args: JSON.stringify({ city: "Tokyo" }),
+      }],
       finishReason: "tool-calls",
-      usage: { promptTokens: 10, completionTokens: 5 },
+      usage: { inputTokens: 10, outputTokens: 5 },
       rawCall: { rawPrompt: null, rawSettings: {} },
     },
-    // Turn 2: model produces final text after seeing tool result
+    // Turn 2: text after seeing tool result
     {
       text: "The weather in Tokyo is 22°C and sunny.",
       finishReason: "stop",
-      usage: { promptTokens: 20, completionTokens: 10 },
+      usage: { inputTokens: 20, outputTokens: 10 },
       rawCall: { rawPrompt: null, rawSettings: {} },
     },
   );
 
-  const weatherTool = tool({
-    name: "get_weather",
-    description: "Get weather",
-    parameters: z.object({ city: z.string() }),
-    execute: async (_ctx, { city }) => `${city}: 22°C, sunny`,
-  });
-
-  const model = new MockLanguageModelV1({
+  const model = new MockLanguageModelV3({
     doGenerate: () => Promise.resolve(doGenerate()),
   });
 
   const agent = new Agent({ model, tools: [weatherTool] });
   const result = await agent.run("Weather in Tokyo?");
-
-  assertEquals(result.output.includes("22°C"), true);
   assertEquals(result.usage.requests, 2);
-});
-```
-
-### Result Validator Retry
-
-```ts
-Deno.test("validator rejects then retries", async () => {
-  type Output = { score: number };
-  type DoGenerateResult = Awaited<
-    ReturnType<MockLanguageModelV1["doGenerate"]>
-  >;
-
-  const doGenerate = mockValues<DoGenerateResult>(
-    // First attempt: invalid score
-    {
-      toolCalls: [
-        {
-          toolCallType: "function",
-          toolCallId: "tc1",
-          toolName: "final_result",
-          args: JSON.stringify({ score: 0 }),
-        },
-      ],
-      finishReason: "tool-calls",
-      usage: { promptTokens: 10, completionTokens: 5 },
-      rawCall: { rawPrompt: null, rawSettings: {} },
-    },
-    // Second attempt: valid score
-    {
-      toolCalls: [
-        {
-          toolCallType: "function",
-          toolCallId: "tc2",
-          toolName: "final_result",
-          args: JSON.stringify({ score: 7 }),
-        },
-      ],
-      finishReason: "tool-calls",
-      usage: { promptTokens: 10, completionTokens: 5 },
-      rawCall: { rawPrompt: null, rawSettings: {} },
-    },
-  );
-
-  const model = new MockLanguageModelV1({
-    doGenerate: () => Promise.resolve(doGenerate()),
-  });
-  const agent = new Agent<undefined, Output>({
-    model,
-    outputSchema: z.object({ score: z.number() }),
-    resultValidators: [
-      (_ctx, output) => {
-        if (output.score < 1) throw new Error("Too low");
-        return output;
-      },
-    ],
-  });
-
-  const result = await agent.run("Score?");
-  assertEquals(result.output.score, 7);
-  assertEquals(result.retryCount, 1);
 });
 ```
 
@@ -276,20 +174,15 @@ Deno.test("validator rejects then retries", async () => {
 
 ```ts
 Deno.test("stream text", async () => {
-  const model = new MockLanguageModelV1({
-    doStream: () =>
-      Promise.resolve({
-        stream: convertArrayToReadableStream([
-          { type: "text-delta", textDelta: "hello " },
-          { type: "text-delta", textDelta: "world" },
-          {
-            type: "finish",
-            finishReason: "stop",
-            usage: { promptTokens: 10, completionTokens: 5 },
-          },
-        ]),
-        rawCall: { rawPrompt: null, rawSettings: {} },
-      }),
+  const model = new MockLanguageModelV3({
+    doStream: () => Promise.resolve({
+      stream: convertArrayToReadableStream([
+        { type: "text-delta", textDelta: "hello " },
+        { type: "text-delta", textDelta: "world" },
+        { type: "finish", finishReason: "stop", usage: { inputTokens: 10, outputTokens: 5 } },
+      ]),
+      rawCall: { rawPrompt: null, rawSettings: {} },
+    }),
   });
 
   const agent = new Agent({ model });
@@ -301,14 +194,14 @@ Deno.test("stream text", async () => {
   }
 
   assertEquals(collected, "hello world");
-  assertEquals(await stream.output, "hello world");
 });
 ```
 
-### `setAllowModelRequests` - Guard Against Accidental API Calls
+---
 
-Call this at the top of a test file to ensure any non-mocked agent run throws
-immediately instead of making a real API call:
+## `setAllowModelRequests()`
+
+Call this at the top of a test file to block any non-mocked agent run from making real API calls:
 
 ```ts
 import { setAllowModelRequests } from "@vibes/framework";
@@ -318,7 +211,9 @@ setAllowModelRequests(false); // throws ModelRequestsDisabledError for real call
 // Use agent.override({ model: mockModel }) for the runs you do want to execute
 ```
 
-### `captureRunMessages` - Inspect Messages Sent to the Model
+---
+
+## `captureRunMessages()`
 
 Wrap any agent call to record the exact messages sent to the model on each turn:
 
@@ -331,88 +226,8 @@ const { result, messages } = await captureRunMessages(() =>
 
 // messages[0] = messages array for turn 1
 // messages[1] = messages array for turn 2
-assertEquals(messages[0].some((m) => m.role === "system"), true);
+const systemMsg = messages[0].find((m) => m.role === "system");
+assertEquals(systemMsg?.content?.includes("Alice"), true);
 ```
 
-### `TestModel` - Schema-Aware Mock
-
-`TestModel` is a higher-level mock that understands the agent's tool schema. It
-lets you specify tool call sequences without manually constructing raw SDK
-response objects:
-
-```ts
-import { TestModel } from "@vibes/framework";
-import { z } from "zod";
-
-const OutputSchema = z.object({ answer: z.string() });
-
-const model = new TestModel({
-  responses: [
-    // Turn 1: call a tool
-    { toolCalls: [{ name: "search", args: { query: "vibes framework" } }] },
-    // Turn 2: produce structured output
-    { output: { answer: "Vibes is a TypeScript agent framework." } },
-  ],
-});
-
-const agent = new Agent({
-  model,
-  outputSchema: OutputSchema,
-  tools: [searchTool],
-});
-const result = await agent.run("What is vibes?");
-assertEquals(result.output.answer.includes("Vibes"), true);
-```
-
-### `FunctionModel` - Programmatic Control
-
-`FunctionModel` gives you full control by accepting a function that receives the
-current prompt and returns a response. Useful for testing behaviour that depends
-on message content:
-
-```ts
-import { FunctionModel } from "@vibes/framework";
-
-const model = new FunctionModel(({ prompt }) => {
-  const lastUser = prompt.findLast((m) => m.role === "user");
-  const content = typeof lastUser?.content === "string" ? lastUser.content : "";
-  return {
-    text: content.includes("hello") ? "Hi there!" : "I don't understand.",
-    finishReason: "stop" as const,
-    usage: { promptTokens: 5, completionTokens: 3 },
-  };
-});
-
-const agent = new Agent({ model });
-const result = await agent.run("hello");
-assertEquals(result.output, "Hi there!");
-```
-
-### Inspecting What the Model Received
-
-```ts
-Deno.test("dynamic system prompt is included", async () => {
-  let capturedSystem: string | undefined;
-
-  const model = new MockLanguageModelV1({
-    doGenerate: (opts) => {
-      capturedSystem = opts.prompt.find((m) => m.role === "system")
-        ?.content as string;
-      return Promise.resolve({
-        text: "ok",
-        finishReason: "stop",
-        usage: { promptTokens: 5, completionTokens: 2 },
-        rawCall: { rawPrompt: null, rawSettings: {} },
-      });
-    },
-  });
-
-  const agent = new Agent<{ username: string }>({
-    model,
-    dynamicSystemPrompt: (ctx) => `Hello, ${ctx.deps.username}`,
-  });
-
-  await agent.run("Hi", { deps: { username: "Alice" } });
-  assertEquals(capturedSystem?.includes("Alice"), true);
-});
-```
+Useful for verifying dynamic system prompts, history processors, and message structure.

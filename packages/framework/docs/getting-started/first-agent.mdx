@@ -36,7 +36,7 @@ console.log(result.output);
 
 ```ts
 console.log(result.output);      // "Paris" (the text response)
-console.log(result.usage);       // { promptTokens, completionTokens, totalTokens, requests }
+console.log(result.usage);       // { inputTokens, outputTokens, totalTokens, requests }
 console.log(result.messages);    // full message history (user + assistant turns)
 console.log(result.runId);       // unique ID for this run (useful for logging)
 ```
@@ -45,22 +45,24 @@ console.log(result.runId);       // unique ID for this run (useful for logging)
 
 When you call `agent.run()`:
 
-1. **System prompt** is resolved (static string or function)
+1. **System prompts** are resolved (static strings and dynamic functions, all joined)
 2. **Messages** are built: `[system, user]` for a fresh run
 3. **Model is called** with the messages and available tools
 4. **Response is processed:**
-   - If the model returns text → that's the output, run ends
-   - If the model calls tools → tools are executed, results appended, loop repeats
+   - If the model returns text - that's the output, run ends
+   - If the model calls tools - tools are executed, results appended, loop repeats
 5. **Result validators** run on the output (if any)
 6. **`RunResult`** is returned
 
 This loop is called the _agent loop_. The model drives it - Vibes just handles the plumbing.
 
-See [How Agents Work](../concepts/how-agents-work.md) for a deeper dive.
+See [How Agents Work](../concepts/how-agents-work) for a deeper dive.
 
 ## Dynamic System Prompts
 
-System prompts can be functions. This is useful when the prompt needs runtime context:
+This is one of the most powerful features of Vibes, directly equivalent to pydantic-ai's `@agent.system_prompt` decorator.
+
+System prompts can be functions that receive a `RunContext` at runtime. This lets you inject user data, session state, or anything else into the prompt dynamically:
 
 ```ts
 import { Agent } from "@vibes/framework";
@@ -81,9 +83,38 @@ const result = await agent.run("What time is it?", {
 
 The function receives a [`RunContext`](../reference/core/run-context) with `deps`, `usage`, `runId`, and `metadata`.
 
+## Adding System Prompts Dynamically
+
+Use `agent.addSystemPrompt()` to attach additional prompts after construction. This is the equivalent of pydantic-ai's `@agent.system_prompt` decorator - perfect for middleware, plugins, or building agents incrementally:
+
+```ts
+const agent = new Agent({
+  model: anthropic("claude-haiku-4-5-20251001"),
+  systemPrompt: "You are a helpful assistant.",
+});
+
+// Add a static prompt
+agent.addSystemPrompt("Always respond in bullet points.");
+
+// Add a dynamic prompt - called every run with the current context
+agent.addSystemPrompt((ctx) => `Today is ${new Date().toDateString()}.`);
+
+// Add a prompt that uses injected dependencies
+agent.addSystemPrompt((ctx) => `Current user: ${ctx.deps.username}`);
+```
+
+All system prompts - whether passed at construction or added later - are joined with `\n\n` and sent as a single system message each run.
+
+> **pydantic-ai mapping:** `agent.addSystemPrompt(fn)` is the TypeScript equivalent of:
+> ```python
+> @agent.system_prompt
+> def my_prompt(ctx: RunContext[Deps]) -> str:
+>     return f"Current user: {ctx.deps.username}"
+> ```
+
 ## Multiple System Prompts
 
-Pass an array to combine prompts:
+Combine static and dynamic prompts using both `systemPrompt` and `instructions`:
 
 ```ts
 const agent = new Agent({
@@ -120,6 +151,6 @@ const agent = new Agent<{ db: Database }, { answer: string }>({
 
 ## Next Steps
 
-- [Adding Tools](./adding-tools.md) - give the agent real capabilities
-- [Structured Output](./structured-output.md) - get typed JSON responses
-- [Testing Your Agent](./testing.md) - test without API calls
+- [Adding Tools](./adding-tools) - give the agent real capabilities
+- [Structured Output](./structured-output) - get typed JSON responses
+- [Testing Your Agent](./testing) - test without API calls

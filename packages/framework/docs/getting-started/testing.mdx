@@ -13,8 +13,7 @@ Use `agent.override()` to swap the model for a mock in tests:
 
 ```ts
 import { assertEquals } from "@std/assert";
-import { Agent } from "@vibes/framework";
-import { TestModel } from "@vibes/framework/testing";
+import { Agent, TestModel } from "@vibes/framework";
 import { anthropic } from "@ai-sdk/anthropic";
 
 // Production agent
@@ -40,16 +39,19 @@ Deno.test("basic text response", async () => {
 `TestModel` is a schema-aware mock that auto-generates valid responses based on the agent's tools and output schema.
 
 ```ts
-import { TestModel } from "@vibes/framework/testing";
+import { TestModel } from "@vibes/framework";
 
-// Returns plain text
+// Returns a specific text response
 const model = new TestModel({ text: "hello world" });
 
 // Auto-calls all tools, then produces final output (default behavior)
 const model = new TestModel();
+
+// Skip tool calls, go straight to output
+const model = new TestModel({ callTools: false });
 ```
 
-**Auto-behavior (default):**
+**Auto-behavior (default, `callTools: true`):**
 - Turn 1: Calls every non-`final_result` tool once with schema-valid arguments
 - Turn 2: Calls `final_result` with schema-valid data (or returns text if no `outputSchema`)
 
@@ -64,23 +66,64 @@ Deno.test("all tools execute without throwing", async () => {
 });
 ```
 
-## MockLanguageModelV3
+## FunctionModel
 
-For fine-grained control, use `MockLanguageModelV3` from `ai/test`:
+`FunctionModel` gives you full control - provide a function that receives the messages, tools, and turn number, and returns any response:
 
 ```ts
-import { MockLanguageModelV3, mockValues } from "ai/test";
+import { FunctionModel } from "@vibes/framework";
 
-// Helpers from @vibes/framework/testing
-import { textResponse, toolCallResponse } from "@vibes/framework/testing";
+Deno.test("responds based on message content", async () => {
+  const model = new FunctionModel(({ messages, turn }) => {
+    const lastMessage = messages.findLast((m) => m.role === "user");
+    const text = typeof lastMessage?.content === "string"
+      ? lastMessage.content
+      : "";
+
+    return {
+      text: text.includes("hello") ? "Hi there!" : "I don't understand.",
+      finishReason: "stop" as const,
+      usage: { inputTokens: 5, outputTokens: 3 },
+    };
+  });
+
+  const agent = new Agent({ model: anthropic("...") });
+  const result = await agent.override({ model }).run("hello");
+  assertEquals(result.output, "Hi there!");
+});
+```
+
+The function receives `{ messages, tools, turn }` and must return a response object.
+
+## MockLanguageModelV3
+
+For fine-grained control over raw model responses, use `MockLanguageModelV3` from `ai/test`:
+
+```ts
+import { MockLanguageModelV3, mockValues, convertArrayToReadableStream } from "ai/test";
 
 Deno.test("tool call followed by text", async () => {
   const model = new MockLanguageModelV3({
     doGenerate: mockValues(
       // Turn 1: model calls the tool
-      toolCallResponse("get_weather", { city: "Tokyo" }),
+      {
+        toolCalls: [{
+          toolCallType: "function",
+          toolCallId: "tc1",
+          toolName: "get_weather",
+          args: JSON.stringify({ city: "Tokyo" }),
+        }],
+        finishReason: "tool-calls",
+        usage: { inputTokens: 10, outputTokens: 5 },
+        rawCall: { rawPrompt: null, rawSettings: {} },
+      },
       // Turn 2: model responds with text after seeing tool result
-      textResponse("It's 22°C and sunny in Tokyo."),
+      {
+        text: "It's 22°C and sunny in Tokyo.",
+        finishReason: "stop",
+        usage: { inputTokens: 20, outputTokens: 10 },
+        rawCall: { rawPrompt: null, rawSettings: {} },
+      },
     ),
   });
 
@@ -98,42 +141,22 @@ Deno.test("structured output", async () => {
   const agent = new Agent({ model: anthropic("..."), outputSchema: CountryInfo });
 
   const model = new MockLanguageModelV3({
-    doGenerate: toolCallResponse("final_result", {
-      capital: "Tokyo",
-      population: 125.7,
+    doGenerate: () => Promise.resolve({
+      toolCalls: [{
+        toolCallType: "function",
+        toolCallId: "tc1",
+        toolName: "final_result",
+        args: JSON.stringify({ capital: "Tokyo", population: 125.7 }),
+      }],
+      finishReason: "tool-calls",
+      usage: { inputTokens: 10, outputTokens: 5 },
+      rawCall: { rawPrompt: null, rawSettings: {} },
     }),
   });
 
   const result = await agent.override({ model }).run("Tell me about Japan");
   assertEquals(result.output.capital, "Tokyo");
   assertEquals(result.output.population, 125.7);
-});
-```
-
-## FunctionModel
-
-`FunctionModel` gives you full control - provide a function that receives the prompt and returns any response:
-
-```ts
-import { FunctionModel } from "@vibes/framework/testing";
-
-Deno.test("responds based on message content", async () => {
-  const model = new FunctionModel(({ prompt }) => {
-    const lastMessage = prompt.findLast((m) => m.role === "user");
-    const text = typeof lastMessage?.content === "string"
-      ? lastMessage.content
-      : "";
-
-    return {
-      text: text.includes("hello") ? "Hi there!" : "I don't understand.",
-      finishReason: "stop" as const,
-      usage: { promptTokens: 5, completionTokens: 3 },
-    };
-  });
-
-  const agent = new Agent({ model: anthropic("...") });
-  const result = await agent.override({ model }).run("hello");
-  assertEquals(result.output, "Hi there!");
 });
 ```
 
@@ -147,10 +170,8 @@ import { setAllowModelRequests } from "@vibes/framework";
 setAllowModelRequests(false);
 
 // Any agent.run() without a mocked model will now throw ModelRequestsDisabledError
-// Safe to use agent.override({ model: mockModel }).run(...) - that still works
+// agent.override({ model: mockModel }).run(...) still works fine
 ```
-
-This is a safety net to prevent accidentally hitting real APIs during tests.
 
 ## Inspect What the Model Received
 
@@ -185,19 +206,14 @@ const agent = new Agent<Deps>({
 });
 
 Deno.test("looks up user by email", async () => {
-  // Use a fake database
   const fakeDb = {
     users: {
-      findByEmail: async (email: string) => ({
-        id: "u1",
-        name: "Alice",
-        email,
-      }),
+      findByEmail: async (email: string) => ({ id: "u1", name: "Alice", email }),
     },
   };
 
   const result = await agent
-    .override({ model: mockModel })
+    .override({ model: new TestModel({ text: "Found Alice" }) })
     .run("Find alice@example.com", { deps: { db: fakeDb } });
 
   assertEquals(result.output.includes("Alice"), true);
@@ -206,14 +222,10 @@ Deno.test("looks up user by email", async () => {
 
 ## Test File Structure
 
-Recommended test file structure:
-
 ```ts
 // agents/my_agent_test.ts
 import { assertEquals, assertExists, assertRejects } from "@std/assert";
-import { setAllowModelRequests } from "@vibes/framework";
-import { MockLanguageModelV3, mockValues } from "ai/test";
-import { textResponse, toolCallResponse } from "@vibes/framework/testing";
+import { setAllowModelRequests, TestModel, FunctionModel, captureRunMessages } from "@vibes/framework";
 import { myAgent } from "./my_agent.ts";
 
 // Block accidental real API calls
@@ -235,5 +247,5 @@ Deno.test("MyAgent - validates output schema", async () => {
 ## Next Steps
 
 - [Testing reference](../reference/core/testing) - full API reference for all test utilities
-- [How Agents Work](../concepts/how-agents-work.md) - understand the loop you're testing
+- [How Agents Work](../concepts/how-agents-work) - understand the loop you're testing
 - [Result Validators](../reference/core/result-validators) - test retry and validation behavior

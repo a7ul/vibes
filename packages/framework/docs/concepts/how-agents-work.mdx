@@ -115,7 +115,7 @@ Both `systemPrompt` and `instructions` are resolved before the first turn:
 2. `instructions` is evaluated the same way
 3. Both are joined and injected as the system message
 
-`instructions` is the escape hatch for per-run dynamic content. It maps to pydantic-ai's `instructions` parameter - a function that runs every turn with the current `RunContext`.
+`instructions` is appended after `systemPrompt`. Both can be strings or functions that receive `RunContext`. Use `systemPrompt` for stable base config and `instructions` for per-run dynamic content.
 
 ## Tool Execution
 
@@ -206,7 +206,7 @@ interface RunResult<TOutput> {
 | `MaxTurnsError` | Turn count exceeded | Increase `maxTurns` or simplify the task |
 | `MaxRetriesError` | Validation retries exhausted | Check your `outputSchema` and `resultValidators` |
 | `ApprovalRequiredError` | Tool needs human approval | Call `agent.resume()` |
-| `UsageLimitExceededError` | Token/request budget hit | Increase limits or add history processors |
+| `UsageLimitError` | Token/request budget hit | Increase limits or add history processors |
 | Provider errors | Model API failure | Retry or handle in calling code |
 
-See [Error Handling](./error-handling.md) for the full pattern guide.
+See [Error Handling](./error-handling) for the full pattern guide.
