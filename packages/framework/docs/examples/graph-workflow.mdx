@@ -1,0 +1,123 @@
+---
+title: Graph Workflow
+description: A multi-step article pipeline using Vibes Graph - demonstrates BaseNode, state transitions with next(), and terminal output().
+---
+
+This example builds a two-stage article pipeline using Vibes' Graph API: an outline node followed by a writing node. The `Graph` class manages state transitions between `BaseNode` instances - each node receives the current state, does its work, and either transitions to the next node with `next()` or terminates with `output()`.
+
+## What You'll Learn
+
+- Defining graph nodes with `BaseNode`
+- State transitions using the `next()` free function
+- Terminal output using the `output()` free function
+- Composing a `Graph` from nodes and running it
+
+## Prerequisites
+
+- Vibes installed (`npm:@vibes/framework`)
+- `ANTHROPIC_API_KEY` environment variable set
+
+<Warning>
+Always import `next` and `output` as free functions from `@vibes/framework`. Do **not** call them as instance methods (e.g., prefixed with `this.`) - they are standalone functions, not methods on `BaseNode`, and calling them as such will throw at runtime.
+</Warning>
+
+## Complete Example
+
+```typescript
+import { Agent, BaseNode, Graph, next, output } from "npm:@vibes/framework";
+import { anthropic } from "npm:@ai-sdk/anthropic";
+
+// --- State type ---
+type PipelineState = {
+  topic: string;
+  outline?: string;
+  article?: string;
+};
+
+// --- Agents ---
+const outlineAgent = new Agent({
+  model: anthropic("claude-haiku-4-5-20251001"),
+  systemPrompt: "Create a concise 3-point outline for a short article. Return only the outline.",
+});
+
+const writeAgent = new Agent({
+  model: anthropic("claude-sonnet-4-6"),
+  systemPrompt: "Write a short 3-paragraph article based on the outline provided.",
+});
+
+// --- Graph nodes ---
+class OutlineNode extends BaseNode<PipelineState, string> {
+  readonly id = "outline";
+
+  async run(state: PipelineState) {
+    const result = await outlineAgent.run(`Create an outline for: ${state.topic}`);
+    // Transition to the "write" node with updated state
+    return next<PipelineState, string>("write", { ...state, outline: result.output });
+  }
+}
+
+class WriteNode extends BaseNode<PipelineState, string> {
+  readonly id = "write";
+
+  async run(state: PipelineState) {
+    const result = await writeAgent.run(
+      `Outline:\n${state.outline}\n\nWrite the article.`
+    );
+    // Terminal - return the final article
+    return output<PipelineState, string>(result.output);
+  }
+}
+
+// --- Compose and run ---
+const graph = new Graph<PipelineState, string>([
+  new OutlineNode(),
+  new WriteNode(),
+]);
+
+const article = await graph.run({ topic: "The future of AI agents" }, "outline");
+console.log(article);
+```
+
+## Run It
+
+```bash
+deno run --allow-net --allow-env graph-workflow.ts
+```
+
+## How It Works
+
+### State type
+
+`PipelineState` carries all data through the graph. Each node receives the full state and returns a new state (immutable - always spread with `{ ...state, field: value }`).
+
+### `next(nodeId, newState)`
+
+Transitions to the named node. The `nodeId` must match the `id` of another node in the graph. The `newState` becomes the input state for that node. You can call it with or without explicit type parameters:
+
+```typescript
+// With explicit generics (recommended for type safety)
+return next<PipelineState, string>("write", newState);
+
+// Without generics (TypeScript infers the types)
+return next("write", newState);
+```
+
+### `output(value)`
+
+Terminates the graph and returns `value` as the final result. The type parameter `string` (second generic on `BaseNode<TState, TOutput>`) must match.
+
+```typescript
+// With explicit generics
+return output<PipelineState, string>(result.output);
+
+// Without generics (TypeScript infers from BaseNode type parameters)
+return output(result.output);
+```
+
+### `new Graph([nodes])`
+
+Pass all nodes as an array. The second argument to `graph.run()` is the ID of the starting node.
+
+## Next Steps
+
+- [Graph concept page](/concepts/graph) - persistence with FileStatePersistence, toMermaid(), runIter()
