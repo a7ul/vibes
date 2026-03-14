@@ -7,6 +7,8 @@ A `Toolset` is a composable, context-aware group of tools that is resolved per
 turn - letting you dynamically include or exclude tools based on the current run
 context.
 
+> **RunContext flows through toolsets.** Every `tools(ctx)` call receives the full `RunContext` including your `deps`. This is what makes role-based and permission-based tool visibility possible. See [Dependency Injection](../../concepts/dependency-injection) for the full hierarchy.
+
 ## What is a Toolset?
 
 Individual tools registered on an agent are static. A toolset is different: its

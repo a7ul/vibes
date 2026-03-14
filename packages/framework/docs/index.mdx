@@ -7,18 +7,6 @@ Vibes is a TypeScript agent framework built to closely match [pydantic-ai](https
 
 It brings production-grade agent patterns and the flexibility of pydantic-ai to TypeScript projects - type-safe tools, dependency injection, result validators, streaming, and first-class testing utilities.
 
-<CardGroup cols={3}>
-  <Card title="Familiar API" icon="code">
-    If you've used pydantic-ai, you'll feel at home. Agents, tools, deps, validators - same patterns, TypeScript types.
-  </Card>
-  <Card title="Any LLM Provider" icon="bolt">
-    Built on Vercel AI SDK. Anthropic, OpenAI, Google, Mistral, Ollama, and 50+ more - one interface.
-  </Card>
-  <Card title="Low Maintenance" icon="wrench">
-    Vibes doesn't duplicate provider SDKs or streaming primitives. AI SDK improvements flow through automatically.
-  </Card>
-</CardGroup>
-
 ```ts
 import { Agent, tool } from "@vibes/framework";
 import { anthropic } from "@ai-sdk/anthropic";
@@ -55,20 +43,10 @@ Any LLM provider   ← Anthropic, OpenAI, Google, Mistral, Ollama, ...
 
 ## Start here
 
-<CardGroup cols={2}>
-  <Card title="Installation" icon="download" href="/getting-started/install">
-    Set up Deno or Node.js, add dependencies, verify with a hello-world agent.
-  </Card>
-  <Card title="Your First Agent" icon="play" href="/getting-started/first-agent">
-    Create an agent, run it, and understand what each part does.
-  </Card>
-  <Card title="Adding Tools" icon="hammer" href="/getting-started/adding-tools">
-    Give your agent real capabilities - APIs, databases, file I/O.
-  </Card>
-  <Card title="Structured Output" icon="brackets-curly" href="/getting-started/structured-output">
-    Get typed, validated JSON responses using Zod schemas.
-  </Card>
-</CardGroup>
+- [Installation](/getting-started/install) - set up Deno or Node.js and verify with a hello-world agent
+- [Your First Agent](/getting-started/first-agent) - create an agent, run it, understand what each part does
+- [Adding Tools](/getting-started/adding-tools) - give your agent real capabilities
+- [Structured Output](/getting-started/structured-output) - get typed, validated JSON responses using Zod schemas
 
 ## pydantic-ai comparison
 
