@@ -107,7 +107,7 @@ for await (const event of agent.runStreamEvents("What is 2 + 2?")) {
 ```
 
 <Warning>
-The event discriminant is `event.kind`, not `event.type`. The existing `reference/core/streaming.mdx` page has this bug - always use `event.kind`.
+The event discriminant is `event.kind`, not `event.type`. Always use `event.kind` when switching on stream events.
 </Warning>
 
 ## AgentStreamEvent Reference
