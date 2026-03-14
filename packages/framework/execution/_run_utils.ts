@@ -18,10 +18,17 @@ import type { UsageLimits } from "../usage_limits.ts";
 import type { ModelSettings } from "../model_settings.ts";
 import { createUsage } from "../types.ts";
 import { toAISDKTools } from "../tool.ts";
+import { Semaphore } from "../concurrency.ts";
 import { checkUsageLimits } from "../usage_limits.ts";
 import { MaxRetriesError } from "../errors.ts";
 import { applyHistoryProcessors } from "../history_processor.ts";
 import { assertModelRequestsAllowed, _notifyModelRequest } from "../testing.ts";
+import {
+	isBinaryContent,
+	isUploadedFile,
+	binaryContentToToolResult,
+	uploadedFileToToolResult,
+} from "../binary_content.ts";
 
 // ---------------------------------------------------------------------------
 // Public opts type for execute functions
@@ -65,6 +72,7 @@ export function createRunContext<TDeps>(
 	deps: TDeps,
 	metadata: Record<string, unknown>,
 ): RunContext<TDeps> {
+	const toolResultMetadata = new Map<string, Record<string, unknown>>();
 	return {
 		deps,
 		usage: createUsage(),
@@ -72,6 +80,10 @@ export function createRunContext<TDeps>(
 		toolName: null,
 		runId: globalThis.crypto.randomUUID(),
 		metadata,
+		toolResultMetadata,
+		attachMetadata(toolCallId: string, meta: Record<string, unknown>): void {
+			toolResultMetadata.set(toolCallId, { ...meta });
+		},
 	};
 }
 
@@ -193,13 +205,26 @@ export function buildResponseMessages(
 	return [];
 }
 
+/**
+ * Build an AI SDK ToolSet from resolved tool definitions. Handles output tools
+ * by wrapping their execute return to preserve the result, and handles
+ * BinaryContent / UploadedFile returns by converting them to appropriate
+ * AI SDK content parts.
+ *
+ * @param resolvedTools - Tool definitions resolved for this turn.
+ * @param outputSchema - Optional Zod schema for the structured final_result tool.
+ * @param ctx - The current RunContext.
+ * @param maxConcurrency - Optional cap on concurrent tool executions.
+ * @param sequentialMutex - Shared mutex for sequential tools.
+ */
 export function buildToolMap<TDeps>(
 	resolvedTools: ToolDefinition<TDeps>[],
 	outputSchema: import("zod").ZodTypeAny | undefined,
 	ctx: RunContext<TDeps>,
 	maxConcurrency?: number,
+	sequentialMutex?: Semaphore,
 ): ToolSet {
-	const toolMap = toAISDKTools(resolvedTools, () => ctx, maxConcurrency);
+	const toolMap = toAISDKTools(resolvedTools, () => ctx, maxConcurrency, sequentialMutex);
 	if (outputSchema) {
 		toolMap[FINAL_RESULT_TOOL] = aiTool({
 			description: "Return the final structured result.",
@@ -213,6 +238,43 @@ export function buildToolMap<TDeps>(
 
 export function toolsOrUndefined(toolMap: ToolSet): ToolSet | undefined {
 	return Object.keys(toolMap).length > 0 ? toolMap : undefined;
+}
+
+// ---------------------------------------------------------------------------
+// Output tool detection
+// ---------------------------------------------------------------------------
+
+/**
+ * Returns the name of the first output tool found in the resolved tools array,
+ * or undefined if none exist.
+ */
+export function findOutputToolNames<TDeps>(
+	resolvedTools: ToolDefinition<TDeps>[],
+): Set<string> {
+	const names = new Set<string>();
+	for (const t of resolvedTools) {
+		if (t.isOutput) names.add(t.name);
+	}
+	return names;
+}
+
+// ---------------------------------------------------------------------------
+// BinaryContent / UploadedFile tool result conversion
+// ---------------------------------------------------------------------------
+
+/**
+ * Serialize a tool execute return value to a form the AI SDK will accept in
+ * a tool-result message. BinaryContent becomes a base64 data-URI string;
+ * UploadedFile becomes a file-reference string; everything else passes through.
+ */
+export function serializeToolResult(value: unknown): unknown {
+	if (isBinaryContent(value)) {
+		return binaryContentToToolResult(value);
+	}
+	if (isUploadedFile(value)) {
+		return uploadedFileToToolResult(value);
+	}
+	return value;
 }
 
 // ---------------------------------------------------------------------------
@@ -284,6 +346,10 @@ export interface TurnSetup<TDeps> {
 	msgsForModel: ModelMessage[];
 	/** System prompt combined with per-turn instructions. */
 	system: string | undefined;
+	/** Names of output tools resolved for this turn. */
+	outputToolNames: Set<string>;
+	/** Resolved tool definitions (used for output tool detection). */
+	resolvedTools: ToolDefinition<TDeps>[];
 }
 
 export async function prepareTurn<TDeps, TOutput>(
@@ -293,6 +359,8 @@ export async function prepareTurn<TDeps, TOutput>(
 	messages: ModelMessage[],
 	/** The resolved system prompt (without instructions) from run start. */
 	systemPrompt: string | undefined,
+	/** Shared mutex for sequential tools (created once per run). */
+	sequentialMutex?: Semaphore,
 ): Promise<TurnSetup<TDeps>> {
 	// Check usage limits (agent-level, then per-run override)
 	const limits = opts._override?.usageLimits ?? opts.usageLimits ?? agent.usageLimits;
@@ -301,7 +369,14 @@ export async function prepareTurn<TDeps, TOutput>(
 	const tools = opts._override?.tools ?? agent.tools;
 	const toolsets = opts._override?.toolsets ?? agent.toolsets;
 	const resolvedTools = await resolveTools(tools, toolsets, ctx);
-	const toolMap = buildToolMap(resolvedTools, agent.outputSchema, ctx, agent.maxConcurrency);
+	const outputToolNames = findOutputToolNames(resolvedTools);
+	const toolMap = buildToolMap(
+		resolvedTools,
+		agent.outputSchema,
+		ctx,
+		agent.maxConcurrency,
+		sequentialMutex,
+	);
 
 	const historyProcessors = opts._override?.historyProcessors ?? agent.historyProcessors;
 	const msgsForModel = await applyHistoryProcessors(historyProcessors, messages, ctx);
@@ -317,7 +392,7 @@ export async function prepareTurn<TDeps, TOutput>(
 	// Notify capture store
 	_notifyModelRequest(msgsForModel);
 
-	return { toolMap, tools: toolsOrUndefined(toolMap), msgsForModel, system };
+	return { toolMap, tools: toolsOrUndefined(toolMap), msgsForModel, system, outputToolNames, resolvedTools };
 }
 
 /** Resolve effective model settings, merging agent-level with run/override-level. */
@@ -366,6 +441,18 @@ export function resolveEndStrategy<TDeps, TOutput>(
 	opts: InternalRunOpts<TDeps, TOutput>,
 ): import("../agent.ts").EndStrategy {
 	return opts._override?.endStrategy ?? opts.endStrategy ?? agent.endStrategy;
+}
+
+// ---------------------------------------------------------------------------
+// Sequential mutex factory
+// ---------------------------------------------------------------------------
+
+/**
+ * Create a shared mutex (1-permit Semaphore) for sequential tool execution.
+ * Used once per run and shared across all turns.
+ */
+export function createSequentialMutex(): Semaphore {
+	return new Semaphore(1);
 }
 
 // ---------------------------------------------------------------------------

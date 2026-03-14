@@ -33,6 +33,16 @@ export interface RunContext<TDeps = undefined> {
 	runId: string;
 	/** Per-run metadata supplied by the caller. */
 	metadata: Record<string, unknown>;
+	/**
+	 * Metadata attached by tools after execution, keyed by tool call ID.
+	 * Tools call `attachMetadata(toolCallId, meta)` to populate this map.
+	 */
+	toolResultMetadata: Map<string, Record<string, unknown>>;
+	/**
+	 * Attach arbitrary metadata for a specific tool call. Tools invoke this
+	 * inside their `execute` function to expose extra data to callers.
+	 */
+	attachMetadata(toolCallId: string, meta: Record<string, unknown>): void;
 }
 
 // ---------------------------------------------------------------------------
@@ -61,6 +71,8 @@ export interface RunResult<TOutput> {
 	retryCount: number;
 	/** Unique identifier for this run. */
 	runId: string;
+	/** Metadata attached by tools during the run, keyed by tool call ID. */
+	toolMetadata: Map<string, Record<string, unknown>>;
 }
 
 export interface StreamResult<TOutput> {
