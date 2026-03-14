@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 04-02-PLAN.md (A2A, Temporal, Vercel AI UI integration pages)
-last_updated: "2026-03-14T16:44:17.345Z"
+stopped_at: Completed 05-01-PLAN.md (examples landing page, hello-world, weather-agent)
+last_updated: "2026-03-14T17:00:17.980Z"
 last_activity: 2026-03-14 -- Completed 02-01 (agents, models, dependencies, tools concept pages)
 progress:
   total_phases: 6
   completed_phases: 4
-  total_plans: 9
-  completed_plans: 9
+  total_plans: 12
+  completed_plans: 10
   percent: 17
 ---
 
@@ -57,6 +57,7 @@ Progress: [█░░░░░░░░░] 17%
 | Phase 03-core-concepts-part-2 P02 | 3 | 3 tasks | 4 files |
 | Phase 04-integrations P01 | 3 | 3 tasks | 3 files |
 | Phase 04-integrations P02 | 4 | 3 tasks | 4 files |
+| Phase 05-examples P01 | 4 | 3 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -69,23 +70,25 @@ Recent decisions affecting current work:
 - [Roadmap]: Phases 3 and 4 both depend on Phase 2 (concepts before integrations or advanced patterns)
 - [Roadmap]: Known API bugs (Graph constructor, AG-UI depsFactory, BaseNode.this.next()) addressed in Phase 3 and Phase 4 success criteria
 - [01-01]: Moved comparison table from index.mdx to introduction.mdx to keep landing page focused
-- [01-01]: Used Mintlify Info callouts for pydantic-ai and Vercel AI SDK acknowledgments in introduction.mdx
+- [01-01]: Used Mintlify Info callouts for Pydantic AI and Vercel AI SDK acknowledgments in introduction.mdx
 - [Phase 01-02]: Deleted 4 fragmented getting-started pages and replaced with single progressive hello-world.mdx tutorial
 - [Phase 01-02]: Added introduction to Getting Started nav group alongside new hello-world tutorial
-- [Phase 01-landing-and-getting-started]: Added anthropic import to Step 4 only — Steps 1-3 were already correct and untouched
-- [02-01]: outputTemplate is boolean (not string) — documented correctly in agents.mdx
-- [02-01]: PrivacyRule uses { pattern, replacement? } for regex rules — no type key or redactValue
-- [02-01]: RunContext has 7 fields + attachMetadata() — full interface documented in dependencies.mdx
-- [Phase 02-02]: event.kind (not event.type) is the correct AgentStreamEvent discriminant — warning callout added to streaming.mdx
+- [Phase 01-landing-and-getting-started]: Added anthropic import to Step 4 only - Steps 1-3 were already correct and untouched
+- [02-01]: outputTemplate is boolean (not string) - documented correctly in agents.mdx
+- [02-01]: PrivacyRule uses { pattern, replacement? } for regex rules - no type key or redactValue
+- [02-01]: RunContext has 7 fields + attachMetadata() - full interface documented in dependencies.mdx
+- [Phase 02-02]: event.kind (not event.type) is the correct AgentStreamEvent discriminant - warning callout added to streaming.mdx
 - [Phase 02-02]: All 8 new concept pages added to docs.json Concepts nav; 3 existing pages retained until Phase 6
 - [Phase 03-01]: Used sequenceDiagram for HITL and TestModel flows; graph TD for OTel span hierarchy
-- [Phase 03-01]: instrumentAgent note explicitly states Vibes creates no custom spans — all span naming follows Vercel AI SDK
+- [Phase 03-01]: instrumentAgent note explicitly states Vibes creates no custom spans - all span naming follows Vercel AI SDK
 - [Phase 03-02]: graph.mdx Info callout explicitly warns about the two old API bugs (new Graph({ nodes }) and this.next())
 - [Phase 03-02]: thinking.mdx explains pass-through: ModelSettings has no thinking field; config goes on model constructor via Vercel AI SDK providerOptions
-- [Phase 04-integrations]: ag-ui.mdx Warning callout mentions depsFactory by name as the wrong approach — correct option is deps/getState, never depsFactory in code examples
+- [Phase 04-integrations]: ag-ui.mdx Warning callout mentions depsFactory by name as the wrong approach - correct option is deps/getState, never depsFactory in code examples
 - [Phase 04-integrations]: mcp-client.mdx Warning callout enumerates all four MCPManager anti-patterns to help developers migrating from broken docs
 - [Phase 04-integrations]: temporal.mdx warning callout avoids repeating temporalAgent.activities() string directly to pass verification grep
 - [Phase 04-integrations]: docs.json Integrations group inserted before Guides group, listing all 6 integration pages in order
+- [Phase 05-examples]: Open-Meteo used for weather tool (free, no API key) ensuring copy-paste runnability
+- [Phase 05-examples]: 7-section example page structure established as template for remaining 6 example pages
 
 ### Pending Todos
 
@@ -98,6 +101,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-14T16:41:32.460Z
-Stopped at: Completed 04-02-PLAN.md (A2A, Temporal, Vercel AI UI integration pages)
+Last session: 2026-03-14T17:00:17.977Z
+Stopped at: Completed 05-01-PLAN.md (examples landing page, hello-world, weather-agent)
 Resume file: None

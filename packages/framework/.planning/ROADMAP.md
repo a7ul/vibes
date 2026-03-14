@@ -2,7 +2,7 @@
 
 ## Overview
 
-Rewrite and expand the Vibes Agent Framework documentation to full parity with pydantic-ai's teaching quality. Six phases deliver the docs progressively: landing and onboarding first, then core concepts in two waves, integrations, runnable examples, and finally advanced topics with navigation cleanup. Every phase produces pages a developer can read and verify immediately.
+Rewrite and expand the Vibes Agent Framework documentation to full parity with Pydantic AI's teaching quality. Six phases deliver the docs progressively: landing and onboarding first, then core concepts in two waves, integrations, runnable examples, and finally advanced topics with navigation cleanup. Every phase produces pages a developer can read and verify immediately.
 
 ## Phases
 
@@ -27,14 +27,14 @@ Decimal phases appear between their surrounding integers in numeric order.
 **Requirements**: LAND-01, LAND-02, GS-01, GS-02
 **Success Criteria** (what must be TRUE):
   1. index.mdx opens with a benefits-first hero section, a rendered Mermaid architecture diagram, and an acknowledgments blurb
-  2. An introduction page exists explaining design philosophy and crediting pydantic-ai and Vercel AI SDK
+  2. An introduction page exists explaining design philosophy and crediting Pydantic AI and Vercel AI SDK
   3. The install page lists all supported providers with a Mermaid provider architecture diagram
   4. A single progressive hello-world tutorial walks from bare agent through tools, structured output, and testing -- replacing the 4 fragmented getting-started pages
 **Plans**: 2 plans
 
 Plans:
-- [x] 01-01-PLAN.md — Rewrite landing page (index.mdx) and create introduction.mdx
-- [ ] 01-02-PLAN.md — Enhance install page, create hello-world tutorial, delete old pages, update docs.json
+- [x] 01-01-PLAN.md - Rewrite landing page (index.mdx) and create introduction.mdx
+- [ ] 01-02-PLAN.md - Enhance install page, create hello-world tutorial, delete old pages, update docs.json
 
 ### Phase 2: Core Concepts Part 1
 **Goal**: Developers can learn the eight foundational concepts (agents, models, deps, tools, toolsets, results, messages, streaming) through deep-dive pages with Mermaid diagrams and working code
@@ -49,8 +49,8 @@ Plans:
 **Plans**: 2 plans
 
 Plans:
-- [ ] 02-01-PLAN.md — Create agents.mdx, models.mdx, dependencies.mdx, tools.mdx (CONCEPT-01 through 04)
-- [ ] 02-02-PLAN.md — Create toolsets.mdx, results.mdx, messages.mdx, streaming.mdx + update docs.json (CONCEPT-05 through 08)
+- [ ] 02-01-PLAN.md - Create agents.mdx, models.mdx, dependencies.mdx, tools.mdx (CONCEPT-01 through 04)
+- [ ] 02-02-PLAN.md - Create toolsets.mdx, results.mdx, messages.mdx, streaming.mdx + update docs.json (CONCEPT-05 through 08)
 
 ### Phase 3: Core Concepts Part 2
 **Goal**: Developers can learn the six advanced concept patterns (HITL, testing, debugging, multi-agent, graph, thinking) through dedicated pages with diagrams and real code
@@ -65,8 +65,8 @@ Plans:
 **Plans**: 2 plans
 
 Plans:
-- [ ] 03-01-PLAN.md — Create human-in-the-loop.mdx, testing.mdx, debugging.mdx (CONCEPT-09, 10, 11)
-- [ ] 03-02-PLAN.md — Create multi-agent.mdx, graph.mdx, thinking.mdx + update docs.json (CONCEPT-12, 13, 14)
+- [ ] 03-01-PLAN.md - Create human-in-the-loop.mdx, testing.mdx, debugging.mdx (CONCEPT-09, 10, 11)
+- [ ] 03-02-PLAN.md - Create multi-agent.mdx, graph.mdx, thinking.mdx + update docs.json (CONCEPT-12, 13, 14)
 
 ### Phase 4: Integrations
 **Goal**: Developers can integrate Vibes agents with MCP, AG-UI, A2A, Temporal, and Vercel AI UI through dedicated pages with architecture diagrams and correct APIs
@@ -81,8 +81,8 @@ Plans:
 **Plans**: 2 plans
 
 Plans:
-- [ ] 04-01-PLAN.md — Create mcp-client.mdx, mcp-server.mdx, ag-ui.mdx (INT-01a, INT-01b, INT-02)
-- [ ] 04-02-PLAN.md — Create a2a.mdx, temporal.mdx, vercel-ai-ui.mdx + update docs.json (INT-03, INT-04, INT-05)
+- [ ] 04-01-PLAN.md - Create mcp-client.mdx, mcp-server.mdx, ag-ui.mdx (INT-01a, INT-01b, INT-02)
+- [ ] 04-02-PLAN.md - Create a2a.mdx, temporal.mdx, vercel-ai-ui.mdx + update docs.json (INT-03, INT-04, INT-05)
 
 ### Phase 5: Examples
 **Goal**: Developers can find and copy-paste nine runnable examples covering the full feature surface, from hello-world to A2A
@@ -91,18 +91,18 @@ Plans:
 **Success Criteria** (what must be TRUE):
   1. An examples landing page exists with categorized links to all 9 examples
   2. Each example page contains a complete, copy-paste runnable program (not just snippets) with imports, setup, and execution instructions
-  3. The Bank Support example faithfully ports the canonical pydantic-ai teaching example to TypeScript using Vibes APIs
+  3. The Bank Support example faithfully ports the canonical Pydantic AI teaching example to TypeScript using Vibes APIs
   4. The Graph Workflow and Human-in-the-Loop examples demonstrate end-to-end flows matching their concept page teachings
   5. The A2A example shows two agents communicating via the A2A protocol
 **Plans**: 3 plans
 
 Plans:
-- [ ] 05-01-PLAN.md — Create examples/index.mdx (landing), hello-world.mdx, weather-agent.mdx (EX-01, EX-02, EX-03)
-- [ ] 05-02-PLAN.md — Create chat-app.mdx, bank-support.mdx, rag.mdx (EX-04, EX-05, EX-06)
-- [ ] 05-03-PLAN.md — Create graph-workflow.mdx, human-in-the-loop.mdx, a2a.mdx + update docs.json (EX-07, EX-08, EX-09)
+- [ ] 05-01-PLAN.md - Create examples/index.mdx (landing), hello-world.mdx, weather-agent.mdx (EX-01, EX-02, EX-03)
+- [ ] 05-02-PLAN.md - Create chat-app.mdx, bank-support.mdx, rag.mdx (EX-04, EX-05, EX-06)
+- [ ] 05-03-PLAN.md - Create graph-workflow.mdx, human-in-the-loop.mdx, a2a.mdx + update docs.json (EX-07, EX-08, EX-09)
 
 ### Phase 6: Advanced Topics, Meta, and Navigation
-**Goal**: The documentation is complete: advanced topics filled in, project pages published, navigation restructured to match pydantic-ai's flow, all old pages removed, zero broken links, and 30+ Mermaid diagrams across the site
+**Goal**: The documentation is complete: advanced topics filled in, project pages published, navigation restructured to match Pydantic AI's flow, all old pages removed, zero broken links, and 30+ Mermaid diagrams across the site
 **Depends on**: Phase 5
 **Requirements**: ADV-01, ADV-02, ADV-03, META-01, META-02, META-03, NAV-01, NAV-02, NAV-03, NAV-04, DIAG-01
 **Success Criteria** (what must be TRUE):
@@ -130,5 +130,5 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6
 | 2. Core Concepts Part 1 | 2/2 | Complete   | 2026-03-14 |
 | 3. Core Concepts Part 2 | 2/2 | Complete   | 2026-03-14 |
 | 4. Integrations | 2/2 | Complete   | 2026-03-14 |
-| 5. Examples | 0/3 | Not started | - |
+| 5. Examples | 1/3 | In Progress|  |
 | 6. Advanced Topics, Meta, and Navigation | 0/3 | Not started | - |
