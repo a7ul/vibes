@@ -49,9 +49,8 @@ Plans:
 **Plans**: 2 plans
 
 Plans:
-- [ ] 02-01: TBD
-- [ ] 02-02: TBD
-- [ ] 02-03: TBD
+- [ ] 02-01-PLAN.md — Create agents.mdx, models.mdx, dependencies.mdx, tools.mdx (CONCEPT-01 through 04)
+- [ ] 02-02-PLAN.md — Create toolsets.mdx, results.mdx, messages.mdx, streaming.mdx + update docs.json (CONCEPT-05 through 08)
 
 ### Phase 3: Core Concepts Part 2
 **Goal**: Developers can learn the six advanced concept patterns (HITL, testing, debugging, multi-agent, graph, thinking) through dedicated pages with diagrams and real code
@@ -128,7 +127,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Landing and Getting Started | 3/3 | Complete   | 2026-03-14 |
-| 2. Core Concepts Part 1 | 0/3 | Not started | - |
+| 2. Core Concepts Part 1 | 0/2 | Not started | - |
 | 3. Core Concepts Part 2 | 0/2 | Not started | - |
 | 4. Integrations | 0/2 | Not started | - |
 | 5. Examples | 0/3 | Not started | - |
