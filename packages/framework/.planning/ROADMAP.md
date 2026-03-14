@@ -15,7 +15,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 1: Landing and Getting Started** - First-impression pages: hero landing, introduction, install, and progressive hello-world tutorial (completed 2026-03-14)
 - [x] **Phase 2: Core Concepts Part 1** - Agent fundamentals: agents, models, dependencies, tools, toolsets, results, messages, streaming (completed 2026-03-14)
 - [x] **Phase 3: Core Concepts Part 2** - Advanced patterns: human-in-the-loop, testing, debugging, multi-agent, graph, thinking (completed 2026-03-14)
-- [ ] **Phase 4: Integrations** - Protocol and platform pages: MCP client/server, AG-UI, A2A, Temporal, Vercel AI UI
+- [x] **Phase 4: Integrations** - Protocol and platform pages: MCP client/server, AG-UI, A2A, Temporal, Vercel AI UI (completed 2026-03-14)
 - [ ] **Phase 5: Examples** - Nine runnable, copy-paste examples covering every major feature
 - [ ] **Phase 6: Advanced Topics, Meta, and Navigation** - Multimodal, error handling, direct model requests, project pages, nav restructure, link audit, diagram count
 
@@ -129,6 +129,6 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6
 | 1. Landing and Getting Started | 3/3 | Complete   | 2026-03-14 |
 | 2. Core Concepts Part 1 | 2/2 | Complete   | 2026-03-14 |
 | 3. Core Concepts Part 2 | 2/2 | Complete   | 2026-03-14 |
-| 4. Integrations | 1/2 | In Progress|  |
+| 4. Integrations | 2/2 | Complete   | 2026-03-14 |
 | 5. Examples | 0/3 | Not started | - |
 | 6. Advanced Topics, Meta, and Navigation | 0/3 | Not started | - |
