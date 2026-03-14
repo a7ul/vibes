@@ -3,7 +3,6 @@
  * Not part of the public API.
  */
 import {
-	tool as aiTool,
 	type LanguageModel,
 	type LanguageModelUsage,
 	type ModelMessage,
@@ -29,6 +28,14 @@ import {
 	binaryContentToToolResult,
 	uploadedFileToToolResult,
 } from "../binary_content.ts";
+import {
+	FINAL_RESULT_TOOL,
+	registerOutputTools,
+	buildSchemaPrompt,
+	isFinalResultTool,
+	unionToolIndex,
+	normaliseSchemas,
+} from "../output_schema.ts";
 
 // ---------------------------------------------------------------------------
 // Public opts type for execute functions
@@ -187,7 +194,8 @@ export async function resolveTools<TDeps>(
 // Tool map builder
 // ---------------------------------------------------------------------------
 
-export const FINAL_RESULT_TOOL = "final_result";
+// Re-export for callers that depend on these by name.
+export { FINAL_RESULT_TOOL, isFinalResultTool, unionToolIndex, normaliseSchemas };
 
 export function buildResponseMessages(
 	responseMessages: ModelMessage[],
@@ -211,27 +219,29 @@ export function buildResponseMessages(
  * BinaryContent / UploadedFile returns by converting them to appropriate
  * AI SDK content parts.
  *
+ * When `outputMode` is `'tool'` and `outputSchema` is provided, registers
+ * `final_result` (single schema) or `final_result_N` tools (union schema array).
+ * When `outputMode` is `'native'` or `'prompted'`, no final_result tools are
+ * registered here.
+ *
  * @param resolvedTools - Tool definitions resolved for this turn.
- * @param outputSchema - Optional Zod schema for the structured final_result tool.
+ * @param outputSchema - Optional Zod schema (or array) for structured output.
+ * @param outputMode - How structured output is delivered ('tool' | 'native' | 'prompted').
  * @param ctx - The current RunContext.
  * @param maxConcurrency - Optional cap on concurrent tool executions.
  * @param sequentialMutex - Shared mutex for sequential tools.
  */
 export function buildToolMap<TDeps>(
 	resolvedTools: ToolDefinition<TDeps>[],
-	outputSchema: import("zod").ZodTypeAny | undefined,
+	outputSchema: import("zod").ZodTypeAny | import("zod").ZodTypeAny[] | undefined,
+	outputMode: import("../output_mode.ts").OutputMode,
 	ctx: RunContext<TDeps>,
 	maxConcurrency?: number,
 	sequentialMutex?: Semaphore,
 ): ToolSet {
 	const toolMap = toAISDKTools(resolvedTools, () => ctx, maxConcurrency, sequentialMutex);
-	if (outputSchema) {
-		toolMap[FINAL_RESULT_TOOL] = aiTool({
-			description: "Return the final structured result.",
-			inputSchema: outputSchema,
-			// Passthrough execute so the SDK includes the result in response.response.messages.
-			execute: (input) => Promise.resolve(input),
-		});
+	if (outputSchema && outputMode === "tool") {
+		registerOutputTools(toolMap, outputSchema);
 	}
 	return toolMap;
 }
@@ -373,6 +383,7 @@ export async function prepareTurn<TDeps, TOutput>(
 	const toolMap = buildToolMap(
 		resolvedTools,
 		agent.outputSchema,
+		agent.outputMode,
 		ctx,
 		agent.maxConcurrency,
 		sequentialMutex,
@@ -381,13 +392,25 @@ export async function prepareTurn<TDeps, TOutput>(
 	const historyProcessors = opts._override?.historyProcessors ?? agent.historyProcessors;
 	const msgsForModel = await applyHistoryProcessors(historyProcessors, messages, ctx);
 
-	// Resolve per-turn instructions and combine with system prompt
-	const system = await resolveSystemWithInstructions(
+	// Resolve per-turn instructions and combine with system prompt.
+	// For 'prompted' mode with outputTemplate enabled, append the schema prompt.
+	let baseSystem = await resolveSystemWithInstructions(
 		agent,
 		ctx,
 		systemPrompt,
 		opts._override?.instructions,
 	);
+
+	if (
+		agent.outputMode === "prompted" &&
+		agent.outputTemplate !== false &&
+		agent.outputSchema
+	) {
+		const schemaPrompt = buildSchemaPrompt(agent.outputSchema);
+		baseSystem = baseSystem ? `${baseSystem}\n\n${schemaPrompt}` : schemaPrompt;
+	}
+
+	const system = baseSystem;
 
 	// Notify capture store
 	_notifyModelRequest(msgsForModel);
@@ -468,3 +491,4 @@ export function checkModelRequestsAllowed(bypass = false): void {
 // ---------------------------------------------------------------------------
 
 export { checkUsageLimits, applyHistoryProcessors };
+export { buildSchemaPrompt, parseTextOutput } from "../output_schema.ts";

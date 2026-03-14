@@ -8,7 +8,9 @@ import {
 	buildResponseMessages,
 	createRunContext,
 	createSequentialMutex,
-	FINAL_RESULT_TOOL,
+	isFinalResultTool,
+	unionToolIndex,
+	normaliseSchemas,
 	nudgeForFinalResult,
 	nudgeWithValidationError,
 	prepareTurn,
@@ -18,6 +20,7 @@ import {
 	resolveEndStrategy,
 	runValidators,
 	checkModelRequestsAllowed,
+	parseTextOutput,
 	type InternalRunOpts,
 } from "./_run_utils.ts";
 import { MaxTurnsError } from "../errors.ts";
@@ -61,9 +64,9 @@ function createDeferred<TOutput>(): DeferredResult<TOutput> {
 // ReadableStream → AsyncIterable bridge
 // ---------------------------------------------------------------------------
 
-async function* readableToAsyncIterable(
-	stream: ReadableStream<string>,
-): AsyncGenerator<string> {
+async function* readableToAsyncIterable<T>(
+	stream: ReadableStream<T>,
+): AsyncGenerator<T> {
 	const reader = stream.getReader();
 	try {
 		while (true) {
@@ -96,10 +99,18 @@ export function executeStream<TDeps, TOutput>(
 		},
 	});
 
-	runStreamLoop(agent, prompt, opts, textController, deferred);
+	let partialController!: ReadableStreamDefaultController<TOutput>;
+	const partialReadable = new ReadableStream<TOutput>({
+		start: (c) => {
+			partialController = c;
+		},
+	});
+
+	runStreamLoop(agent, prompt, opts, textController, partialController, deferred);
 
 	return {
 		textStream: readableToAsyncIterable(textReadable),
+		partialOutput: readableToAsyncIterable(partialReadable),
 		output: deferred.promise.then((r) => r.output),
 		messages: deferred.promise.then((r) => r.messages),
 		newMessages: deferred.promise.then((r) => r.newMessages),
@@ -116,6 +127,7 @@ async function runStreamLoop<TDeps, TOutput>(
 	prompt: string,
 	opts: InternalRunOpts<TDeps, TOutput>,
 	textController: ReadableStreamDefaultController<string>,
+	partialController: ReadableStreamDefaultController<TOutput>,
 	deferred: DeferredResult<TOutput>,
 ): Promise<void> {
 	const ctx: RunContext<TDeps> = createRunContext(
@@ -132,6 +144,9 @@ async function runStreamLoop<TDeps, TOutput>(
 	const modelSettingsRaw = resolveModelSettings(agent, opts);
 	const modelSettings = modelSettingsToAISDKOptions(modelSettingsRaw);
 	const endStrategy = resolveEndStrategy(agent, opts);
+	const outputMode = agent.outputMode;
+	const outputSchema = agent.outputSchema;
+	const schemas = normaliseSchemas(outputSchema);
 
 	// Shared mutex for sequential tools — created once per run
 	const sequentialMutex = createSequentialMutex();
@@ -145,6 +160,18 @@ async function runStreamLoop<TDeps, TOutput>(
 
 	const inputOffset = opts.messageHistory?.length ?? 0;
 	const messages = buildInitialMessages(opts.messageHistory, prompt);
+
+	const closeStreams = () => {
+		if (!streamClosed) {
+			streamClosed = true;
+			textController.close();
+			try {
+				partialController.close();
+			} catch {
+				// already closed
+			}
+		}
+	};
 
 	try {
 		for (let turn = 0; turn < maxTurns; turn++) {
@@ -167,9 +194,44 @@ async function runStreamLoop<TDeps, TOutput>(
 			});
 
 			let accumulatedText = "";
-			for await (const delta of stream.textStream) {
-				accumulatedText += delta;
-				textController.enqueue(delta);
+			// Track streaming tool input args for partial output.
+			// Maps tool call ID → { toolName, accumulatedDelta }
+			const toolInputBuffers = new Map<string, { toolName: string; args: string }>();
+
+			for await (const chunk of stream.fullStream) {
+				if (chunk.type === "text-delta") {
+					// AI SDK v6: text-delta carries `.text` (not `.textDelta`)
+					accumulatedText += chunk.text;
+					textController.enqueue(chunk.text);
+				} else if (chunk.type === "tool-input-start" && outputMode === "tool") {
+					// Record the tool name for this ID so we can use it in tool-input-delta
+					toolInputBuffers.set(chunk.id, { toolName: chunk.toolName, args: "" });
+				} else if (chunk.type === "tool-input-delta" && outputMode === "tool") {
+					const entry = toolInputBuffers.get(chunk.id);
+					if (entry && isFinalResultTool(entry.toolName)) {
+						const updated = entry.args + chunk.delta;
+						toolInputBuffers.set(chunk.id, { ...entry, args: updated });
+
+						// Best-effort parse of partial args
+						const idx = unionToolIndex(entry.toolName) ?? 0;
+						const schema = schemas[idx] ?? schemas[0];
+						if (schema) {
+							try {
+								const partial = JSON.parse(updated);
+								const parsed = schema.safeParse(partial);
+								if (parsed.success) {
+									try {
+										partialController.enqueue(parsed.data as TOutput);
+									} catch {
+										// stream already closed — ignore
+									}
+								}
+							} catch {
+								// incomplete JSON — not yet parseable, skip
+							}
+						}
+					}
+				}
 			}
 
 			const [streamUsage, toolCalls, toolResults, responseData] =
@@ -201,8 +263,7 @@ async function runStreamLoop<TDeps, TOutput>(
 					);
 					void endStrategy;
 					const allMessages = [...messages, ...newMessages];
-					streamClosed = true;
-					textController.close();
+					closeStreams();
 					deferred.resolve({
 						output,
 						messages: allMessages,
@@ -218,12 +279,51 @@ async function runStreamLoop<TDeps, TOutput>(
 				}
 			}
 
-			// Check for final_result tool result
-			const finalResult = toolResults.find(
-				(r) => r.toolName === FINAL_RESULT_TOOL,
+			// ---------------------------------------------------------------------------
+			// Prompted output mode
+			// ---------------------------------------------------------------------------
+			if (outputMode === "prompted" && schemas.length > 0) {
+				if (accumulatedText.trim().length > 0) {
+					const parseResult = parseTextOutput<TOutput>(accumulatedText, outputSchema);
+					if (!parseResult.success) {
+						messages.push(...newMessages);
+						nudgeWithValidationError(ctx, messages, maxRetries, parseResult.error);
+						continue;
+					}
+					try {
+						const output = await runValidators(resultValidators, ctx, parseResult.data);
+						void endStrategy;
+						const allMessages = [...messages, ...newMessages];
+						closeStreams();
+						deferred.resolve({
+							output,
+							messages: allMessages,
+							newMessages: allMessages.slice(inputOffset),
+							usage: { ...usage },
+						});
+						return;
+					} catch (err) {
+						const error = err instanceof Error ? err : new Error(String(err));
+						messages.push(...newMessages);
+						nudgeWithValidationError(ctx, messages, maxRetries, error);
+						continue;
+					}
+				}
+				messages.push(...newMessages);
+				nudgeForFinalResult(ctx, messages, maxRetries);
+				continue;
+			}
+
+			// ---------------------------------------------------------------------------
+			// Check for final_result (or final_result_N) tool result — tool mode
+			// ---------------------------------------------------------------------------
+			const finalResultEntry = toolResults.find(
+				(r) => isFinalResultTool(r.toolName),
 			);
-			if (finalResult && agent.outputSchema) {
-				const parsed = agent.outputSchema.safeParse(finalResult.input);
+			if (finalResultEntry && schemas.length > 0) {
+				const idx = unionToolIndex(finalResultEntry.toolName) ?? 0;
+				const schema = schemas[idx] ?? schemas[0];
+				const parsed = schema.safeParse(finalResultEntry.input);
 				if (!parsed.success) {
 					messages.push(...newMessages);
 					nudgeWithValidationError(
@@ -249,8 +349,7 @@ async function runStreamLoop<TDeps, TOutput>(
 					void endStrategy; // acknowledged
 
 					const allMessages = [...messages, ...newMessages];
-					streamClosed = true;
-					textController.close();
+					closeStreams();
 					deferred.resolve({
 						output,
 						messages: allMessages,
@@ -268,14 +367,13 @@ async function runStreamLoop<TDeps, TOutput>(
 
 			// No tool calls — text response
 			if (toolCalls.length === 0) {
-				if (agent.outputSchema) {
+				if (schemas.length > 0) {
 					messages.push(...newMessages);
 					nudgeForFinalResult(ctx, messages, maxRetries);
 					continue;
 				}
 				const allMessages = [...messages, ...newMessages];
-				streamClosed = true;
-				textController.close();
+				closeStreams();
 				deferred.resolve({
 					output: accumulatedText as TOutput,
 					messages: allMessages,
@@ -291,9 +389,7 @@ async function runStreamLoop<TDeps, TOutput>(
 
 		throw new MaxTurnsError(maxTurns);
 	} catch (err) {
-		if (!streamClosed) {
-			textController.close();
-		}
+		closeStreams();
 		deferred.reject(err);
 	}
 }
