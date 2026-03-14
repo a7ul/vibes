@@ -131,7 +131,7 @@ richer than `textStream` alone. Use it when you need to observe tool calls, tool
 results, and run lifecycle events in addition to text.
 
 ```ts
-import type { AgentStreamEvent } from "./mod.ts";
+import type { AgentStreamEvent } from "@vibes/framework";
 
 for await (const event of agent.runStreamEvents("What is 2 + 2?")) {
   switch (event.type) {

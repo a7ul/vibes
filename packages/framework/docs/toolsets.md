@@ -30,7 +30,7 @@ interface Toolset<TDeps = undefined> {
 Register toolsets on an agent via the `toolsets` option:
 
 ```ts
-import { Agent, FunctionToolset } from "./mod.ts";
+import { Agent, FunctionToolset } from "@vibes/framework";
 
 const agent = new Agent({
   model,
@@ -43,7 +43,7 @@ const agent = new Agent({
 The simplest toolset: a mutable list of tool definitions.
 
 ```ts
-import { FunctionToolset, tool } from "./mod.ts";
+import { FunctionToolset, tool } from "@vibes/framework";
 import { z } from "zod";
 
 const search = tool({
@@ -71,7 +71,7 @@ Merges two or more toolsets into one. If two tools share the same name, the last
 toolset wins.
 
 ```ts
-import { CombinedToolset } from "./mod.ts";
+import { CombinedToolset } from "@vibes/framework";
 
 const combined = new CombinedToolset(searchToolset, fetchToolset, dbToolset);
 const agent = new Agent({ model, toolsets: [combined] });
@@ -83,7 +83,7 @@ Wraps a toolset with a per-turn predicate. Returns an empty tool list when the
 predicate returns `false`.
 
 ```ts
-import { FilteredToolset } from "./mod.ts";
+import { FilteredToolset } from "@vibes/framework";
 
 // Only expose admin tools when the user has the admin role
 const adminOnly = new FilteredToolset(
@@ -111,7 +111,7 @@ const filtered = new FilteredToolset(
 Avoid name collisions when combining tool libraries.
 
 ```ts
-import { PrefixedToolset, RenamedToolset } from "./mod.ts";
+import { PrefixedToolset, RenamedToolset } from "@vibes/framework";
 
 // All tool names get a prefix: "search" → "web_search"
 const webTools = new PrefixedToolset(searchToolset, "web_");

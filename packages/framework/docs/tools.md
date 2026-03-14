@@ -9,7 +9,7 @@ schema, and an execute function.
 Use the `tool()` factory for full type inference:
 
 ```ts
-import { tool } from "./mod.ts";
+import { tool } from "@vibes/framework";
 import { z } from "zod";
 
 const search = tool({
@@ -165,7 +165,7 @@ When a tool needs no dependency injection at all, use `plainTool` for a cleaner
 signature without the unused `ctx` parameter:
 
 ```ts
-import { plainTool } from "./mod.ts";
+import { plainTool } from "@vibes/framework";
 
 const add = plainTool({
   name: "add",
@@ -181,7 +181,7 @@ When integrating with external schema registries or OpenAPI specs, build a tool
 directly from a raw JSON Schema object instead of Zod:
 
 ```ts
-import { fromSchema } from "./mod.ts";
+import { fromSchema } from "@vibes/framework";
 
 const search = fromSchema({
   name: "search",
@@ -201,7 +201,7 @@ An output tool ends the run immediately when the model calls it. Its return
 value becomes `result.output`. This is the manual equivalent of `outputSchema`.
 
 ```ts
-import { outputTool } from "./mod.ts";
+import { outputTool } from "@vibes/framework";
 
 const done = outputTool({
   name: "done",

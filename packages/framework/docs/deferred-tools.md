@@ -15,7 +15,7 @@ them, then resumes the run.
 ## Basic Usage
 
 ```ts
-import { Agent, ApprovalRequiredError, tool } from "./mod.ts";
+import { Agent, ApprovalRequiredError, tool } from "@vibes/framework";
 import { z } from "zod";
 
 const deleteUser = tool({
@@ -165,7 +165,7 @@ Use `ApprovalRequiredToolset` to wrap an entire toolset so all its tools require
 approval:
 
 ```ts
-import { ApprovalRequiredToolset } from "./mod.ts";
+import { ApprovalRequiredToolset } from "@vibes/framework";
 
 const safeToolset = new ApprovalRequiredToolset(dangerousToolset);
 const agent = new Agent({ model, toolsets: [safeToolset] });

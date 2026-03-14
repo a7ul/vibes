@@ -59,7 +59,7 @@ on that turn.
 Register processors via `historyProcessors` on the agent:
 
 ```ts
-import { Agent, trimHistoryProcessor } from "./mod.ts";
+import { Agent, trimHistoryProcessor } from "@vibes/framework";
 
 const agent = new Agent({
   model,
@@ -76,7 +76,7 @@ Keeps only the `n` most recent messages. The simplest strategy for bounded
 context.
 
 ```ts
-import { trimHistoryProcessor } from "./mod.ts";
+import { trimHistoryProcessor } from "@vibes/framework";
 
 const agent = new Agent({
   model,
@@ -90,7 +90,7 @@ Keeps the most recent messages that fit within a token budget. System messages
 are always preserved.
 
 ```ts
-import { tokenTrimHistoryProcessor } from "./mod.ts";
+import { tokenTrimHistoryProcessor } from "@vibes/framework";
 
 const agent = new Agent({
   model,
@@ -121,7 +121,7 @@ The summary is injected as a single user message; the most recent half of
 messages is kept verbatim.
 
 ```ts
-import { summarizeHistoryProcessor } from "./mod.ts";
+import { summarizeHistoryProcessor } from "@vibes/framework";
 import { anthropic } from "@ai-sdk/anthropic";
 
 const summaryModel = anthropic("claude-haiku-4-5-20251001");
@@ -144,7 +144,7 @@ const agent = new Agent({
 Redacts sensitive data from message text before it reaches the model.
 
 ```ts
-import { privacyFilterProcessor } from "./mod.ts";
+import { privacyFilterProcessor } from "@vibes/framework";
 
 const agent = new Agent({
   model,
@@ -214,7 +214,7 @@ The framework ships a `serializeMessages` / `deserializeMessages` helper pair
 for safe round-tripping:
 
 ```ts
-import { deserializeMessages, serializeMessages } from "./mod.ts";
+import { deserializeMessages, serializeMessages } from "@vibes/framework";
 
 // Save
 await db.set("history", serializeMessages(result.messages));

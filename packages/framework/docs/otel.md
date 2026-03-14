@@ -13,8 +13,8 @@ model call and tool invocation automatically.
 ## Basic Usage
 
 ```ts
-import { instrumentAgent } from "./mod.ts";
-import { Agent } from "./mod.ts";
+import { instrumentAgent } from "@vibes/framework";
+import { Agent } from "@vibes/framework";
 import { anthropic } from "@ai-sdk/anthropic";
 
 const agent = new Agent({
@@ -52,7 +52,7 @@ AI SDK's `generateText`/`streamText`. `instrumentAgent()` builds this for you,
 but you can construct it manually for lower-level use:
 
 ```ts
-import { createTelemetrySettings } from "./mod.ts";
+import { createTelemetrySettings } from "@vibes/framework";
 
 const settings = createTelemetrySettings("my-agent", {
   isEnabled: true,
@@ -125,7 +125,7 @@ async function handleRequest(userId: string, prompt: string) {
 ### Disable in Tests
 
 ```ts
-import { instrumentAgent, setAllowModelRequests } from "./mod.ts";
+import { instrumentAgent, setAllowModelRequests } from "@vibes/framework";
 
 setAllowModelRequests(false);
 

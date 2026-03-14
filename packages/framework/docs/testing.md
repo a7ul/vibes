@@ -308,7 +308,7 @@ Call this at the top of a test file to ensure any non-mocked agent run throws
 immediately instead of making a real API call:
 
 ```ts
-import { setAllowModelRequests } from "./mod.ts";
+import { setAllowModelRequests } from "@vibes/framework";
 
 setAllowModelRequests(false); // throws ModelRequestsDisabledError for real calls
 
@@ -320,7 +320,7 @@ setAllowModelRequests(false); // throws ModelRequestsDisabledError for real call
 Wrap any agent call to record the exact messages sent to the model on each turn:
 
 ```ts
-import { captureRunMessages } from "./mod.ts";
+import { captureRunMessages } from "@vibes/framework";
 
 const { result, messages } = await captureRunMessages(() =>
   agent.run("Hello", { deps: myDeps })
@@ -338,7 +338,7 @@ lets you specify tool call sequences without manually constructing raw SDK
 response objects:
 
 ```ts
-import { TestModel } from "./mod.ts";
+import { TestModel } from "@vibes/framework";
 import { z } from "zod";
 
 const OutputSchema = z.object({ answer: z.string() });
@@ -368,7 +368,7 @@ current prompt and returns a response. Useful for testing behaviour that depends
 on message content:
 
 ```ts
-import { FunctionModel } from "./mod.ts";
+import { FunctionModel } from "@vibes/framework";
 
 const model = new FunctionModel(({ prompt }) => {
   const lastUser = prompt.findLast((m) => m.role === "user");

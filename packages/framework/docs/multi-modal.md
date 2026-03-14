@@ -9,8 +9,8 @@ parts before feeding them back to the model.
 Return raw binary data (images, audio, documents) from a tool:
 
 ```ts
-import { tool } from "./mod.ts";
-import type { BinaryContent } from "./mod.ts";
+import { tool } from "@vibes/framework";
+import type { BinaryContent } from "@vibes/framework";
 import { z } from "zod";
 
 const screenshot = tool({
@@ -37,7 +37,7 @@ For large files, reference a pre-uploaded file by ID rather than sending bytes
 inline:
 
 ```ts
-import type { UploadedFile } from "./mod.ts";
+import type { UploadedFile } from "@vibes/framework";
 
 const readPdf = tool({
   name: "read_pdf",
@@ -61,7 +61,7 @@ support file uploads (e.g. OpenAI Files API).
 Use the convenience helpers to build user messages that include media:
 
 ```ts
-import { audioMessage, fileMessage, imageMessage } from "./mod.ts";
+import { audioMessage, fileMessage, imageMessage } from "@vibes/framework";
 
 // Image from URL
 const msg = imageMessage(
@@ -104,7 +104,7 @@ Use the provided Zod schema helpers when a tool needs to accept binary content
 as input parameters:
 
 ```ts
-import { BinaryContentSchema, UploadedFileSchema } from "./mod.ts";
+import { BinaryContentSchema, UploadedFileSchema } from "@vibes/framework";
 
 const analyseTool = tool({
   name: "analyse_image",
@@ -125,7 +125,7 @@ const analyseTool = tool({
 Use `isBinaryContent` and `isUploadedFile` to narrow types at runtime:
 
 ```ts
-import { isBinaryContent, isUploadedFile } from "./mod.ts";
+import { isBinaryContent, isUploadedFile } from "@vibes/framework";
 
 execute: async (_ctx, args) => {
   const result = await fetchResource(args.id);
