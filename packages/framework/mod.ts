@@ -91,7 +91,28 @@ export {
 	isBinaryContent,
 	isUploadedFile,
 	isMultiModalContent,
+	isImageContent,
+	isAudioContent,
+	isVideoContent,
+	isDocumentContent,
 	binaryContentToBase64,
+	toDataUrl,
 	binaryContentToToolResult,
 	uploadedFileToToolResult,
+	binaryContentSchema,
+	uploadedFileSchema,
 } from "./binary_content.ts";
+
+// Multi-modal user message helpers
+export type {
+	TextPart,
+	ImagePart,
+	AudioPart,
+	FilePart,
+	UserMessagePart,
+} from "./content.ts";
+export {
+	imageMessage,
+	audioMessage,
+	fileMessage,
+} from "./content.ts";
