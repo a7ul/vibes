@@ -7,6 +7,8 @@
  * model.
  */
 
+import { z } from "zod";
+
 // ---------------------------------------------------------------------------
 // BinaryContent
 // ---------------------------------------------------------------------------
@@ -63,6 +65,73 @@ export function isMultiModalContent(v: unknown): v is MultiModalContent {
 }
 
 // ---------------------------------------------------------------------------
+// MIME type guards
+// ---------------------------------------------------------------------------
+
+/** Returns true if the content has an image/* MIME type. */
+export function isImageContent(v: BinaryContent): boolean {
+	return v.mimeType.startsWith("image/");
+}
+
+/** Returns true if the content has an audio/* MIME type. */
+export function isAudioContent(v: BinaryContent): boolean {
+	return v.mimeType.startsWith("audio/");
+}
+
+/** Returns true if the content has a video/* MIME type. */
+export function isVideoContent(v: BinaryContent): boolean {
+	return v.mimeType.startsWith("video/");
+}
+
+/**
+ * Returns true if the content is a document type:
+ * application/pdf, application/msword, application/vnd.*, text/*, etc.
+ */
+export function isDocumentContent(v: BinaryContent): boolean {
+	return (
+		v.mimeType === "application/pdf" ||
+		v.mimeType.startsWith("application/msword") ||
+		v.mimeType.startsWith("application/vnd.") ||
+		v.mimeType.startsWith("text/")
+	);
+}
+
+// ---------------------------------------------------------------------------
+// Zod schemas — tools can use these in their parameters
+// ---------------------------------------------------------------------------
+
+/**
+ * Zod schema for `BinaryContent`. Tools can use this in their `parameters`
+ * to declare that they accept binary (image, audio, video, document) content.
+ *
+ * @example
+ * ```ts
+ * const analyzeTool = tool({
+ *   name: "analyze_image",
+ *   description: "Analyze an image",
+ *   parameters: z.object({ image: binaryContentSchema }),
+ *   execute: async (ctx, args) => analyze(args.image),
+ * });
+ * ```
+ */
+export const binaryContentSchema: z.ZodType<BinaryContent> = z.object({
+	type: z.literal("binary"),
+	mimeType: z.string(),
+	data: z.instanceof(Uint8Array),
+});
+
+/**
+ * Zod schema for `UploadedFile`. Tools can use this in their `parameters`
+ * to declare that they accept file references by ID.
+ */
+export const uploadedFileSchema: z.ZodType<UploadedFile> = z.object({
+	type: z.literal("uploaded_file"),
+	fileId: z.string(),
+	mimeType: z.string(),
+	filename: z.string().optional(),
+});
+
+// ---------------------------------------------------------------------------
 // Conversion — BinaryContent → AI SDK image content part
 // ---------------------------------------------------------------------------
 
@@ -78,6 +147,15 @@ export function binaryContentToBase64(content: BinaryContent): string {
 		binary += String.fromCharCode(bytes[i]);
 	}
 	return btoa(binary);
+}
+
+/**
+ * Produce a `data:mimeType;base64,<data>` URL string from a `BinaryContent`.
+ * Useful for embedding binary data directly in HTML attributes or CSS.
+ */
+export function toDataUrl(content: BinaryContent): string {
+	const base64 = binaryContentToBase64(content);
+	return `data:${content.mimeType};base64,${base64}`;
 }
 
 /**
