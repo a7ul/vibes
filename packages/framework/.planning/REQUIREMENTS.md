@@ -21,10 +21,10 @@
 - [x] **CONCEPT-02**: Models page — Vercel AI SDK model layer explanation, quickstarts for Anthropic/OpenAI/Google/Groq/Mistral/Ollama/OpenAI-compatible, ModelSettings
 - [x] **CONCEPT-03**: Dependencies page — RunContext DI as signature feature, fan-out diagram showing deps flowing through tools/prompts/validators/toolsets, testing with fake deps
 - [x] **CONCEPT-04**: Tools page — `tool()`, `plainTool()`, `outputTool()`, `fromSchema()`, `prepare`, `argsValidator`, `requiresApproval`, `sequential`, multi-modal returns, execution pipeline Mermaid diagram
-- [ ] **CONCEPT-05**: Toolsets page — all toolset types with composition diagram and per-turn resolution sequence diagram
-- [ ] **CONCEPT-06**: Results page — `outputSchema`, union types, output modes (tool/native/prompted) comparison Mermaid diagram, result validators, retry flow
-- [ ] **CONCEPT-07**: Messages and Chat History page — `result.messages`, `result.newMessages`, `messageHistory`, all 4 history processors, `serializeMessages`/`deserializeMessages`, multi-turn sequence diagram
-- [ ] **CONCEPT-08**: Streaming page — `agent.stream()`, `agent.runStreamEvents()`, `textStream`, `partialOutput`, event types, when to use each, event timeline sequence diagram
+- [x] **CONCEPT-05**: Toolsets page — all toolset types with composition diagram and per-turn resolution sequence diagram
+- [x] **CONCEPT-06**: Results page — `outputSchema`, union types, output modes (tool/native/prompted) comparison Mermaid diagram, result validators, retry flow
+- [x] **CONCEPT-07**: Messages and Chat History page — `result.messages`, `result.newMessages`, `messageHistory`, all 4 history processors, `serializeMessages`/`deserializeMessages`, multi-turn sequence diagram
+- [x] **CONCEPT-08**: Streaming page — `agent.stream()`, `agent.runStreamEvents()`, `textStream`, `partialOutput`, event types, when to use each, event timeline sequence diagram
 - [ ] **CONCEPT-09**: Human-in-the-Loop page — `requiresApproval`, `ApprovalRequiredError`, `DeferredToolRequests`, `DeferredToolResults`, `agent.resume()`, `ExternalToolset`, approval sequence Mermaid diagram
 - [ ] **CONCEPT-10**: Testing page — `TestModel`, `createTestModel()`, `FunctionModel`, `setAllowModelRequests(false)`, `captureRunMessages()`, `agent.override()`, real test code examples
 - [ ] **CONCEPT-11**: Debugging and Monitoring page — `instrumentAgent()`, `TelemetrySettings`, OTel span hierarchy Mermaid diagram, content exclusion
@@ -102,10 +102,10 @@
 | CONCEPT-02 | Phase 2 | Complete |
 | CONCEPT-03 | Phase 2 | Complete |
 | CONCEPT-04 | Phase 2 | Complete |
-| CONCEPT-05 | Phase 2 | Pending |
-| CONCEPT-06 | Phase 2 | Pending |
-| CONCEPT-07 | Phase 2 | Pending |
-| CONCEPT-08 | Phase 2 | Pending |
+| CONCEPT-05 | Phase 2 | Complete |
+| CONCEPT-06 | Phase 2 | Complete |
+| CONCEPT-07 | Phase 2 | Complete |
+| CONCEPT-08 | Phase 2 | Complete |
 | CONCEPT-09 | Phase 3 | Pending |
 | CONCEPT-10 | Phase 3 | Pending |
 | CONCEPT-11 | Phase 3 | Pending |

@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 02-01-PLAN.md (agents/models/dependencies/tools concept pages)
-last_updated: "2026-03-14T15:31:00.000Z"
+stopped_at: Completed 02-02-PLAN.md (toolsets/results/messages/streaming concept pages)
+last_updated: "2026-03-14T15:52:02.887Z"
 last_activity: 2026-03-14 -- Completed 02-01 (agents, models, dependencies, tools concept pages)
 progress:
   total_phases: 6
-  completed_phases: 1
-  total_plans: 4
-  completed_plans: 4
+  completed_phases: 2
+  total_plans: 5
+  completed_plans: 5
   percent: 17
 ---
 
@@ -52,6 +52,7 @@ Progress: [█░░░░░░░░░] 17%
 *Updated after each plan completion*
 | Phase 01-landing-and-getting-started P02 | 2 min | 3 tasks | 7 files |
 | Phase 01-landing-and-getting-started P03 | 2 | 1 tasks | 1 files |
+| Phase 02-core-concepts-part-1 P02 | 3 | 3 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -71,6 +72,8 @@ Recent decisions affecting current work:
 - [02-01]: outputTemplate is boolean (not string) — documented correctly in agents.mdx
 - [02-01]: PrivacyRule uses { pattern, replacement? } for regex rules — no type key or redactValue
 - [02-01]: RunContext has 7 fields + attachMetadata() — full interface documented in dependencies.mdx
+- [Phase 02-02]: event.kind (not event.type) is the correct AgentStreamEvent discriminant — warning callout added to streaming.mdx
+- [Phase 02-02]: All 8 new concept pages added to docs.json Concepts nav; 3 existing pages retained until Phase 6
 
 ### Pending Todos
 
@@ -83,6 +86,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-14T15:31:00.000Z
-Stopped at: Completed 02-01-PLAN.md (agents/models/dependencies/tools concept pages)
+Last session: 2026-03-14T15:51:59.135Z
+Stopped at: Completed 02-02-PLAN.md (toolsets/results/messages/streaming concept pages)
 Resume file: None
