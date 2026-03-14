@@ -11,7 +11,7 @@
     "ai/test": "npm:ai@^6/test",
     "zod": "npm:zod@^4",
     "@std/assert": "jsr:@std/assert@^1.0.19",
-    "@ai-sdk/provider": "npm:@ai-sdk/provider@^3.0.0-0",
+    "@ai-sdk/provider": "npm:@ai-sdk/provider@^3",
     "@modelcontextprotocol/sdk": "npm:@modelcontextprotocol/sdk@^1",
     "@modelcontextprotocol/sdk/client/index.js": "npm:@modelcontextprotocol/sdk@^1/client/index.js",
     "@modelcontextprotocol/sdk/client/streamableHttp.js": "npm:@modelcontextprotocol/sdk@^1/client/streamableHttp.js",
