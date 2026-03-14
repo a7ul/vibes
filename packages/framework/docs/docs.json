@@ -68,6 +68,17 @@
         ]
       },
       {
+        "group": "Integrations",
+        "pages": [
+          "integrations/mcp-client",
+          "integrations/mcp-server",
+          "integrations/ag-ui",
+          "integrations/a2a",
+          "integrations/temporal",
+          "integrations/vercel-ai-ui"
+        ]
+      },
+      {
         "group": "Guides",
         "pages": [
           "guides/human-in-the-loop",
