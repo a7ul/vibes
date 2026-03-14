@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 05-01-PLAN.md (examples landing page, hello-world, weather-agent)
-last_updated: "2026-03-14T17:00:17.980Z"
+stopped_at: Completed 05-02-PLAN.md (chat-app, bank-support, rag examples)
+last_updated: "2026-03-14T17:03:26.613Z"
 last_activity: 2026-03-14 -- Completed 02-01 (agents, models, dependencies, tools concept pages)
 progress:
   total_phases: 6
   completed_phases: 4
   total_plans: 12
-  completed_plans: 10
+  completed_plans: 11
   percent: 17
 ---
 
@@ -58,6 +58,7 @@ Progress: [█░░░░░░░░░] 17%
 | Phase 04-integrations P01 | 3 | 3 tasks | 3 files |
 | Phase 04-integrations P02 | 4 | 3 tasks | 4 files |
 | Phase 05-examples P01 | 4 | 3 tasks | 3 files |
+| Phase 05-examples P02 | 5 | 3 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -89,6 +90,7 @@ Recent decisions affecting current work:
 - [Phase 04-integrations]: docs.json Integrations group inserted before Guides group, listing all 6 integration pages in order
 - [Phase 05-examples]: Open-Meteo used for weather tool (free, no API key) ensuring copy-paste runnability
 - [Phase 05-examples]: 7-section example page structure established as template for remaining 6 example pages
+- [Phase 05-examples]: bank-support.mdx mapping table includes Pydantic AI decorator in contrast column — no Vibes code uses decorators
 
 ### Pending Todos
 
@@ -101,6 +103,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-14T17:00:17.977Z
-Stopped at: Completed 05-01-PLAN.md (examples landing page, hello-world, weather-agent)
+Last session: 2026-03-14T17:03:26.611Z
+Stopped at: Completed 05-02-PLAN.md (chat-app, bank-support, rag examples)
 Resume file: None

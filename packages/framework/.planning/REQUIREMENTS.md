@@ -46,9 +46,9 @@
 - [x] **EX-01**: Examples landing page with categorized links to all examples
 - [x] **EX-02**: Hello world example - simplest possible agent (5 lines, copy-paste runnable)
 - [x] **EX-03**: Weather agent example - tools + external API + structured output (the canonical "first real agent")
-- [ ] **EX-04**: Chat app example - multi-turn conversation with history + Vercel AI frontend integration
-- [ ] **EX-05**: Bank support example - Pydantic AI's canonical teaching example ported to TypeScript
-- [ ] **EX-06**: RAG example - retrieval-augmented generation with tools + vector search pattern
+- [x] **EX-04**: Chat app example - multi-turn conversation with history + Vercel AI frontend integration
+- [x] **EX-05**: Bank support example - Pydantic AI's canonical teaching example ported to TypeScript
+- [x] **EX-06**: RAG example - retrieval-augmented generation with tools + vector search pattern
 - [ ] **EX-07**: Graph workflow example - multi-step FSM pipeline using BaseNode/Graph
 - [ ] **EX-08**: Human-in-the-loop example - end-to-end deferred approval flow
 - [ ] **EX-09**: A2A example - two agents communicating via A2A protocol
@@ -121,9 +121,9 @@
 | EX-01 | Phase 5 | Complete |
 | EX-02 | Phase 5 | Complete |
 | EX-03 | Phase 5 | Complete |
-| EX-04 | Phase 5 | Pending |
-| EX-05 | Phase 5 | Pending |
-| EX-06 | Phase 5 | Pending |
+| EX-04 | Phase 5 | Complete |
+| EX-05 | Phase 5 | Complete |
+| EX-06 | Phase 5 | Complete |
 | EX-07 | Phase 5 | Pending |
 | EX-08 | Phase 5 | Pending |
 | EX-09 | Phase 5 | Pending |
