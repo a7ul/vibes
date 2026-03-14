@@ -1,6 +1,11 @@
 import type { ModelMessage } from "ai";
 import { ModelRequestsDisabledError } from "./errors.ts";
 
+export { TestModel, createTestModel } from "./test_model.ts";
+export type { TestModelOptions, DoGenerateResult as TestDoGenerateResult } from "./test_model.ts";
+export { FunctionModel } from "./function_model.ts";
+export type { ModelFunction, ModelFunctionParams, DoGenerateResult } from "./function_model.ts";
+
 // ---------------------------------------------------------------------------
 // ALLOW_MODEL_REQUESTS guard
 // ---------------------------------------------------------------------------

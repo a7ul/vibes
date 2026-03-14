@@ -8,6 +8,8 @@ export type {
 	EndStrategy,
 } from "./agent.ts";
 
+export type { OutputMode } from "./output_mode.ts";
+
 export type { ModelSettings } from "./model_settings.ts";
 export { Semaphore } from "./concurrency.ts";
 
@@ -51,6 +53,15 @@ export {
 	setAllowModelRequests,
 	getAllowModelRequests,
 	captureRunMessages,
+	TestModel,
+	createTestModel,
+	FunctionModel,
+} from "./testing.ts";
+export type {
+	TestModelOptions,
+	ModelFunction,
+	ModelFunctionParams,
+	DoGenerateResult,
 } from "./testing.ts";
 
 // Toolsets
