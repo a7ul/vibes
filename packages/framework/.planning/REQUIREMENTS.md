@@ -61,9 +61,9 @@
 
 ### Project & Meta
 
-- [ ] **META-01**: Acknowledgments page - dedicated thank-you to Pydantic AI (Samuel Colvin / Pydantic team) and Vercel AI SDK with context on how Vibes relates to each
-- [ ] **META-02**: Contributing page - how to contribute to the framework
-- [ ] **META-03**: Changelog page - version history
+- [x] **META-01**: Acknowledgments page - dedicated thank-you to Pydantic AI (Samuel Colvin / Pydantic team) and Vercel AI SDK with context on how Vibes relates to each
+- [x] **META-02**: Contributing page - how to contribute to the framework
+- [x] **META-03**: Changelog page - version history
 
 ### Navigation & Quality
 
@@ -130,9 +130,9 @@
 | ADV-01 | Phase 6 | Complete |
 | ADV-02 | Phase 6 | Complete |
 | ADV-03 | Phase 6 | Complete |
-| META-01 | Phase 6 | Pending |
-| META-02 | Phase 6 | Pending |
-| META-03 | Phase 6 | Pending |
+| META-01 | Phase 6 | Complete |
+| META-02 | Phase 6 | Complete |
+| META-03 | Phase 6 | Complete |
 | NAV-01 | Phase 6 | Pending |
 | NAV-02 | Phase 6 | Pending |
 | NAV-03 | Phase 6 | Pending |
