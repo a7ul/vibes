@@ -29,6 +29,8 @@ export type { ModelMessage } from "ai";
 
 export { MaxTurnsError, MaxRetriesError } from "./errors.ts";
 
+export type { AgentStreamEvent } from "./events.ts";
+
 export type { UsageLimits } from "./usage_limits.ts";
 
 export type {
@@ -73,6 +75,10 @@ export {
 	PrefixedToolset,
 	RenamedToolset,
 } from "./toolsets/prefixed_toolset.ts";
+export { PreparedToolset } from "./toolsets/prepared_toolset.ts";
+export type { PrepareFunction } from "./toolsets/prepared_toolset.ts";
+export { WrapperToolset } from "./toolsets/wrapper_toolset.ts";
+export type { ToolCallNext } from "./toolsets/wrapper_toolset.ts";
 
 // Binary / multi-modal content
 export type {
