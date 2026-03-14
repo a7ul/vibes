@@ -13,8 +13,10 @@ import type { UsageLimits } from "./usage_limits.ts";
 import type { HistoryProcessor } from "./history_processor.ts";
 import type { ModelSettings } from "./model_settings.ts";
 import type { InternalRunOpts } from "./execution/_run_utils.ts";
+import type { AgentStreamEvent } from "./events.ts";
 import { executeRun } from "./execution/run.ts";
 import { executeStream } from "./execution/stream.ts";
+import { executeStreamEvents } from "./execution/event_stream.ts";
 
 export type SystemPromptFn<TDeps> = (
 	ctx: RunContext<TDeps>,
@@ -268,6 +270,33 @@ export class Agent<TDeps = undefined, TOutput = string> {
 	}
 
 	/**
+	 * Returns an `AsyncIterable<AgentStreamEvent<TOutput>>` that emits typed
+	 * events as the agent processes the prompt across one or more turns.
+	 *
+	 * Events are emitted in order:
+	 * - `turn-start` at the beginning of each model turn
+	 * - `text-delta` for each streamed text token
+	 * - `partial-output` for best-effort partial structured output (tool mode)
+	 * - `tool-call-start` / `tool-call-result` around every tool invocation
+	 * - `usage-update` after each turn completes
+	 * - `final-result` once the agent has a validated output
+	 * - `error` if an unrecoverable error occurs
+	 */
+	runStreamEvents(
+		prompt: string,
+		opts?: RunOptions<TDeps>,
+	): AsyncIterable<AgentStreamEvent<TOutput>> {
+		return executeStreamEvents<TDeps, TOutput>(this, prompt, {
+			deps: opts?.deps as TDeps,
+			messageHistory: opts?.messageHistory,
+			metadata: opts?.metadata,
+			usageLimits: opts?.usageLimits,
+			modelSettings: opts?.modelSettings,
+			endStrategy: opts?.endStrategy,
+		});
+	}
+
+	/**
 	 * Returns a scoped runner that overrides specific agent settings for a
 	 * single `run()` or `stream()` call. Does not mutate the original agent.
 	 * Critical for test patterns — override runs bypass the
@@ -280,7 +309,11 @@ export class Agent<TDeps = undefined, TOutput = string> {
 	 */
 	override(
 		overrides: AgentOverrideOptions<TDeps, TOutput>,
-	): { run: (prompt: string, opts?: RunOptions<TDeps>) => Promise<RunResult<TOutput>>; stream: (prompt: string, opts?: RunOptions<TDeps>) => StreamResult<TOutput> } {
+	): {
+		run: (prompt: string, opts?: RunOptions<TDeps>) => Promise<RunResult<TOutput>>;
+		stream: (prompt: string, opts?: RunOptions<TDeps>) => StreamResult<TOutput>;
+		runStreamEvents: (prompt: string, opts?: RunOptions<TDeps>) => AsyncIterable<AgentStreamEvent<TOutput>>;
+	} {
 		const normaliseSystemPrompt = (
 			sp:
 				| string
@@ -327,6 +360,13 @@ export class Agent<TDeps = undefined, TOutput = string> {
 			},
 			stream(prompt: string, opts?: RunOptions<TDeps>) {
 				return executeStream<TDeps, TOutput>(
+					self,
+					prompt,
+					buildOpts(prompt, opts),
+				);
+			},
+			runStreamEvents(prompt: string, opts?: RunOptions<TDeps>) {
+				return executeStreamEvents<TDeps, TOutput>(
 					self,
 					prompt,
 					buildOpts(prompt, opts),
