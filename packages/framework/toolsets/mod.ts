@@ -7,3 +7,6 @@ export { PreparedToolset } from "./prepared_toolset.ts";
 export type { PrepareFunction } from "./prepared_toolset.ts";
 export { WrapperToolset } from "./wrapper_toolset.ts";
 export type { ToolCallNext } from "./wrapper_toolset.ts";
+export { ApprovalRequiredToolset } from "./approval_required_toolset.ts";
+export { ExternalToolset } from "./external_toolset.ts";
+export type { ExternalToolDefinition } from "./external_toolset.ts";

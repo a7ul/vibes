@@ -51,6 +51,23 @@ export interface ToolDefinition<TDeps = undefined> {
 	 * tools are not affected.
 	 */
 	sequential?: boolean;
+	/**
+	 * When set, the tool requires human approval before execution.
+	 *
+	 * - `true`: Always requires approval.
+	 * - A function: Called with the run context and proposed args. Return `true`
+	 *   to require approval, `false` to proceed without it.
+	 *
+	 * When approval is required, `agent.run()` throws an `ApprovalRequiredError`
+	 * containing a `DeferredToolRequests` object. The caller resolves the
+	 * requests and calls `agent.resume(deferred, results)` to continue.
+	 */
+	requiresApproval?:
+		| boolean
+		| ((
+				ctx: RunContext<TDeps>,
+				args: Record<string, unknown>,
+		  ) => boolean | Promise<boolean>);
 }
 
 /**
@@ -88,6 +105,12 @@ export function tool<
 		| Promise<ToolDefinition<TDeps> | null | undefined>;
 	isOutput?: boolean;
 	sequential?: boolean;
+	requiresApproval?:
+		| boolean
+		| ((
+				ctx: RunContext<TDeps>,
+				args: Record<string, unknown>,
+		  ) => boolean | Promise<boolean>);
 }): ToolDefinition<TDeps> {
 	return opts as ToolDefinition<TDeps>;
 }

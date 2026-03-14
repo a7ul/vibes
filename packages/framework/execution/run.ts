@@ -5,6 +5,8 @@ import type { RunContext, RunResult } from "../types.ts";
 import {
 	applyUsage,
 	buildInitialMessages,
+	buildResumeToolMessage,
+	correlateApprovalIds,
 	createRunContext,
 	createSequentialMutex,
 	isFinalResultTool,
@@ -17,12 +19,17 @@ import {
 	resolveModelSettings,
 	modelSettingsToAISDKOptions,
 	resolveEndStrategy,
+	resolveTools,
+	buildDeferredAwareToolMap,
+	toolsOrUndefined,
+	stripDeferredToolResults,
 	runValidators,
 	checkModelRequestsAllowed,
 	parseTextOutput,
+	DeferredToolRequests,
 	type InternalRunOpts,
 } from "./_run_utils.ts";
-import { MaxTurnsError } from "../errors.ts";
+import { MaxTurnsError, ApprovalRequiredError } from "../errors.ts";
 
 export async function executeRun<TDeps, TOutput>(
 	agent: Agent<TDeps, TOutput>,
@@ -58,11 +65,39 @@ export async function executeRun<TDeps, TOutput>(
 	// Shared mutex for sequential tools — created once per run
 	const sequentialMutex = createSequentialMutex();
 
+	// When resuming from deferred results, the messageHistory already contains
+	// the full conversation (including the assistant's tool call message).
+	// In that case, don't add the prompt as a new user message.
 	const inputOffset = opts.messageHistory?.length ?? 0;
-	const messages = buildInitialMessages(opts.messageHistory, prompt);
+	let messages: ModelMessage[];
+	if (opts._resumeFromDeferred && opts.messageHistory) {
+		messages = [...opts.messageHistory];
+	} else {
+		messages = buildInitialMessages(opts.messageHistory, prompt);
+	}
+
+	// ---------------------------------------------------------------------------
+	// Resume from deferred tool results (human-in-the-loop continuation)
+	// ---------------------------------------------------------------------------
+	if (opts.deferredResults) {
+		const dr = opts.deferredResults;
+		// Reconstruct the tools for resume so we can re-execute with argsOverride
+		const toolDefs = opts._override?.tools ?? agent.tools;
+		const toolsetDefs = opts._override?.toolsets ?? agent.toolsets;
+		const resolvedForResume = await resolveTools(toolDefs, toolsetDefs, ctx);
+		// Use the original pending requests (with real toolNames) if available,
+		// falling back to placeholders keyed by toolCallId.
+		const pendingRequests = opts._deferredPendingRequests
+			?? dr.results.map((r) => ({ toolCallId: r.toolCallId, toolName: r.toolCallId, args: {} }));
+		const resumeMsg = await buildResumeToolMessage(dr, pendingRequests, resolvedForResume, ctx);
+		messages = [...messages, resumeMsg];
+	}
 
 	for (let turn = 0; turn < maxTurns; turn++) {
-		const { tools, msgsForModel, system, outputToolNames } = await prepareTurn(
+		// ---------------------------------------------------------------------------
+		// Pre-turn setup: resolve tools, apply history processors, build system prompt
+		// ---------------------------------------------------------------------------
+		const turnSetup = await prepareTurn(
 			agent,
 			opts,
 			ctx,
@@ -70,23 +105,58 @@ export async function executeRun<TDeps, TOutput>(
 			systemPrompt,
 			sequentialMutex,
 		);
+		const { msgsForModel, system, outputToolNames, resolvedTools } = turnSetup;
+
+		// Check if any resolved tools require approval — if so, build a deferred-aware map
+		const pendingApprovals: import("../deferred.ts").DeferredToolRequest[] = [];
+		const hasApprovalTools = resolvedTools.some(
+			(t) => t.requiresApproval !== undefined && t.requiresApproval !== false,
+		);
+
+		let effectiveTools: ReturnType<typeof toolsOrUndefined>;
+		if (hasApprovalTools) {
+			const deferredMap = buildDeferredAwareToolMap(
+				resolvedTools,
+				agent.outputSchema,
+				agent.outputMode,
+				ctx,
+				pendingApprovals,
+				agent.maxConcurrency,
+				sequentialMutex,
+			);
+			effectiveTools = toolsOrUndefined(deferredMap);
+		} else {
+			effectiveTools = turnSetup.tools;
+		}
 
 		// ---------------------------------------------------------------------------
 		// Native structured output mode — use AI SDK's output.object()
 		// ---------------------------------------------------------------------------
 		if (outputMode === "native" && schemas.length > 0) {
 			const primarySchema = schemas[0];
-			// Use `output` parameter with output.object() for native JSON mode.
-			// The result's `output` field contains the parsed object.
 			const rawResponse = await (generateText as unknown as (opts: Record<string, unknown>) => Promise<Record<string, unknown>>)({
 				model,
 				system,
 				messages: msgsForModel,
-				tools,
+				tools: effectiveTools,
 				stopWhen: stepCountIs(1),
 				output: aiOutput.object({ schema: primarySchema }),
 				...modelSettings,
 			});
+
+			// Check for pending approvals before processing results
+			if (pendingApprovals.length > 0) {
+				const rawToolCalls = rawResponse["toolCalls"] as Array<{ toolCallId: string; toolName: string }> | undefined;
+				correlateApprovalIds(pendingApprovals, rawToolCalls ?? []);
+				const pendingCallIds = pendingApprovals.map((r) => r.toolCallId);
+				const rawNewMessages = ((rawResponse["response"] as Record<string, unknown>)?.["messages"] ?? []) as ModelMessage[];
+				// Strip placeholder tool results for deferred calls from the resume state
+				const cleanNewMessages = stripDeferredToolResults(rawNewMessages, pendingCallIds);
+				const allMessages = [...messages, ...cleanNewMessages];
+				throw new ApprovalRequiredError(
+					new DeferredToolRequests(pendingApprovals, { messages: allMessages, turnCount: turn + 1 }),
+				);
+			}
 
 			applyUsage(usage, rawResponse["usage"] as import("ai").LanguageModelUsage);
 
@@ -165,10 +235,22 @@ export async function executeRun<TDeps, TOutput>(
 				model,
 				system,
 				messages: msgsForModel,
-				tools,
+				tools: effectiveTools,
 				stopWhen: stepCountIs(1),
 				...modelSettings,
 			});
+
+			// Check for pending approvals
+			if (pendingApprovals.length > 0) {
+				correlateApprovalIds(pendingApprovals, response.toolCalls);
+				const pendingCallIds = pendingApprovals.map((r) => r.toolCallId);
+				const rawNewMessages = response.response.messages as ModelMessage[];
+				const cleanNewMessages = stripDeferredToolResults(rawNewMessages, pendingCallIds);
+				const allMessages = [...messages, ...cleanNewMessages];
+				throw new ApprovalRequiredError(
+					new DeferredToolRequests(pendingApprovals, { messages: allMessages, turnCount: turn + 1 }),
+				);
+			}
 
 			applyUsage(usage, response.usage);
 			const newMessages = response.response.messages as ModelMessage[];
@@ -242,10 +324,22 @@ export async function executeRun<TDeps, TOutput>(
 			model,
 			system,
 			messages: msgsForModel,
-			tools,
+			tools: effectiveTools,
 			stopWhen: stepCountIs(1),
 			...modelSettings,
 		});
+
+		// Check for pending approvals before processing results
+		if (pendingApprovals.length > 0) {
+			correlateApprovalIds(pendingApprovals, response.toolCalls);
+			const pendingCallIds = pendingApprovals.map((r) => r.toolCallId);
+			const rawNewMessages = response.response.messages as ModelMessage[];
+			const cleanNewMessages = stripDeferredToolResults(rawNewMessages, pendingCallIds);
+			const allMessages = [...messages, ...cleanNewMessages];
+			throw new ApprovalRequiredError(
+				new DeferredToolRequests(pendingApprovals, { messages: allMessages, turnCount: turn + 1 }),
+			);
+		}
 
 		applyUsage(usage, response.usage);
 
