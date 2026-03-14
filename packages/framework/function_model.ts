@@ -16,7 +16,7 @@
  * ```
  */
 
-import { MockLanguageModelV3 } from "ai/test";
+import type { MockLanguageModelV3 } from "ai/test";
 
 // ---------------------------------------------------------------------------
 // Types derived from MockLanguageModelV3 to stay version-compatible
@@ -24,7 +24,7 @@ import { MockLanguageModelV3 } from "ai/test";
 
 /** The generate result shape, derived from MockLanguageModelV3. */
 export type DoGenerateResult = Awaited<
-	ReturnType<MockLanguageModelV3["doGenerate"]>
+  ReturnType<MockLanguageModelV3["doGenerate"]>
 >;
 
 /** doGenerate parameters shape, derived from MockLanguageModelV3. */
@@ -45,12 +45,12 @@ type FunctionTool = Extract<ToolEntry, { type: "function" }>;
 
 /** Parameters passed to the ModelFunction on each turn. */
 export interface ModelFunctionParams {
-	/** The full prompt (message history) sent to the model on this turn. */
-	messages: ModelPrompt;
-	/** Function tools available to the model on this turn. */
-	tools: FunctionTool[];
-	/** Zero-based turn counter. Increments with each doGenerate call. */
-	turn: number;
+  /** The full prompt (message history) sent to the model on this turn. */
+  messages: ModelPrompt;
+  /** Function tools available to the model on this turn. */
+  tools: FunctionTool[];
+  /** Zero-based turn counter. Increments with each doGenerate call. */
+  turn: number;
 }
 
 /**
@@ -59,7 +59,7 @@ export interface ModelFunctionParams {
  * Returns a DoGenerateResult (or a Promise thereof).
  */
 export type ModelFunction = (
-	params: ModelFunctionParams,
+  params: ModelFunctionParams,
 ) => DoGenerateResult | Promise<DoGenerateResult>;
 
 // ---------------------------------------------------------------------------
@@ -67,74 +67,76 @@ export type ModelFunction = (
 // ---------------------------------------------------------------------------
 
 export class FunctionModel {
-	readonly specificationVersion = "v3" as const;
-	readonly provider = "function-model";
-	readonly modelId = "function-model";
-	readonly supportedUrls: Record<string, RegExp[]> = {};
+  readonly specificationVersion = "v3" as const;
+  readonly provider = "function-model";
+  readonly modelId = "function-model";
+  readonly supportedUrls: Record<string, RegExp[]> = {};
 
-	private readonly _fn: ModelFunction;
-	private _turn: number;
+  private readonly _fn: ModelFunction;
+  private _turn: number;
 
-	constructor(fn: ModelFunction) {
-		this._fn = fn;
-		this._turn = 0;
-	}
+  constructor(fn: ModelFunction) {
+    this._fn = fn;
+    this._turn = 0;
+  }
 
-	doGenerate(options: DoGenerateParams): Promise<DoGenerateResult> {
-		const currentTurn = this._turn;
-		this._turn += 1;
+  doGenerate(options: DoGenerateParams): Promise<DoGenerateResult> {
+    const currentTurn = this._turn;
+    this._turn += 1;
 
-		const allTools = (options.tools ?? []) as ToolEntry[];
-		const functionTools = allTools.filter(
-			(t: ToolEntry): t is FunctionTool => t.type === "function",
-		);
+    const allTools = (options.tools ?? []) as ToolEntry[];
+    const functionTools = allTools.filter(
+      (t: ToolEntry): t is FunctionTool => t.type === "function",
+    );
 
-		return Promise.resolve(
-			this._fn({
-				messages: options.prompt,
-				tools: functionTools,
-				turn: currentTurn,
-			}),
-		);
-	}
+    return Promise.resolve(
+      this._fn({
+        messages: options.prompt,
+        tools: functionTools,
+        turn: currentTurn,
+      }),
+    );
+  }
 
-	doStream(options: DoGenerateParams): Promise<Awaited<ReturnType<MockLanguageModelV3["doStream"]>>> {
-		return this.doGenerate(options).then((result) => {
-			const chunks: unknown[] = [];
+  doStream(
+    options: DoGenerateParams,
+  ): Promise<Awaited<ReturnType<MockLanguageModelV3["doStream"]>>> {
+    return this.doGenerate(options).then((result) => {
+      const chunks: unknown[] = [];
 
-			for (const part of result.content) {
-				if (part.type === "text") {
-					chunks.push({
-						type: "text-delta" as const,
-						id: "text-1",
-						delta: part.text,
-					});
-				} else if (part.type === "tool-call") {
-					chunks.push({
-						type: "tool-call" as const,
-						toolCallId: part.toolCallId,
-						toolName: part.toolName,
-						input: part.input,
-					});
-				}
-			}
+      for (const part of result.content) {
+        if (part.type === "text") {
+          chunks.push({
+            type: "text-delta" as const,
+            id: "text-1",
+            delta: part.text,
+          });
+        } else if (part.type === "tool-call") {
+          chunks.push({
+            type: "tool-call" as const,
+            toolCallId: part.toolCallId,
+            toolName: part.toolName,
+            input: part.input,
+          });
+        }
+      }
 
-			chunks.push({
-				type: "finish" as const,
-				finishReason: result.finishReason,
-				usage: result.usage,
-			});
+      chunks.push({
+        type: "finish" as const,
+        finishReason: result.finishReason,
+        usage: result.usage,
+      });
 
-			const stream = new ReadableStream({
-				start(controller) {
-					for (const chunk of chunks) {
-						controller.enqueue(chunk);
-					}
-					controller.close();
-				},
-			});
+      const stream = new ReadableStream({
+        start(controller) {
+          for (const chunk of chunks) {
+            controller.enqueue(chunk);
+          }
+          controller.close();
+        },
+      });
 
-			return { stream };
-		});
-	}
+      return { stream };
+    });
+  }
 }

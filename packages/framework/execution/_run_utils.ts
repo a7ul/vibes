@@ -2,11 +2,11 @@
  * Internal helpers shared between run.ts (non-streaming) and stream.ts (streaming).
  * Not part of the public API.
  */
-import {
-	type LanguageModel,
-	type LanguageModelUsage,
-	type ModelMessage,
-	type ToolSet,
+import type {
+  LanguageModel,
+  LanguageModelUsage,
+  ModelMessage,
+  ToolSet,
 } from "ai";
 import type { Agent, EndStrategy } from "../agent.ts";
 import type { HistoryProcessor } from "../history_processor.ts";
@@ -22,26 +22,26 @@ import { Semaphore } from "../concurrency.ts";
 import { checkUsageLimits } from "../usage_limits.ts";
 import { MaxRetriesError } from "../errors.ts";
 import { applyHistoryProcessors } from "../history_processor.ts";
-import { assertModelRequestsAllowed, _notifyModelRequest } from "../testing.ts";
+import { _notifyModelRequest, assertModelRequestsAllowed } from "../testing.ts";
 import {
-	isBinaryContent,
-	isUploadedFile,
-	binaryContentToToolResult,
-	uploadedFileToToolResult,
+  binaryContentToToolResult,
+  isBinaryContent,
+  isUploadedFile,
+  uploadedFileToToolResult,
 } from "../binary_content.ts";
 import {
-	FINAL_RESULT_TOOL,
-	registerOutputTools,
-	buildSchemaPrompt,
-	isFinalResultTool,
-	unionToolIndex,
-	normaliseSchemas,
+  buildSchemaPrompt,
+  FINAL_RESULT_TOOL,
+  isFinalResultTool,
+  normaliseSchemas,
+  registerOutputTools,
+  unionToolIndex,
 } from "../output_schema.ts";
 import {
-	DeferredToolRequests,
-	type DeferredToolRequest,
-	type DeferredToolResults,
-	type ResumeState,
+  type DeferredToolRequest,
+  DeferredToolRequests,
+  type DeferredToolResults,
+  type ResumeState,
 } from "../deferred.ts";
 
 // ---------------------------------------------------------------------------
@@ -50,57 +50,61 @@ import {
 
 /** Internal options passed to executeRun / executeStream. */
 export interface InternalRunOpts<TDeps, TOutput> {
-	deps: TDeps;
-	messageHistory?: ModelMessage[];
-	metadata?: Record<string, unknown>;
-	/** Per-run usage limits (overrides agent-level limits when set). */
-	usageLimits?: UsageLimits;
-	/** Per-run model settings (overrides agent-level modelSettings). */
-	modelSettings?: ModelSettings;
-	/** Per-run end strategy (overrides agent-level endStrategy). */
-	endStrategy?: EndStrategy;
-	/**
-	 * Telemetry settings passed to `generateText` / `streamText` as
-	 * `experimental_telemetry`. Per-run value overrides agent-level setting.
-	 */
-	telemetry?: TelemetrySettings;
-	/**
-	 * Deferred tool results supplied by the caller when resuming after human
-	 * approval. Injected into message history before the next model turn.
-	 */
-	deferredResults?: DeferredToolResults;
-	/**
-	 * When true, `messageHistory` already contains the full conversation up to
-	 * the pause point (including the assistant's tool call message). The run
-	 * does NOT prepend a new user message from `prompt`. Used by `agent.resume()`.
-	 * @internal
-	 */
-	_resumeFromDeferred?: boolean;
-	/**
-	 * The original pending requests from the deferred tool gate. Passed through
-	 * from `agent.resume()` so `buildResumeToolMessage` can look up toolNames
-	 * by toolCallId for accurate tool-result messages.
-	 * @internal
-	 */
-	_deferredPendingRequests?: ReadonlyArray<DeferredToolRequest>;
-	/** Populated by Agent.override(); replaces corresponding agent fields for this run. */
-	_override?: {
-		model?: LanguageModel;
-		systemPrompts?: Array<string | ((ctx: RunContext<TDeps>) => string | Promise<string>)>;
-		instructions?: Array<string | ((ctx: RunContext<TDeps>) => string | Promise<string>)>;
-		tools?: ReadonlyArray<ToolDefinition<TDeps>>;
-		toolsets?: ReadonlyArray<Toolset<TDeps>>;
-		historyProcessors?: ReadonlyArray<HistoryProcessor<TDeps>>;
-		resultValidators?: ReadonlyArray<ResultValidator<TDeps, TOutput>>;
-		maxRetries?: number;
-		maxTurns?: number;
-		usageLimits?: UsageLimits;
-		modelSettings?: ModelSettings;
-		endStrategy?: EndStrategy;
-		telemetry?: TelemetrySettings;
-	};
-	/** When true, bypasses the ALLOW_MODEL_REQUESTS guard (set by agent.override()). */
-	_bypassModelRequestsCheck?: boolean;
+  deps: TDeps;
+  messageHistory?: ModelMessage[];
+  metadata?: Record<string, unknown>;
+  /** Per-run usage limits (overrides agent-level limits when set). */
+  usageLimits?: UsageLimits;
+  /** Per-run model settings (overrides agent-level modelSettings). */
+  modelSettings?: ModelSettings;
+  /** Per-run end strategy (overrides agent-level endStrategy). */
+  endStrategy?: EndStrategy;
+  /**
+   * Telemetry settings passed to `generateText` / `streamText` as
+   * `experimental_telemetry`. Per-run value overrides agent-level setting.
+   */
+  telemetry?: TelemetrySettings;
+  /**
+   * Deferred tool results supplied by the caller when resuming after human
+   * approval. Injected into message history before the next model turn.
+   */
+  deferredResults?: DeferredToolResults;
+  /**
+   * When true, `messageHistory` already contains the full conversation up to
+   * the pause point (including the assistant's tool call message). The run
+   * does NOT prepend a new user message from `prompt`. Used by `agent.resume()`.
+   * @internal
+   */
+  _resumeFromDeferred?: boolean;
+  /**
+   * The original pending requests from the deferred tool gate. Passed through
+   * from `agent.resume()` so `buildResumeToolMessage` can look up toolNames
+   * by toolCallId for accurate tool-result messages.
+   * @internal
+   */
+  _deferredPendingRequests?: ReadonlyArray<DeferredToolRequest>;
+  /** Populated by Agent.override(); replaces corresponding agent fields for this run. */
+  _override?: {
+    model?: LanguageModel;
+    systemPrompts?: Array<
+      string | ((ctx: RunContext<TDeps>) => string | Promise<string>)
+    >;
+    instructions?: Array<
+      string | ((ctx: RunContext<TDeps>) => string | Promise<string>)
+    >;
+    tools?: ReadonlyArray<ToolDefinition<TDeps>>;
+    toolsets?: ReadonlyArray<Toolset<TDeps>>;
+    historyProcessors?: ReadonlyArray<HistoryProcessor<TDeps>>;
+    resultValidators?: ReadonlyArray<ResultValidator<TDeps, TOutput>>;
+    maxRetries?: number;
+    maxTurns?: number;
+    usageLimits?: UsageLimits;
+    modelSettings?: ModelSettings;
+    endStrategy?: EndStrategy;
+    telemetry?: TelemetrySettings;
+  };
+  /** When true, bypasses the ALLOW_MODEL_REQUESTS guard (set by agent.override()). */
+  _bypassModelRequestsCheck?: boolean;
 }
 
 // ---------------------------------------------------------------------------
@@ -108,44 +112,46 @@ export interface InternalRunOpts<TDeps, TOutput> {
 // ---------------------------------------------------------------------------
 
 export function createRunContext<TDeps>(
-	deps: TDeps,
-	metadata: Record<string, unknown>,
+  deps: TDeps,
+  metadata: Record<string, unknown>,
 ): RunContext<TDeps> {
-	const toolResultMetadata = new Map<string, Record<string, unknown>>();
-	return {
-		deps,
-		usage: createUsage(),
-		retryCount: 0,
-		toolName: null,
-		runId: globalThis.crypto.randomUUID(),
-		metadata,
-		toolResultMetadata,
-		attachMetadata(toolCallId: string, meta: Record<string, unknown>): void {
-			toolResultMetadata.set(toolCallId, { ...meta });
-		},
-	};
+  const toolResultMetadata = new Map<string, Record<string, unknown>>();
+  return {
+    deps,
+    usage: createUsage(),
+    retryCount: 0,
+    toolName: null,
+    runId: globalThis.crypto.randomUUID(),
+    metadata,
+    toolResultMetadata,
+    attachMetadata(toolCallId: string, meta: Record<string, unknown>): void {
+      toolResultMetadata.set(toolCallId, { ...meta });
+    },
+  };
 }
 
 async function resolvePromptParts<TDeps>(
-	parts: ReadonlyArray<string | ((ctx: RunContext<TDeps>) => string | Promise<string>)>,
-	ctx: RunContext<TDeps>,
+  parts: ReadonlyArray<
+    string | ((ctx: RunContext<TDeps>) => string | Promise<string>)
+  >,
+  ctx: RunContext<TDeps>,
 ): Promise<string | undefined> {
-	const resolved: string[] = [];
-	for (const p of parts) {
-		resolved.push(typeof p === "string" ? p : await p(ctx));
-	}
-	return resolved.length > 0 ? resolved.join("\n\n") : undefined;
+  const resolved: string[] = [];
+  for (const p of parts) {
+    resolved.push(typeof p === "string" ? p : await p(ctx));
+  }
+  return resolved.length > 0 ? resolved.join("\n\n") : undefined;
 }
 
-export async function resolveSystemPrompt<TDeps, TOutput>(
-	agent: Agent<TDeps, TOutput>,
-	ctx: RunContext<TDeps>,
-	overrideSystemPrompts?: Array<
-		string | ((ctx: RunContext<TDeps>) => string | Promise<string>)
-	>,
+export function resolveSystemPrompt<TDeps, TOutput>(
+  agent: Agent<TDeps, TOutput>,
+  ctx: RunContext<TDeps>,
+  overrideSystemPrompts?: Array<
+    string | ((ctx: RunContext<TDeps>) => string | Promise<string>)
+  >,
 ): Promise<string | undefined> {
-	const prompts = overrideSystemPrompts ?? [...agent.systemPrompts];
-	return resolvePromptParts(prompts, ctx);
+  const prompts = overrideSystemPrompts ?? [...agent.systemPrompts];
+  return resolvePromptParts(prompts, ctx);
 }
 
 /**
@@ -155,27 +161,27 @@ export async function resolveSystemPrompt<TDeps, TOutput>(
  * in the message history (they only exist in the `system` field of each call).
  */
 export async function resolveSystemWithInstructions<TDeps, TOutput>(
-	agent: Agent<TDeps, TOutput>,
-	ctx: RunContext<TDeps>,
-	systemPrompt: string | undefined,
-	overrideInstructions?: Array<
-		string | ((ctx: RunContext<TDeps>) => string | Promise<string>)
-	>,
+  agent: Agent<TDeps, TOutput>,
+  ctx: RunContext<TDeps>,
+  systemPrompt: string | undefined,
+  overrideInstructions?: Array<
+    string | ((ctx: RunContext<TDeps>) => string | Promise<string>)
+  >,
 ): Promise<string | undefined> {
-	const instructionParts = overrideInstructions ?? [...agent.instructions];
-	const instructions = await resolvePromptParts(instructionParts, ctx);
+  const instructionParts = overrideInstructions ?? [...agent.instructions];
+  const instructions = await resolvePromptParts(instructionParts, ctx);
 
-	if (systemPrompt && instructions) {
-		return `${systemPrompt}\n\n${instructions}`;
-	}
-	return systemPrompt ?? instructions;
+  if (systemPrompt && instructions) {
+    return `${systemPrompt}\n\n${instructions}`;
+  }
+  return systemPrompt ?? instructions;
 }
 
 export function buildInitialMessages(
-	messageHistory: ModelMessage[] | undefined,
-	prompt: string,
+  messageHistory: ModelMessage[] | undefined,
+  prompt: string,
 ): ModelMessage[] {
-	return [...(messageHistory ?? []), { role: "user", content: prompt }];
+  return [...(messageHistory ?? []), { role: "user", content: prompt }];
 }
 
 // ---------------------------------------------------------------------------
@@ -187,39 +193,39 @@ export function buildInitialMessages(
  * to allow dynamic inclusion/exclusion, and flattens toolsets.
  */
 export async function resolveTools<TDeps>(
-	tools: ReadonlyArray<ToolDefinition<TDeps>>,
-	toolsets: ReadonlyArray<Toolset<TDeps>>,
-	ctx: RunContext<TDeps>,
+  tools: ReadonlyArray<ToolDefinition<TDeps>>,
+  toolsets: ReadonlyArray<Toolset<TDeps>>,
+  ctx: RunContext<TDeps>,
 ): Promise<ToolDefinition<TDeps>[]> {
-	const resolved: ToolDefinition<TDeps>[] = [];
+  const resolved: ToolDefinition<TDeps>[] = [];
 
-	for (const t of tools) {
-		if (t.prepare) {
-			const prepared = await t.prepare(ctx);
-			if (prepared !== null && prepared !== undefined) {
-				resolved.push(prepared);
-			}
-		} else {
-			resolved.push(t);
-		}
-	}
+  for (const t of tools) {
+    if (t.prepare) {
+      const prepared = await t.prepare(ctx);
+      if (prepared !== null && prepared !== undefined) {
+        resolved.push(prepared);
+      }
+    } else {
+      resolved.push(t);
+    }
+  }
 
-	for (const ts of toolsets) {
-		const tsTools = await ts.tools(ctx);
-		// Toolset tools also support prepare
-		for (const t of tsTools) {
-			if (t.prepare) {
-				const prepared = await t.prepare(ctx);
-				if (prepared !== null && prepared !== undefined) {
-					resolved.push(prepared);
-				}
-			} else {
-				resolved.push(t);
-			}
-		}
-	}
+  for (const ts of toolsets) {
+    const tsTools = await ts.tools(ctx);
+    // Toolset tools also support prepare
+    for (const t of tsTools) {
+      if (t.prepare) {
+        const prepared = await t.prepare(ctx);
+        if (prepared !== null && prepared !== undefined) {
+          resolved.push(prepared);
+        }
+      } else {
+        resolved.push(t);
+      }
+    }
+  }
 
-	return resolved;
+  return resolved;
 }
 
 // ---------------------------------------------------------------------------
@@ -227,22 +233,27 @@ export async function resolveTools<TDeps>(
 // ---------------------------------------------------------------------------
 
 // Re-export for callers that depend on these by name.
-export { FINAL_RESULT_TOOL, isFinalResultTool, unionToolIndex, normaliseSchemas };
+export {
+  FINAL_RESULT_TOOL,
+  isFinalResultTool,
+  normaliseSchemas,
+  unionToolIndex,
+};
 
 export function buildResponseMessages(
-	responseMessages: ModelMessage[],
-	accumulatedText: string,
+  responseMessages: ModelMessage[],
+  accumulatedText: string,
 ): ModelMessage[] {
-	if (responseMessages.length > 0) return responseMessages;
-	if (accumulatedText.length > 0) {
-		return [
-			{
-				role: "assistant" as const,
-				content: [{ type: "text" as const, text: accumulatedText }],
-			},
-		];
-	}
-	return [];
+  if (responseMessages.length > 0) return responseMessages;
+  if (accumulatedText.length > 0) {
+    return [
+      {
+        role: "assistant" as const,
+        content: [{ type: "text" as const, text: accumulatedText }],
+      },
+    ];
+  }
+  return [];
 }
 
 /**
@@ -264,22 +275,30 @@ export function buildResponseMessages(
  * @param sequentialMutex - Shared mutex for sequential tools.
  */
 export function buildToolMap<TDeps>(
-	resolvedTools: ToolDefinition<TDeps>[],
-	outputSchema: import("zod").ZodTypeAny | import("zod").ZodTypeAny[] | undefined,
-	outputMode: import("../output_mode.ts").OutputMode,
-	ctx: RunContext<TDeps>,
-	maxConcurrency?: number,
-	sequentialMutex?: Semaphore,
+  resolvedTools: ToolDefinition<TDeps>[],
+  outputSchema:
+    | import("zod").ZodTypeAny
+    | import("zod").ZodTypeAny[]
+    | undefined,
+  outputMode: import("../output_mode.ts").OutputMode,
+  ctx: RunContext<TDeps>,
+  maxConcurrency?: number,
+  sequentialMutex?: Semaphore,
 ): ToolSet {
-	const toolMap = toAISDKTools(resolvedTools, () => ctx, maxConcurrency, sequentialMutex);
-	if (outputSchema && outputMode === "tool") {
-		registerOutputTools(toolMap, outputSchema);
-	}
-	return toolMap;
+  const toolMap = toAISDKTools(
+    resolvedTools,
+    () => ctx,
+    maxConcurrency,
+    sequentialMutex,
+  );
+  if (outputSchema && outputMode === "tool") {
+    registerOutputTools(toolMap, outputSchema);
+  }
+  return toolMap;
 }
 
 export function toolsOrUndefined(toolMap: ToolSet): ToolSet | undefined {
-	return Object.keys(toolMap).length > 0 ? toolMap : undefined;
+  return Object.keys(toolMap).length > 0 ? toolMap : undefined;
 }
 
 // ---------------------------------------------------------------------------
@@ -291,13 +310,13 @@ export function toolsOrUndefined(toolMap: ToolSet): ToolSet | undefined {
  * or undefined if none exist.
  */
 export function findOutputToolNames<TDeps>(
-	resolvedTools: ToolDefinition<TDeps>[],
+  resolvedTools: ToolDefinition<TDeps>[],
 ): Set<string> {
-	const names = new Set<string>();
-	for (const t of resolvedTools) {
-		if (t.isOutput) names.add(t.name);
-	}
-	return names;
+  const names = new Set<string>();
+  for (const t of resolvedTools) {
+    if (t.isOutput) names.add(t.name);
+  }
+  return names;
 }
 
 // ---------------------------------------------------------------------------
@@ -310,13 +329,13 @@ export function findOutputToolNames<TDeps>(
  * UploadedFile becomes a file-reference string; everything else passes through.
  */
 export function serializeToolResult(value: unknown): unknown {
-	if (isBinaryContent(value)) {
-		return binaryContentToToolResult(value);
-	}
-	if (isUploadedFile(value)) {
-		return uploadedFileToToolResult(value);
-	}
-	return value;
+  if (isBinaryContent(value)) {
+    return binaryContentToToolResult(value);
+  }
+  if (isUploadedFile(value)) {
+    return uploadedFileToToolResult(value);
+  }
+  return value;
 }
 
 // ---------------------------------------------------------------------------
@@ -324,10 +343,10 @@ export function serializeToolResult(value: unknown): unknown {
 // ---------------------------------------------------------------------------
 
 export function applyUsage(usage: Usage, reported: LanguageModelUsage): void {
-	usage.inputTokens += reported.inputTokens ?? 0;
-	usage.outputTokens += reported.outputTokens ?? 0;
-	usage.totalTokens += reported.totalTokens ?? 0;
-	usage.requests += 1;
+  usage.inputTokens += reported.inputTokens ?? 0;
+  usage.outputTokens += reported.outputTokens ?? 0;
+  usage.totalTokens += reported.totalTokens ?? 0;
+  usage.requests += 1;
 }
 
 // ---------------------------------------------------------------------------
@@ -335,15 +354,15 @@ export function applyUsage(usage: Usage, reported: LanguageModelUsage): void {
 // ---------------------------------------------------------------------------
 
 export async function runValidators<TDeps, TOutput>(
-	validators: ReadonlyArray<ResultValidator<TDeps, TOutput>>,
-	ctx: RunContext<TDeps>,
-	output: TOutput,
+  validators: ReadonlyArray<ResultValidator<TDeps, TOutput>>,
+  ctx: RunContext<TDeps>,
+  output: TOutput,
 ): Promise<TOutput> {
-	let result = output;
-	for (const v of validators) {
-		result = await v(ctx, result);
-	}
-	return result;
+  let result = output;
+  for (const v of validators) {
+    result = await v(ctx, result);
+  }
+  return result;
 }
 
 // ---------------------------------------------------------------------------
@@ -351,31 +370,33 @@ export async function runValidators<TDeps, TOutput>(
 // ---------------------------------------------------------------------------
 
 export function nudgeForFinalResult<TDeps>(
-	ctx: RunContext<TDeps>,
-	messages: ModelMessage[],
-	maxRetries: number,
+  ctx: RunContext<TDeps>,
+  messages: ModelMessage[],
+  maxRetries: number,
 ): void {
-	if (ctx.retryCount >= maxRetries) throw new MaxRetriesError(maxRetries);
-	ctx.retryCount++;
-	messages.push({
-		role: "user",
-		content: `Please use the \`${FINAL_RESULT_TOOL}\` tool to return your answer in the required format.`,
-	});
+  if (ctx.retryCount >= maxRetries) throw new MaxRetriesError(maxRetries);
+  ctx.retryCount++;
+  messages.push({
+    role: "user",
+    content:
+      `Please use the \`${FINAL_RESULT_TOOL}\` tool to return your answer in the required format.`,
+  });
 }
 
 export function nudgeWithValidationError<TDeps>(
-	ctx: RunContext<TDeps>,
-	messages: ModelMessage[],
-	maxRetries: number,
-	error: Error,
+  ctx: RunContext<TDeps>,
+  messages: ModelMessage[],
+  maxRetries: number,
+  error: Error,
 ): void {
-	if (ctx.retryCount >= maxRetries)
-		throw new MaxRetriesError(maxRetries, error);
-	ctx.retryCount++;
-	messages.push({
-		role: "user",
-		content: `Result validation failed: ${error.message}. Please try again.`,
-	});
+  if (ctx.retryCount >= maxRetries) {
+    throw new MaxRetriesError(maxRetries, error);
+  }
+  ctx.retryCount++;
+  messages.push({
+    role: "user",
+    content: `Result validation failed: ${error.message}. Please try again.`,
+  });
 }
 
 // ---------------------------------------------------------------------------
@@ -383,119 +404,136 @@ export function nudgeWithValidationError<TDeps>(
 // ---------------------------------------------------------------------------
 
 export interface TurnSetup<TDeps> {
-	toolMap: ToolSet;
-	tools: ToolSet | undefined;
-	msgsForModel: ModelMessage[];
-	/** System prompt combined with per-turn instructions. */
-	system: string | undefined;
-	/** Names of output tools resolved for this turn. */
-	outputToolNames: Set<string>;
-	/** Resolved tool definitions (used for output tool detection). */
-	resolvedTools: ToolDefinition<TDeps>[];
+  toolMap: ToolSet;
+  tools: ToolSet | undefined;
+  msgsForModel: ModelMessage[];
+  /** System prompt combined with per-turn instructions. */
+  system: string | undefined;
+  /** Names of output tools resolved for this turn. */
+  outputToolNames: Set<string>;
+  /** Resolved tool definitions (used for output tool detection). */
+  resolvedTools: ToolDefinition<TDeps>[];
 }
 
 export async function prepareTurn<TDeps, TOutput>(
-	agent: Agent<TDeps, TOutput>,
-	opts: InternalRunOpts<TDeps, TOutput>,
-	ctx: RunContext<TDeps>,
-	messages: ModelMessage[],
-	/** The resolved system prompt (without instructions) from run start. */
-	systemPrompt: string | undefined,
-	/** Shared mutex for sequential tools (created once per run). */
-	sequentialMutex?: Semaphore,
+  agent: Agent<TDeps, TOutput>,
+  opts: InternalRunOpts<TDeps, TOutput>,
+  ctx: RunContext<TDeps>,
+  messages: ModelMessage[],
+  /** The resolved system prompt (without instructions) from run start. */
+  systemPrompt: string | undefined,
+  /** Shared mutex for sequential tools (created once per run). */
+  sequentialMutex?: Semaphore,
 ): Promise<TurnSetup<TDeps>> {
-	// Check usage limits (agent-level, then per-run override)
-	const limits = opts._override?.usageLimits ?? opts.usageLimits ?? agent.usageLimits;
-	if (limits) checkUsageLimits(limits, ctx.usage);
+  // Check usage limits (agent-level, then per-run override)
+  const limits = opts._override?.usageLimits ?? opts.usageLimits ??
+    agent.usageLimits;
+  if (limits) checkUsageLimits(limits, ctx.usage);
 
-	const tools = opts._override?.tools ?? agent.tools;
-	const toolsets = opts._override?.toolsets ?? agent.toolsets;
-	const resolvedTools = await resolveTools(tools, toolsets, ctx);
-	const outputToolNames = findOutputToolNames(resolvedTools);
-	const toolMap = buildToolMap(
-		resolvedTools,
-		agent.outputSchema,
-		agent.outputMode,
-		ctx,
-		agent.maxConcurrency,
-		sequentialMutex,
-	);
+  const tools = opts._override?.tools ?? agent.tools;
+  const toolsets = opts._override?.toolsets ?? agent.toolsets;
+  const resolvedTools = await resolveTools(tools, toolsets, ctx);
+  const outputToolNames = findOutputToolNames(resolvedTools);
+  const toolMap = buildToolMap(
+    resolvedTools,
+    agent.outputSchema,
+    agent.outputMode,
+    ctx,
+    agent.maxConcurrency,
+    sequentialMutex,
+  );
 
-	const historyProcessors = opts._override?.historyProcessors ?? agent.historyProcessors;
-	const msgsForModel = await applyHistoryProcessors(historyProcessors, messages, ctx);
+  const historyProcessors = opts._override?.historyProcessors ??
+    agent.historyProcessors;
+  const msgsForModel = await applyHistoryProcessors(
+    historyProcessors,
+    messages,
+    ctx,
+  );
 
-	// Resolve per-turn instructions and combine with system prompt.
-	// For 'prompted' mode with outputTemplate enabled, append the schema prompt.
-	let baseSystem = await resolveSystemWithInstructions(
-		agent,
-		ctx,
-		systemPrompt,
-		opts._override?.instructions,
-	);
+  // Resolve per-turn instructions and combine with system prompt.
+  // For 'prompted' mode with outputTemplate enabled, append the schema prompt.
+  let baseSystem = await resolveSystemWithInstructions(
+    agent,
+    ctx,
+    systemPrompt,
+    opts._override?.instructions,
+  );
 
-	if (
-		agent.outputMode === "prompted" &&
-		agent.outputTemplate !== false &&
-		agent.outputSchema
-	) {
-		const schemaPrompt = buildSchemaPrompt(agent.outputSchema);
-		baseSystem = baseSystem ? `${baseSystem}\n\n${schemaPrompt}` : schemaPrompt;
-	}
+  if (
+    agent.outputMode === "prompted" &&
+    agent.outputTemplate !== false &&
+    agent.outputSchema
+  ) {
+    const schemaPrompt = buildSchemaPrompt(agent.outputSchema);
+    baseSystem = baseSystem ? `${baseSystem}\n\n${schemaPrompt}` : schemaPrompt;
+  }
 
-	const system = baseSystem;
+  const system = baseSystem;
 
-	// Notify capture store
-	_notifyModelRequest(msgsForModel);
+  // Notify capture store
+  _notifyModelRequest(msgsForModel);
 
-	return { toolMap, tools: toolsOrUndefined(toolMap), msgsForModel, system, outputToolNames, resolvedTools };
+  return {
+    toolMap,
+    tools: toolsOrUndefined(toolMap),
+    msgsForModel,
+    system,
+    outputToolNames,
+    resolvedTools,
+  };
 }
 
 /** Resolve effective model settings, merging agent-level with run/override-level. */
 export function resolveModelSettings<TDeps, TOutput>(
-	agent: Agent<TDeps, TOutput>,
-	opts: InternalRunOpts<TDeps, TOutput>,
+  agent: Agent<TDeps, TOutput>,
+  opts: InternalRunOpts<TDeps, TOutput>,
 ): ModelSettings {
-	// Override-level > run-level > agent-level (spread, so later keys win)
-	return {
-		...(agent.modelSettings ?? {}),
-		...(opts.modelSettings ?? {}),
-		...(opts._override?.modelSettings ?? {}),
-	};
+  // Override-level > run-level > agent-level (spread, so later keys win)
+  return {
+    ...(agent.modelSettings ?? {}),
+    ...(opts.modelSettings ?? {}),
+    ...(opts._override?.modelSettings ?? {}),
+  };
 }
 
 /**
  * Convert a `ModelSettings` object to the options expected by AI SDK v6's
  * `generateText` / `streamText`. Notably, `maxTokens` maps to `maxOutputTokens`.
  */
-export function modelSettingsToAISDKOptions(settings: ModelSettings): Record<string, unknown> {
-	const {
-		maxTokens,
-		temperature,
-		topP,
-		topK,
-		frequencyPenalty,
-		presencePenalty,
-		stopSequences,
-		seed,
-	} = settings;
-	const result: Record<string, unknown> = {};
-	if (temperature !== undefined) result.temperature = temperature;
-	if (maxTokens !== undefined) result.maxOutputTokens = maxTokens;
-	if (topP !== undefined) result.topP = topP;
-	if (topK !== undefined) result.topK = topK;
-	if (frequencyPenalty !== undefined) result.frequencyPenalty = frequencyPenalty;
-	if (presencePenalty !== undefined) result.presencePenalty = presencePenalty;
-	if (stopSequences !== undefined) result.stopSequences = stopSequences;
-	if (seed !== undefined) result.seed = seed;
-	return result;
+export function modelSettingsToAISDKOptions(
+  settings: ModelSettings,
+): Record<string, unknown> {
+  const {
+    maxTokens,
+    temperature,
+    topP,
+    topK,
+    frequencyPenalty,
+    presencePenalty,
+    stopSequences,
+    seed,
+  } = settings;
+  const result: Record<string, unknown> = {};
+  if (temperature !== undefined) result.temperature = temperature;
+  if (maxTokens !== undefined) result.maxOutputTokens = maxTokens;
+  if (topP !== undefined) result.topP = topP;
+  if (topK !== undefined) result.topK = topK;
+  if (frequencyPenalty !== undefined) {
+    result.frequencyPenalty = frequencyPenalty;
+  }
+  if (presencePenalty !== undefined) result.presencePenalty = presencePenalty;
+  if (stopSequences !== undefined) result.stopSequences = stopSequences;
+  if (seed !== undefined) result.seed = seed;
+  return result;
 }
 
 /** Resolve effective end strategy. */
 export function resolveEndStrategy<TDeps, TOutput>(
-	agent: Agent<TDeps, TOutput>,
-	opts: InternalRunOpts<TDeps, TOutput>,
+  agent: Agent<TDeps, TOutput>,
+  opts: InternalRunOpts<TDeps, TOutput>,
 ): import("../agent.ts").EndStrategy {
-	return opts._override?.endStrategy ?? opts.endStrategy ?? agent.endStrategy;
+  return opts._override?.endStrategy ?? opts.endStrategy ?? agent.endStrategy;
 }
 
 /**
@@ -505,10 +543,10 @@ export function resolveEndStrategy<TDeps, TOutput>(
  * Returns `undefined` if none are configured.
  */
 export function resolveTelemetry<TDeps, TOutput>(
-	agent: Agent<TDeps, TOutput>,
-	opts: InternalRunOpts<TDeps, TOutput>,
+  agent: Agent<TDeps, TOutput>,
+  opts: InternalRunOpts<TDeps, TOutput>,
 ): TelemetrySettings | undefined {
-	return opts._override?.telemetry ?? opts.telemetry ?? agent.telemetry;
+  return opts._override?.telemetry ?? opts.telemetry ?? agent.telemetry;
 }
 
 // ---------------------------------------------------------------------------
@@ -520,7 +558,7 @@ export function resolveTelemetry<TDeps, TOutput>(
  * Used once per run and shared across all turns.
  */
 export function createSequentialMutex(): Semaphore {
-	return new Semaphore(1);
+  return new Semaphore(1);
 }
 
 // ---------------------------------------------------------------------------
@@ -528,7 +566,7 @@ export function createSequentialMutex(): Semaphore {
 // ---------------------------------------------------------------------------
 
 export function checkModelRequestsAllowed(bypass = false): void {
-	assertModelRequestsAllowed(bypass);
+  assertModelRequestsAllowed(bypass);
 }
 
 // ---------------------------------------------------------------------------
@@ -540,14 +578,14 @@ export function checkModelRequestsAllowed(bypass = false): void {
  * Evaluates static booleans or calls the predicate function.
  */
 export async function checkRequiresApproval<TDeps>(
-	t: ToolDefinition<TDeps>,
-	ctx: RunContext<TDeps>,
-	args: Record<string, unknown>,
+  t: ToolDefinition<TDeps>,
+  ctx: RunContext<TDeps>,
+  args: Record<string, unknown>,
 ): Promise<boolean> {
-	const flag = t.requiresApproval;
-	if (flag === undefined || flag === false) return false;
-	if (flag === true) return true;
-	return await flag(ctx, args);
+  const flag = t.requiresApproval;
+  if (flag === undefined || flag === false) return false;
+  if (flag === true) return true;
+  return await flag(ctx, args);
 }
 
 /**
@@ -567,47 +605,62 @@ export async function checkRequiresApproval<TDeps>(
  * @param sequentialMutex - Shared mutex for sequential tools.
  */
 export function buildDeferredAwareToolMap<TDeps>(
-	tools: ReadonlyArray<ToolDefinition<TDeps>>,
-	outputSchema: import("zod").ZodTypeAny | import("zod").ZodTypeAny[] | undefined,
-	outputMode: import("../output_mode.ts").OutputMode,
-	ctx: RunContext<TDeps>,
-	pendingApprovals: DeferredToolRequest[],
-	maxConcurrency?: number,
-	sequentialMutex?: Semaphore,
+  tools: ReadonlyArray<ToolDefinition<TDeps>>,
+  outputSchema:
+    | import("zod").ZodTypeAny
+    | import("zod").ZodTypeAny[]
+    | undefined,
+  outputMode: import("../output_mode.ts").OutputMode,
+  ctx: RunContext<TDeps>,
+  pendingApprovals: DeferredToolRequest[],
+  maxConcurrency?: number,
+  sequentialMutex?: Semaphore,
 ): ToolSet {
-	// Wrap approval-required tools so they record instead of execute.
-	// We intercept in the execute by checking requiresApproval at call time.
-	// The toolCallId is not available here (it's in the AI SDK's execute options),
-	// so we use a sentinel and correlate IDs after generateText via correlateApprovalIds.
-	const wrappedTools: ToolDefinition<TDeps>[] = tools.map((t) => {
-		if (!t.requiresApproval) return t;
-		const wrapped: ToolDefinition<TDeps> = {
-			...t,
-			execute: async (execCtx: RunContext<TDeps>, args: import("zod").infer<import("zod").ZodTypeAny>) => {
-				const argsRecord = args as Record<string, unknown>;
-				const needsApproval = await checkRequiresApproval(t, execCtx, argsRecord);
-				if (!needsApproval) {
-					// Dynamic predicate returned false — run original execute
-					return t.execute(execCtx, args);
-				}
-				// Record this call; toolCallId will be filled in by correlateApprovalIds
-				pendingApprovals.push({
-					toolCallId: `__pending_${pendingApprovals.length}__`,
-					toolName: t.name,
-					args: argsRecord,
-				});
-				// Placeholder result — discarded when we throw ApprovalRequiredError
-				return `__approval_required__`;
-			},
-		};
-		return wrapped;
-	});
+  // Wrap approval-required tools so they record instead of execute.
+  // We intercept in the execute by checking requiresApproval at call time.
+  // The toolCallId is not available here (it's in the AI SDK's execute options),
+  // so we use a sentinel and correlate IDs after generateText via correlateApprovalIds.
+  const wrappedTools: ToolDefinition<TDeps>[] = tools.map((t) => {
+    if (!t.requiresApproval) return t;
+    const wrapped: ToolDefinition<TDeps> = {
+      ...t,
+      execute: async (
+        execCtx: RunContext<TDeps>,
+        args: import("zod").infer<import("zod").ZodTypeAny>,
+      ) => {
+        const argsRecord = args as Record<string, unknown>;
+        const needsApproval = await checkRequiresApproval(
+          t,
+          execCtx,
+          argsRecord,
+        );
+        if (!needsApproval) {
+          // Dynamic predicate returned false — run original execute
+          return t.execute(execCtx, args);
+        }
+        // Record this call; toolCallId will be filled in by correlateApprovalIds
+        pendingApprovals.push({
+          toolCallId: `__pending_${pendingApprovals.length}__`,
+          toolName: t.name,
+          args: argsRecord,
+        });
+        // Placeholder result — discarded when we throw ApprovalRequiredError
+        return `__approval_required__`;
+      },
+    };
+    return wrapped;
+  });
 
-	const toolMap = toAISDKTools(wrappedTools, () => ctx, maxConcurrency, sequentialMutex);
-	if (outputSchema && outputMode === "tool") {
-		registerOutputTools(toolMap, outputSchema);
-	}
-	return toolMap;
+  const toolMap = toAISDKTools(
+    wrappedTools,
+    () => ctx,
+    maxConcurrency,
+    sequentialMutex,
+  );
+  if (outputSchema && outputMode === "tool") {
+    registerOutputTools(toolMap, outputSchema);
+  }
+  return toolMap;
 }
 
 /**
@@ -617,27 +670,27 @@ export function buildDeferredAwareToolMap<TDeps>(
  * Matches by tool name in order of appearance in `toolCalls`.
  */
 export function correlateApprovalIds(
-	pendingApprovals: DeferredToolRequest[],
-	toolCalls: ReadonlyArray<{ toolCallId: string; toolName: string }>,
+  pendingApprovals: DeferredToolRequest[],
+  toolCalls: ReadonlyArray<{ toolCallId: string; toolName: string }>,
 ): void {
-	// Build a queue of call IDs per tool name, in order they appear
-	const idQueueByName = new Map<string, string[]>();
-	for (const tc of toolCalls) {
-		const q = idQueueByName.get(tc.toolName) ?? [];
-		q.push(tc.toolCallId);
-		idQueueByName.set(tc.toolName, q);
-	}
+  // Build a queue of call IDs per tool name, in order they appear
+  const idQueueByName = new Map<string, string[]>();
+  for (const tc of toolCalls) {
+    const q = idQueueByName.get(tc.toolName) ?? [];
+    q.push(tc.toolCallId);
+    idQueueByName.set(tc.toolName, q);
+  }
 
-	// Match each pending approval to the next ID for its tool name
-	const consumedByName = new Map<string, number>();
-	for (const req of pendingApprovals) {
-		const queue = idQueueByName.get(req.toolName) ?? [];
-		const consumed = consumedByName.get(req.toolName) ?? 0;
-		if (consumed < queue.length) {
-			req.toolCallId = queue[consumed];
-			consumedByName.set(req.toolName, consumed + 1);
-		}
-	}
+  // Match each pending approval to the next ID for its tool name
+  const consumedByName = new Map<string, number>();
+  for (const req of pendingApprovals) {
+    const queue = idQueueByName.get(req.toolName) ?? [];
+    const consumed = consumedByName.get(req.toolName) ?? 0;
+    if (consumed < queue.length) {
+      req.toolCallId = queue[consumed];
+      consumedByName.set(req.toolName, consumed + 1);
+    }
+  }
 }
 
 /**
@@ -645,21 +698,23 @@ export function correlateApprovalIds(
  * Returns the serialized result.
  */
 export async function reExecuteTool<TDeps>(
-	toolName: string,
-	overrideArgs: Record<string, unknown>,
-	tools: ReadonlyArray<ToolDefinition<TDeps>>,
-	ctx: RunContext<TDeps>,
+  toolName: string,
+  overrideArgs: Record<string, unknown>,
+  tools: ReadonlyArray<ToolDefinition<TDeps>>,
+  ctx: RunContext<TDeps>,
 ): Promise<unknown> {
-	const t = tools.find((tool) => tool.name === toolName);
-	if (!t) {
-		return `Error: tool "${toolName}" not found for re-execution`;
-	}
-	try {
-		const rawResult = await t.execute(ctx, overrideArgs);
-		return serializeToolResult(rawResult);
-	} catch (err) {
-		return `Error re-executing tool: ${err instanceof Error ? err.message : String(err)}`;
-	}
+  const t = tools.find((tool) => tool.name === toolName);
+  if (!t) {
+    return `Error: tool "${toolName}" not found for re-execution`;
+  }
+  try {
+    const rawResult = await t.execute(ctx, overrideArgs);
+    return serializeToolResult(rawResult);
+  } catch (err) {
+    return `Error re-executing tool: ${
+      err instanceof Error ? err.message : String(err)
+    }`;
+  }
 }
 
 /**
@@ -676,52 +731,54 @@ export async function reExecuteTool<TDeps>(
  * @returns AI SDK-compatible tool-result message to append to message history.
  */
 export async function buildResumeToolMessage<TDeps>(
-	deferredResults: DeferredToolResults,
-	pendingRequests: ReadonlyArray<DeferredToolRequest>,
-	tools: ReadonlyArray<ToolDefinition<TDeps>>,
-	ctx: RunContext<TDeps>,
+  deferredResults: DeferredToolResults,
+  pendingRequests: ReadonlyArray<DeferredToolRequest>,
+  tools: ReadonlyArray<ToolDefinition<TDeps>>,
+  ctx: RunContext<TDeps>,
 ): Promise<ModelMessage> {
-	const requestByCallId = new Map<string, DeferredToolRequest>();
-	for (const req of pendingRequests) {
-		requestByCallId.set(req.toolCallId, req);
-	}
+  const requestByCallId = new Map<string, DeferredToolRequest>();
+  for (const req of pendingRequests) {
+    requestByCallId.set(req.toolCallId, req);
+  }
 
-	const parts: Array<{
-		type: "tool-result";
-		toolCallId: string;
-		toolName: string;
-		output: unknown;
-	}> = [];
+  const parts: Array<{
+    type: "tool-result";
+    toolCallId: string;
+    toolName: string;
+    output: unknown;
+  }> = [];
 
-	for (const dr of deferredResults.results) {
-		const req = requestByCallId.get(dr.toolCallId);
-		const toolName = req?.toolName ?? dr.toolCallId;
-		let output: unknown;
+  for (const dr of deferredResults.results) {
+    const req = requestByCallId.get(dr.toolCallId);
+    const toolName = req?.toolName ?? dr.toolCallId;
+    let output: unknown;
 
-		if (dr.argsOverride !== undefined && req !== undefined) {
-			output = await reExecuteTool(toolName, dr.argsOverride, tools, ctx);
-		} else {
-			output = dr.result ?? "";
-		}
+    if (dr.argsOverride !== undefined && req !== undefined) {
+      output = await reExecuteTool(toolName, dr.argsOverride, tools, ctx);
+    } else {
+      output = dr.result ?? "";
+    }
 
-		// AI SDK v6 requires output to be ToolResultOutput: { type: "text" | "json", value }
-		const formattedOutput: { type: "text"; value: string } | { type: "json"; value: unknown } =
-			typeof output === "string"
-				? { type: "text" as const, value: output }
-				: { type: "json" as const, value: output };
+    // AI SDK v6 requires output to be ToolResultOutput: { type: "text" | "json", value }
+    const formattedOutput: { type: "text"; value: string } | {
+      type: "json";
+      value: unknown;
+    } = typeof output === "string"
+      ? { type: "text" as const, value: output }
+      : { type: "json" as const, value: output };
 
-		parts.push({
-			type: "tool-result" as const,
-			toolCallId: dr.toolCallId,
-			toolName,
-			output: formattedOutput,
-		});
-	}
+    parts.push({
+      type: "tool-result" as const,
+      toolCallId: dr.toolCallId,
+      toolName,
+      output: formattedOutput,
+    });
+  }
 
-	return {
-		role: "tool" as const,
-		content: parts,
-	} as unknown as ModelMessage;
+  return {
+    role: "tool" as const,
+    content: parts,
+  } as unknown as ModelMessage;
 }
 
 /**
@@ -738,20 +795,21 @@ export async function buildResumeToolMessage<TDeps>(
  * @returns A new array with tool-result messages for deferred calls removed.
  */
 export function stripDeferredToolResults(
-	responseMessages: ModelMessage[],
-	pendingCallIds: ReadonlyArray<string>,
+  responseMessages: ModelMessage[],
+  pendingCallIds: ReadonlyArray<string>,
 ): ModelMessage[] {
-	const pendingSet = new Set(pendingCallIds);
-	// Filter out tool-result messages that contain only deferred tool results.
-	// A tool message may have multiple content parts; we strip any that are
-	// deferred and rebuild the message if it still has non-deferred parts.
-	return responseMessages.filter((msg) => {
-		if (msg.role !== "tool") return true;
-		const parts = (msg as { role: "tool"; content: Array<{ toolCallId: string }> }).content;
-		// Keep this message only if it has at least one non-deferred tool result
-		const nonDeferred = parts.filter((p) => !pendingSet.has(p.toolCallId));
-		return nonDeferred.length > 0;
-	});
+  const pendingSet = new Set(pendingCallIds);
+  // Filter out tool-result messages that contain only deferred tool results.
+  // A tool message may have multiple content parts; we strip any that are
+  // deferred and rebuild the message if it still has non-deferred parts.
+  return responseMessages.filter((msg) => {
+    if (msg.role !== "tool") return true;
+    const parts =
+      (msg as { role: "tool"; content: Array<{ toolCallId: string }> }).content;
+    // Keep this message only if it has at least one non-deferred tool result
+    const nonDeferred = parts.filter((p) => !pendingSet.has(p.toolCallId));
+    return nonDeferred.length > 0;
+  });
 }
 
 // Re-export deferred types for run.ts
@@ -762,5 +820,5 @@ export type { DeferredToolRequest, DeferredToolResults, ResumeState };
 // Re-exported helpers for run.ts / stream.ts
 // ---------------------------------------------------------------------------
 
-export { checkUsageLimits, applyHistoryProcessors };
+export { applyHistoryProcessors, checkUsageLimits };
 export { buildSchemaPrompt, parseTextOutput } from "../output_schema.ts";

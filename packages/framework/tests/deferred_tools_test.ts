@@ -6,19 +6,19 @@
  */
 import { assertEquals, assertInstanceOf, assertRejects } from "@std/assert";
 import {
-	Agent,
-	ApprovalRequiredError,
-	DeferredToolRequests,
-	tool,
-	type DeferredToolResults,
+  Agent,
+  ApprovalRequiredError,
+  DeferredToolRequests,
+  type DeferredToolResults,
+  tool,
 } from "../mod.ts";
 import { z } from "zod";
 import {
-	MockLanguageModelV3,
-	mockValues,
-	textResponse,
-	toolCallResponse,
-	type DoGenerateResult,
+  type DoGenerateResult,
+  MockLanguageModelV3,
+  mockValues,
+  textResponse,
+  toolCallResponse,
 } from "./_helpers.ts";
 
 // ---------------------------------------------------------------------------
@@ -26,62 +26,69 @@ import {
 // ---------------------------------------------------------------------------
 
 Deno.test("requiresApproval: true — agent.run() throws ApprovalRequiredError", async () => {
-	const sensitiveOp = tool({
-		name: "delete_user",
-		description: "Delete a user account",
-		parameters: z.object({ userId: z.string() }),
-		execute: async (_ctx, args) => `Deleted user ${args.userId}`,
-		requiresApproval: true,
-	});
+  const sensitiveOp = tool({
+    name: "delete_user",
+    description: "Delete a user account",
+    parameters: z.object({ userId: z.string() }),
+    // deno-lint-ignore require-await
+    execute: async (_ctx, args) => `Deleted user ${args.userId}`,
+    requiresApproval: true,
+  });
 
-	const model = new MockLanguageModelV3({
-		doGenerate: () =>
-			Promise.resolve(toolCallResponse("delete_user", { userId: "u123" }, "tc-del")),
-	});
+  const model = new MockLanguageModelV3({
+    doGenerate: () =>
+      Promise.resolve(
+        toolCallResponse("delete_user", { userId: "u123" }, "tc-del"),
+      ),
+  });
 
-	const agent = new Agent({ model, tools: [sensitiveOp] });
+  const agent = new Agent({ model, tools: [sensitiveOp] });
 
-	await assertRejects(
-		() => agent.run("Delete user u123"),
-		ApprovalRequiredError,
-		"Approval required",
-	);
+  await assertRejects(
+    () => agent.run("Delete user u123"),
+    ApprovalRequiredError,
+    "Approval required",
+  );
 });
 
 Deno.test("ApprovalRequiredError contains correct deferred request info", async () => {
-	const sensitiveOp = tool({
-		name: "send_email",
-		description: "Send an email",
-		parameters: z.object({ to: z.string(), body: z.string() }),
-		execute: async () => "Email sent",
-		requiresApproval: true,
-	});
+  const sensitiveOp = tool({
+    name: "send_email",
+    description: "Send an email",
+    parameters: z.object({ to: z.string(), body: z.string() }),
+    // deno-lint-ignore require-await
+    execute: async () => "Email sent",
+    requiresApproval: true,
+  });
 
-	const model = new MockLanguageModelV3({
-		doGenerate: () =>
-			Promise.resolve(
-				toolCallResponse("send_email", { to: "user@example.com", body: "Hello" }, "tc-email"),
-			),
-	});
+  const model = new MockLanguageModelV3({
+    doGenerate: () =>
+      Promise.resolve(
+        toolCallResponse("send_email", {
+          to: "user@example.com",
+          body: "Hello",
+        }, "tc-email"),
+      ),
+  });
 
-	const agent = new Agent({ model, tools: [sensitiveOp] });
+  const agent = new Agent({ model, tools: [sensitiveOp] });
 
-	let caughtError: ApprovalRequiredError | null = null;
-	try {
-		await agent.run("Send a hello email");
-	} catch (err) {
-		if (err instanceof ApprovalRequiredError) {
-			caughtError = err;
-		}
-	}
+  let caughtError: ApprovalRequiredError | null = null;
+  try {
+    await agent.run("Send a hello email");
+  } catch (err) {
+    if (err instanceof ApprovalRequiredError) {
+      caughtError = err;
+    }
+  }
 
-	assertInstanceOf(caughtError, ApprovalRequiredError);
-	assertEquals(caughtError!.deferred.requests.length, 1);
-	assertEquals(caughtError!.deferred.requests[0].toolName, "send_email");
-	assertEquals(caughtError!.deferred.requests[0].args, {
-		to: "user@example.com",
-		body: "Hello",
-	});
+  assertInstanceOf(caughtError, ApprovalRequiredError);
+  assertEquals(caughtError!.deferred.requests.length, 1);
+  assertEquals(caughtError!.deferred.requests[0].toolName, "send_email");
+  assertEquals(caughtError!.deferred.requests[0].args, {
+    to: "user@example.com",
+    body: "Hello",
+  });
 });
 
 // ---------------------------------------------------------------------------
@@ -89,58 +96,68 @@ Deno.test("ApprovalRequiredError contains correct deferred request info", async 
 // ---------------------------------------------------------------------------
 
 Deno.test("requiresApproval function: returns false — tool executes normally", async () => {
-	let toolExecuted = false;
-	const conditionalTool = tool<{ isAdmin: boolean }>({
-		name: "admin_action",
-		description: "Perform admin action",
-		parameters: z.object({ action: z.string() }),
-		execute: async (_ctx, args) => {
-			toolExecuted = true;
-			const a = args as { action: string };
-			return `Done: ${a.action}`;
-		},
-		// Admin users don't need approval
-		requiresApproval: (ctx) => !ctx.deps.isAdmin,
-	});
+  let toolExecuted = false;
+  const conditionalTool = tool<{ isAdmin: boolean }>({
+    name: "admin_action",
+    description: "Perform admin action",
+    parameters: z.object({ action: z.string() }),
+    // deno-lint-ignore require-await
+    execute: async (_ctx, args) => {
+      toolExecuted = true;
+      const a = args as { action: string };
+      return `Done: ${a.action}`;
+    },
+    // Admin users don't need approval
+    requiresApproval: (ctx) => !ctx.deps.isAdmin,
+  });
 
-	const responses = mockValues<DoGenerateResult>(
-		toolCallResponse("admin_action", { action: "reset" }),
-		textResponse("Action completed"),
-	);
-	const model = new MockLanguageModelV3({
-		doGenerate: () => Promise.resolve(responses()),
-	});
+  const responses = mockValues<DoGenerateResult>(
+    toolCallResponse("admin_action", { action: "reset" }),
+    textResponse("Action completed"),
+  );
+  const model = new MockLanguageModelV3({
+    doGenerate: () => Promise.resolve(responses()),
+  });
 
-	const agent = new Agent<{ isAdmin: boolean }>({ model, tools: [conditionalTool] });
-	const result = await agent.run("Do admin action", { deps: { isAdmin: true } });
+  const agent = new Agent<{ isAdmin: boolean }>({
+    model,
+    tools: [conditionalTool],
+  });
+  const result = await agent.run("Do admin action", {
+    deps: { isAdmin: true },
+  });
 
-	assertEquals(toolExecuted, true);
-	assertEquals(result.output, "Action completed");
+  assertEquals(toolExecuted, true);
+  assertEquals(result.output, "Action completed");
 });
 
 Deno.test("requiresApproval function: returns true — throws ApprovalRequiredError", async () => {
-	const conditionalTool = tool<{ isAdmin: boolean }>({
-		name: "admin_action",
-		description: "Perform admin action",
-		parameters: z.object({ action: z.string() }),
-		execute: async (_ctx, args) => {
-			const a = args as { action: string };
-			return `Done: ${a.action}`;
-		},
-		requiresApproval: (ctx) => !ctx.deps.isAdmin,
-	});
+  const conditionalTool = tool<{ isAdmin: boolean }>({
+    name: "admin_action",
+    description: "Perform admin action",
+    parameters: z.object({ action: z.string() }),
+    // deno-lint-ignore require-await
+    execute: async (_ctx, args) => {
+      const a = args as { action: string };
+      return `Done: ${a.action}`;
+    },
+    requiresApproval: (ctx) => !ctx.deps.isAdmin,
+  });
 
-	const model = new MockLanguageModelV3({
-		doGenerate: () =>
-			Promise.resolve(toolCallResponse("admin_action", { action: "reset" })),
-	});
+  const model = new MockLanguageModelV3({
+    doGenerate: () =>
+      Promise.resolve(toolCallResponse("admin_action", { action: "reset" })),
+  });
 
-	const agent = new Agent<{ isAdmin: boolean }>({ model, tools: [conditionalTool] });
+  const agent = new Agent<{ isAdmin: boolean }>({
+    model,
+    tools: [conditionalTool],
+  });
 
-	await assertRejects(
-		() => agent.run("Do admin action", { deps: { isAdmin: false } }),
-		ApprovalRequiredError,
-	);
+  await assertRejects(
+    () => agent.run("Do admin action", { deps: { isAdmin: false } }),
+    ApprovalRequiredError,
+  );
 });
 
 // ---------------------------------------------------------------------------
@@ -148,94 +165,99 @@ Deno.test("requiresApproval function: returns true — throws ApprovalRequiredEr
 // ---------------------------------------------------------------------------
 
 Deno.test("agent.resume() — injects approved result and completes run", async () => {
-	const sensitiveOp = tool({
-		name: "charge_card",
-		description: "Charge a credit card",
-		parameters: z.object({ amount: z.number() }),
-		execute: async (_ctx, args) => `Charged $${args.amount}`,
-		requiresApproval: true,
-	});
+  const sensitiveOp = tool({
+    name: "charge_card",
+    description: "Charge a credit card",
+    parameters: z.object({ amount: z.number() }),
+    // deno-lint-ignore require-await
+    execute: async (_ctx, args) => `Charged $${args.amount}`,
+    requiresApproval: true,
+  });
 
-	const firstCallResponses = mockValues<DoGenerateResult>(
-		toolCallResponse("charge_card", { amount: 99 }, "tc-charge"),
-	);
-	const resumeCallResponses = mockValues<DoGenerateResult>(
-		textResponse("Payment processed successfully"),
-	);
+  const firstCallResponses = mockValues<DoGenerateResult>(
+    toolCallResponse("charge_card", { amount: 99 }, "tc-charge"),
+  );
+  const resumeCallResponses = mockValues<DoGenerateResult>(
+    textResponse("Payment processed successfully"),
+  );
 
-	let callCount = 0;
-	const model = new MockLanguageModelV3({
-		doGenerate: () => {
-			callCount++;
-			if (callCount === 1) return Promise.resolve(firstCallResponses());
-			return Promise.resolve(resumeCallResponses());
-		},
-	});
+  let callCount = 0;
+  const model = new MockLanguageModelV3({
+    doGenerate: () => {
+      callCount++;
+      if (callCount === 1) return Promise.resolve(firstCallResponses());
+      return Promise.resolve(resumeCallResponses());
+    },
+  });
 
-	const agent = new Agent({ model, tools: [sensitiveOp] });
+  const agent = new Agent({ model, tools: [sensitiveOp] });
 
-	// First run: should throw ApprovalRequiredError
-	let deferredErr: ApprovalRequiredError | null = null;
-	try {
-		await agent.run("Charge $99");
-	} catch (err) {
-		if (err instanceof ApprovalRequiredError) {
-			deferredErr = err;
-		} else {
-			throw err;
-		}
-	}
+  // First run: should throw ApprovalRequiredError
+  let deferredErr: ApprovalRequiredError | null = null;
+  try {
+    await agent.run("Charge $99");
+  } catch (err) {
+    if (err instanceof ApprovalRequiredError) {
+      deferredErr = err;
+    } else {
+      throw err;
+    }
+  }
 
-	assertInstanceOf(deferredErr, ApprovalRequiredError);
-	assertEquals(deferredErr!.deferred.requests[0].toolName, "charge_card");
+  assertInstanceOf(deferredErr, ApprovalRequiredError);
+  assertEquals(deferredErr!.deferred.requests[0].toolName, "charge_card");
 
-	// Human approves with an injected result
-	const approvedResults: DeferredToolResults = {
-		results: [
-			{
-				toolCallId: deferredErr!.deferred.requests[0].toolCallId,
-				result: "Charged $99 - approved by admin",
-			},
-		],
-	};
+  // Human approves with an injected result
+  const approvedResults: DeferredToolResults = {
+    results: [
+      {
+        toolCallId: deferredErr!.deferred.requests[0].toolCallId,
+        result: "Charged $99 - approved by admin",
+      },
+    ],
+  };
 
-	// Resume the run with approved results
-	const finalResult = await agent.resume(deferredErr!.deferred, approvedResults);
-	assertEquals(finalResult.output, "Payment processed successfully");
-	assertEquals(callCount, 2);
+  // Resume the run with approved results
+  const finalResult = await agent.resume(
+    deferredErr!.deferred,
+    approvedResults,
+  );
+  assertEquals(finalResult.output, "Payment processed successfully");
+  assertEquals(callCount, 2);
 });
 
 Deno.test("agent.resume() — DeferredToolRequests stores correct resume state", async () => {
-	const sensitiveOp = tool({
-		name: "wipe_database",
-		description: "Wipe the database",
-		parameters: z.object({ confirm: z.boolean() }),
-		execute: async () => "Database wiped",
-		requiresApproval: true,
-	});
+  const sensitiveOp = tool({
+    name: "wipe_database",
+    description: "Wipe the database",
+    parameters: z.object({ confirm: z.boolean() }),
+    // deno-lint-ignore require-await
+    execute: async () => "Database wiped",
+    requiresApproval: true,
+  });
 
-	const model = new MockLanguageModelV3({
-		doGenerate: () =>
-			Promise.resolve(toolCallResponse("wipe_database", { confirm: true })),
-	});
+  const model = new MockLanguageModelV3({
+    doGenerate: () =>
+      Promise.resolve(toolCallResponse("wipe_database", { confirm: true })),
+  });
 
-	const agent = new Agent({ model, tools: [sensitiveOp] });
+  const agent = new Agent({ model, tools: [sensitiveOp] });
 
-	let deferred: import("../mod.ts").DeferredToolRequests | null = null;
-	try {
-		await agent.run("Wipe the database");
-	} catch (err) {
-		if (err instanceof ApprovalRequiredError) {
-			deferred = err.deferred;
-		}
-	}
+  let deferred: import("../mod.ts").DeferredToolRequests | null = null;
+  try {
+    await agent.run("Wipe the database");
+  } catch (err) {
+    if (err instanceof ApprovalRequiredError) {
+      deferred = err.deferred;
+    }
+  }
 
-	assertInstanceOf(deferred, DeferredToolRequests);
-	// Resume state should contain the message history
-	assertEquals(Array.isArray(deferred!._resumeState.messages), true);
-	// Should have at least the user message and the assistant's tool call
-	assertEquals(deferred!._resumeState.messages.length >= 2, true);
-	assertEquals(deferred!._resumeState.turnCount, 1);
+  assertInstanceOf(deferred, DeferredToolRequests);
+  // Resume state should contain the message history
+  assertEquals(Array.isArray(deferred!._resumeState.messages), true);
+  // Should have at least the user message and the assistant's tool call
+  assertEquals(deferred!._resumeState.messages.length >= 2, true);
+  assertEquals(deferred!._resumeState.turnCount, 1);
 });
 
 // ---------------------------------------------------------------------------
@@ -243,40 +265,42 @@ Deno.test("agent.resume() — DeferredToolRequests stores correct resume state",
 // ---------------------------------------------------------------------------
 
 Deno.test("normal tools execute; approval-required tool throws", async () => {
-	let normalToolCalled = false;
-	const normalTool = tool({
-		name: "log_action",
-		description: "Log an action",
-		parameters: z.object({ msg: z.string() }),
-		execute: async (_ctx, args) => {
-			normalToolCalled = true;
-			return `Logged: ${args.msg}`;
-		},
-	});
+  let normalToolCalled = false;
+  const normalTool = tool({
+    name: "log_action",
+    description: "Log an action",
+    parameters: z.object({ msg: z.string() }),
+    // deno-lint-ignore require-await
+    execute: async (_ctx, args) => {
+      normalToolCalled = true;
+      return `Logged: ${args.msg}`;
+    },
+  });
 
-	const approvalTool = tool({
-		name: "deploy_prod",
-		description: "Deploy to production",
-		parameters: z.object({ version: z.string() }),
-		execute: async () => "Deployed",
-		requiresApproval: true,
-	});
+  const approvalTool = tool({
+    name: "deploy_prod",
+    description: "Deploy to production",
+    parameters: z.object({ version: z.string() }),
+    // deno-lint-ignore require-await
+    execute: async () => "Deployed",
+    requiresApproval: true,
+  });
 
-	// Model calls the approval-required tool only
-	const model = new MockLanguageModelV3({
-		doGenerate: () =>
-			Promise.resolve(toolCallResponse("deploy_prod", { version: "v2.0" })),
-	});
+  // Model calls the approval-required tool only
+  const model = new MockLanguageModelV3({
+    doGenerate: () =>
+      Promise.resolve(toolCallResponse("deploy_prod", { version: "v2.0" })),
+  });
 
-	const agent = new Agent({ model, tools: [normalTool, approvalTool] });
+  const agent = new Agent({ model, tools: [normalTool, approvalTool] });
 
-	await assertRejects(
-		() => agent.run("Deploy v2.0"),
-		ApprovalRequiredError,
-	);
+  await assertRejects(
+    () => agent.run("Deploy v2.0"),
+    ApprovalRequiredError,
+  );
 
-	// Normal tool was NOT called since the model called the approval tool
-	assertEquals(normalToolCalled, false);
+  // Normal tool was NOT called since the model called the approval tool
+  assertEquals(normalToolCalled, false);
 });
 
 // ---------------------------------------------------------------------------
@@ -284,58 +308,62 @@ Deno.test("normal tools execute; approval-required tool throws", async () => {
 // ---------------------------------------------------------------------------
 
 Deno.test("DeferredToolResult.argsOverride — re-executes tool with modified args", async () => {
-	const executedArgs: { amount?: number }[] = [];
-	const chargeOp = tool({
-		name: "charge",
-		description: "Charge amount",
-		parameters: z.object({ amount: z.number() }),
-		execute: async (_ctx, args) => {
-			executedArgs.push({ amount: args.amount });
-			return `Charged $${args.amount}`;
-		},
-		requiresApproval: true,
-	});
+  const executedArgs: { amount?: number }[] = [];
+  const chargeOp = tool({
+    name: "charge",
+    description: "Charge amount",
+    parameters: z.object({ amount: z.number() }),
+    // deno-lint-ignore require-await
+    execute: async (_ctx, args) => {
+      executedArgs.push({ amount: args.amount });
+      return `Charged $${args.amount}`;
+    },
+    requiresApproval: true,
+  });
 
-	const firstCall = mockValues<DoGenerateResult>(
-		toolCallResponse("charge", { amount: 1000 }, "tc-charge"),
-	);
-	const resumeCall = mockValues<DoGenerateResult>(
-		textResponse("All done"),
-	);
-	let callCount = 0;
-	const model = new MockLanguageModelV3({
-		doGenerate: () => {
-			callCount++;
-			return Promise.resolve(callCount === 1 ? firstCall() : resumeCall());
-		},
-	});
+  const firstCall = mockValues<DoGenerateResult>(
+    toolCallResponse("charge", { amount: 1000 }, "tc-charge"),
+  );
+  const resumeCall = mockValues<DoGenerateResult>(
+    textResponse("All done"),
+  );
+  let callCount = 0;
+  const model = new MockLanguageModelV3({
+    doGenerate: () => {
+      callCount++;
+      return Promise.resolve(callCount === 1 ? firstCall() : resumeCall());
+    },
+  });
 
-	const agent = new Agent({ model, tools: [chargeOp] });
+  const agent = new Agent({ model, tools: [chargeOp] });
 
-	let deferredErr: ApprovalRequiredError | null = null;
-	try {
-		await agent.run("Charge $1000");
-	} catch (err) {
-		if (err instanceof ApprovalRequiredError) deferredErr = err;
-		else throw err;
-	}
+  let deferredErr: ApprovalRequiredError | null = null;
+  try {
+    await agent.run("Charge $1000");
+  } catch (err) {
+    if (err instanceof ApprovalRequiredError) deferredErr = err;
+    else throw err;
+  }
 
-	assertInstanceOf(deferredErr, ApprovalRequiredError);
+  assertInstanceOf(deferredErr, ApprovalRequiredError);
 
-	// Human approves but changes the amount to $50
-	const approvedResults: DeferredToolResults = {
-		results: [
-			{
-				toolCallId: deferredErr!.deferred.requests[0].toolCallId,
-				argsOverride: { amount: 50 },
-			},
-		],
-	};
+  // Human approves but changes the amount to $50
+  const approvedResults: DeferredToolResults = {
+    results: [
+      {
+        toolCallId: deferredErr!.deferred.requests[0].toolCallId,
+        argsOverride: { amount: 50 },
+      },
+    ],
+  };
 
-	const finalResult = await agent.resume(deferredErr!.deferred, approvedResults);
-	assertEquals(finalResult.output, "All done");
+  const finalResult = await agent.resume(
+    deferredErr!.deferred,
+    approvedResults,
+  );
+  assertEquals(finalResult.output, "All done");
 
-	// Tool was re-executed with the overridden amount
-	assertEquals(executedArgs.length, 1);
-	assertEquals(executedArgs[0].amount, 50);
+  // Tool was re-executed with the overridden amount
+  assertEquals(executedArgs.length, 1);
+  assertEquals(executedArgs[0].amount, 50);
 });
