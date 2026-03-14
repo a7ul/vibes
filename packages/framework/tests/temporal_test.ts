@@ -179,12 +179,11 @@ Deno.test("TemporalAgent.run - passes run options through", async () => {
         name: "check",
         description: "check",
         parameters: z.object({}),
-        // deno-lint-ignore require-await
-        execute: async (
-          ctx: import("../types/context.ts").RunContext<undefined>,
+        execute: (
+          ctx: import("../lib/types/context.ts").RunContext<undefined>,
         ) => {
           capturedMetadata = ctx.metadata;
-          return "checked";
+          return Promise.resolve("checked");
         },
       },
     ],
@@ -453,7 +452,7 @@ Deno.test("MockTemporalAgent - records error in history on agent failure", async
 
 Deno.test("TemporalActivityOptions - validates structure at compile time", () => {
   // This test simply verifies the type compiles correctly
-  const opts: import("../temporal/types.ts").TemporalActivityOptions = {
+  const opts: import("../lib/temporal/types.ts").TemporalActivityOptions = {
     startToCloseTimeout: "30s",
     retryPolicy: {
       maximumAttempts: 3,

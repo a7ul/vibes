@@ -1,3 +1,8 @@
+---
+title: "Structured Output"
+description: "Return typed, Zod-validated JSON from your agent"
+---
+
 # Structured Output
 
 By default, agents return a plain string. Providing an `outputSchema` tells the agent to return validated, typed JSON instead.
@@ -148,10 +153,10 @@ const agent = new Agent({
 });
 ```
 
-See [Result Validators](../result-validators.md) for details.
+See [Result Validators](../reference/core/result-validators) for details.
 
 ## Next Steps
 
 - [Testing Your Agent](./testing.md) — test structured output without API calls
-- [Result Validators](../result-validators.md) — post-process and validate output
-- [Streaming](../streaming.md) — stream partial output as it arrives
+- [Result Validators](../reference/core/result-validators) — post-process and validate output
+- [Streaming](../reference/core/streaming) — stream partial output as it arrives

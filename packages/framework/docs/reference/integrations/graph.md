@@ -1,3 +1,8 @@
+---
+title: "Graph Workflows"
+description: "Finite-state machine workflows with BaseNode"
+---
+
 # Graph
 
 A `Graph` is a finite-state machine (FSM) where each node can run an agent, call

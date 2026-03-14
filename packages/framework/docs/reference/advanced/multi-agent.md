@@ -1,3 +1,8 @@
+---
+title: "Multi-Agent"
+description: "Agent-as-tool and programmatic hand-off patterns"
+---
+
 # Multi-Agent
 
 Build systems where agents delegate to other agents — either as tools the model

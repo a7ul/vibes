@@ -241,10 +241,9 @@ Deno.test("prompted output - output tool result ends run even in prompted mode",
         description: "A user-defined output tool",
         parameters: z.object({ result: z.string() }),
         isOutput: true,
-        // deno-lint-ignore require-await
-        execute: async (_ctx, args: unknown) => {
+        execute: (_ctx, args: unknown) => {
           toolCalled = true;
-          return (args as { result: string }).result;
+          return Promise.resolve((args as { result: string }).result);
         },
       },
     ],

@@ -21,9 +21,8 @@ class NodeA extends BaseNode<StepState, string[]> {
   readonly id = "a";
   readonly nextNodes = ["b"];
 
-  // deno-lint-ignore require-await
-  async run(state: StepState): Promise<NodeResult<StepState, string[]>> {
-    return next("b", { steps: [...state.steps, "a"] });
+  run(state: StepState): Promise<NodeResult<StepState, string[]>> {
+    return Promise.resolve(next("b", { steps: [...state.steps, "a"] }));
   }
 }
 
@@ -31,19 +30,17 @@ class NodeB extends BaseNode<StepState, string[]> {
   readonly id = "b";
   readonly nextNodes = ["c"];
 
-  // deno-lint-ignore require-await
-  async run(state: StepState): Promise<NodeResult<StepState, string[]>> {
-    return next("c", { steps: [...state.steps, "b"] });
+  run(state: StepState): Promise<NodeResult<StepState, string[]>> {
+    return Promise.resolve(next("c", { steps: [...state.steps, "b"] }));
   }
 }
 
 class NodeC extends BaseNode<StepState, string[]> {
   readonly id = "c";
 
-  // deno-lint-ignore require-await
-  async run(state: StepState): Promise<NodeResult<StepState, string[]>> {
+  run(state: StepState): Promise<NodeResult<StepState, string[]>> {
     const final = [...state.steps, "c"];
-    return output(final);
+    return Promise.resolve(output(final));
   }
 }
 
@@ -91,9 +88,8 @@ Deno.test("GraphRun - step through nodes one at a time", async () => {
 Deno.test("GraphRun - returns null immediately after output", async () => {
   class ImmediateOutput extends BaseNode<StepState, string[]> {
     readonly id = "immediate";
-    // deno-lint-ignore require-await
-    async run(_state: StepState): Promise<NodeResult<StepState, string[]>> {
-      return output(["done"]);
+    run(_state: StepState): Promise<NodeResult<StepState, string[]>> {
+      return Promise.resolve(output(["done"]));
     }
   }
 
@@ -113,9 +109,8 @@ Deno.test("GraphRun - returns null immediately after output", async () => {
 Deno.test("GraphRun - detects cycle via maxIterations", async () => {
   class CycleNode extends BaseNode<StepState, string[]> {
     readonly id = "cycle";
-    // deno-lint-ignore require-await
-    async run(state: StepState): Promise<NodeResult<StepState, string[]>> {
-      return next("cycle", state);
+    run(state: StepState): Promise<NodeResult<StepState, string[]>> {
+      return Promise.resolve(next("cycle", state));
     }
   }
 

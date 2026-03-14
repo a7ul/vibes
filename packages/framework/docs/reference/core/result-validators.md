@@ -1,3 +1,8 @@
+---
+title: "Result Validators"
+description: "Post-process and retry agent output"
+---
+
 # Result Validators
 
 Result validators run after the model's output has been parsed by Zod. They let
@@ -6,7 +11,7 @@ model to try again.
 
 ## Basic Usage
 
-A validator is a function that receives the [`RunContext`](./run-context.md) and
+A validator is a function that receives the [`RunContext`](../core/run-context) and
 the parsed output. Return the output to accept it (optionally modified), or
 throw an `Error` to reject it.
 
@@ -42,7 +47,7 @@ type ResultValidator<TDeps, TOutput> = (
 
 | Parameter  | Description                                                                                        |
 | ---------- | -------------------------------------------------------------------------------------------------- |
-| `ctx`      | The current [`RunContext`](./run-context.md), including `deps`, `usage`, `retryCount`, and `runId` |
+| `ctx`      | The current [`RunContext`](../core/run-context), including `deps`, `usage`, `retryCount`, and `runId` |
 | `output`   | The Zod-parsed output from the model                                                               |
 | **Return** | The accepted output (same or modified). Throw to reject.                                           |
 
@@ -50,7 +55,7 @@ type ResultValidator<TDeps, TOutput> = (
 
 When a validator throws, the error message is sent back to the model as a user
 message asking it to try again. The run retries up to `maxRetries` (default:
-`3`). If all retries are exhausted, [`MaxRetriesError`](./errors.md) is thrown.
+`3`). If all retries are exhausted, [`MaxRetriesError`](../core/errors) is thrown.
 
 ```ts
 const agent = new Agent<undefined, Output>({

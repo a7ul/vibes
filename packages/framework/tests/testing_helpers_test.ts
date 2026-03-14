@@ -43,9 +43,13 @@ Deno.test("setAllowModelRequests - false blocks streams", async () => {
     const agent = new Agent({ model });
     // executeStream throws synchronously before returning StreamResult
     await assertRejects(
-      // deno-lint-ignore require-await
-      async () => {
-        agent.stream("prompt");
+      () => {
+        try {
+          agent.stream("prompt");
+          return Promise.resolve();
+        } catch (e) {
+          return Promise.reject(e);
+        }
       },
       ModelRequestsDisabledError,
     );
@@ -97,8 +101,7 @@ Deno.test("captureRunMessages - captures each turn separately", async () => {
     name: "echo",
     description: "echo",
     parameters: (await import("zod")).z.object({}),
-    // deno-lint-ignore require-await
-    execute: async () => "echoed",
+    execute: () => Promise.resolve("echoed"),
   };
   const model = new MockLanguageModelV3({
     doGenerate: () => Promise.resolve(responses()),

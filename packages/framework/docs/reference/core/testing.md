@@ -1,3 +1,8 @@
+---
+title: "Testing"
+description: "TestModel, FunctionModel, setAllowModelRequests()"
+---
+
 # Testing
 
 The Vercel AI SDK ships a `ai/test` module with mock model implementations that

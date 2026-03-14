@@ -1,3 +1,8 @@
+---
+title: "Temporal"
+description: "Durable agent workflows with Temporal"
+---
+
 # Temporal
 
 Run agents as durable Temporal workflows — surviving process crashes, network

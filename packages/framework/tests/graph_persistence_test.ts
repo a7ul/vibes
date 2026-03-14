@@ -22,15 +22,14 @@ interface WorkflowState {
 class WorkflowNode extends BaseNode<WorkflowState, string> {
   readonly id = "workflow";
 
-  // deno-lint-ignore require-await
-  async run(state: WorkflowState): Promise<NodeResult<WorkflowState, string>> {
+  run(state: WorkflowState): Promise<NodeResult<WorkflowState, string>> {
     if (state.step >= 2) {
-      return output(`done:${state.data}`);
+      return Promise.resolve(output(`done:${state.data}`));
     }
-    return next("workflow", {
+    return Promise.resolve(next("workflow", {
       step: state.step + 1,
       data: state.data + `_step${state.step + 1}`,
-    });
+    }));
   }
 }
 
@@ -141,8 +140,7 @@ Deno.test("Graph - saves state after each node transition", async () => {
     ): Promise<void>;
   } = new MemoryStatePersistence<WorkflowState>();
   const originalSave = persistence.save.bind(persistence);
-  // deno-lint-ignore require-await
-  persistence.save = async (graphId, nodeId, state) => {
+  persistence.save = (graphId, nodeId, state) => {
     savedStates.push({ nodeId, step: state.step });
     return originalSave(graphId, nodeId, state);
   };

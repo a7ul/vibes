@@ -13,8 +13,7 @@ Deno.test("outputTool - ends run and returns tool result as output", async () =>
     name: "done",
     description: "Return the final answer",
     parameters: z.object({ answer: z.string() }),
-    // deno-lint-ignore require-await
-    execute: async (_ctx, args) => args.answer,
+    execute: (_ctx, args) => Promise.resolve(args.answer),
   });
 
   assertEquals(doneTool.isOutput, true);
@@ -37,8 +36,7 @@ Deno.test("outputTool - returns object result as output", async () => {
     name: "finalize",
     description: "Finalize with structured data",
     parameters: z.object({ name: z.string(), score: z.number() }),
-    // deno-lint-ignore require-await
-    execute: async (_ctx, args) => ({ name: args.name, score: args.score }),
+    execute: (_ctx, args) => Promise.resolve({ name: args.name, score: args.score }),
   });
 
   const responses = mockValues<DoGenerateResult>(
@@ -61,10 +59,9 @@ Deno.test("outputTool - output tool result takes precedence over continued loopi
     name: "regular",
     description: "A regular tool",
     parameters: z.object({}),
-    // deno-lint-ignore require-await
-    execute: async () => {
+    execute: () => {
       regularToolCalled = true;
-      return "regular";
+      return Promise.resolve("regular");
     },
   });
 
@@ -72,8 +69,7 @@ Deno.test("outputTool - output tool result takes precedence over continued loopi
     name: "done",
     description: "Done",
     parameters: z.object({ value: z.string() }),
-    // deno-lint-ignore require-await
-    execute: async (_ctx, args) => args.value,
+    execute: (_ctx, args) => Promise.resolve(args.value),
   });
 
   // Model calls done tool — the agent should stop without calling regular tool
@@ -96,8 +92,7 @@ Deno.test("outputTool - agent with no outputSchema still uses outputTool", async
     name: "submit",
     description: "Submit result",
     parameters: z.object({ result: z.string() }),
-    // deno-lint-ignore require-await
-    execute: async (_ctx, args) => args.result,
+    execute: (_ctx, args) => Promise.resolve(args.result),
   });
 
   const responses = mockValues<DoGenerateResult>(
@@ -117,8 +112,7 @@ Deno.test("outputTool - result validator can reject then accept output tool resu
     name: "done",
     description: "Done",
     parameters: z.object({ value: z.string() }),
-    // deno-lint-ignore require-await
-    execute: async (_ctx, args) => args.value,
+    execute: (_ctx, args) => Promise.resolve(args.value),
   });
 
   let validatorCallCount = 0;

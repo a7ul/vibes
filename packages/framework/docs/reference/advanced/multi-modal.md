@@ -1,3 +1,8 @@
+---
+title: "Multi-Modal"
+description: "Images, audio, and file inputs"
+---
+
 # Multi-Modal
 
 Tools can return images, audio, and file references in addition to plain strings

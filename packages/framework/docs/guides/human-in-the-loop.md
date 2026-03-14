@@ -1,3 +1,8 @@
+---
+title: "Human-in-the-Loop"
+description: "Pause runs for human approval using deferred tools"
+---
+
 # Human-in-the-Loop
 
 Vibes supports pausing an agent run to get human approval before executing sensitive tools. The run is suspended, your code shows the pending actions to a user, and then the run resumes with the user's decision.
@@ -199,5 +204,5 @@ async function chat(req: Request) {
 
 ## Next Steps
 
-- [Deferred Tools reference](../deferred-tools.md) — full API reference
+- [Deferred Tools reference](../reference/advanced/deferred-tools) — full API reference
 - [Error Handling](../concepts/error-handling.md) — `ApprovalRequiredError` details

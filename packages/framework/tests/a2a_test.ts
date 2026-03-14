@@ -32,7 +32,7 @@ function makeUserMessage(text: string, taskId?: string): A2AMessage {
   };
 }
 
-async function rpcPost(
+function rpcPost(
   adapter: A2AAdapter<undefined, string>,
   method: string,
   params: unknown,

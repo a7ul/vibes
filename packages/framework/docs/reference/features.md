@@ -1,3 +1,8 @@
+---
+title: "Feature Parity"
+description: "Comparison with pydantic-ai features"
+---
+
 # Feature Parity: pydantic-ai → TypeScript Framework
 
 This document tracks every pydantic-ai feature and its status in the TypeScript

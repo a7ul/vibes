@@ -16,10 +16,9 @@ Deno.test("toolResultMetadata - attachMetadata is available on RunContext", asyn
     name: "inspect",
     description: "Inspect context",
     parameters: z.object({}),
-    // deno-lint-ignore require-await
-    execute: async (ctx) => {
+    execute: (ctx) => {
       capturedCtx = ctx;
-      return "ok";
+      return Promise.resolve("ok");
     },
   });
 
@@ -44,10 +43,9 @@ Deno.test("toolResultMetadata - attachMetadata stores metadata on context", asyn
     name: "annotate",
     description: "Annotate with metadata",
     parameters: z.object({ key: z.string() }),
-    // deno-lint-ignore require-await
-    execute: async (ctx, args) => {
+    execute: (ctx, args) => {
       ctx.attachMetadata("manual-call-1", { key: args.key, ts: 123 });
-      return "annotated";
+      return Promise.resolve("annotated");
     },
   });
 
@@ -74,10 +72,9 @@ Deno.test("toolResultMetadata - metadata from multiple tool calls is collected",
     name: "tag",
     description: "Tag with metadata",
     parameters: z.object({ label: z.string() }),
-    // deno-lint-ignore require-await
-    execute: async (ctx, args) => {
+    execute: (ctx, args) => {
       ctx.attachMetadata(`call-${args.label}`, { label: args.label });
-      return `tagged-${args.label}`;
+      return Promise.resolve(`tagged-${args.label}`);
     },
   });
 
@@ -105,12 +102,11 @@ Deno.test("toolResultMetadata - attachMetadata creates immutable copy", async ()
     name: "snapshot",
     description: "Snapshot metadata",
     parameters: z.object({}),
-    // deno-lint-ignore require-await
-    execute: async (ctx) => {
+    execute: (ctx) => {
       ctx.attachMetadata("snap-1", meta);
       // Mutate original — should not affect stored copy
       meta.value = "mutated";
-      return "ok";
+      return Promise.resolve("ok");
     },
   });
 
@@ -134,8 +130,7 @@ Deno.test("toolResultMetadata - RunResult has empty toolMetadata when no tools a
     name: "silent",
     description: "No metadata",
     parameters: z.object({}),
-    // deno-lint-ignore require-await
-    execute: async () => "ok",
+    execute: () => Promise.resolve("ok"),
   });
 
   const responses = mockValues<DoGenerateResult>(

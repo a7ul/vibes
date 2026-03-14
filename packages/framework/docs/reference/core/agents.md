@@ -1,3 +1,8 @@
+---
+title: "Agents"
+description: "Agent class, AgentOptions, run(), stream(), resume()"
+---
+
 # Agents
 
 An `Agent` is the central object in Vibes. It holds a model, system prompts,
@@ -23,7 +28,7 @@ const agent = new Agent({
 | `model`               | `LanguageModelV1`                    | required | Any Vercel AI SDK model                                              |
 | `name`                | `string`                             | —        | Human-readable label for the agent                                   |
 | `systemPrompt`        | `string \| string[]`                 | —        | Static system prompt(s), joined with `\n\n`                          |
-| `dynamicSystemPrompt` | `SystemPromptFn \| SystemPromptFn[]` | —        | Function(s) called at run time with [`RunContext`](./run-context.md) |
+| `dynamicSystemPrompt` | `SystemPromptFn \| SystemPromptFn[]` | —        | Function(s) called at run time with [`RunContext`](../core/run-context) |
 | `tools`               | `ToolDefinition[]`                   | —        | Tools the model can call                                             |
 | `outputSchema`        | `ZodTypeAny`                         | —        | Zod schema for structured output                                     |
 | `resultValidators`    | `ResultValidator[]`                  | —        | Validators run after output is parsed                                |
@@ -70,11 +75,11 @@ console.log(result.runId); // unique run identifier
 | `deps`           | `TDeps`         | Runtime dependencies passed to tools and dynamic prompts     |
 | `messageHistory` | `CoreMessage[]` | Prior messages to prepend (enables multi-turn conversations) |
 
-Returns [`RunResult<TOutput>`](./run-context.md#runresult).
+Returns [`RunResult<TOutput>`](../core/run-context#runresult).
 
 ### `.stream(prompt, opts?)`
 
-Starts the agent and returns a [`StreamResult`](./streaming.md) immediately.
+Starts the agent and returns a [`StreamResult`](../core/streaming) immediately.
 Text deltas are available as an async iterable.
 
 ```ts
@@ -87,7 +92,7 @@ for await (const chunk of stream.textStream) {
 const output = await stream.output;
 ```
 
-Same options as `.run()`. See [Streaming](./streaming.md) for full details.
+Same options as `.run()`. See [Streaming](../core/streaming) for full details.
 
 ## Mutating an Agent After Construction
 
@@ -117,7 +122,7 @@ const agent = new Agent({
 });
 ```
 
-Dynamic prompts receive a [`RunContext`](./run-context.md) and can return a
+Dynamic prompts receive a [`RunContext`](../core/run-context) and can return a
 `string` or `Promise<string>`.
 
 ```ts
@@ -162,7 +167,7 @@ Each call to `.run()` or `.stream()` runs an internal loop: one LLM call per
 turn, with tool results appended and the loop repeated until the model produces
 a final answer or `maxTurns` is exceeded.
 
-If `maxTurns` is reached, a [`MaxTurnsError`](./errors.md) is thrown.
+If `maxTurns` is reached, a [`MaxTurnsError`](../core/errors) is thrown.
 
 ```ts
 const agent = new Agent({ model: ..., maxTurns: 5 });
@@ -226,7 +231,7 @@ control over execution order.
 
 For detailed event-by-event observation of a run (tool calls, tool results, text
 deltas, completion), use `runStreamEvents()`. See
-[Streaming](./streaming.md#runstreamevents) for the full event type reference.
+[Streaming](../core/streaming#runstreamevents) for the full event type reference.
 
 ```ts
 for await (const event of agent.runStreamEvents("Tell me a joke.")) {

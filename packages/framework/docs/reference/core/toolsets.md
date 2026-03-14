@@ -1,3 +1,8 @@
+---
+title: "Toolsets"
+description: "Composable, context-aware tool groups"
+---
+
 # Toolsets
 
 A `Toolset` is a composable, context-aware group of tools that is resolved per

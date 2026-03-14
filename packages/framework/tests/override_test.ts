@@ -70,20 +70,18 @@ Deno.test("Agent.override - replaces tools", async () => {
     name: "do_thing",
     description: "original",
     parameters: z.object({}),
-    // deno-lint-ignore require-await
-    execute: async () => {
+    execute: () => {
       originalCalled = true;
-      return "original";
+      return Promise.resolve("original");
     },
   });
   const overrideTool = tool({
     name: "do_thing",
     description: "override",
     parameters: z.object({}),
-    // deno-lint-ignore require-await
-    execute: async () => {
+    execute: () => {
       overrideCalled = true;
-      return "override";
+      return Promise.resolve("override");
     },
   });
 

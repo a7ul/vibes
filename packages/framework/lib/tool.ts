@@ -1,4 +1,4 @@
-import type { z, ZodTypeAny } from "zod";
+import type { z, ZodType } from "zod";
 import { jsonSchema as aiJsonSchema, tool as aiTool, type ToolSet } from "ai";
 import type { RunContext } from "./types/context.ts";
 import { Semaphore } from "./concurrency.ts";
@@ -19,10 +19,10 @@ export type ToolExecuteReturn = string | object | BinaryContent | UploadedFile;
 export interface ToolDefinition<TDeps = undefined> {
   name: string;
   description: string;
-  parameters: ZodTypeAny;
+  parameters: ZodType;
   execute: (
     ctx: RunContext<TDeps>,
-    args: z.infer<ZodTypeAny>,
+    args: z.infer<ZodType>,
   ) => Promise<ToolExecuteReturn>;
   /** Max times to retry this tool on failure before propagating the error. */
   maxRetries?: number;
@@ -30,7 +30,7 @@ export interface ToolDefinition<TDeps = undefined> {
    * Cross-field validation run before `execute`. Throw to reject the args and
    * surface an error without consuming a retry.
    */
-  argsValidator?: (args: z.infer<ZodTypeAny>) => void | Promise<void>;
+  argsValidator?: (args: z.infer<ZodType>) => void | Promise<void>;
   /**
    * Called once per model turn before the tools are sent to the model.
    * Return the (possibly modified) tool definition to include it, or
@@ -88,7 +88,7 @@ export interface ToolDefinition<TDeps = undefined> {
  */
 export function tool<
   TDeps = undefined,
-  TParams extends ZodTypeAny = ZodTypeAny,
+  TParams extends ZodType = ZodType,
 >(opts: {
   name: string;
   description: string;
@@ -133,7 +133,7 @@ export function tool<
  * });
  * ```
  */
-export function plainTool<TParams extends ZodTypeAny = ZodTypeAny>(opts: {
+export function plainTool<TParams extends ZodType = ZodType>(opts: {
   name: string;
   description: string;
   parameters: TParams;
@@ -147,10 +147,10 @@ export function plainTool<TParams extends ZodTypeAny = ZodTypeAny>(opts: {
     parameters: opts.parameters,
     maxRetries: opts.maxRetries,
     argsValidator: opts.argsValidator
-      ? (args: z.infer<ZodTypeAny>) =>
+      ? (args: z.infer<ZodType>) =>
         opts.argsValidator!(args as z.infer<TParams>)
       : undefined,
-    execute: (_ctx, args: z.infer<ZodTypeAny>) =>
+    execute: (_ctx, args: z.infer<ZodType>) =>
       opts.execute(args as z.infer<TParams>),
   };
 }
@@ -179,14 +179,14 @@ export function fromSchema<TDeps = undefined>(opts: {
   ) => Promise<ToolExecuteReturn>;
   maxRetries?: number;
 }): ToolDefinition<TDeps> {
-  // Wrap the raw JSON schema with the AI SDK helper so it satisfies ZodTypeAny-like interface
-  const wrappedSchema = aiJsonSchema(opts.jsonSchema) as unknown as ZodTypeAny;
+  // Wrap the raw JSON schema with the AI SDK helper so it satisfies ZodType-like interface
+  const wrappedSchema = aiJsonSchema(opts.jsonSchema) as unknown as ZodType;
   return {
     name: opts.name,
     description: opts.description,
     parameters: wrappedSchema,
     maxRetries: opts.maxRetries,
-    execute: (ctx: RunContext<TDeps>, args: z.infer<ZodTypeAny>) =>
+    execute: (ctx: RunContext<TDeps>, args: z.infer<ZodType>) =>
       opts.execute(ctx, args as Record<string, unknown>),
   };
 }
@@ -208,7 +208,7 @@ export function fromSchema<TDeps = undefined>(opts: {
  */
 export function outputTool<
   TDeps = undefined,
-  TParams extends ZodTypeAny = ZodTypeAny,
+  TParams extends ZodType = ZodType,
 >(opts: {
   name: string;
   description: string;
@@ -223,7 +223,7 @@ export function outputTool<
     description: opts.description,
     parameters: opts.parameters,
     isOutput: true,
-    execute: (ctx: RunContext<TDeps>, args: z.infer<ZodTypeAny>) =>
+    execute: (ctx: RunContext<TDeps>, args: z.infer<ZodType>) =>
       opts.execute(ctx, args as z.infer<TParams>),
   };
 }
@@ -257,7 +257,7 @@ export function toAISDKTools<TDeps>(
     result[t.name] = aiTool({
       description: t.description,
       inputSchema: t.parameters,
-      execute: (args: z.infer<ZodTypeAny>) => {
+      execute: (args: z.infer<ZodType>) => {
         const run = async () => {
           const ctx = getCtx();
           const prev = ctx.toolName;

@@ -1,3 +1,8 @@
+---
+title: "Error Handling"
+description: "All error types and recovery patterns"
+---
+
 # Error Handling
 
 Vibes raises specific error types for different failure modes. Handling them explicitly makes agents more robust.
@@ -89,7 +94,7 @@ try {
 }
 ```
 
-See [Deferred Tools](../deferred-tools.md) for the full pattern.
+See [Deferred Tools](../reference/advanced/deferred-tools) for the full pattern.
 
 ### `UsageLimitExceededError`
 
@@ -213,6 +218,6 @@ try {
 
 ## Next Steps
 
-- [Errors reference](../errors.md) — complete API reference for all error types
-- [Usage Limits](../usage-limits.md) — control costs with token and request budgets
-- [Deferred Tools](../deferred-tools.md) — human-in-the-loop approval patterns
+- [Errors reference](../reference/core/errors) — complete API reference for all error types
+- [Usage Limits](../reference/advanced/usage-limits) — control costs with token and request budgets
+- [Deferred Tools](../reference/advanced/deferred-tools) — human-in-the-loop approval patterns

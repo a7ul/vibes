@@ -20,8 +20,7 @@ import {
 
 Deno.test("Semaphore - runs a single task", async () => {
   const sem = new Semaphore(1);
-  // deno-lint-ignore require-await
-  const result = await sem.run(async () => "hello");
+  const result = await sem.run(() => Promise.resolve("hello"));
   assertEquals(result, "hello");
 });
 
@@ -59,16 +58,14 @@ Deno.test("Semaphore - propagates errors from fn", async () => {
   const sem = new Semaphore(1);
   await assertRejects(
     () =>
-      // deno-lint-ignore require-await
-      sem.run(async () => {
+      sem.run(() => {
         throw new Error("boom");
       }),
     Error,
     "boom",
   );
   // Semaphore should still be functional after an error
-  // deno-lint-ignore require-await
-  const result = await sem.run(async () => "recovered");
+  const result = await sem.run(() => Promise.resolve("recovered"));
   assertEquals(result, "recovered");
 });
 
@@ -175,10 +172,9 @@ Deno.test("maxConcurrency - agent runs correctly with tools", async () => {
     name: "my_tool",
     description: "a simple tool",
     parameters: z.object({ id: z.string() }),
-    // deno-lint-ignore require-await
-    execute: async (_ctx, args) => {
+    execute: (_ctx, args) => {
       toolCallCount.push(args.id);
-      return `result-${args.id}`;
+      return Promise.resolve(`result-${args.id}`);
     },
   });
 

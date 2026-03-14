@@ -1,3 +1,8 @@
+---
+title: "Dependency Injection"
+description: "Type-safe deps pattern for tools, prompts, and validators"
+---
+
 # Dependency Injection
 
 Vibes uses a type-safe dependency injection pattern — the same one pydantic-ai uses. Your tools, system prompts, and validators can access databases, APIs, config, and any other runtime state without globals or singletons.
@@ -207,6 +212,6 @@ const agent = new Agent({
 
 ## Next Steps
 
-- [Run Context](../run-context.md) — full `RunContext` API reference
+- [Run Context](../reference/core/run-context) — full `RunContext` API reference
 - [Testing](./testing.md) — how DI makes testing easy
 - [Multi-Agent Systems](../guides/multi-agent-systems.md) — passing deps across agents

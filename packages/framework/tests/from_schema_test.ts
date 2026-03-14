@@ -17,8 +17,7 @@ Deno.test("fromSchema - builds tool from raw JSON schema and executes", async ()
       properties: { message: { type: "string" } },
       required: ["message"],
     },
-    // deno-lint-ignore require-await
-    execute: async (_ctx, args) => `echoed: ${args.message as string}`,
+    execute: (_ctx, args) => Promise.resolve(`echoed: ${args.message as string}`),
   });
 
   assertEquals(echoTool.name, "echo");
@@ -45,11 +44,10 @@ Deno.test("fromSchema - respects maxRetries", async () => {
     description: "Flaky tool",
     jsonSchema: { type: "object", properties: {} },
     maxRetries: 2,
-    // deno-lint-ignore require-await
-    execute: async () => {
+    execute: () => {
       callCount++;
       if (callCount < 3) throw new Error("transient");
-      return "ok";
+      return Promise.resolve("ok");
     },
   });
 
@@ -78,10 +76,9 @@ Deno.test("fromSchema - passes args as Record<string, unknown>", async () => {
         age: { type: "number" },
       },
     },
-    // deno-lint-ignore require-await
-    execute: async (_ctx, args) => {
+    execute: (_ctx, args) => {
       receivedArgs = args;
-      return "captured";
+      return Promise.resolve("captured");
     },
   });
 

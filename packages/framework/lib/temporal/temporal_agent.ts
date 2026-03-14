@@ -119,8 +119,7 @@ export class TemporalAgent<TDeps, TOutput> {
       };
     },
 
-    // deno-lint-ignore require-await
-    runToolCall: async (params: ToolCallParams): Promise<ToolCallResult> => {
+    runToolCall: (params: ToolCallParams): Promise<ToolCallResult> => {
       // Individual tool invocations are not exposed as separate entry
       // points by the AI SDK's run loop. This activity is provided for
       // custom workflows that want finer-grained control (e.g., wrapping
@@ -131,10 +130,12 @@ export class TemporalAgent<TDeps, TOutput> {
       // For a simpler integration, use runModelTurn which wraps the full
       // agent run (including all tool calls) in a single activity.
       void params; // acknowledged — implementation is caller-specific
-      throw new Error(
-        "runToolCall: custom per-tool activity wiring is not implemented in " +
-          "TemporalAgent. Use runModelTurn for full-run activity semantics, or " +
-          "subclass TemporalAgent to add per-tool activity dispatch.",
+      return Promise.reject(
+        new Error(
+          "runToolCall: custom per-tool activity wiring is not implemented in " +
+            "TemporalAgent. Use runModelTurn for full-run activity semantics, or " +
+            "subclass TemporalAgent to add per-tool activity dispatch.",
+        ),
       );
     },
   };

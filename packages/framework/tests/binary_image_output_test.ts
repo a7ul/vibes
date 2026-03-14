@@ -12,7 +12,6 @@ import {
   type DoGenerateResult,
   MockLanguageModelV3,
   mockValues,
-  textResponse,
   toolCallResponse,
 } from "./_helpers.ts";
 
@@ -85,8 +84,7 @@ Deno.test("BINARY_IMAGE_OUTPUT - agent returns BinaryContent when tool produces 
     name: "generate_image",
     description: "Generate an image",
     parameters: z.object({ prompt: z.string() }),
-    // deno-lint-ignore require-await
-    execute: async (_ctx, _args): Promise<BinaryContent> => ({
+    execute: (_ctx, _args): Promise<BinaryContent> => Promise.resolve({
       type: "binary",
       mimeType: "image/png",
       data: pngHeader,
@@ -122,16 +120,14 @@ Deno.test("BINARY_IMAGE_OUTPUT - agent continues to next turn if no image tool r
     name: "search",
     description: "Search for something",
     parameters: z.object({ query: z.string() }),
-    // deno-lint-ignore require-await
-    execute: async (_ctx, _args): Promise<string> => "found some results",
+    execute: (_ctx, _args): Promise<string> => Promise.resolve("found some results"),
   });
 
   const imageTool = tool({
     name: "generate_image",
     description: "Generate an image",
     parameters: z.object({ prompt: z.string() }),
-    // deno-lint-ignore require-await
-    execute: async (_ctx, _args): Promise<BinaryContent> => ({
+    execute: (_ctx, _args): Promise<BinaryContent> => Promise.resolve({
       type: "binary",
       mimeType: "image/jpeg",
       data: pngHeader,
@@ -167,8 +163,7 @@ Deno.test("BINARY_IMAGE_OUTPUT - throws MaxTurnsError when no image produced wit
     name: "search",
     description: "Search",
     parameters: z.object({ query: z.string() }),
-    // deno-lint-ignore require-await
-    execute: async (_ctx, _args): Promise<string> => "results",
+    execute: (_ctx, _args): Promise<string> => Promise.resolve("results"),
   });
 
   // Always returns a non-image tool call
@@ -199,8 +194,7 @@ Deno.test("BINARY_IMAGE_OUTPUT - no final_result tool is registered", async () =
     name: "make_image",
     description: "Make image",
     parameters: z.object({}),
-    // deno-lint-ignore require-await
-    execute: async (): Promise<BinaryContent> => ({
+    execute: (): Promise<BinaryContent> => Promise.resolve({
       type: "binary",
       mimeType: "image/png",
       data: new Uint8Array([1]),

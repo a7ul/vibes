@@ -19,8 +19,7 @@ Deno.test("argsValidator - passes valid args through", async () => {
       validateCalled = true;
       if (amount <= 0) throw new Error("amount must be positive");
     },
-    // deno-lint-ignore require-await
-    execute: async (_ctx, { amount }) => `sent ${amount}`,
+    execute: (_ctx, { amount }) => Promise.resolve(`sent ${amount}`),
   });
 
   const responses = mockValues<DoGenerateResult>(
@@ -45,10 +44,9 @@ Deno.test("argsValidator - rejects invalid args before execute", async () => {
     argsValidator: ({ amount }) => {
       if (amount <= 0) throw new Error("amount must be positive");
     },
-    // deno-lint-ignore require-await
-    execute: async (_ctx, { amount }) => {
+    execute: (_ctx, { amount }) => {
       executeCalled = true;
-      return `sent ${amount}`;
+      return Promise.resolve(`sent ${amount}`);
     },
   });
 
@@ -83,8 +81,7 @@ Deno.test("argsValidator - async validator is awaited", async () => {
       asyncValidateCalled = true;
       if (value === "bad") throw new Error("bad value");
     },
-    // deno-lint-ignore require-await
-    execute: async (_ctx, { value }) => `checked: ${value}`,
+    execute: (_ctx, { value }) => Promise.resolve(`checked: ${value}`),
   });
 
   const responses = mockValues<DoGenerateResult>(

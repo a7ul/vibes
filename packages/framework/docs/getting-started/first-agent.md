@@ -1,3 +1,8 @@
+---
+title: "Your First Agent"
+description: "Create and run your first agent in minutes"
+---
+
 # Your First Agent
 
 This guide walks you through creating a basic agent, running it, and understanding what happens at each step.
@@ -76,7 +81,7 @@ const result = await agent.run("What time is it?", {
 });
 ```
 
-The function receives a [`RunContext`](../run-context.md) with `deps`, `usage`, `runId`, and `metadata`.
+The function receives a [`RunContext`](../reference/core/run-context) with `deps`, `usage`, `runId`, and `metadata`.
 
 ## Multiple System Prompts
 

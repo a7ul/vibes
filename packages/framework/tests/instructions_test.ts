@@ -92,8 +92,7 @@ Deno.test("instructions - dynamic function is resolved per-turn", async () => {
     name: "noop",
     description: "no-op tool",
     parameters: (await import("zod")).z.object({}),
-    // deno-lint-ignore require-await
-    execute: async () => "ok",
+    execute: () => Promise.resolve("ok"),
   };
 
   const agent = new Agent({
@@ -186,11 +185,9 @@ Deno.test("instructions - array of strings and functions", async () => {
 
   const agent = new Agent({
     model,
-    instructions: [
-      "First instruction.",
-      () => Promise.resolve("Second instruction."),
-    ],
+    instructions: "First instruction.",
   });
+  agent.addInstruction(() => Promise.resolve("Second instruction."));
 
   await agent.run("prompt");
 

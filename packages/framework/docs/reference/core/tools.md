@@ -1,3 +1,8 @@
+---
+title: "Tools"
+description: "tool(), plainTool(), outputTool(), fromSchema() factories"
+---
+
 # Tools
 
 Tools give the model the ability to call functions during a run. Each tool has a
@@ -32,7 +37,7 @@ const search = tool({
 | `name`        | `string`                                   | Unique identifier. The model uses this to call the tool.                                                     |
 | `description` | `string`                                   | Natural language description. This is what the model reads to decide when to use the tool. Write it clearly. |
 | `parameters`  | `ZodTypeAny`                               | Zod schema for the arguments. Validated before `execute` is called.                                          |
-| `execute`     | `(ctx, args) => Promise<string \| object>` | The function to run. Receives a [`RunContext`](./run-context.md) and the parsed args.                        |
+| `execute`     | `(ctx, args) => Promise<string \| object>` | The function to run. Receives a [`RunContext`](../core/run-context) and the parsed args.                        |
 | `maxRetries`  | `number`                                   | Optional. How many times to retry `execute` if it throws. See [Retrying Tools](#retrying-tools).             |
 
 ## Type Parameters
@@ -73,7 +78,7 @@ agent.addTool(anotherTool);
 
 ## Accessing Context in Tools
 
-The first argument to `execute` is a [`RunContext`](./run-context.md):
+The first argument to `execute` is a [`RunContext`](../core/run-context):
 
 ```ts
 execute: (async (ctx, args) => {
@@ -237,7 +242,7 @@ const writeFile = tool({
 ## `requiresApproval` Flag
 
 Mark a tool as requiring human approval before execution. The run pauses and
-throws `ApprovalRequiredError`. See [Deferred Tools](./deferred-tools.md).
+throws `ApprovalRequiredError`. See [Deferred Tools](../advanced/deferred-tools).
 
 ```ts
 const deleteRecord = tool({

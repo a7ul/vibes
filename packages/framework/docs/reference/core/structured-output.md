@@ -1,3 +1,8 @@
+---
+title: "Structured Output"
+description: "Zod-validated typed responses via outputSchema"
+---
+
 # Structured Output
 
 By default an agent returns a plain `string`. Provide an `outputSchema` to get a
@@ -99,7 +104,7 @@ const agent = new Agent({
 });
 ```
 
-If all retries are exhausted, [`MaxRetriesError`](./errors.md) is thrown.
+If all retries are exhausted, [`MaxRetriesError`](../core/errors) is thrown.
 
 ## Union Output Types
 

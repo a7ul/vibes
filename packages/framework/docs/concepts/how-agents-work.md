@@ -1,3 +1,8 @@
+---
+title: "How Agents Work"
+description: "The agent loop, turns, and message history explained"
+---
+
 # How Agents Work
 
 Understanding the agent loop helps you write better agents, debug issues, and optimize performance.
@@ -102,7 +107,7 @@ Built-in processors:
 - `tokenTrimHistoryProcessor(maxTokens)` — trim to stay under a token budget
 - `summarizeHistoryProcessor(...)` — replace old messages with a summary
 
-See [Message History](../message-history.md) for full details.
+See [Message History](../reference/advanced/message-history) for full details.
 
 ## System Prompt Resolution
 
@@ -160,7 +165,7 @@ try {
 }
 ```
 
-See [Deferred Tools](../deferred-tools.md) for the full pattern.
+See [Deferred Tools](../reference/advanced/deferred-tools) for the full pattern.
 
 ## RunContext
 
@@ -194,7 +199,7 @@ interface RunResult<TOutput> {
 
 ## Streaming
 
-`agent.stream()` runs the same loop but makes the model's output available as it arrives. See [Streaming](../streaming.md).
+`agent.stream()` runs the same loop but makes the model's output available as it arrives. See [Streaming](../reference/core/streaming).
 
 ## Error Flow
 

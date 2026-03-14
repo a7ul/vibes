@@ -1,3 +1,8 @@
+---
+title: "Adding Tools"
+description: "Give your agent capabilities with type-safe tools"
+---
+
 # Adding Tools
 
 Tools give agents the ability to take actions — search the web, call APIs, read files, query databases, or run any code you write.
@@ -63,7 +68,7 @@ If the model calls multiple tools in one turn, they run **concurrently** by defa
 
 ## Using RunContext in Tools
 
-The first argument to `execute` is a [`RunContext`](../run-context.md). It carries:
+The first argument to `execute` is a [`RunContext`](../reference/core/run-context). It carries:
 - `ctx.deps` — your injected dependencies (database, config, etc.)
 - `ctx.usage` — token usage so far
 - `ctx.runId` — the unique ID for this run
@@ -165,6 +170,6 @@ const writeToSharedState = tool({
 
 ## Next Steps
 
-- [Toolsets](../toolsets.md) — composable, context-aware tool groups
+- [Toolsets](../reference/core/toolsets) — composable, context-aware tool groups
 - [Structured Output](./structured-output.md) — get typed JSON from the agent
 - [Dependencies](../concepts/dependency-injection.md) — injecting databases, APIs, and config

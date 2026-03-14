@@ -1,3 +1,8 @@
+---
+title: "Model Settings"
+description: "Temperature, max tokens, and per-run overrides"
+---
+
 # Model Settings
 
 Model settings control generation parameters — temperature, token limits, stop
