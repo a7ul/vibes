@@ -70,16 +70,10 @@ graph LR
         Agent --> DI[Dependency Injection]
         Agent --> Validation
     end
-    subgraph "AI SDK"
-        Agent --> Model[Language Model]
-    end
-    subgraph Providers
-        Model --> Anthropic
-        Model --> OpenAI
-        Model --> Google
-        Model --> Groq
-        Model --> Mistral
-        Model --> Ollama
+    subgraph "AI SDK · 50+ providers"
+        Agent --> Anthropic
+        Agent --> OpenAI
+        Agent --> More[Google · Groq · Mistral · ...]
     end
 ```
 

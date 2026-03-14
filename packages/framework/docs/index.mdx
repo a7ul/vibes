@@ -32,8 +32,9 @@ console.log(result.output); // "Paris"
 3. **Structured output + Streaming** - Define a Zod schema, get back a typed object or stream typed partial objects to the client as they arrive.
 4. **Automatic retries + Cost control** - Vibes retries on validation failure and enforces token budgets and request limits to keep costs in check.
 5. **First-class testing - no API calls required** - `TestModel`, `FunctionModel`, `agent.override()`, and `setAllowModelRequests(false)` make every agent fully testable in CI without hitting a real LLM.
-6. **MCP, AG-UI, A2A + Durable agents via Temporal** - Connect to MCP servers, build AG-UI and A2A agents out of the box. Run long-lived agents that survive crashes and restarts with Temporal.
-7. **OpenTelemetry observability** - Every run emits OTel spans, events, and token usage metrics. Works with Jaeger, Honeycomb, Datadog, and any OTel-compatible backend.
+6. **Robust evaluations** - Define typed datasets, score outputs with built-in or LLM-as-judge evaluators, and run experiments with configurable concurrency and retries. Evals are code - they live in your repo and run in CI.
+7. **MCP, AG-UI, A2A + Durable agents via Temporal** - Connect to MCP servers, build AG-UI and A2A agents out of the box. Run long-lived agents that survive crashes and restarts with Temporal.
+8. **OpenTelemetry observability** - Every run emits OTel spans, events, and token usage metrics. Works with Jaeger, Honeycomb, Datadog, and any OTel-compatible backend.
 
 ## Architecture
 
