@@ -56,6 +56,12 @@
           "concepts/results",
           "concepts/messages",
           "concepts/streaming",
+          "concepts/human-in-the-loop",
+          "concepts/testing",
+          "concepts/debugging",
+          "concepts/multi-agent",
+          "concepts/graph",
+          "concepts/thinking",
           "concepts/how-agents-work",
           "concepts/dependency-injection",
           "concepts/error-handling"
