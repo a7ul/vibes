@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 06-02-PLAN.md (acknowledgments, contributing, changelog meta pages)
-last_updated: "2026-03-14T17:47:42.891Z"
+stopped_at: Completed 06-03-PLAN.md (navigation restructure, 23 page deletions, link audit)
+last_updated: "2026-03-14T17:53:22.710Z"
 last_activity: 2026-03-14 -- Completed 02-01 (agents, models, dependencies, tools concept pages)
 progress:
   total_phases: 6
-  completed_phases: 5
+  completed_phases: 6
   total_plans: 15
-  completed_plans: 14
+  completed_plans: 15
   percent: 17
 ---
 
@@ -62,6 +62,7 @@ Progress: [█░░░░░░░░░] 17%
 | Phase 05-examples P03 | 3 | 3 tasks | 4 files |
 | Phase 06-advanced-topics-meta-and-navigation P01 | 3 | 3 tasks | 3 files |
 | Phase 06-advanced-topics-meta-and-navigation P02 | 2 | 3 tasks | 3 files |
+| Phase 06-advanced-topics-meta-and-navigation P03 | 3 | 3 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -101,6 +102,7 @@ Recent decisions affecting current work:
 - [Phase 06-advanced-topics-meta-and-navigation]: acknowledgments.mdx credits Pydantic AI (Samuel Colvin) and Vercel AI SDK with pattern-level attribution
 - [Phase 06-advanced-topics-meta-and-navigation]: contributing.mdx explicitly states Node.js is not required (Deno-native project)
 - [Phase 06-advanced-topics-meta-and-navigation]: changelog.mdx uses 4 version entries (v0.1.0-v0.4.0) covering full framework capability surface with 2024-2025 dates
+- [Phase 06-advanced-topics-meta-and-navigation]: Prose references to deleted filenames in warning callouts cleaned up along with actual hyperlinks to pass zero-broken-links verification
 
 ### Pending Todos
 
@@ -113,6 +115,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-14T17:47:42.889Z
-Stopped at: Completed 06-02-PLAN.md (acknowledgments, contributing, changelog meta pages)
+Last session: 2026-03-14T17:53:19.281Z
+Stopped at: Completed 06-03-PLAN.md (navigation restructure, 23 page deletions, link audit)
 Resume file: None
