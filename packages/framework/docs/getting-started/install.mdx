@@ -1,30 +1,21 @@
 ---
 title: "Installation"
-description: "Set up @vibes/framework with Deno or Node.js"
+description: "Install Vibes Agent Framework and configure your AI provider in under 2 minutes."
 ---
 
-Vibes works with both **Deno** (native) and **Node.js 18+** (via the npm package).
+Vibes runs on Deno and Node.js. Install the framework, pick a provider, set your API key, and you're ready to build agents.
 
-## Set Your API Key
-
-Export your LLM provider's API key as an environment variable:
-
-```bash
-# Anthropic
-export ANTHROPIC_API_KEY=sk-ant-...
-
-# OpenAI
-export OPENAI_API_KEY=sk-...
-
-# Google
-export GOOGLE_GENERATIVE_AI_API_KEY=...
-```
-
-## Install
+## Install the Framework
 
 <Tabs>
   <Tab title="Deno">
-    Add to your `deno.json`:
+    Add the framework to your project:
+
+    ```bash
+    deno add jsr:@vibes/framework
+    ```
+
+    Then add it to your `deno.json` import map along with your provider:
 
     ```jsonc
     {
@@ -32,27 +23,22 @@ export GOOGLE_GENERATIVE_AI_API_KEY=...
         "@vibes/framework": "jsr:@vibes/framework@^0.1",
         "ai": "npm:ai@^6",
         "zod": "npm:zod@^4",
-
-        // Pick your provider(s):
-        "@ai-sdk/anthropic": "npm:@ai-sdk/anthropic@^1",
-        "@ai-sdk/openai": "npm:@ai-sdk/openai@^1",
-        "@ai-sdk/google": "npm:@ai-sdk/google@^1"
+        "@ai-sdk/anthropic": "npm:@ai-sdk/anthropic@^1"
       }
     }
-    ```
-
-    Run scripts with:
-
-    ```bash
-    deno run --allow-env --allow-net main.ts
     ```
   </Tab>
   <Tab title="Node.js">
     Install via npm:
 
     ```bash
-    npm install @vibes/framework ai zod
-    # Plus your provider:
+    npx jsr add @vibes/framework
+    npm install ai zod
+    ```
+
+    Then add your provider to `package.json`:
+
+    ```bash
     npm install @ai-sdk/anthropic
     ```
 
@@ -73,12 +59,63 @@ export GOOGLE_GENERATIVE_AI_API_KEY=...
   </Tab>
 </Tabs>
 
-> **Why `ai` and a provider package?**
-> Vibes is a thin layer over the [Vercel AI SDK](https://sdk.vercel.ai/). It doesn't bundle provider SDKs - you bring your own. Use any of the [50+ supported providers](https://sdk.vercel.ai/providers/ai-sdk-providers).
+## How It Fits Together
+
+Vibes is a thin orchestration layer over the Vercel AI SDK. You install Vibes once and choose any supported AI provider separately.
+
+```mermaid
+graph LR
+    subgraph "@vibes/framework"
+        Agent --> Tools
+        Agent --> DI["Dependency Injection"]
+        Agent --> Validation
+    end
+    subgraph "Vercel AI SDK"
+        Agent --> Model["LanguageModel"]
+    end
+    subgraph Providers
+        Model --> Anthropic["@ai-sdk/anthropic"]
+        Model --> OpenAI["@ai-sdk/openai"]
+        Model --> Google["@ai-sdk/google"]
+        Model --> Groq["@ai-sdk/groq"]
+        Model --> Mistral["@ai-sdk/mistral"]
+        Model --> Ollama["ollama-ai-provider"]
+    end
+```
+
+## Choose a Provider
+
+Install the provider package that matches your preferred AI service:
+
+| Provider | Package | Install (Deno) | Env Variable |
+|----------|---------|----------------|--------------|
+| Anthropic (Claude) | `@ai-sdk/anthropic` | `deno add npm:@ai-sdk/anthropic` | `ANTHROPIC_API_KEY` |
+| OpenAI (GPT) | `@ai-sdk/openai` | `deno add npm:@ai-sdk/openai` | `OPENAI_API_KEY` |
+| Google (Gemini) | `@ai-sdk/google` | `deno add npm:@ai-sdk/google` | `GOOGLE_GENERATIVE_AI_API_KEY` |
+| Groq | `@ai-sdk/groq` | `deno add npm:@ai-sdk/groq` | `GROQ_API_KEY` |
+| Mistral | `@ai-sdk/mistral` | `deno add npm:@ai-sdk/mistral` | `MISTRAL_API_KEY` |
+| Ollama (local) | `ollama-ai-provider` | `deno add npm:ollama-ai-provider` | (none) |
+| OpenAI-compatible | `@ai-sdk/openai` | `deno add npm:@ai-sdk/openai` | varies |
+
+<Tip>
+  These 7 are the most popular choices. Vibes supports 50+ providers via the Vercel AI SDK — see the [full provider list](https://sdk.vercel.ai/providers/ai-sdk-providers).
+</Tip>
+
+## Set Your API Key
+
+Export your provider's API key as an environment variable before running your agent:
+
+```bash
+export ANTHROPIC_API_KEY="sk-ant-..."
+```
+
+<Note>
+  Never commit API keys to source control. Use a `.env` file locally and your deployment platform's secret management in production.
+</Note>
 
 ## Verify the Install
 
-Create `hello.ts`:
+Create `hello.ts` and run it to confirm everything is working:
 
 ```ts
 import { Agent } from "@vibes/framework";
@@ -102,8 +139,6 @@ console.log(result.output);
   </Tab>
   <Tab title="Node.js">
     ```bash
-    npx ts-node hello.ts
-    # or
     npx tsx hello.ts
     ```
   </Tab>
@@ -111,5 +146,11 @@ console.log(result.output);
 
 ## Next Steps
 
-- [Your First Agent](/getting-started/first-agent) - build a real agent step by step
-- [Adding Tools](/getting-started/adding-tools) - give your agent capabilities
+<CardGroup cols={2}>
+  <Card title="Hello World Tutorial" icon="rocket" href="/getting-started/hello-world">
+    Build a complete weather agent with tools, structured output, and tests in one progressive tutorial.
+  </Card>
+  <Card title="Introduction" icon="book-open" href="/introduction">
+    Learn the design philosophy and why Vibes was built.
+  </Card>
+</CardGroup>
