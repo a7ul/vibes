@@ -25,6 +25,10 @@
     {
       "name": "npm",
       "url": "https://www.npmjs.com/package/@vibesjs/sdk"
+    },
+    {
+      "name": "JSR",
+      "url": "https://jsr.io/@vibesjs/sdk"
     }
   ],
   "anchors": [
