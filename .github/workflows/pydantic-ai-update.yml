@@ -96,6 +96,5 @@ jobs:
           echo "Opened issue: $ISSUE_URL"
 
           # Tag Copilot via comment — triggers the coding agent to implement and open a PR
-          gh api repos/${{ github.repository }}/issues/${ISSUE_NUMBER}/comments \
-            --method POST \
-            --field body="@copilot Please implement the porting checklist above. Use \`.claude/vibes-pydantic-porting.md\` as your reference guide."
+          gh issue comment "${ISSUE_NUMBER}" --repo ${{ github.repository }} \
+            --body "@copilot Please implement the porting checklist above. Use \`.claude/vibes-pydantic-porting.md\` as your reference guide."
