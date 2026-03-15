@@ -1,5 +1,5 @@
 {
-  "workspace": ["./packages/framework", "./packages/vibes"],
+  "workspace": ["./packages/sdk", "./packages/vibes"],
   "tasks": {
     "dev": "deno run --watch main.ts",
     "test": "deno task --filter '*' test"

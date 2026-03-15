@@ -921,7 +921,7 @@
       "jsr:@std/assert@^1.0.19"
     ],
     "members": {
-      "packages/framework": {
+      "packages/sdk": {
         "dependencies": [
           "jsr:@std/assert@^1.0.19",
           "npm:@ai-sdk/provider@3",
