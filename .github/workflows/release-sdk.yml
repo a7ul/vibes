@@ -49,7 +49,6 @@ jobs:
           cat deno.json
 
       - name: Publish to JSR
-        continue-on-error: true
         run: |
           cd packages/sdk
           deno publish --allow-dirty
