@@ -224,12 +224,12 @@ Install the `@vibesjs/sdk` agent skill so your coding assistant has full API kno
 
 ```bash
 # Project-level (recommended)
-mkdir -p .claude/agents && curl -fsSL https://raw.githubusercontent.com/vibe-ts/vibes/main/packages/sdk/skills/vibes-framework.md -o .claude/agents/vibes-framework.md
+mkdir -p .claude/agents && curl -fsSL https://raw.githubusercontent.com/a7ul/vibes/main/packages/sdk/skills/vibes-framework.md -o .claude/agents/vibes-framework.md
 ```
 
 ```bash
 # Global (available in all projects)
-mkdir -p ~/.claude/agents && curl -fsSL https://raw.githubusercontent.com/vibe-ts/vibes/main/packages/sdk/skills/vibes-framework.md -o ~/.claude/agents/vibes-framework.md
+mkdir -p ~/.claude/agents && curl -fsSL https://raw.githubusercontent.com/a7ul/vibes/main/packages/sdk/skills/vibes-framework.md -o ~/.claude/agents/vibes-framework.md
 ```
 
 See [skills/README.md](./skills/README.md) for more options.

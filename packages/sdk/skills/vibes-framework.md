@@ -23,21 +23,21 @@ If Context7 is not available, fetch from the repo directly. Start with the index
 
 | Topic | URL |
 |-------|-----|
-| Full index | `https://raw.githubusercontent.com/vibe-ts/vibes/main/packages/sdk/docs/index.md` |
-| Agents | `https://raw.githubusercontent.com/vibe-ts/vibes/main/packages/sdk/docs/agents.md` |
-| Tools | `https://raw.githubusercontent.com/vibe-ts/vibes/main/packages/sdk/docs/tools.md` |
-| Toolsets | `https://raw.githubusercontent.com/vibe-ts/vibes/main/packages/sdk/docs/toolsets.md` |
-| Structured Output | `https://raw.githubusercontent.com/vibe-ts/vibes/main/packages/sdk/docs/structured-output.md` |
-| Streaming | `https://raw.githubusercontent.com/vibe-ts/vibes/main/packages/sdk/docs/streaming.md` |
-| Testing | `https://raw.githubusercontent.com/vibe-ts/vibes/main/packages/sdk/docs/testing.md` |
-| Dependencies | `https://raw.githubusercontent.com/vibe-ts/vibes/main/packages/sdk/docs/dependencies.md` |
-| Message History | `https://raw.githubusercontent.com/vibe-ts/vibes/main/packages/sdk/docs/message-history.md` |
-| Deferred Tools | `https://raw.githubusercontent.com/vibe-ts/vibes/main/packages/sdk/docs/deferred-tools.md` |
-| Graph | `https://raw.githubusercontent.com/vibe-ts/vibes/main/packages/sdk/docs/graph.md` |
-| MCP | `https://raw.githubusercontent.com/vibe-ts/vibes/main/packages/sdk/docs/mcp.md` |
-| AG-UI | `https://raw.githubusercontent.com/vibe-ts/vibes/main/packages/sdk/docs/ag-ui.md` |
-| OpenTelemetry | `https://raw.githubusercontent.com/vibe-ts/vibes/main/packages/sdk/docs/otel.md` |
-| Temporal | `https://raw.githubusercontent.com/vibe-ts/vibes/main/packages/sdk/docs/temporal.md` |
+| Full index | `https://raw.githubusercontent.com/a7ul/vibes/main/packages/sdk/docs/index.md` |
+| Agents | `https://raw.githubusercontent.com/a7ul/vibes/main/packages/sdk/docs/agents.md` |
+| Tools | `https://raw.githubusercontent.com/a7ul/vibes/main/packages/sdk/docs/tools.md` |
+| Toolsets | `https://raw.githubusercontent.com/a7ul/vibes/main/packages/sdk/docs/toolsets.md` |
+| Structured Output | `https://raw.githubusercontent.com/a7ul/vibes/main/packages/sdk/docs/structured-output.md` |
+| Streaming | `https://raw.githubusercontent.com/a7ul/vibes/main/packages/sdk/docs/streaming.md` |
+| Testing | `https://raw.githubusercontent.com/a7ul/vibes/main/packages/sdk/docs/testing.md` |
+| Dependencies | `https://raw.githubusercontent.com/a7ul/vibes/main/packages/sdk/docs/dependencies.md` |
+| Message History | `https://raw.githubusercontent.com/a7ul/vibes/main/packages/sdk/docs/message-history.md` |
+| Deferred Tools | `https://raw.githubusercontent.com/a7ul/vibes/main/packages/sdk/docs/deferred-tools.md` |
+| Graph | `https://raw.githubusercontent.com/a7ul/vibes/main/packages/sdk/docs/graph.md` |
+| MCP | `https://raw.githubusercontent.com/a7ul/vibes/main/packages/sdk/docs/mcp.md` |
+| AG-UI | `https://raw.githubusercontent.com/a7ul/vibes/main/packages/sdk/docs/ag-ui.md` |
+| OpenTelemetry | `https://raw.githubusercontent.com/a7ul/vibes/main/packages/sdk/docs/otel.md` |
+| Temporal | `https://raw.githubusercontent.com/a7ul/vibes/main/packages/sdk/docs/temporal.md` |
 
 ## Step 2: Installation
 
