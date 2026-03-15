@@ -115,7 +115,7 @@ jobs:
           echo "Opened PR: $PR_URL"
 
           # Assign to Copilot coding agent if available (requires Copilot to be enabled in repo settings)
-          gh api repos/${{ github.repository }}/pulls/${PR_NUMBER}/requested_reviewers \
+          gh api repos/${{ github.repository }}/issues/${PR_NUMBER}/assignees \
             --method POST \
             --field assignees[]="copilot" || echo "Copilot assignee not available — assign manually or enable GitHub Copilot coding agent in repo settings."
 
