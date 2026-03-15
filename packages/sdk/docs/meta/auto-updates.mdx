@@ -11,7 +11,7 @@ This process is automated.
 
 ## The update pipeline
 
-A GitHub Actions workflow runs every day at 9am UTC. It checks whether a new version of `pydantic-ai` has been published to PyPI. If one has, and no open PR already exists for that version, it:
+A GitHub Actions workflow runs every day at 9am UTC. It checks whether a new version of `pydantic-ai` has been published to PyPI. If one has, and no open issue already exists for that version, it:
 
 1. **Fetches the release notes** from the Pydantic AI GitHub release
 2. **Diffs the changed files** between the old and new tags to identify what actually changed

@@ -302,7 +302,9 @@ If you're porting a Pydantic AI agent to TypeScript, most concepts transfer dire
 
 Vibes was created and is maintained by AI agents under the supervision of [Atul (@a7ul)](https://github.com/a7ul). Every commit is reviewed by a human; every line was written by an agent.
 
-See [Auto-Updates from Pydantic AI](https://vibesjs.dev/meta/auto-updates) for how the framework tracks upstream changes automatically.
+When Pydantic AI ships a new release, a GitHub Actions workflow automatically detects it, opens an issue with a full porting checklist, and assigns the GitHub Copilot coding agent to implement it. The resulting PR is reviewed and merged by a human.
+
+See [Auto-Updates from Pydantic AI](https://vibesjs.dev/meta/auto-updates) for details.
 
 ## Contributing
 
