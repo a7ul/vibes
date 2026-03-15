@@ -1,0 +1,59 @@
+name: Release
+
+on:
+  release:
+    types: [created]
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write # Required for JSR OIDC publishing
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Extract version
+        id: version
+        run: |
+          # Strip leading 'v' from tag (e.g. v0.2.0 → 0.2.0)
+          VERSION="${GITHUB_REF_NAME#v}"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Setup Deno
+        uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          registry-url: "https://registry.npmjs.org"
+
+      - name: Update package version
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          # Update framework deno.json version field
+          cd packages/framework
+          cat deno.json | sed "s/\"version\": \".*\"/\"version\": \"$VERSION\"/" > deno.json.tmp
+          mv deno.json.tmp deno.json
+          echo "Updated packages/framework/deno.json to $VERSION"
+          cat deno.json
+
+      - name: Publish to JSR
+        run: |
+          cd packages/framework
+          deno publish --allow-dirty
+
+      - name: Build npm package
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          cd packages/framework
+          deno run -A scripts/build_npm.ts "$VERSION"
+
+      - name: Publish to npm
+        run: |
+          cd packages/framework/npm
+          npm publish --access public --provenance

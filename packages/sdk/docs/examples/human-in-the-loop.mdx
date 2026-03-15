@@ -1,0 +1,129 @@
+---
+title: Human-in-the-Loop
+description: End-to-end deferred tool approval - the agent pauses when it needs to send an email, a human approves, and the agent resumes.
+---
+
+This example shows the full human-in-the-loop approval cycle. An email-sending tool is marked `requiresApproval: true`. When the agent tries to call it, Vibes throws `ApprovalRequiredError` instead of executing the tool. Your code inspects the pending tool calls, approves them (or rejects), and resumes the agent with `agent.resume()`.
+
+## What You'll Learn
+
+- Marking tools with `requiresApproval: true`
+- Catching `ApprovalRequiredError` and inspecting pending requests
+- Approving or rejecting tool calls
+- Resuming the agent with `agent.resume()`
+
+## Prerequisites
+
+- Vibes installed (`npm:@vibesjs/sdk`)
+- `ANTHROPIC_API_KEY` environment variable set
+
+## Complete Example
+
+```typescript
+import { Agent, ApprovalRequiredError, tool } from "npm:@vibesjs/sdk";
+import { anthropic } from "npm:@ai-sdk/anthropic";
+import { z } from "npm:zod";
+
+// Tool marked as requiring human approval
+const sendEmail = tool({
+  name: "send_email",
+  description: "Send an email to a recipient",
+  parameters: z.object({
+    to: z.string().email().describe("Recipient email address"),
+    subject: z.string().describe("Email subject line"),
+    body: z.string().describe("Email body content"),
+  }),
+  execute: async (_ctx, { to, subject }) => {
+    // In production: call your email service here
+    console.log(`[EMAIL SENT] To: ${to}, Subject: "${subject}"`);
+    return "Email sent successfully.";
+  },
+  requiresApproval: true,  // ← pauses agent before executing
+});
+
+const agent = new Agent({
+  model: anthropic("claude-sonnet-4-6"),
+  systemPrompt: "You are an email assistant. Send emails when asked.",
+  tools: [sendEmail],
+});
+
+// Approval handler - simulates a human reviewing the request
+async function requestApproval(toolName: string, args: unknown): Promise<boolean> {
+  console.log(`\n--- Approval Required ---`);
+  console.log(`Tool: ${toolName}`);
+  console.log(`Args:`, JSON.stringify(args, null, 2));
+  // In production: show a UI prompt, send a Slack message, etc.
+  // Here we auto-approve for demonstration
+  console.log(`Decision: APPROVED`);
+  return true;
+}
+
+try {
+  await agent.run("Send a welcome email to alice@example.com");
+} catch (err) {
+  if (err instanceof ApprovalRequiredError) {
+    const { deferred } = err;
+
+    // Build results for each pending tool call
+    const toolResults: Array<{ toolCallId: string; result: string }> = [];
+
+    for (const req of deferred.requests) {
+      const approved = await requestApproval(req.toolName, req.args);
+      toolResults.push({
+        toolCallId: req.toolCallId,
+        result: approved ? "approved" : "rejected",
+      });
+    }
+
+    // Resume the agent with the approval decisions
+    const finalResult = await agent.resume(deferred, { results: toolResults });
+    console.log("\nFinal response:", finalResult.output);
+  } else {
+    throw err;
+  }
+}
+```
+
+## Run It
+
+```bash
+deno run --allow-net --allow-env human-in-the-loop.ts
+```
+
+Example output:
+
+```
+--- Approval Required ---
+Tool: send_email
+Args: {
+  "to": "alice@example.com",
+  "subject": "Welcome!",
+  "body": "Hi Alice, welcome to our platform..."
+}
+Decision: APPROVED
+[EMAIL SENT] To: alice@example.com, Subject: "Welcome!"
+
+Final response: I've sent a welcome email to alice@example.com.
+```
+
+## How It Works
+
+### `requiresApproval: true`
+
+When the agent decides to call this tool, Vibes pauses execution before calling `execute()` and throws `ApprovalRequiredError`.
+
+### `err.deferred.requests`
+
+An array of pending tool calls. Each has `toolCallId` (opaque ID), `toolName`, and `args` (typed per the tool's Zod schema).
+
+### `agent.resume(deferred, { results })`
+
+Continues the agent from the pause point. `results` must contain one entry per request, with the same `toolCallId`. The `result` string is returned to the model as the tool's output - use `"approved"` or any descriptive string.
+
+### Rejection flow
+
+To reject a tool call, pass a `result` string indicating rejection. The model receives this as the tool result and can respond accordingly (e.g., "I couldn't send the email because it was rejected.").
+
+## Next Steps
+
+- [Human-in-the-Loop concept page](/concepts/human-in-the-loop) - ExternalToolset, DeferredToolRequests type details

@@ -1,0 +1,93 @@
+---
+title: Weather Agent
+description: A weather lookup agent demonstrating tools, external API calls, and structured output.
+---
+
+This example builds on Hello World by adding a tool that calls a real weather API and an output schema that returns structured data. The agent uses Open-Meteo - a free weather API that requires no API key - so you can run it immediately.
+
+## What You'll Learn
+
+- Defining a tool with `tool()` and Zod parameter schema
+- Calling an external HTTP API inside a tool
+- Using `outputSchema` for structured JSON output
+- Type-safe `Agent<TDeps, TOutput>` generics
+
+## Prerequisites
+
+- Vibes installed
+- `ANTHROPIC_API_KEY` set (Open-Meteo requires no key)
+
+## Complete Example
+
+```typescript
+import { Agent, tool } from "npm:@vibesjs/sdk";
+import { anthropic } from "npm:@ai-sdk/anthropic";
+import { z } from "npm:zod";
+
+// Tool: fetch current weather from Open-Meteo (no API key required)
+const getWeather = tool({
+  name: "get_weather",
+  description: "Get current weather for a location using its coordinates",
+  parameters: z.object({
+    latitude: z.number().describe("Latitude of the location"),
+    longitude: z.number().describe("Longitude of the location"),
+    city: z.string().describe("Human-readable city name for the response"),
+  }),
+  execute: async (_ctx, { latitude, longitude, city }) => {
+    const url =
+      `https://api.open-meteo.com/v1/forecast` +
+      `?latitude=${latitude}&longitude=${longitude}` +
+      `&current=temperature_2m,wind_speed_10m`;
+    const data = await fetch(url).then((r) => r.json());
+    return `${city}: ${data.current.temperature_2m}°C, wind ${data.current.wind_speed_10m} km/h`;
+  },
+});
+
+// Output schema: structured weather report
+const WeatherReport = z.object({
+  city: z.string(),
+  temperature: z.number().describe("Temperature in Celsius"),
+  windSpeed: z.number().describe("Wind speed in km/h"),
+  summary: z.string().describe("One-sentence weather summary"),
+});
+
+// Agent with tool and output schema
+const agent = new Agent<undefined, z.infer<typeof WeatherReport>>({
+  model: anthropic("claude-haiku-4-5-20251001"),
+  systemPrompt:
+    "You are a weather assistant. Use the get_weather tool with exact coordinates. " +
+    "Always call the tool before responding.",
+  tools: [getWeather],
+  outputSchema: WeatherReport,
+});
+
+const result = await agent.run("What's the weather in Tokyo?");
+console.log(result.output);
+// {
+//   city: "Tokyo",
+//   temperature: 18.5,
+//   windSpeed: 12.3,
+//   summary: "Mild and partly cloudy in Tokyo today."
+// }
+```
+
+## Run It
+
+```bash
+deno run --allow-net --allow-env weather-agent.ts
+```
+
+## How It Works
+
+**Tool definition**: `tool()` wraps an async function. The `parameters` Zod schema is used to generate the tool's JSON schema for the model - the model sees field names and descriptions.
+
+**Execute function**: `_ctx` is the `RunContext` (available when using dependencies - see [Dependencies](/concepts/dependencies)). The second argument is the validated, typed tool args.
+
+**Output schema**: `outputSchema` makes the agent return a typed object instead of a string. Vibes instructs the model to produce structured output matching the Zod schema.
+
+**Type generics**: `Agent<undefined, z.infer<typeof WeatherReport>>` - first param is deps type (none here), second is the output type. TypeScript infers `result.output` as `WeatherReport`.
+
+## Next Steps
+
+- [Bank Support](/examples/bank-support) - dependency injection with tools
+- [Tools concept page](/concepts/tools) - all tool types and options
