@@ -1,4 +1,4 @@
-name: Release
+name: Release SDK
 
 on:
   release:
@@ -9,7 +9,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      id-token: write # Required for JSR OIDC publishing
+      id-token: write # Required for npm provenance and JSR OIDC publishing
 
     steps:
       - uses: actions/checkout@v4
@@ -35,25 +35,25 @@ jobs:
       - name: Update package version
         run: |
           VERSION="${{ steps.version.outputs.version }}"
-          # Update framework deno.json version field
-          cd packages/framework
+          cd packages/sdk
           cat deno.json | sed "s/\"version\": \".*\"/\"version\": \"$VERSION\"/" > deno.json.tmp
           mv deno.json.tmp deno.json
-          echo "Updated packages/framework/deno.json to $VERSION"
+          echo "Updated packages/sdk/deno.json to $VERSION"
           cat deno.json
 
       - name: Publish to JSR
+        continue-on-error: true
         run: |
-          cd packages/framework
+          cd packages/sdk
           deno publish --allow-dirty
 
       - name: Build npm package
         run: |
           VERSION="${{ steps.version.outputs.version }}"
-          cd packages/framework
+          cd packages/sdk
           deno run -A scripts/build_npm.ts "$VERSION"
 
       - name: Publish to npm
         run: |
-          cd packages/framework/npm
+          cd packages/sdk/npm
           npm publish --access public --provenance
