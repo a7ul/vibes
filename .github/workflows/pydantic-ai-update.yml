@@ -52,20 +52,13 @@ jobs:
 
       - name: Analyze release
         if: steps.check.outputs.new_release == 'true'
-        id: analyze
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           OLD="${{ steps.stored-version.outputs.stored }}"
           NEW="${{ steps.fetch-version.outputs.latest }}"
           chmod +x .github/scripts/analyze-pydantic-release.sh
-          SUMMARY=$(.github/scripts/analyze-pydantic-release.sh "$OLD" "$NEW")
-          # Store multi-line output
-          {
-            echo "summary<<SUMMARY_EOF"
-            echo "$SUMMARY"
-            echo "SUMMARY_EOF"
-          } >> "$GITHUB_OUTPUT"
+          .github/scripts/analyze-pydantic-release.sh "$OLD" "$NEW" > /tmp/release-summary.md
 
       - name: Update version marker and push branch
         if: steps.check.outputs.new_release == 'true'
@@ -98,7 +91,7 @@ jobs:
         run: |
           OLD="${{ steps.stored-version.outputs.stored }}"
           NEW="${{ steps.fetch-version.outputs.latest }}"
-          SUMMARY="${{ steps.analyze.outputs.summary }}"
+          SUMMARY=$(cat /tmp/release-summary.md)
 
           python3 .github/scripts/create-issue-body.py
 
