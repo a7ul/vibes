@@ -11,14 +11,14 @@ Use graphs for multi-step sequential workflows, resumable pipelines, and pipelin
 If you are looking at older Vibes docs that show `new Graph({ nodes: [...] })` or `this.next()` inside a node - those are incorrect. The correct API is shown on this page.
 </Info>
 
-## Graph State Machine
+## Graph state machine
 
 ```mermaid
 flowchart LR
     fetch([fetch]) --> summarise([summarise])
 ```
 
-## Defining Nodes
+## Defining nodes
 
 Each node extends `BaseNode<State, Output>`. The `run()` method returns either `next(nodeId, newState)` to transition to another node, or `output(value)` to end the graph. Import `next` and `output` as free functions from `@vibesjs/sdk` - they are NOT methods on `BaseNode`.
 
@@ -63,7 +63,7 @@ class SummariseNode extends BaseNode<State, string> {
 | `nextNodes?` | `string[]` | Optional list of node IDs this node can transition to - used by `toMermaid()` to draw edges |
 | `run(state)` | `Promise<NodeResult>` (abstract) | Runs the node logic; return `next(...)` or `output(...)` |
 
-## Building and Running a Graph
+## Building and running a graph
 
 Pass nodes as a positional array to the `Graph` constructor. An optional second argument accepts `{ maxIterations? }`.
 
@@ -82,7 +82,7 @@ const result = await graph.run(
 console.log(result); // "Example Domain is a placeholder website..."
 ```
 
-## Step-by-Step Iteration with runIter()
+## Step-by-step iteration with runIter()
 
 `graph.runIter()` returns a `GraphRun` object. Call `run.next()` repeatedly to advance one step at a time. Each step is either a `"node"` step (with `nodeId` and `state`) or an `"output"` step (with `output`).
 
@@ -149,7 +149,7 @@ const persistence = new MemoryStatePersistence<State>();
 const result = await graph.run(initialState, "fetch", { persistence, graphId: "test-run" });
 ```
 
-## API Reference
+## API reference
 
 | Symbol | Description |
 |--------|-------------|

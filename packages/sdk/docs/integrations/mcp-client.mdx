@@ -126,7 +126,7 @@ const toolset = new MCPToolset(client, {
 | `getServerInstructions()` | Returns the server's instruction text, if any |
 | `invalidateCache()` | Forces the next `tools()` call to re-fetch from the server |
 
-## MCPManager - Multiple Servers
+## MCPManager - multiple servers
 
 When your agent needs tools from more than one MCP server, use `MCPManager`. It collects multiple `MCPToolset` instances, connects them all at once, and merges their tool lists. Because `MCPManager` implements `Toolset`, you pass it directly to the agent - no extra wrapping needed.
 
@@ -192,7 +192,7 @@ const manager = new MCPManager()
 | `getServerInstructions()` | Aggregated instructions, prefixed with `[name]` if server was named |
 | `serverCount` | Number of registered servers |
 
-## Config File Loading
+## Config file loading
 
 For production deployments, store your MCP server configuration in a JSON file and load it at startup using `createManagerFromConfig`. This returns a fully connected `MCPManager` ready to pass to your agent.
 
@@ -259,7 +259,7 @@ for (const client of clients) {
 await manager.connect();
 ```
 
-## Lifecycle: Connect and Disconnect
+## Lifecycle: connect and disconnect
 
 <Warning>
 Always call `connect()` before using a client or manager. Failing to connect will cause tool calls to fail silently or throw.
@@ -284,7 +284,7 @@ try {
 }
 ```
 
-## API Reference
+## API reference
 
 ### MCPStdioClient
 

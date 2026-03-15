@@ -7,7 +7,7 @@ Tools are the primary way agents take actions - searching databases, calling API
 
 Vibes provides four tool factories for different use cases: `tool()` (with dependency injection), `plainTool()` (no context), `outputTool()` (terminal - ends the run), and `fromSchema()` (raw JSON Schema instead of Zod).
 
-## Tool Execution Pipeline
+## Tool execution pipeline
 
 ```mermaid
 flowchart TD
@@ -25,7 +25,7 @@ flowchart TD
     K --> L[Continue to Next Turn]
 ```
 
-## tool() - Tools with Dependencies
+## tool() - tools with dependencies
 
 `tool<TDeps>()` is the full-featured factory. The `execute` function receives a `RunContext<TDeps>` as its first argument, giving it access to injected deps, token usage, the current run ID, and more.
 
@@ -50,7 +50,7 @@ const search = tool<Deps>({
 });
 ```
 
-## plainTool() - Simple Tools
+## plainTool() - simple tools
 
 `plainTool()` is a simpler factory for tools with no side effects and no dependency injection requirements. The `execute` function receives only the validated args - no `RunContext`.
 
@@ -68,7 +68,7 @@ const add = plainTool({
 
 Use `plainTool` when your tool is a pure function: math, formatting, text transformation, or any computation that doesn't need external resources.
 
-## outputTool() - Terminal Tools
+## outputTool() - terminal tools
 
 `outputTool()` creates a tool that ends the run. When the model calls it, the tool's return value becomes the agent's final output and no further turns occur. Use this with `outputMode: 'tool'` for structured output that the model fills in via a tool call.
 
@@ -90,7 +90,7 @@ const agent = new Agent({
 });
 ```
 
-## fromSchema() - Raw JSON Schema Tools
+## fromSchema() - raw JSON schema tools
 
 `fromSchema()` builds a tool from a plain JSON Schema object instead of Zod. Use this when integrating with external schema registries, OpenAPI specs, or when Zod is overkill for a simple schema. Note: no TypeScript type inference is available for the args.
 
@@ -109,7 +109,7 @@ const legacy = fromSchema({
 });
 ```
 
-## Tool Options Reference
+## Tool options reference
 
 All options accepted by `tool()`:
 
@@ -125,7 +125,7 @@ All options accepted by `tool()`:
 | `sequential` | `boolean?` | no | When `true`, acquires a run-level mutex so this tool never runs concurrently |
 | `maxRetries` | `number?` | no | Max retries on execution failure (independent of result validation retries) |
 
-## prepare - Conditional Tool Availability
+## prepare - conditional tool availability
 
 The `prepare` function is called once per model turn before the tool list is sent to the model. Return `null` or `undefined` to exclude the tool from that turn's available set:
 
@@ -142,7 +142,7 @@ const search = tool<Deps>({
 
 You can also return a modified tool definition from `prepare` to dynamically change its description or parameters based on the current context.
 
-## Multi-modal Returns
+## Multi-modal returns
 
 Tool `execute` functions can return strings, plain objects, or multi-modal content (images and uploaded files). Vibes serializes the result into the message history automatically:
 

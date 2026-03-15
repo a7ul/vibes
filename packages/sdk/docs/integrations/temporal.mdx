@@ -9,7 +9,7 @@ description: "Run Vibes agents as durable, fault-tolerant workflows using Tempor
 
 [Temporal](https://temporal.io) is a durable execution platform that makes long-running workflows resilient to failures. When you run a Vibes agent through Temporal, every model call and tool invocation is automatically retried on failure, replayed correctly after crashes, and auditable through Temporal's history service. This makes Temporal the right choice for workflows that take minutes or hours, need guaranteed completion, or must survive process restarts.
 
-## How It Works
+## How it works
 
 ```mermaid
 sequenceDiagram
@@ -38,7 +38,7 @@ npm install @temporalio/worker @temporalio/workflow @temporalio/client
 
 The Vibes framework package (`@vibesjs/sdk`) provides `TemporalAgent` and `MockTemporalAgent`. No separate Temporal-specific Vibes package is needed.
 
-## TemporalAgent Setup
+## TemporalAgent setup
 
 ```typescript
 import { Agent, TemporalAgent } from "npm:@vibesjs/sdk";
@@ -76,7 +76,7 @@ const temporalAgent = new TemporalAgent(agent, {
 | `retryPolicy.initialInterval` | `string` | Initial retry delay |
 | `retryPolicy.backoffCoefficient` | `number` | Exponential backoff multiplier |
 
-## Worker Setup (Node.js Process)
+## Worker setup (Node.js process)
 
 The worker runs in a **Node.js** process. It registers `temporalAgent.activities` (a property) and a `workflowsPath` pointing to your workflow file.
 
@@ -115,7 +115,7 @@ Do NOT call them with parentheses - they are not functions:
 Adding `()` after either property causes a TypeError at runtime.
 </Warning>
 
-## Starting Workflows
+## Starting workflows
 
 Workflows are started via the Temporal client - there is no framework method for this. The client connects to the Temporal server and schedules execution on the worker's task queue.
 
@@ -171,7 +171,7 @@ If you're migrating from older Vibes documentation, the following APIs were docu
 5. `serializeAgentState` / `deserializeAgentState` - These exports do not exist. The correct names are `serializeRunState` and `deserializeRunState`.
 </Warning>
 
-## MockTemporalAgent (Testing)
+## MockTemporalAgent (testing)
 
 `MockTemporalAgent` runs the same agent logic as `TemporalAgent` but without a real Temporal server. It records activity history for assertions, supports deterministic replay, and works in Deno.
 
@@ -206,7 +206,7 @@ mock.reset();
 | `getActivityHistory()` | Returns `ReadonlyArray<ActivityHistoryEntry>` of all recorded activities |
 | `reset()` | Clears activity history and replay cache |
 
-### Testing Pattern
+### Testing pattern
 
 ```typescript
 import { assertEquals } from "@std/assert";
@@ -227,7 +227,7 @@ Deno.test("research agent completes successfully", async () => {
 });
 ```
 
-## Serialization Helpers
+## Serialization helpers
 
 When passing agent state through Temporal (which serializes all workflow arguments and results), you may need to convert between Vibes `ModelMessage` types and JSON-serializable formats.
 
@@ -252,7 +252,7 @@ const roundTripped = roundTripMessages(messages);  // ModelMessage[] → ModelMe
 The old docs used `serializeAgentState` and `deserializeAgentState` - these names do not exist. The correct exports are `serializeRunState` and `deserializeRunState`.
 </Warning>
 
-## API Reference
+## API reference
 
 ### TemporalAgent
 

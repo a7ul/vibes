@@ -7,7 +7,7 @@ Vibes provides two streaming APIs. `agent.stream()` is the simpler option: it re
 
 Use `agent.stream()` for most cases. Reach for `agent.runStreamEvents()` when you need full observability, custom progress indicators, or real-time tool call logging.
 
-## Streaming Event Timeline
+## Streaming event timeline
 
 ```mermaid
 sequenceDiagram
@@ -33,7 +33,7 @@ sequenceDiagram
     Agent-->>App: usage update
 ```
 
-## agent.stream() - Simple Streaming
+## agent.stream() - simple streaming
 
 `agent.stream()` returns a `StreamResult<TOutput>` immediately. The async iterables deliver data in real time; the promises resolve when the run completes.
 
@@ -68,7 +68,7 @@ for await (const partial of stream.partialOutput) {
 }
 ```
 
-## agent.runStreamEvents() - Event Stream
+## agent.runStreamEvents() - event stream
 
 `agent.runStreamEvents()` returns an `AsyncIterable<AgentStreamEvent<TOutput>>`. Switch on `event.kind` to handle each event type.
 
@@ -109,7 +109,7 @@ for await (const event of agent.runStreamEvents("What is 2 + 2?")) {
 The event discriminant is `event.kind`, not `event.type`. Always use `event.kind` when switching on stream events.
 </Warning>
 
-## AgentStreamEvent Reference
+## AgentStreamEvent reference
 
 | `event.kind` | Extra Fields | When Emitted |
 |-------------|-------------|--------------|
@@ -122,7 +122,7 @@ The event discriminant is `event.kind`, not `event.type`. Always use `event.kind
 | `"final-result"` | `output: TOutput` | Run completed successfully |
 | `"error"` | `error: unknown` | Unrecoverable error - stream ends |
 
-## When to Use Which
+## When to use which
 
 | Use Case | API |
 |----------|-----|
@@ -133,7 +133,7 @@ The event discriminant is `event.kind`, not `event.type`. Always use `event.kind
 | Log every turn and tool for debugging | `agent.runStreamEvents()` |
 | Persist new messages from this run | Either + `newMessages` |
 
-## StreamResult Interface
+## StreamResult interface
 
 For reference, the complete `StreamResult<TOutput>` interface:
 

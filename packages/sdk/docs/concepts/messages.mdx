@@ -5,7 +5,7 @@ description: Managing conversation context with result.messages and history proc
 
 Every agent run produces a list of `ModelMessage` objects. Passing these back into the next run continues the conversation, giving the model full context. History processors let you transform, trim, summarize, or filter messages before each turn - keeping context windows manageable without losing important history.
 
-## Multi-Turn Conversations
+## Multi-turn conversations
 
 ```mermaid
 sequenceDiagram
@@ -46,7 +46,7 @@ console.log(second.newMessages);  // only messages added in this run
 
 `result.messages` contains the **full** conversation history (including prior turns). `result.newMessages` contains only the messages added during this specific run - useful for storing incremental updates.
 
-## Message Serialization
+## Message serialization
 
 To persist conversation history across sessions, serialize messages to JSON and restore them later.
 
@@ -68,7 +68,7 @@ const next = await agent.run("What did we discuss?", {
 
 `serializeMessages` encodes `ModelMessage[]` to a JSON string. `deserializeMessages` is the inverse: it parses and validates the JSON, returning a typed `ModelMessage[]`.
 
-## History Processors
+## History processors
 
 `historyProcessors` run before each turn and receive the accumulated message history. They return a (possibly modified) message list that is sent to the model. Use them to keep context windows affordable without losing important history.
 
@@ -153,7 +153,7 @@ The two rule types:
 Do not use `{ type: "regex", redactValue: ... }` - that shape is incorrect. The actual `PrivacyRule` union uses `pattern` for regex rules with no `type` key.
 </Warning>
 
-## Custom History Processors
+## Custom history processors
 
 A history processor is any function that takes `(messages: ModelMessage[], ctx: RunContext<TDeps>)` and returns a `ModelMessage[]`.
 

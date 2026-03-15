@@ -5,7 +5,7 @@ description: Gate sensitive tool execution behind human approval with requiresAp
 
 Human-in-the-loop (HITL) lets you pause an agent run before a sensitive tool executes, ask a human for approval, then resume the run with the decision. Use it whenever an action is irreversible, high-risk, or requires accountability - deleting records, sending emails, making purchases, or executing code on behalf of a user.
 
-## Approval Flow
+## Approval flow
 
 ```mermaid
 sequenceDiagram
@@ -158,7 +158,7 @@ Use `requiresApproval: true` on `tool()` when you have a Zod schema and a server
 Use `ExternalToolset` when tool execution happens client-side/externally and you have a raw JSON Schema instead of Zod. `ExternalToolset` sets `requiresApproval: true` automatically.
 </Info>
 
-## Approving with Modified Args
+## Approving with modified args
 
 To re-run a tool with different arguments (for example, letting a human correct a filename before proceeding), provide `argsOverride` instead of `result` in the resume results:
 
@@ -178,7 +178,7 @@ const finalResult = await agent.resume(deferred, results);
 
 When `argsOverride` is present, the framework re-invokes the tool's `execute` function with the new arguments. When `result` is present, the framework injects it directly as the tool result without calling `execute`.
 
-## API Reference
+## API reference
 
 | Symbol | Type | Description |
 |--------|------|-------------|

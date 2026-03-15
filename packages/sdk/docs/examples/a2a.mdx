@@ -5,7 +5,7 @@ description: Two agents communicating via Google's A2A protocol - a research age
 
 This example shows two agents communicating via [Google's A2A protocol](https://google.github.io/A2A). The server wraps a Vibes agent with `A2AAdapter`, exposing it as a JSON-RPC HTTP server. The client uses plain `fetch()` to send a task - showing the wire format every A2A client must produce.
 
-## What You'll Learn
+## What you'll learn
 
 - Wrapping a Vibes agent with `A2AAdapter`
 - Exposing an agent as an A2A-compatible HTTP server with `adapter.handler()`
@@ -84,7 +84,7 @@ ANTHROPIC_API_KEY=your-key deno run --allow-net --allow-env server.ts
 deno run --allow-net --allow-env client.ts
 ```
 
-## How It Works
+## How it works
 
 ### `A2AAdapter`
 
@@ -106,7 +106,7 @@ The result is an `A2ATask` object. Text responses are in `result.artifacts[0].pa
 The client uses plain `fetch()` intentionally - this is the A2A wire protocol that any A2A-compatible client must produce. In production, you would typically use an A2A client SDK or another Vibes agent as the caller.
 </Info>
 
-## Next Steps
+## Next steps
 
 - [A2A integration page](/integrations/a2a) - streaming (message/stream), task cancellation, MemoryTaskStore
 - [Multi-Agent concept page](/concepts/multi-agent) - agent-as-tool pattern (simpler, same process)

@@ -5,7 +5,7 @@ description: End-to-end deferred tool approval - the agent pauses when it needs 
 
 This example shows the full human-in-the-loop approval cycle. An email-sending tool is marked `requiresApproval: true`. When the agent tries to call it, Vibes throws `ApprovalRequiredError` instead of executing the tool. Your code inspects the pending tool calls, approves them (or rejects), and resumes the agent with `agent.resume()`.
 
-## What You'll Learn
+## What you'll learn
 
 - Marking tools with `requiresApproval: true`
 - Catching `ApprovalRequiredError` and inspecting pending requests
@@ -106,7 +106,7 @@ Decision: APPROVED
 Final response: I've sent a welcome email to alice@example.com.
 ```
 
-## How It Works
+## How it works
 
 ### `requiresApproval: true`
 
@@ -124,6 +124,6 @@ Continues the agent from the pause point. `results` must contain one entry per r
 
 To reject a tool call, pass a `result` string indicating rejection. The model receives this as the tool result and can respond accordingly (e.g., "I couldn't send the email because it was rejected.").
 
-## Next Steps
+## Next steps
 
 - [Human-in-the-Loop concept page](/concepts/human-in-the-loop) - ExternalToolset, DeferredToolRequests type details

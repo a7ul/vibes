@@ -77,7 +77,7 @@ Cases
 
 ---
 
-## Dataset and Case
+## Dataset and case
 
 A **Dataset** is an immutable collection of **Cases**. Each Case has:
 
@@ -89,7 +89,7 @@ A **Dataset** is an immutable collection of **Cases**. Each Case has:
 | `metadata`       | `Record<string, unknown>`  | No       | Arbitrary metadata attached to this case         |
 | `evaluators`     | `Evaluator[]`              | No       | Per-case evaluators (added to dataset evaluators)|
 
-### Creating Datasets
+### Creating datasets
 
 ```typescript
 // From an array
@@ -106,7 +106,7 @@ const ds = await Dataset.fromFile<string, string>("./cases.json");
 const ds = Dataset.fromText<string, string>(text, "json");
 ```
 
-### Immutable Transformations
+### Immutable transformations
 
 ```typescript
 // Filter cases (returns a new Dataset)
@@ -136,11 +136,11 @@ await ds.toFile("./cases.json");
 
 ---
 
-## Built-in Evaluators
+## Built-in evaluators
 
 All built-in evaluators implement the `Evaluator` interface and return an `EvalScore`.
 
-### Case-Level Evaluators
+### Case-level evaluators
 
 | Evaluator        | Description                                              | Score type |
 | ---------------- | -------------------------------------------------------- | ---------- |
@@ -193,7 +193,7 @@ interface EvalScore {
 
 ---
 
-## LLM-as-Judge
+## LLM-as-judge
 
 For subjective qualities (helpfulness, accuracy, tone), use an LLM as the evaluator.
 
@@ -213,7 +213,7 @@ const ev = llmJudge({
 });
 ```
 
-### Helper Functions
+### Helper functions
 
 For one-off judge calls (outside of a dataset):
 
@@ -233,7 +233,7 @@ const score = await judgeInputOutputExpected(input, output, expected, "Correct?"
 
 ---
 
-## Custom Evaluators
+## Custom evaluators
 
 Implement the `Evaluator` interface for full control:
 
@@ -264,7 +264,7 @@ const ev = custom("word-count", (ctx) => ({
 }));
 ```
 
-### Accessing Context
+### Accessing context
 
 The `EvaluatorContext` gives evaluators access to:
 
@@ -284,7 +284,7 @@ ctx.incrementEvalMetric("tokens-checked", 42);
 
 ---
 
-## Report-Level Evaluators
+## Report-level evaluators
 
 Report evaluators run once after all cases complete and receive the full `CaseResult[]` array. Use them for aggregate metrics.
 
@@ -320,7 +320,7 @@ const ds = Dataset.fromArray(cases, {
 
 ---
 
-## Experiment Runner
+## Experiment runner
 
 Use `Dataset.evaluate()` as your primary API. The `runExperiment()` function is a thin wrapper for cases where you want to merge extra evaluators at call time:
 
@@ -337,7 +337,7 @@ const result = await runExperiment({
 });
 ```
 
-### Evaluate Options
+### Evaluate options
 
 | Option           | Type     | Default | Description                                 |
 | ---------------- | -------- | ------- | ------------------------------------------- |
@@ -347,7 +347,7 @@ const result = await runExperiment({
 
 ---
 
-## Span-Based Evaluation
+## Span-based evaluation
 
 When your task function captures OTel spans, you can evaluate them with `hasMatchingSpan`:
 
@@ -371,7 +371,7 @@ const callCount = tree.count((n) => n.name === "tool-call");
 
 ---
 
-## Dataset Generation
+## Dataset generation
 
 Use an LLM to generate test cases automatically:
 
@@ -393,7 +393,7 @@ const ds = await generateDataset({
 
 ---
 
-## Eval Pipeline
+## Eval pipeline
 
 ```mermaid
 flowchart LR
@@ -404,7 +404,7 @@ flowchart LR
   R --> |ExperimentResult| F[formatReport]
 ```
 
-## Concurrency Flow
+## Concurrency flow
 
 ```mermaid
 flowchart TD

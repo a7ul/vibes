@@ -19,19 +19,17 @@ Every tool parameter is defined with a Zod schema. Every structured output is de
 
 Vibes uses Vercel AI SDK as its model layer. Switching from Anthropic to OpenAI to a local Ollama instance is a one-line change. You never write provider-specific code in your agent logic.
 
-### Test-first design
+### Testing + Evals - the only way to ship AI to production
 
-`TestModel`, `FunctionModel`, `agent.override()`, and `setAllowModelRequests(false)` are first-class exports, not afterthoughts. Every agent you write is testable without real API calls, from the first line.
+Shipping an agent is easy. Knowing whether it got better or worse after a change is hard. Vibes treats testing and evals as a single discipline, not two separate afterthoughts.
 
-### Robust evaluations
-
-Shipping an agent is easy. Knowing whether it got better or worse after a change is hard. Vibes ships a full [evaluation framework](/concepts/evals): define typed datasets, score outputs with built-in scorers or an LLM-as-judge, and run experiments with configurable concurrency and retries. Evals are code - they live in your repo, run in CI, and give you a quantitative signal every time you change a prompt, swap a model, or refactor a tool.
+Unit-test every agent in CI with `TestModel`, `FunctionModel`, `agent.override()`, and `setAllowModelRequests(false)` - no real API calls required, from the first line. Then go further with the full [evaluation framework](/concepts/evals): define typed datasets, score outputs with built-in scorers or an LLM-as-judge, and run experiments with configurable concurrency and retries. Evals are code - they live in your repo, run in CI, and give you a quantitative signal every time you change a prompt, swap a model, or refactor a tool.
 
 ### Progressive complexity
 
 Start with 5 lines. Add tools. Add structured output. Add dependency injection. Add streaming. Each layer is opt-in. You only pay - in code complexity - for what you use.
 
-## Standing on the Shoulders of Giants
+## Standing on the shoulders of giants
 
 ### Pydantic AI
 
@@ -51,7 +49,7 @@ If you're familiar with Pydantic AI, you'll feel at home in Vibes immediately. M
 
 Vibes uses Vercel AI SDK as its model layer. Every `Agent` accepts a `LanguageModel` from the AI SDK, which means you get access to Anthropic, OpenAI, Google, Groq, Mistral, Ollama, and dozens more providers through a single unified interface. Vibes does not maintain its own provider integrations - the AI SDK does that work, and does it well.
 
-## How Vibes Compares
+## How Vibes compares
 
 Vibes mirrors Pydantic AI closely. If you're porting a Python agent, most concepts transfer directly.
 
@@ -71,7 +69,7 @@ Vibes mirrors Pydantic AI closely. If you're porting a Python agent, most concep
 
 See [Feature Parity](/reference/features) for the full comparison.
 
-## Next Steps
+## Next steps
 
 <CardGroup cols={2}>
   <Card title="Install" href="/getting-started/install" icon="download">

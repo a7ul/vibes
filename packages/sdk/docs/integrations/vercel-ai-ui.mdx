@@ -5,7 +5,7 @@ description: "Stream Vibes agent output to React frontends using Vercel AI SDK's
 
 [Vercel AI UI](https://sdk.vercel.ai/docs/ai-sdk-ui) provides React hooks - `useChat` and `useCompletion` - that handle streaming text responses, message history, and loading states out of the box. There is no dedicated Vibes framework class for this integration. The pattern is straightforward: run your Vibes agent with `agent.stream()`, pipe the output through `toDataStreamResponse()` from the `ai` package, and the Vercel AI hooks connect to it automatically.
 
-## How Streaming Works
+## How streaming works
 
 ```mermaid
 sequenceDiagram
@@ -22,7 +22,7 @@ sequenceDiagram
 
 `toDataStreamResponse()` converts a `textStream` into the Vercel AI data stream protocol. The `useChat` and `useCompletion` hooks on the frontend understand this protocol natively.
 
-## API Route
+## API route
 
 ### Next.js App Router
 
@@ -45,7 +45,7 @@ export async function POST(req: Request) {
 
 The `messages` array follows Vercel AI SDK's message format (each message has `role` and `content` fields). `agent.stream()` accepts a prompt string and optional `messageHistory` to continue multi-turn conversations.
 
-### Deno Server
+### Deno server
 
 For non-Next.js setups or Deno-native deployments:
 
@@ -73,7 +73,7 @@ Deno.serve(async (req: Request) => {
 The `ai` package (v6) is already a dependency in `deno.json` - no separate install is needed for Deno projects. For Next.js, install with `npm install ai`.
 </Info>
 
-## React Frontend
+## React frontend
 
 ### useChat
 
@@ -167,7 +167,7 @@ export async function POST(req: Request) {
 }
 ```
 
-## Structured Output
+## Structured output
 
 If your agent uses `outputSchema` (structured JSON output), use `result.partialOutput` instead of `result.textStream`. The `partialOutput` stream emits incremental JSON chunks as the schema is filled in.
 
@@ -187,7 +187,7 @@ export async function POST(req: Request) {
 }
 ```
 
-## Complete Example
+## Complete example
 
 A minimal full-stack chat application:
 
@@ -245,7 +245,7 @@ export default function Page() {
 }
 ```
 
-## API Reference
+## API reference
 
 ### Key Functions
 

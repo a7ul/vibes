@@ -5,7 +5,7 @@ description: A multi-turn chat application connecting a Vibes streaming agent to
 
 This example shows a full-stack chat application: a Vibes streaming agent on the backend, connected to a React frontend using Vercel AI UI's `useChat` hook. Messages persist across turns using Vibes' built-in message history.
 
-## What You'll Learn
+## What you'll learn
 
 - `agent.stream()` for streaming responses
 - `toDataStreamResponse()` to convert streams to Vercel AI data protocol
@@ -114,7 +114,7 @@ deno run --allow-net --allow-env server.ts
 npm run dev
 ```
 
-## How It Works
+## How it works
 
 **`agent.stream()`**: Returns a result with `textStream` (async iterable of string chunks), `partialOutput`, and accumulated `messages`.
 
@@ -124,7 +124,7 @@ npm run dev
 
 **`useChat`**: Manages message state, sends POST requests to your API route, and streams tokens into the UI automatically. No manual state management needed.
 
-## Next Steps
+## Next steps
 
 - [Vercel AI UI integration](/integrations/vercel-ai-ui) — structured output streaming, `useCompletion`
 - [Messages concept page](/concepts/messages) — `serializeMessages`, history processors

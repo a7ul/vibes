@@ -5,7 +5,7 @@ description: "Install Vibes Agent Framework and configure your AI provider in un
 
 Vibes runs on Deno and Node.js. Install the framework, pick a provider, set your API key, and you're ready to build agents.
 
-## Install the Framework
+## Install the framework
 
 <Tabs>
   <Tab title="Deno">
@@ -59,7 +59,7 @@ Vibes runs on Deno and Node.js. Install the framework, pick a provider, set your
   </Tab>
 </Tabs>
 
-## How It Fits Together
+## How it fits together
 
 Vibes is a thin orchestration layer over the Vercel AI SDK. You install Vibes once and choose any supported AI provider separately.
 
@@ -77,7 +77,7 @@ graph LR
     end
 ```
 
-## Choose a Provider
+## Choose a provider
 
 Install the provider package that matches your preferred AI service:
 
@@ -95,7 +95,7 @@ Install the provider package that matches your preferred AI service:
   These 7 are the most popular choices. Vibes supports 50+ providers via the Vercel AI SDK - see the [full provider list](https://sdk.vercel.ai/providers/ai-sdk-providers).
 </Tip>
 
-## Set Your API Key
+## Set your API key
 
 Export your provider's API key as an environment variable before running your agent:
 
@@ -107,7 +107,7 @@ export ANTHROPIC_API_KEY="sk-ant-..."
   Never commit API keys to source control. Use a `.env` file locally and your deployment platform's secret management in production.
 </Note>
 
-## Verify the Install
+## Verify the install
 
 Create `hello.ts` and run it to confirm everything is working:
 
@@ -138,7 +138,7 @@ console.log(result.output);
   </Tab>
 </Tabs>
 
-## Agent Skill (Claude Code)
+## Agent skill (Claude Code)
 
 If you use Claude Code, install the `@vibesjs/sdk` agent skill so your coding assistant can write idiomatic framework code without looking up docs:
 
@@ -148,7 +148,7 @@ mkdir -p .claude/agents && curl -fsSL https://raw.githubusercontent.com/a7ul/vib
 
 See the [Agent Skill](/meta/agent-skill) page for global install, manual setup, and details on how it works.
 
-## Next Steps
+## Next steps
 
 <CardGroup cols={2}>
   <Card title="Hello World Tutorial" icon="rocket" href="/getting-started/hello-world">

@@ -7,7 +7,7 @@ Vibes provides two ways to add OpenTelemetry tracing to your agents. `instrument
 
 Use `instrumentAgent()` when you want to add tracing to an agent you didn't define (a shared utility, a library agent). Use inline telemetry when you own the agent and prefer to configure tracing at construction time.
 
-## OTel Span Hierarchy
+## OTel span hierarchy
 
 ```mermaid
 flowchart TD
@@ -59,7 +59,7 @@ for await (const event of instrumented.runStreamEvents("Hello")) { ... }
 
 `instrumentAgent()` uses `agent.override()` internally - it never mutates the original agent and is safe to reuse across requests.
 
-## Inline Telemetry on AgentOptions
+## Inline telemetry on AgentOptions
 
 Configure telemetry directly on the agent constructor using the `telemetry` option. `TelemetrySettings` is the Vercel AI SDK type:
 
@@ -81,7 +81,7 @@ const agent = new Agent({
 
 The `telemetry` field accepts the same `TelemetrySettings` shape that the Vercel AI SDK accepts on `generateText`. All span creation is handled by the AI SDK.
 
-## Content Exclusion for GDPR
+## Content exclusion for GDPR
 
 When you need to trace agent execution without recording the content of prompts or model outputs (for GDPR, PII, or compliance reasons), set `excludeContent: true` on `instrumentAgent`:
 
@@ -95,7 +95,7 @@ const instrumented = instrumentAgent(myAgent, {
 
 With `excludeContent: true`, spans are still created for every turn and tool call - you retain execution structure, latency, and token counts - but the actual text content is omitted from span attributes.
 
-## What Spans Are Created
+## What spans are created
 
 Vibes delegates span creation entirely to the Vercel AI SDK's `experimental_telemetry`. The framework passes your `TelemetrySettings` or `InstrumentationOptions` through to each `generateText` call.
 
@@ -107,7 +107,7 @@ What the AI SDK creates per agent run:
 Vibes does not create custom spans. All span naming follows the Vercel AI SDK telemetry convention. Consult the [Vercel AI SDK telemetry docs](https://sdk.vercel.ai/docs/ai-sdk-core/telemetry) for current span names and attribute schemas.
 </Note>
 
-## API Reference
+## API reference
 
 | Symbol | Type | Description |
 |--------|------|-------------|

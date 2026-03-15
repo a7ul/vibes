@@ -5,7 +5,7 @@ description: Retrieval-augmented generation using a Vibes tool for vector search
 
 RAG in Vibes is a tool pattern: the agent calls a retrieval tool that searches a knowledge base, then uses the retrieved context to answer the question. This example uses an in-memory mock — replace `vectorSearch()` with your actual vector DB client.
 
-## What You'll Learn
+## What you'll learn
 
 - Using `plainTool()` for tools without dependency injection
 - Passing retrieved context to the model via tool results
@@ -99,7 +99,7 @@ console.log(result.output);
 deno run --allow-net --allow-env rag.ts
 ```
 
-## How It Works
+## How it works
 
 **`plainTool()`**: A simpler variant of `tool()` — no `RunContext`, the execute function receives args directly. Use `plainTool()` when your tool doesn't need access to deps. Use `tool()` (or `tool<TDeps>()`) when it does.
 
@@ -111,7 +111,7 @@ deno run --allow-net --allow-env rag.ts
 The retrieval quality in this example is intentionally minimal (keyword overlap). A real RAG system uses embedding-based semantic search. The Vibes pattern — tool calls retriever, model uses results — is identical.
 </Info>
 
-## Next Steps
+## Next steps
 
 - [Tools concept page](/concepts/tools) — `plainTool`, `tool`, `fromSchema`
 - [Dependencies concept page](/concepts/dependencies) — for injecting DB clients into tools

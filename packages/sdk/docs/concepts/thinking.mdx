@@ -11,7 +11,7 @@ Use extended reasoning for complex multi-step problems, mathematical reasoning, 
 Vibes does not have a dedicated thinking API. Extended reasoning is configured at the model constructor level using provider-specific options from the Vercel AI SDK. The framework passes these options through automatically.
 </Info>
 
-## Anthropic Extended Thinking
+## Anthropic extended thinking
 
 Pass a `thinking` option directly to the `anthropic()` model constructor. Set `budgetTokens` to the maximum number of tokens the model can use for internal reasoning.
 
@@ -40,7 +40,7 @@ console.log(result.output);
 `maxTokens` in `modelSettings` must be greater than `thinking.budgetTokens`. If `maxTokens` is too low, the API will return an error. For example, if `budgetTokens` is 10000, set `maxTokens` to at least 12000–16000 to leave room for the final response.
 </Warning>
 
-## Google Extended Thinking
+## Google extended thinking
 
 Some Gemini models enable extended reasoning by model selection - simply choosing a "thinking" model variant is sufficient. No additional configuration is required.
 
@@ -61,7 +61,7 @@ console.log(result.output);
 
 For other Gemini models that support configurable thinking, use the `@ai-sdk/google` provider's constructor options in the same pattern as Anthropic.
 
-## Why Is Thinking Not on AgentOptions?
+## Why is thinking not on AgentOptions?
 
 The framework's `ModelSettings` maps to Vercel AI SDK's top-level `generateText` options - fields like `maxTokens`, `temperature`, and `topP`. These are standard options supported by all providers.
 
@@ -71,7 +71,7 @@ This means:
 - **Correct:** configure thinking on the model constructor: `anthropic("model", { thinking: ... })`
 - **Incorrect:** look for a `thinking` key on `AgentOptions` or `modelSettings` - it does not exist
 
-## API Reference
+## API reference
 
 | Configuration | Location | Notes |
 |---------------|----------|-------|

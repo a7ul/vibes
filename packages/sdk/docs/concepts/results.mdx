@@ -5,7 +5,7 @@ description: Agent runs return RunResult or StreamResult, carrying the typed out
 
 `agent.run()` returns a `RunResult<TOutput>` once the run completes. `agent.stream()` and `agent.runStreamEvents()` return a `StreamResult<TOutput>` immediately and resolve the final values lazily. Both carry the structured output, complete message history, new messages added in this run, and token usage.
 
-## Output Modes
+## Output modes
 
 When you set `outputSchema`, Vibes has three strategies for requesting structured output from the model:
 
@@ -26,7 +26,7 @@ flowchart TD
 | `'native'` | Uses the provider's native JSON mode (e.g. OpenAI `response_format`) | Providers with built-in JSON mode support |
 | `'prompted'` | Schema description is injected into the system prompt as text; model formats the response | Providers without tool or JSON mode support |
 
-## Structured Output with outputSchema
+## Structured output with outputSchema
 
 Define a Zod schema and the agent will parse the model's response and return it as a typed value.
 
@@ -52,7 +52,7 @@ console.log(result.output.confidence);  // 0.99
 
 `result.output` is fully typed as `{ answer: string; confidence: number }`.
 
-## Output Modes
+## Output modes
 
 ```typescript
 const agent = new Agent({
@@ -69,7 +69,7 @@ const agent = new Agent({
 `outputTemplate` is a boolean, not a string. Setting `outputTemplate: true` (the default) tells Vibes to inject the JSON schema description into the system prompt. You cannot customize the injected text.
 </Warning>
 
-## Union Types as outputSchema
+## Union types as outputSchema
 
 Pass an array of Zod schemas to let the model choose which one applies. This is useful for agents that can return different structured shapes depending on the task.
 
@@ -88,7 +88,7 @@ const agent = new Agent<undefined, z.infer<typeof AgentOutput>>({
 });
 ```
 
-## Result Validators
+## Result validators
 
 `resultValidators` are post-parse validation functions that run after Vibes parses the output. Throw an error to reject the output and trigger a retry.
 
@@ -109,7 +109,7 @@ const agent = new Agent<undefined, z.infer<typeof Schema>>({
 
 `maxRetries` controls how many times the agent retries on validation failure before throwing `MaxRetriesError`.
 
-## RunResult Interface
+## RunResult interface
 
 `agent.run()` resolves to a `RunResult<TOutput>`:
 
@@ -129,7 +129,7 @@ console.log(result.newMessages);  // messages from this run only
 console.log(result.usage);        // { promptTokens, completionTokens, totalTokens }
 ```
 
-## StreamResult Interface
+## StreamResult interface
 
 `agent.stream()` returns a `StreamResult<TOutput>` immediately. Consume the async iterables first, then await the promises.
 

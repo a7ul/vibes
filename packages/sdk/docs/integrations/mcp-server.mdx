@@ -9,7 +9,7 @@ When you expose a Vibes agent as an MCP server, any MCP-compatible client can di
 Vibes does not yet include a built-in MCP server class. This page shows how to use [`@modelcontextprotocol/sdk`](https://github.com/modelcontextprotocol/typescript-sdk) directly to wrap a Vibes agent and serve it over stdio or HTTP.
 </Info>
 
-## How It Works
+## How it works
 
 ```mermaid
 sequenceDiagram
@@ -36,7 +36,7 @@ npm install @modelcontextprotocol/sdk
 
 The package is already a dependency in the default `deno.json` when using Vibes in a Deno project.
 
-## Stdio Transport
+## Stdio transport
 
 Stdio transport is the standard choice for Claude Desktop and other desktop AI apps. The client launches your server as a subprocess and communicates over stdin/stdout.
 
@@ -79,7 +79,7 @@ const transport = new StdioServerTransport();
 await server.connect(transport);
 ```
 
-### Claude Desktop Configuration
+### Claude Desktop configuration
 
 Add the server to `~/Library/Application Support/Claude/claude_desktop_config.json`:
 
@@ -96,7 +96,7 @@ Add the server to `~/Library/Application Support/Claude/claude_desktop_config.js
 
 After restarting Claude Desktop, your agent appears as an available tool.
 
-## HTTP/SSE Transport
+## HTTP/SSE transport
 
 Use `StreamableHTTPServerTransport` for remote access over HTTP. This lets any HTTP client - including other Vibes agents using `MCPHttpClient` - call your server.
 
@@ -151,7 +151,7 @@ const toolset = new MCPToolset(client);
 // Use toolset in another agent...
 ```
 
-## Registering Agent Capabilities as Tools
+## Registering agent capabilities as tools
 
 You can expose multiple tools, each mapping to a different agent behavior:
 
@@ -185,7 +185,7 @@ server.tool(
 );
 ```
 
-## With Dependencies
+## With dependencies
 
 If your agent requires dependencies (database access, authenticated clients, etc.), create them at server startup and close them on shutdown:
 
@@ -208,7 +208,7 @@ globalThis.addEventListener("unload", async () => {
 });
 ```
 
-## Further Reading
+## Further reading
 
 - [MCP SDK documentation](https://modelcontextprotocol.io/docs/sdk) - full reference for `McpServer`, tool schemas, transports, and capabilities
 - [MCP Client](/integrations/mcp-client) - how to consume MCP servers from a Vibes agent
