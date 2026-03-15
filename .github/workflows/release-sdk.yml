@@ -36,8 +36,7 @@ jobs:
         run: |
           VERSION="${{ steps.version.outputs.version }}"
           cd packages/sdk
-          cat deno.json | sed "s/\"version\": \".*\"/\"version\": \"$VERSION\"/" > deno.json.tmp
-          mv deno.json.tmp deno.json
+          jq --arg v "$VERSION" '.version = $v' deno.json > deno.json.tmp && mv deno.json.tmp deno.json
           echo "Updated packages/sdk/deno.json to $VERSION"
           cat deno.json
 
