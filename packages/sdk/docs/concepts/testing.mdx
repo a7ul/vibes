@@ -5,7 +5,7 @@ description: Fast, deterministic agent tests with TestModel, FunctionModel, and 
 
 Testing agents correctly means running them without real model API calls, in a way that's fast and deterministic. Vibes provides two main options: `TestModel` auto-generates plausible tool calls and a final response on every run; `FunctionModel` gives you full per-turn control so you can simulate exact model behavior. Both integrate with `agent.override({ model })` to drop in a test model without changing your agent definition.
 
-## Preventing Accidental API Calls
+## Preventing accidental API calls
 
 Call `setAllowModelRequests(false)` once at the top of your test file to raise an error if any agent accidentally reaches the real model API. This guards against tests that forget to use a test model.
 
@@ -66,7 +66,7 @@ const typedResult = await agent.override({ model: typedModel }).run("Hello");
 
 `createTestModel({ outputSchema })` is a convenience factory equivalent to `new TestModel({ outputSchema })`.
 
-## FunctionModel - Per-Turn Control
+## FunctionModel - per-turn control
 
 When you need precise control over what the model returns on each turn, use `FunctionModel`. Its constructor takes a function that receives `{ messages, tools, turn }` and returns a `ModelResponse`.
 
@@ -152,7 +152,7 @@ for await (const event of runner.runStreamEvents("Hello")) { ... }
 
 The `override` call bypasses the `setAllowModelRequests(false)` guard automatically, so your test models always work even when real API calls are blocked.
 
-## API Reference
+## API reference
 
 | Symbol | Signature | Description |
 |--------|-----------|-------------|

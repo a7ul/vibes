@@ -15,7 +15,7 @@ import {
 } from "@vibesjs/sdk";
 ```
 
-## Error Taxonomy
+## Error taxonomy
 
 ```mermaid
 graph TD
@@ -214,7 +214,7 @@ try {
 
 ---
 
-## Provider and Network Errors
+## Provider and network errors
 
 All other errors during a model call come from the Vercel AI SDK and pass through the agent loop unmodified. The most common are `APICallError` (4xx/5xx from the provider) and rate-limit errors.
 
@@ -235,7 +235,7 @@ Refer to the [Vercel AI SDK error documentation](https://sdk.vercel.ai/docs/refe
 
 ---
 
-## Complete Error Handler
+## Complete error handler
 
 A production-ready pattern that handles all five Vibes error types plus provider errors:
 
@@ -290,7 +290,7 @@ async function runWithRecovery(prompt: string) {
 
 ---
 
-## ApprovalRequiredError Recovery Sequence
+## ApprovalRequiredError recovery sequence
 
 ```mermaid
 sequenceDiagram

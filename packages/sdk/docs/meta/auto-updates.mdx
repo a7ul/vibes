@@ -9,7 +9,7 @@ Vibes is deliberately modeled on [Pydantic AI](https://ai.pydantic.dev). As Pyda
 
 This process is automated.
 
-## The Update Pipeline
+## The update pipeline
 
 A GitHub Actions workflow runs every day at 9am UTC. It checks whether a new version of `pydantic-ai` has been published to PyPI. If one has, and no tracking issue or PR already exists for that version, it:
 
@@ -22,7 +22,7 @@ A GitHub Actions workflow runs every day at 9am UTC. It checks whether a new ver
 
 The Copilot agent's output is always reviewed by a human before merging. It handles straightforward ports well; complex architectural changes go through a full design review.
 
-## What Gets Ported
+## What gets ported
 
 Not everything in a Pydantic AI release is relevant to Vibes. The porting guide categorises each change as:
 
@@ -36,7 +36,7 @@ Not everything in a Pydantic AI release is relevant to Vibes. The porting guide 
 
 The [Feature Parity](/reference/features) table is updated with every porting cycle to reflect current status.
 
-## What Gets Skipped
+## What gets skipped
 
 Some Pydantic AI features have no direct TypeScript equivalent and are intentionally not ported:
 
@@ -46,7 +46,7 @@ Some Pydantic AI features have no direct TypeScript equivalent and are intention
 
 These are documented in the Feature Parity table as "Not implemented — skipped by design".
 
-## The Porting Guide
+## The porting guide
 
 The file `.claude/vibes-pydantic-porting.md` in this repository is the canonical reference for how Pydantic AI Python concepts map to Vibes TypeScript equivalents. It covers:
 
@@ -59,7 +59,7 @@ The file `.claude/vibes-pydantic-porting.md` in this repository is the canonical
 
 The Copilot agent and human contributors both use this document when implementing a port.
 
-## Tracking a Specific Release
+## Tracking a specific release
 
 The currently tracked version of Pydantic AI is stored in `.github/pydantic-ai-version.txt`. To check what version Vibes is currently aligned with:
 
@@ -69,6 +69,6 @@ cat .github/pydantic-ai-version.txt
 
 To see the full history of porting work, filter GitHub Issues by the [`pydantic-ai-update`](https://github.com/a7ul/vibes/issues?q=label%3Apydantic-ai-update) label.
 
-## Running the Workflow Manually
+## Running the workflow manually
 
 The workflow can be triggered manually from the [Actions tab](https://github.com/a7ul/vibes/actions/workflows/pydantic-ai-update.yml) using the **Run workflow** button. This is useful after a manual version bump or to re-run a failed cycle.

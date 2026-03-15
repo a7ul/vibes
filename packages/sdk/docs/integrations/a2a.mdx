@@ -68,7 +68,7 @@ const adapter = new A2AAdapter(agent, {
 | `deps` | `TDeps` | - | Static dependencies for every agent run |
 | `taskStore` | `TaskStore` | `MemoryTaskStore` | Task persistence backend |
 
-### Deno HTTP Server
+### Deno HTTP server
 
 ```typescript
 Deno.serve(adapter.handler());
@@ -78,7 +78,7 @@ Deno.serve(adapter.handler());
 
 `adapter.handler()` returns a standard Deno HTTP handler. You can also call `adapter.handleRequest(req)` directly if you need to integrate into an existing server.
 
-## AgentCard Discovery
+## AgentCard discovery
 
 Remote agents and clients discover your server by fetching `GET /.well-known/agent.json`. The response is an `AgentCard` object describing your agent's identity and capabilities.
 
@@ -126,7 +126,7 @@ Remote agents and clients discover your server by fetching `GET /.well-known/age
 | `documentationUrl` | `string \| undefined` | Link to docs |
 | `iconUrl` | `string \| undefined` | Agent icon URL |
 
-## Task Lifecycle
+## Task lifecycle
 
 ### Synchronous: message/send
 
@@ -192,7 +192,7 @@ while (true) {
 }
 ```
 
-## Task State Machine
+## Task state machine
 
 Every task progresses through a defined set of states:
 
@@ -217,7 +217,7 @@ stateDiagram-v2
 | `canceled` | Task was canceled via `tasks/cancel` |
 | `input-required` | Agent needs additional user input (not yet fully wired) |
 
-## SSE Streaming Events
+## SSE streaming events
 
 When using `message/stream`, the server emits two event types:
 
@@ -257,7 +257,7 @@ Emitted for each chunk of streaming output:
 }
 ```
 
-## Other JSON-RPC Methods
+## Other JSON-RPC methods
 
 ### tasks/get
 
@@ -295,7 +295,7 @@ await fetch("https://my-agent.example.com/", {
 });
 ```
 
-## Task Store
+## Task store
 
 By default, `A2AAdapter` uses `MemoryTaskStore` - an in-memory implementation that does not persist tasks across process restarts.
 
@@ -320,17 +320,17 @@ const adapter = new A2AAdapter(agent, {
 `MemoryTaskStore` is fine for development and stateless serverless deployments. For long-running processes where you need task history across restarts, implement the `TaskStore` interface backed by a database or Redis.
 </Info>
 
-## Message Parts
+## Message parts
 
 A2A messages are composed of parts. Each part has a `kind` discriminant:
 
-### Text Part
+### Text part
 
 ```typescript
 { kind: "text", text: "What is the capital of France?" }
 ```
 
-### File Part
+### File part
 
 ```typescript
 {
@@ -345,13 +345,13 @@ A2A messages are composed of parts. Each part has a `kind` discriminant:
 }
 ```
 
-### Data Part
+### Data part
 
 ```typescript
 { kind: "data", data: { key: "value", count: 42 } }
 ```
 
-## API Reference
+## API reference
 
 ### A2AAdapterOptions
 

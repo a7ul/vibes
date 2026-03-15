@@ -12,7 +12,7 @@ This is a TypeScript port of [Pydantic AI's canonical bank support example](http
 - Tools that access dependencies via `tool<TDeps>()`
 - Structured output with Zod schemas and `outputSchema`
 
-## How Pydantic AI Maps to Vibes
+## How Pydantic AI maps to Vibes
 
 | Pydantic AI | Vibes |
 |-------------|-------|
@@ -103,7 +103,7 @@ console.log(result.output);
 deno run --allow-net --allow-env bank-support.ts
 ```
 
-## How It Works
+## How it works
 
 **Dependency injection**: `Deps` is a plain TypeScript type. Vibes passes it through `RunContext` to instructions, tools, and validators — no global state, no singletons, fully testable. Swap `DatabaseConn` for a mock in tests by passing different `deps` at call time.
 
@@ -113,7 +113,7 @@ deno run --allow-net --allow-env bank-support.ts
 
 **Structured output**: `outputSchema` instructs the model to return JSON matching the Zod schema. `result.output` is typed as `z.infer<typeof SupportOutput>` — no parsing or casting needed. Invalid model output raises a typed error.
 
-## Next Steps
+## Next steps
 
 - [Dependencies concept page](/concepts/dependencies) — full DI system docs
 - [Results concept page](/concepts/results) — output modes and validators

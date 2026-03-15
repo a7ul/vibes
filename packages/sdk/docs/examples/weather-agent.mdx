@@ -5,7 +5,7 @@ description: A weather lookup agent demonstrating tools, external API calls, and
 
 This example builds on Hello World by adding a tool that calls a real weather API and an output schema that returns structured data. The agent uses Open-Meteo - a free weather API that requires no API key - so you can run it immediately.
 
-## What You'll Learn
+## What you'll learn
 
 - Defining a tool with `tool()` and Zod parameter schema
 - Calling an external HTTP API inside a tool
@@ -77,7 +77,7 @@ console.log(result.output);
 deno run --allow-net --allow-env weather-agent.ts
 ```
 
-## How It Works
+## How it works
 
 **Tool definition**: `tool()` wraps an async function. The `parameters` Zod schema is used to generate the tool's JSON schema for the model - the model sees field names and descriptions.
 
@@ -87,7 +87,7 @@ deno run --allow-net --allow-env weather-agent.ts
 
 **Type generics**: `Agent<undefined, z.infer<typeof WeatherReport>>` - first param is deps type (none here), second is the output type. TypeScript infers `result.output` as `WeatherReport`.
 
-## Next Steps
+## Next steps
 
 - [Bank Support](/examples/bank-support) - dependency injection with tools
 - [Tools concept page](/concepts/tools) - all tool types and options

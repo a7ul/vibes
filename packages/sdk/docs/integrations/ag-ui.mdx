@@ -61,7 +61,7 @@ const adapter = new AGUIAdapter(agent, {
 | `deps` | `TDeps` | Static dependencies injected into every agent run. Not a factory - computed once at construction. |
 | `getState` | `() => Record<string, unknown> \| Promise<Record<string, unknown>>` | Called at run start and end to capture a state snapshot for the frontend |
 
-## Deno HTTP Server
+## Deno HTTP server
 
 One line connects your adapter to a Deno HTTP server:
 
@@ -103,7 +103,7 @@ interface AGUIRunInput {
 | `messages` | Yes | Full conversation history in AG-UI message format. |
 | `state` | No | State snapshot from the frontend, available to the agent via dependencies. |
 
-## Direct handleRequest() Usage
+## Direct handleRequest() usage
 
 Call `handleRequest()` directly when you parse the request body yourself:
 
@@ -122,7 +122,7 @@ async function myHandler(req: Request): Promise<Response> {
 Deno.serve(myHandler);
 ```
 
-## SSE Event Sequence
+## SSE event sequence
 
 Every agent run emits a fixed sequence of SSE events. Understanding the sequence helps you build reliable frontend state machines.
 
@@ -161,7 +161,7 @@ sequenceDiagram
 
 On error, `RUN_ERROR` is emitted instead of `RUN_FINISHED`.
 
-## Multi-Turn Conversations
+## Multi-turn conversations
 
 Pass the message history from a previous result to continue a conversation across turns:
 
@@ -185,7 +185,7 @@ const input2: AGUIRunInput = {
 const response2 = adapter.handleRequest(input2);
 ```
 
-## State Management
+## State management
 
 Use `getState` to expose a snapshot of server-side state to the frontend on every run. The adapter calls `getState` at the start and end of each run and emits `STATE_SNAPSHOT` events.
 
@@ -211,7 +211,7 @@ const adapter = new AGUIAdapter(agent, {
 
 The frontend receives the state in `STATE_SNAPSHOT` events and can render it via CopilotKit's `useCoAgentStateRender` hook.
 
-## Event Types Reference
+## Event types reference
 
 All 15 event types emitted by `AGUIAdapter`:
 
@@ -233,7 +233,7 @@ All 15 event types emitted by `AGUIAdapter`:
 | `TOOL_CALL_END` | After tool call completes |
 | `RAW` | Usage metadata (token counts) after each step |
 
-## API Reference
+## API reference
 
 ### AGUIAdapterOptions
 

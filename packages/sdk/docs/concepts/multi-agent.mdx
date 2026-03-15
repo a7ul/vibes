@@ -7,7 +7,7 @@ Multi-agent systems let you divide complex tasks across specialist agents, each 
 
 Use sub-agents when a sub-task needs a different persona or toolset, or when the output of one stage becomes structured input for the next.
 
-## Agent Delegation Flow
+## Agent delegation flow
 
 ```mermaid
 sequenceDiagram
@@ -23,7 +23,7 @@ sequenceDiagram
     Orchestrator-->>App: final result
 ```
 
-## Agent-as-Tool Pattern
+## Agent-as-tool pattern
 
 Wrap a child agent in `tool()`. The `execute` function calls the child agent and returns its output.
 
@@ -57,7 +57,7 @@ const result = await orchestratorAgent.run("Research and summarize the history o
 console.log(result.output);
 ```
 
-## Usage Aggregation
+## Usage aggregation
 
 `RunResult.usage` automatically sums token usage across all nested agent calls. You do not need to track usage manually - the orchestrator's `result.usage` reflects the total cost of the entire delegation chain.
 
@@ -68,7 +68,7 @@ console.log(result.usage.inputTokens.total);   // total input tokens (all agents
 console.log(result.usage.outputTokens.total);  // total output tokens (all agents)
 ```
 
-## Programmatic Handoff
+## Programmatic handoff
 
 You can route to different specialist agents based on runtime conditions. Use a plain TypeScript `if`/`else` inside `tool.execute()` - there is no special routing API.
 
@@ -92,7 +92,7 @@ const routerTool = tool({
 });
 ```
 
-## When to Use Sub-Agents
+## When to use sub-agents
 
 Use sub-agents when:
 
@@ -106,7 +106,7 @@ Avoid sub-agents for:
 - Simple single-tool operations that do not need a separate model call
 - Cases where the orchestrator can solve the problem directly without specialist knowledge
 
-## API Reference
+## API reference
 
 There is no special multi-agent API in Vibes. Sub-agents are just agents wrapped in tools.
 

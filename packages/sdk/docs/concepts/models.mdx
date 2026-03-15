@@ -22,7 +22,7 @@ flowchart TD
     C --> J[Custom Endpoint]
 ```
 
-## Provider Quickstarts
+## Provider quickstarts
 
 Install the provider package for your chosen model, set the API key environment variable, and pass the model instance to `Agent`.
 
@@ -132,7 +132,7 @@ const agent = new Agent({
 });
 ```
 
-### OpenAI-Compatible (custom endpoint)
+### OpenAI-compatible (custom endpoint)
 
 Any service that exposes an OpenAI-compatible REST API can be used via `createOpenAI` with a custom `baseURL`:
 
@@ -176,7 +176,7 @@ const agent = new Agent({
 });
 ```
 
-## Overriding the Model Per Run
+## Overriding the model per run
 
 Use `agent.override({ model })` to swap the model for a single run without modifying the agent. This is useful for routing different prompts to different models - for example, a cheaper model for classification and an expensive model for generation:
 

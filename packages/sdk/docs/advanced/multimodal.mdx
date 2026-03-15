@@ -9,7 +9,7 @@ Vibes supports four input modalities — images, audio, video, and documents —
 import { imageMessage, audioMessage, fileMessage } from "@vibesjs/sdk";
 ```
 
-## Content Type Routing
+## Content type routing
 
 ```mermaid
 flowchart LR
@@ -186,7 +186,7 @@ const analyzeTool = tool({
 
 ---
 
-## Binary Content from Tools
+## Binary content from tools
 
 Tools can return `BinaryContent` — raw bytes with a MIME type — which the agent loop forwards to the model as part of the next turn. This lets a tool produce an image, audio clip, or document that the model can reason about.
 
@@ -211,7 +211,7 @@ const screenshotTool = tool({
 });
 ```
 
-### Tool Multi-Modal Return Flow
+### Tool multi-modal return flow
 
 ```mermaid
 sequenceDiagram

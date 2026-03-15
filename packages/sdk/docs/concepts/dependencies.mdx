@@ -7,7 +7,7 @@ description: RunContext is Vibes's dependency injection system. Type your agent'
 
 This is a signature feature of Vibes: you never need to close over global variables or pass deps out-of-band. Your agent is fully self-contained and trivially testable.
 
-## RunContext Fan-Out
+## RunContext fan-out
 
 Every entry point to the agent resolves a single `RunContext<TDeps>` and fans it out to all callbacks:
 
@@ -22,7 +22,7 @@ graph LR
     B --> H[History Processors]
 ```
 
-## Defining Dependencies
+## Defining dependencies
 
 Define a `Deps` type, pass it as the first type parameter to `Agent`, and supply the concrete instance at run time:
 
@@ -43,7 +43,7 @@ const result = await agent.run("Find recent papers on LLMs", {
 });
 ```
 
-## The RunContext Interface
+## The RunContext interface
 
 The full interface available in every callback:
 
@@ -74,7 +74,7 @@ Reference table:
 | `toolResultMetadata` | `Map<string, Record<string, unknown>>` | Metadata attached by tools via `attachMetadata()` |
 | `attachMetadata(id, meta)` | `void` | Attach arbitrary metadata for a specific tool call ID |
 
-## Using Deps in Tools
+## Using deps in tools
 
 Tools receive `RunContext<TDeps>` as their first argument, giving them direct access to your injected dependencies:
 
@@ -97,7 +97,7 @@ const agent = new Agent<Deps>({
 });
 ```
 
-## Using Deps in System Prompts
+## Using deps in system prompts
 
 System prompts and instructions can be functions that receive `RunContext`. This lets you build dynamic prompts from runtime state:
 
@@ -110,7 +110,7 @@ const agent = new Agent<Deps>({
 });
 ```
 
-## Testing with Dependencies
+## Testing with dependencies
 
 The canonical testing pattern is to create fake deps and pass them via `agent.override()`:
 
@@ -132,7 +132,7 @@ const result = await agent
 This is the recommended testing pattern - inject test doubles via `deps`, never mock the framework internals. Your agent code stays unchanged; only the dep implementations swap.
 </Info>
 
-## History Processors and Privacy
+## History processors and privacy
 
 History processors run before each model call and can transform or filter the message history. The `privacyFilterProcessor` is a built-in processor that redacts sensitive content before messages are sent to the model.
 

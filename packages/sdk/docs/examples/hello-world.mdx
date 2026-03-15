@@ -5,7 +5,7 @@ description: The simplest possible Vibes agent - create and run an agent in 5 li
 
 The minimal Vibes agent: import, create, run.
 
-## What You'll Learn
+## What you'll learn
 
 - Creating an Agent with a model and system prompt
 - Running the agent with `agent.run()`
@@ -38,7 +38,7 @@ console.log(result.output);
 deno run --allow-net --allow-env hello-world.ts
 ```
 
-## How It Works
+## How it works
 
 **Model**: `anthropic("claude-haiku-4-5-20251001")` creates a model instance using the Vercel AI SDK Anthropic provider. Any Vercel AI SDK-compatible model works here.
 
@@ -46,7 +46,7 @@ deno run --allow-net --allow-env hello-world.ts
 
 **`result.output`**: For agents without `outputSchema`, output is a `string`. Add `outputSchema` with a Zod schema to get structured output - see the Weather Agent example.
 
-## Next Steps
+## Next steps
 
 - [Weather Agent](/examples/weather-agent) - add tools and structured output
 - [Bank Support](/examples/bank-support) - dependency injection and complex output

@@ -7,7 +7,7 @@ The `Agent` class is the primary way you build an AI agent in Vibes. It wraps th
 
 An agent is typed over its dependencies (`TDeps`) and output (`TOutput`), making it fully type-safe end to end.
 
-## Agent Loop
+## Agent loop
 
 Every call to `agent.run()`, `agent.stream()`, or `agent.runStreamEvents()` goes through the same loop:
 
@@ -32,7 +32,7 @@ flowchart TD
     N -- no --> C
 ```
 
-## Basic Usage
+## Basic usage
 
 ```typescript
 import { Agent } from "@vibesjs/sdk";
@@ -47,7 +47,7 @@ const result = await agent.run("Hello!");
 console.log(result.output);
 ```
 
-## Type Parameters
+## Type parameters
 
 `Agent<TDeps, TOutput>` accepts two type parameters:
 
@@ -68,7 +68,7 @@ const result = await agent.run("Hello!", { deps: { db: myDb } });
 
 When `systemPrompt` is a function, it receives the full `RunContext<TDeps>` on every turn, giving it access to the injected deps, current usage, run ID, and more.
 
-## Constructor Options
+## Constructor options
 
 All options are passed to `new Agent(opts: AgentOptions<TDeps, TOutput>)`.
 
@@ -93,7 +93,7 @@ All options are passed to `new Agent(opts: AgentOptions<TDeps, TOutput>)`.
 | `maxConcurrency` | `number?` | unlimited | Max concurrent tool executions per turn |
 | `telemetry` | `TelemetrySettings?` | - | OpenTelemetry settings passed to the AI SDK |
 
-## Running an Agent
+## Running an agent
 
 Vibes provides three run methods depending on how you want to consume the output:
 

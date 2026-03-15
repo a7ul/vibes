@@ -5,7 +5,7 @@ description: A multi-step article pipeline using Vibes Graph - demonstrates Base
 
 This example builds a two-stage article pipeline using Vibes' Graph API: an outline node followed by a writing node. The `Graph` class manages state transitions between `BaseNode` instances - each node receives the current state, does its work, and either transitions to the next node with `next()` or terminates with `output()`.
 
-## What You'll Learn
+## What you'll learn
 
 - Defining graph nodes with `BaseNode`
 - State transitions using the `next()` free function
@@ -84,7 +84,7 @@ console.log(article);
 deno run --allow-net --allow-env graph-workflow.ts
 ```
 
-## How It Works
+## How it works
 
 ### State type
 
@@ -118,6 +118,6 @@ return output(result.output);
 
 Pass all nodes as an array. The second argument to `graph.run()` is the ID of the starting node.
 
-## Next Steps
+## Next steps
 
 - [Graph concept page](/concepts/graph) - persistence with FileStatePersistence, toMermaid(), runIter()
