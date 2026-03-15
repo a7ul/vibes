@@ -29,8 +29,8 @@
 
 ```mermaid
 flowchart TD
-    A[Your Code] --> B["@vibesjs/sdk\nagent loop · tools · DI · evals · streaming · graph"]
-    B --> C["Vercel AI SDK\nmodels · streaming · structured output · providers"]
+    A[Your Code] --> B["@vibesjs/sdk — agent loop · tools · DI · evals · streaming · graph"]
+    B --> C["Vercel AI SDK — models · streaming · structured output · providers"]
     C --> D[Anthropic]
     C --> E[OpenAI]
     C --> F[Google]
