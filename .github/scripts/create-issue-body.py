@@ -3,7 +3,7 @@
 import os
 
 old = os.environ["OLD"]
-new = os.environ["NEW"]
+new = os.environ["NEW_VERSION"]
 summary = os.environ.get("SUMMARY", "")
 
 body = f"""## Versions

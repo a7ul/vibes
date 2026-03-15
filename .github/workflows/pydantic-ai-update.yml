@@ -89,10 +89,11 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          OLD="${{ steps.stored-version.outputs.stored }}"
           NEW="${{ steps.fetch-version.outputs.latest }}"
-          SUMMARY=$(cat /tmp/release-summary.md)
 
+          OLD="${{ steps.stored-version.outputs.stored }}" \
+          NEW_VERSION="$NEW" \
+          SUMMARY="$(cat /tmp/release-summary.md)" \
           python3 .github/scripts/create-issue-body.py
 
           ISSUE_URL=$(gh issue create \
