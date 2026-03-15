@@ -95,8 +95,7 @@ jobs:
           ISSUE_URL=$(echo "$RESPONSE" | python3 -c "import sys,json; print(json.load(sys.stdin)['html_url'])")
           echo "Opened issue: $ISSUE_URL"
 
-          # Assign Copilot — creates exactly one PR, closes this issue automatically on merge
-          gh api repos/${{ github.repository }}/issues/${ISSUE_NUMBER}/assignees \
+          # Tag Copilot via comment — triggers the coding agent to implement and open a PR
+          gh api repos/${{ github.repository }}/issues/${ISSUE_NUMBER}/comments \
             --method POST \
-            --field assignees[]="copilot" \
-            || echo "Copilot assignee not available — assign manually in repo Settings → Copilot → Coding agent."
+            --field body="@copilot Please implement the porting checklist above. Use \`.claude/vibes-pydantic-porting.md\` as your reference guide."
