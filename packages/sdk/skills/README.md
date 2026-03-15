@@ -11,13 +11,13 @@ Once installed, your coding agent can write idiomatic `@vibesjs/sdk` code withou
 **Project-level** (recommended — scoped to this project):
 
 ```bash
-mkdir -p .claude/agents && curl -fsSL https://raw.githubusercontent.com/vibe-ts/vibes/main/packages/sdk/skills/vibes-framework.md -o .claude/agents/vibes-framework.md
+mkdir -p .claude/agents && curl -fsSL https://raw.githubusercontent.com/a7ul/vibes/main/packages/sdk/skills/vibes-framework.md -o .claude/agents/vibes-framework.md
 ```
 
 **Global** (available in all your projects):
 
 ```bash
-mkdir -p ~/.claude/agents && curl -fsSL https://raw.githubusercontent.com/vibe-ts/vibes/main/packages/sdk/skills/vibes-framework.md -o ~/.claude/agents/vibes-framework.md
+mkdir -p ~/.claude/agents && curl -fsSL https://raw.githubusercontent.com/a7ul/vibes/main/packages/sdk/skills/vibes-framework.md -o ~/.claude/agents/vibes-framework.md
 ```
 
 ### Option 2: Copy manually

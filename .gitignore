@@ -40,4 +40,4 @@ temp/
 
 # Claude worktrees
 .claude/worktrees/
-packages/framework/npm/
+packages/sdk/npm/

@@ -11,18 +11,26 @@ This skill covers the patterns, decisions, and mappings used in the `vibes` proj
 ## Framework Structure
 
 ```
-src/packages/framework/
-├── agent.ts                  # Agent class - main public entry point
-├── tool.ts                   # ToolDefinition, tool(), toAISDKTools()
-├── errors.ts                 # MaxTurnsError, MaxRetriesError
-├── types/
-│   ├── usage.ts              # Usage type (LanguageModelUsage + requests)
-│   ├── run_context.ts        # RunContext<TDeps>
-│   └── result.ts             # RunResult, StreamResult, ResultValidator
-└── execution/
-    ├── run.ts                # executeRun() - non-streaming turn loop
-    ├── stream.ts             # executeStream() - streaming turn loop
-    └── _run_utils.ts         # Shared helpers (internal only)
+packages/sdk/
+├── mod.ts                    # Public entry point - all exports
+├── lib/
+│   ├── agent.ts              # Agent class - main public entry point
+│   ├── tool.ts               # ToolDefinition, tool()
+│   ├── concurrency.ts        # MaxConcurrency helpers
+│   ├── types/                # errors, context, results, events, output_mode, usage_limits
+│   ├── execution/            # run.ts, stream.ts, event_stream.ts, deferred.ts, output_schema.ts
+│   ├── toolsets/             # function, combined, filtered, prefixed, prepared, approval, wrapper, external
+│   ├── history/              # processor.ts, serialization.ts
+│   ├── multimodal/           # content.ts, binary_content.ts
+│   ├── graph/                # graph.ts, node.ts, types.ts, persistence.ts, mermaid.ts
+│   ├── mcp/                  # mcp_client, mcp_toolset, mcp_manager, mcp_config, mcp_http, mcp_stdio
+│   ├── otel/                 # instrumentation.ts, spans.ts
+│   ├── testing/              # test_model.ts, function_model.ts
+│   ├── evals/                # experiment, dataset, generation, llm_judge, evaluators, report
+│   ├── a2a/                  # adapter.ts, task_store.ts, types.ts
+│   ├── ag_ui/                # adapter.ts, types.ts
+│   └── temporal/             # temporal_agent.ts, serialization.ts, mock_temporal.ts
+└── tests/                    # all tests (mirrors lib/ structure)
 ```
 
 ## Concept Mapping: Pydantic AI → AI SDK TypeScript
@@ -257,29 +265,17 @@ type ResultValidator<TDeps, TOutput> = (
 
 Throw from a validator to reject the output and force the model to retry (up to `maxRetries`). The thrown error message is fed back as a user message.
 
-## What's NOT Yet Ported (backlog)
-
-| Pydantic AI feature                | Status     | Notes                                              |
-| ---------------------------------- | ---------- | -------------------------------------------------- |
-| `UsageLimits` (token/request caps) | Not ported | Check usage in turn loop before calling model      |
-| `Agent.override()` context manager | Not ported | Would override model/system/tools for a single run |
-| `capture_run_messages()`           | Not ported |                                                    |
-| `TestModel` / `FunctionModel`      | Not ported | Needed for unit tests without API calls            |
-| Streaming result validators        | Not ported | Currently validators only run after full output    |
-| `agent.last_run_messages`          | Not ported |                                                    |
-| Multi-agent orchestration          | Not ported | Pydantic AI allows passing agents as tools         |
-
 ## Testing a Ported Feature
 
-Tests live in `src/packages/framework/tests/`. Use `ai/test` - no real API key needed.
+Tests live in `packages/sdk/tests/`. Use `@vibesjs/sdk/testing` (`TestModel` / `FunctionModel`) - no real API key needed.
 
 ### Import map entry (required)
 
 ```jsonc
-{ "imports": { "ai/test": "npm:ai@^4/test" } }
+{ "imports": { "ai/test": "npm:ai@^6/test" } }
 ```
 
-Run with: `deno test --allow-env src/packages/framework/tests/`
+Run with: `deno test --allow-env packages/sdk/tests/`
 
 ### Helper types
 
@@ -378,7 +374,7 @@ const model = new MockLanguageModelV1({
 
 ## Documenting a Ported Feature
 
-Docs live in `src/packages/framework/docs/`. Mirror the Pydantic AI docs style: concept first, API reference table, then progressively complex examples.
+Docs live in `src/packages/sdk/docs/`. Mirror the Pydantic AI docs style: concept first, API reference table, then progressively complex examples.
 
 ### Doc file structure
 
@@ -430,12 +426,12 @@ Add a row to the table in `docs/index.md`:
    - Use wrapper lambdas to bridge generic parameter mismatches (e.g. `(args) => opts.fn(args as z.infer<TParams>)`)
    - Use `unknown` + structural casts (`x as Record<string, unknown>`) instead of `any`
    - If you reach for `any`, stop and redesign the type boundary
-   - After implementation, run `grep -r "deno-lint-ignore" packages/framework/` - it must return empty
+   - After implementation, run `grep -r "deno-lint-ignore" packages/sdk/` - it must return empty
 5. Add to `AgentOptions` interface if it's a constructor option
 6. Export new public types from `mod.ts`
 7. Run `deno check mod.ts` to verify
-8. Write tests in `packages/framework/tests/` using `MockLanguageModelV3`
-9. Write a doc page in `packages/framework/docs/` following the structure above
+8. Write tests in `packages/sdk/tests/` using `MockLanguageModelV3`
+9. Write a doc page in `packages/sdk/docs/` following the structure above
 10. Link the doc page from `docs/index.md`
 11. **After all tests pass - review structure and readability:**
     - Are new files in the right place? (`toolsets/` for toolset classes, `execution/` for internals, root for public API)
