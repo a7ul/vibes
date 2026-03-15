@@ -78,7 +78,7 @@ jobs:
             echo "Version marker already up to date, skipping commit."
           else
             git commit -m "chore: bump tracked pydantic-ai version to ${NEW}"
-            git push origin "$BRANCH"
+            git push origin "$BRANCH" --force
           fi
 
           echo "branch=$BRANCH" >> "$GITHUB_OUTPUT"
