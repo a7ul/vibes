@@ -95,6 +95,5 @@ jobs:
           ISSUE_URL=$(echo "$RESPONSE" | python3 -c "import sys,json; print(json.load(sys.stdin)['html_url'])")
           echo "Opened issue: $ISSUE_URL"
 
-          # Assign Copilot coding agent — triggers it to implement and open a PR
-          gh issue edit "${ISSUE_NUMBER}" --repo ${{ github.repository }} --add-assignee Copilot \
-            || echo "Copilot not assignable — assign manually from the issue UI."
+          # Assign Copilot coding agent using PAT (GITHUB_TOKEN lacks permission for this)
+          GH_TOKEN=${{ secrets.VIBES_GH_PAT }} gh issue edit "${ISSUE_NUMBER}" --repo ${{ github.repository }} --add-assignee Copilot
