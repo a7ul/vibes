@@ -7,7 +7,7 @@
 
 import type { ZodType } from "zod";
 import type { EvalScore, Evaluator } from "./types.ts";
-import { EvaluatorContext } from "./context.ts";
+import type { EvaluatorContext } from "./context.ts";
 import type { SpanNode } from "./span_tree.ts";
 
 // ---------------------------------------------------------------------------

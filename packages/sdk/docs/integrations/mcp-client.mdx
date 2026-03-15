@@ -23,7 +23,7 @@ flowchart TD
 Use `MCPStdioClient` to launch a local subprocess that speaks MCP over stdin/stdout. This is the standard pattern for tools like `@modelcontextprotocol/server-filesystem`.
 
 ```typescript
-import { Agent, MCPStdioClient, MCPToolset } from "npm:@vibesjs/sdk";
+import { Agent, MCPStdioClient, MCPToolset } from "jsr:@vibesjs/sdk";
 import { anthropic } from "npm:@ai-sdk/anthropic";
 
 const model = anthropic("claude-opus-4-5");
@@ -64,7 +64,7 @@ new MCPStdioClient(config: MCPStdioConfig, options?: { elicitationCallback? })
 Use `MCPHttpClient` to connect to a remote MCP server over HTTP with Server-Sent Events (SSE).
 
 ```typescript
-import { Agent, MCPHttpClient, MCPToolset } from "npm:@vibesjs/sdk";
+import { Agent, MCPHttpClient, MCPToolset } from "jsr:@vibesjs/sdk";
 
 const client = new MCPHttpClient({
   url: "https://search-mcp.example.com/mcp",
@@ -103,7 +103,7 @@ new MCPHttpClient(config: MCPHttpConfig, options?: { elicitationCallback? })
 `MCPToolset` wraps a single `MCPClient` and adapts it to the agent `Toolset` interface. It adds optional caching so the tool list is not re-fetched on every agent turn.
 
 ```typescript
-import { MCPToolset } from "npm:@vibesjs/sdk";
+import { MCPToolset } from "jsr:@vibesjs/sdk";
 
 const toolset = new MCPToolset(client, {
   toolCacheTtlMs: 30_000,   // cache tool list for 30 seconds (default: 60,000)
@@ -145,7 +145,7 @@ import {
   MCPHttpClient,
   MCPManager,
   MCPStdioClient,
-} from "npm:@vibesjs/sdk";
+} from "jsr:@vibesjs/sdk";
 import { anthropic } from "npm:@ai-sdk/anthropic";
 
 const model = anthropic("claude-opus-4-5");
@@ -197,7 +197,7 @@ const manager = new MCPManager()
 For production deployments, store your MCP server configuration in a JSON file and load it at startup using `createManagerFromConfig`. This returns a fully connected `MCPManager` ready to pass to your agent.
 
 ```typescript
-import { Agent, createManagerFromConfig } from "npm:@vibesjs/sdk";
+import { Agent, createManagerFromConfig } from "jsr:@vibesjs/sdk";
 
 const manager = await createManagerFromConfig("./mcp.config.json");
 const agent = new Agent({ model, toolsets: [manager] });
@@ -247,7 +247,7 @@ import {
   createClientsFromConfig,
   loadMCPConfig,
   MCPManager,
-} from "npm:@vibesjs/sdk";
+} from "jsr:@vibesjs/sdk";
 
 const configs = await loadMCPConfig("./mcp.config.json");
 const clients = createClientsFromConfig(configs); // creates clients but does NOT connect

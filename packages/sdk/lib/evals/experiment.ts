@@ -59,7 +59,7 @@ export interface RunExperimentOptions<TInput, TExpected, TOutput> {
  * console.log(formatReport(result));
  * ```
  */
-export async function runExperiment<TInput, TExpected, TOutput>(
+export function runExperiment<TInput, TExpected, TOutput>(
   options: RunExperimentOptions<TInput, TExpected, TOutput>,
 ): Promise<ExperimentResult<TInput, TExpected, TOutput>> {
   // Merge evaluators from options into the dataset

@@ -14,7 +14,7 @@ This example shows two agents communicating via [Google's A2A protocol](https://
 
 ## Prerequisites
 
-- Vibes installed (`npm:@vibesjs/sdk`)
+- Vibes installed (`jsr:@vibesjs/sdk`)
 - `ANTHROPIC_API_KEY` environment variable set (for the server)
 
 ## Complete example
@@ -22,7 +22,7 @@ This example shows two agents communicating via [Google's A2A protocol](https://
 <CodeGroup>
 
 ```typescript server.ts
-import { A2AAdapter, Agent } from "npm:@vibesjs/sdk";
+import { A2AAdapter, Agent } from "jsr:@vibesjs/sdk";
 import { anthropic } from "npm:@ai-sdk/anthropic";
 
 // The agent being exposed

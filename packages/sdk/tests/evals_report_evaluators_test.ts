@@ -208,7 +208,7 @@ Deno.test("kolmogorovSmirnov - identical distributions return 0", () => {
   const scoresA = [0.1, 0.3, 0.5, 0.9];
   let idx = 0;
 
-  const ev = kolmogorovSmirnov({
+  const _ev = kolmogorovSmirnov({
     getScoreA: () => scoresA[idx++],
     getScoreB: () => scoresA[--idx >= 0 ? idx++ : 0],
   });

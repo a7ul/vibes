@@ -14,12 +14,12 @@ RAG in Vibes is a tool pattern: the agent calls a retrieval tool that searches a
 ## Prerequisites
 
 - `ANTHROPIC_API_KEY` set in your environment
-- Vibes installed (`deno add npm:@vibesjs/sdk npm:@ai-sdk/anthropic npm:zod`)
+- Vibes installed (`deno add jsr:@vibesjs/sdk npm:@ai-sdk/anthropic npm:zod`)
 
 ## Complete example
 
 ```typescript
-import { Agent, plainTool } from "npm:@vibesjs/sdk";
+import { Agent, plainTool } from "jsr:@vibesjs/sdk";
 import { anthropic } from "npm:@ai-sdk/anthropic";
 import { z } from "npm:zod";
 

@@ -41,7 +41,7 @@ The Vibes framework package (`@vibesjs/sdk`) provides `TemporalAgent` and `MockT
 ## TemporalAgent setup
 
 ```typescript
-import { Agent, TemporalAgent } from "npm:@vibesjs/sdk";
+import { Agent, TemporalAgent } from "jsr:@vibesjs/sdk";
 import { anthropic } from "npm:@ai-sdk/anthropic";
 
 const model = anthropic("claude-opus-4-5");
@@ -176,7 +176,7 @@ If you're migrating from older Vibes documentation, the following APIs were docu
 `MockTemporalAgent` runs the same agent logic as `TemporalAgent` but without a real Temporal server. It records activity history for assertions, supports deterministic replay, and works in Deno.
 
 ```typescript
-import { MockTemporalAgent } from "npm:@vibesjs/sdk";
+import { MockTemporalAgent } from "jsr:@vibesjs/sdk";
 
 // Second argument is required - must include taskQueue
 const mock = new MockTemporalAgent(agent, { taskQueue: "test" });
@@ -210,7 +210,7 @@ mock.reset();
 
 ```typescript
 import { assertEquals } from "@std/assert";
-import { MockTemporalAgent } from "npm:@vibesjs/sdk";
+import { MockTemporalAgent } from "jsr:@vibesjs/sdk";
 
 Deno.test("research agent completes successfully", async () => {
   const mock = new MockTemporalAgent(agent, { taskQueue: "test" });
@@ -236,7 +236,7 @@ import {
   deserializeRunState,
   roundTripMessages,
   serializeRunState,
-} from "npm:@vibesjs/sdk";
+} from "jsr:@vibesjs/sdk";
 
 // Serialize messages for storage or transmission
 const serialized = serializeRunState(messages);  // ModelMessage[] → SerializableMessage[]

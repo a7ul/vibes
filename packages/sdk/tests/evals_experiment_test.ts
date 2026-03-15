@@ -27,7 +27,7 @@ Deno.test("Dataset.evaluate - basic experiment with equalsExpected passes", asyn
     { evaluators: [equalsExpected()] },
   );
 
-  const result = await ds.evaluate(async (input: string) => input.toUpperCase());
+  const result = await ds.evaluate((input: string) => input.toUpperCase());
 
   assertEquals(result.cases.length, 2);
   assertEquals(result.cases[0].error, undefined);
@@ -42,7 +42,7 @@ Deno.test("Dataset.evaluate - error in one case doesn't abort experiment", async
     { name: "good2", inputs: "world" },
   ]);
 
-  const result = await ds.evaluate(async (input: string) => {
+  const result = await ds.evaluate((input: string) => {
     if (input === "throw") throw new Error("deliberate error");
     return input.toUpperCase();
   });
@@ -61,7 +61,7 @@ Deno.test("Dataset.evaluate - onCaseComplete called for each case", async () => 
   ]);
 
   const completed: CaseResult[] = [];
-  await ds.evaluate(async (input: string) => input, {
+  await ds.evaluate((input: string) => input, {
     onCaseComplete: (r) => completed.push(r),
   });
 
@@ -99,7 +99,7 @@ Deno.test("Dataset.evaluate - summary contains mean/min/max", async () => {
     { evaluators: [equalsExpected()] },
   );
 
-  const result = await ds.evaluate(async (input: string) => input.toUpperCase());
+  const result = await ds.evaluate((input: string) => input.toUpperCase());
 
   assertExists(result.summary["equalsExpected"]);
   assertExists(result.summary["equalsExpected"].mean);
@@ -107,13 +107,13 @@ Deno.test("Dataset.evaluate - summary contains mean/min/max", async () => {
 
 Deno.test("Dataset.evaluate - totalDuration is positive", async () => {
   const ds = Dataset.fromArray([{ inputs: "hi" }]);
-  const result = await ds.evaluate(async (input: string) => input);
+  const result = await ds.evaluate((input: string) => input);
   assert(result.totalDuration >= 0);
 });
 
 Deno.test("Dataset.evaluate - timestamp is valid ISO string", async () => {
   const ds = Dataset.fromArray([{ inputs: "hi" }]);
-  const result = await ds.evaluate(async (input: string) => input);
+  const result = await ds.evaluate((input: string) => input);
   assertExists(result.timestamp);
   const date = new Date(result.timestamp);
   assertEquals(isNaN(date.getTime()), false);
@@ -132,7 +132,7 @@ Deno.test("Dataset.evaluate - per-case evaluators run", async () => {
     { inputs: "hello", evaluators: [caseEv] },
   ]);
 
-  const result = await ds.evaluate(async (input: string) => input.toUpperCase());
+  const result = await ds.evaluate((input: string) => input.toUpperCase());
 
   assertExists(result.cases[0].scores["case-specific"]);
   assertEquals(result.cases[0].scores["case-specific"].score, true);
@@ -158,7 +158,7 @@ Deno.test("Dataset.evaluate - report evaluators run after all cases", async () =
     { reportEvaluators: [reportEv] },
   );
 
-  await ds.evaluate(async (input: string) => input);
+  await ds.evaluate((input: string) => input);
   assertEquals(reportCalled, true);
 });
 
@@ -173,7 +173,7 @@ Deno.test("runExperiment - thin wrapper works", async () => {
 
   const result = await runExperiment({
     dataset: ds,
-    task: async (input: string) => input.toUpperCase(),
+    task: (input: string) => input.toUpperCase(),
     evaluators: [equalsExpected()],
   });
 
@@ -190,7 +190,7 @@ Deno.test("formatReport - produces non-empty string", async () => {
     { inputs: "hello", expectedOutput: "HELLO" },
   ], { evaluators: [equalsExpected()] });
 
-  const result = await ds.evaluate(async (i: string) => i.toUpperCase());
+  const result = await ds.evaluate((i: string) => i.toUpperCase());
   const report = formatReport(result);
 
   assertEquals(typeof report, "string");
@@ -201,7 +201,7 @@ Deno.test("formatReport - produces non-empty string", async () => {
 
 Deno.test("toJSON - serializes result to plain object", async () => {
   const ds = Dataset.fromArray([{ inputs: "hi" }]);
-  const result = await ds.evaluate(async (i: string) => i);
+  const result = await ds.evaluate((i: string) => i);
   const json = toJSON(result);
 
   assertExists(json);
@@ -219,7 +219,7 @@ Deno.test("Dataset.evaluate - maxRetries retries on failure", async () => {
   const ds = Dataset.fromArray([{ inputs: "retry-me" }]);
 
   const result = await ds.evaluate(
-    async (_input: string) => {
+    (_input: string) => {
       attempts++;
       if (attempts < 3) throw new Error("transient");
       return "success";
@@ -236,7 +236,7 @@ Deno.test("Dataset.evaluate - error captured after exhausting retries", async ()
   const ds = Dataset.fromArray([{ inputs: "always-fail" }]);
 
   const result = await ds.evaluate(
-    async (_input: string) => {
+    (_input: string) => {
       throw new Error("always");
     },
     { maxRetries: 2 },

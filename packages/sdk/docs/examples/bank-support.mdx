@@ -25,12 +25,12 @@ This is a TypeScript port of [Pydantic AI's canonical bank support example](http
 ## Prerequisites
 
 - `ANTHROPIC_API_KEY` set in your environment
-- Vibes installed (`deno add npm:@vibesjs/sdk npm:@ai-sdk/anthropic npm:zod`)
+- Vibes installed (`deno add jsr:@vibesjs/sdk npm:@ai-sdk/anthropic npm:zod`)
 
 ## Complete example
 
 ```typescript
-import { Agent, tool } from "npm:@vibesjs/sdk";
+import { Agent, tool } from "jsr:@vibesjs/sdk";
 import { anthropic } from "npm:@ai-sdk/anthropic";
 import { z } from "npm:zod";
 

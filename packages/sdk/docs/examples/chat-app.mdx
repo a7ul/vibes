@@ -15,7 +15,7 @@ This example shows a full-stack chat application: a Vibes streaming agent on the
 ## Prerequisites
 
 - `ANTHROPIC_API_KEY` set in your environment
-- For the Deno server: Vibes installed (`deno add npm:@vibesjs/sdk`)
+- For the Deno server: Vibes installed (`deno add jsr:@vibesjs/sdk`)
 - For the Next.js route: `npm install @vibesjs/sdk @ai-sdk/anthropic ai`
 
 ## Complete example
@@ -23,7 +23,7 @@ This example shows a full-stack chat application: a Vibes streaming agent on the
 <CodeGroup>
 
 ```typescript agent.ts
-import { Agent } from "npm:@vibesjs/sdk";
+import { Agent } from "jsr:@vibesjs/sdk";
 import { anthropic } from "npm:@ai-sdk/anthropic";
 
 export const chatAgent = new Agent({

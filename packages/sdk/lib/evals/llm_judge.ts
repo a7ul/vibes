@@ -12,7 +12,7 @@ import type { LanguageModel } from "ai";
 import { z } from "zod";
 import { Agent } from "../agent.ts";
 import type { EvalScore, Evaluator } from "./types.ts";
-import { EvaluatorContext } from "./context.ts";
+import type { EvaluatorContext } from "./context.ts";
 
 // ---------------------------------------------------------------------------
 // Default model

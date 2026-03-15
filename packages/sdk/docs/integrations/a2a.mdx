@@ -28,7 +28,7 @@ flowchart TD
 Install `@vibesjs/sdk` and import `A2AAdapter`:
 
 ```typescript
-import { A2AAdapter, Agent } from "npm:@vibesjs/sdk";
+import { A2AAdapter, Agent } from "jsr:@vibesjs/sdk";
 import { anthropic } from "npm:@ai-sdk/anthropic";
 
 const model = anthropic("claude-opus-4-5");
@@ -300,7 +300,7 @@ await fetch("https://my-agent.example.com/", {
 By default, `A2AAdapter` uses `MemoryTaskStore` - an in-memory implementation that does not persist tasks across process restarts.
 
 ```typescript
-import { A2AAdapter, MemoryTaskStore } from "npm:@vibesjs/sdk";
+import { A2AAdapter, MemoryTaskStore } from "jsr:@vibesjs/sdk";
 
 // Default - no need to import MemoryTaskStore for basic usage
 const adapter = new A2AAdapter(agent);

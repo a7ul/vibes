@@ -14,7 +14,7 @@ This example builds a two-stage article pipeline using Vibes' Graph API: an outl
 
 ## Prerequisites
 
-- Vibes installed (`npm:@vibesjs/sdk`)
+- Vibes installed (`jsr:@vibesjs/sdk`)
 - `ANTHROPIC_API_KEY` environment variable set
 
 <Warning>
@@ -24,7 +24,7 @@ Always import `next` and `output` as free functions from `@vibesjs/sdk`. Do **no
 ## Complete example
 
 ```typescript
-import { Agent, BaseNode, Graph, next, output } from "npm:@vibesjs/sdk";
+import { Agent, BaseNode, Graph, next, output } from "jsr:@vibesjs/sdk";
 import { anthropic } from "npm:@ai-sdk/anthropic";
 
 // --- State type ---

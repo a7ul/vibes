@@ -41,7 +41,7 @@ The package is already a dependency in the default `deno.json` when using Vibes 
 Stdio transport is the standard choice for Claude Desktop and other desktop AI apps. The client launches your server as a subprocess and communicates over stdin/stdout.
 
 ```typescript
-import { Agent } from "npm:@vibesjs/sdk";
+import { Agent } from "jsr:@vibesjs/sdk";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z } from "npm:zod";
@@ -101,7 +101,7 @@ After restarting Claude Desktop, your agent appears as an available tool.
 Use `StreamableHTTPServerTransport` for remote access over HTTP. This lets any HTTP client - including other Vibes agents using `MCPHttpClient` - call your server.
 
 ```typescript
-import { Agent } from "npm:@vibesjs/sdk";
+import { Agent } from "jsr:@vibesjs/sdk";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
 import { z } from "npm:zod";
@@ -143,7 +143,7 @@ Deno.serve({ port: 8080 }, async (req) => {
 A Vibes agent can connect to this server using `MCPHttpClient`:
 
 ```typescript
-import { MCPHttpClient, MCPToolset } from "npm:@vibesjs/sdk";
+import { MCPHttpClient, MCPToolset } from "jsr:@vibesjs/sdk";
 
 const client = new MCPHttpClient({ url: "http://localhost:8080" });
 await client.connect();

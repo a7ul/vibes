@@ -14,13 +14,13 @@ This example shows the full human-in-the-loop approval cycle. An email-sending t
 
 ## Prerequisites
 
-- Vibes installed (`npm:@vibesjs/sdk`)
+- Vibes installed (`jsr:@vibesjs/sdk`)
 - `ANTHROPIC_API_KEY` environment variable set
 
 ## Complete example
 
 ```typescript
-import { Agent, ApprovalRequiredError, tool } from "npm:@vibesjs/sdk";
+import { Agent, ApprovalRequiredError, tool } from "jsr:@vibesjs/sdk";
 import { anthropic } from "npm:@ai-sdk/anthropic";
 import { z } from "npm:zod";
 
