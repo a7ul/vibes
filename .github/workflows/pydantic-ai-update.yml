@@ -95,6 +95,4 @@ jobs:
           ISSUE_URL=$(echo "$RESPONSE" | python3 -c "import sys,json; print(json.load(sys.stdin)['html_url'])")
           echo "Opened issue: $ISSUE_URL"
 
-          # Assign Copilot coding agent using PAT (requires repo scope)
-          GH_TOKEN=${{ secrets.VIBES_GH_PAT }} gh issue edit "${ISSUE_NUMBER}" --repo ${{ github.repository }} --add-assignee Copilot \
-            || echo "Copilot assignment failed — ensure VIBES_GH_PAT has repo scope."
+          echo "Issue created with pydantic-ai-update label — Copilot will self-assign automatically."
