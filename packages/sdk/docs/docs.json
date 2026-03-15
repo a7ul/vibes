@@ -102,6 +102,7 @@
         "group": "Meta",
         "pages": [
           "meta/agent-skill",
+          "meta/auto-updates",
           "meta/acknowledgments",
           "meta/contributing",
           "meta/changelog",
