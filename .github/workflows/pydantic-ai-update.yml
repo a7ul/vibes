@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
     inputs:
       force:
-        description: 'Force create PR even if version unchanged'
+        description: 'Force create issue even if version unchanged'
         required: false
         default: 'false'
 
@@ -14,8 +14,8 @@ jobs:
   check-release:
     runs-on: ubuntu-latest
     permissions:
-      contents: write
-      pull-requests: write
+      contents: read
+      issues: write
 
     steps:
       - name: Checkout
@@ -52,12 +52,11 @@ jobs:
 
           echo "New release detected: $STORED -> $LATEST"
 
-          # Check for existing open PR for this version
-          BRANCH="chore/pydantic-ai-update-${LATEST}"
-          EXISTING_PR=$(gh api "repos/${{ github.repository }}/pulls?head=${{ github.repository_owner }}:${BRANCH}&state=open" \
-            --jq '.[0].number' 2>/dev/null || echo "")
-          if [[ -n "$EXISTING_PR" && "$EXISTING_PR" != "null" ]]; then
-            echo "PR already exists for v${LATEST}: #${EXISTING_PR} — skipping."
+          # Check for existing open issue for this version
+          EXISTING=$(gh api "repos/${{ github.repository }}/issues?state=open&labels=pydantic-ai-update" \
+            --jq ".[] | select(.title | contains(\"v${LATEST}\")) | .number" 2>/dev/null | head -1)
+          if [[ -n "$EXISTING" ]]; then
+            echo "Issue already exists for v${LATEST}: #${EXISTING} — skipping."
             echo "should_run=false" >> "$GITHUB_OUTPUT"
             exit 0
           fi
@@ -74,48 +73,30 @@ jobs:
           chmod +x .github/scripts/analyze-pydantic-release.sh
           .github/scripts/analyze-pydantic-release.sh "$OLD" "$NEW" > /tmp/release-summary.md
 
-      - name: Update version marker and push branch
+      - name: Create issue and assign Copilot
         if: steps.check.outputs.should_run == 'true'
-        id: push
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           OLD="${{ steps.stored-version.outputs.stored }}"
           NEW="${{ steps.fetch-version.outputs.latest }}"
-          BRANCH="chore/pydantic-ai-update-${NEW}"
-
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git checkout -b "$BRANCH"
-
-          echo "$NEW" > .github/pydantic-ai-version.txt
-          git add .github/pydantic-ai-version.txt
-          if git diff --cached --quiet; then
-            echo "Version marker already up to date, skipping commit."
-          else
-            git commit -m "chore: bump tracked pydantic-ai version to ${NEW}"
-          fi
-          git push origin "$BRANCH" --force
 
           OLD="$OLD" \
           NEW_VERSION="$NEW" \
           SUMMARY="$(cat /tmp/release-summary.md)" \
-          python3 .github/scripts/create-pr-body.py
+          python3 .github/scripts/create-issue-body.py
 
-          PR_BODY=$(cat /tmp/pr-body.md)
-          RESPONSE=$(gh api repos/${{ github.repository }}/pulls \
-              --method POST \
-              --field title="chore: port pydantic-ai v${NEW} changes" \
-              --field head="$BRANCH" \
-              --field base="main" \
-              --field body="$PR_BODY" \
-              --field labels[]="pydantic-ai-update")
-          PR_NUMBER=$(echo "$RESPONSE" | python3 -c "import sys,json; print(json.load(sys.stdin)['number'])")
-          PR_URL=$(echo "$RESPONSE" | python3 -c "import sys,json; print(json.load(sys.stdin)['html_url'])")
-          echo "Opened PR: $PR_URL"
+          RESPONSE=$(gh api repos/${{ github.repository }}/issues \
+            --method POST \
+            --field title="chore: port pydantic-ai v${NEW} changes" \
+            --field body="$(cat /tmp/issue-body.md)" \
+            --field labels[]="pydantic-ai-update")
+          ISSUE_NUMBER=$(echo "$RESPONSE" | python3 -c "import sys,json; print(json.load(sys.stdin)['number'])")
+          ISSUE_URL=$(echo "$RESPONSE" | python3 -c "import sys,json; print(json.load(sys.stdin)['html_url'])")
+          echo "Opened issue: $ISSUE_URL"
 
-          # Trigger Copilot coding agent via PR comment
-          gh pr comment "${PR_NUMBER}" --repo ${{ github.repository }} \
-            --body "@copilot Please implement the porting checklist in this PR description. Use \`.claude/vibes-pydantic-porting.md\` as your reference guide."
-
-          echo "branch=$BRANCH" >> "$GITHUB_OUTPUT"
+          # Assign Copilot — creates exactly one PR, closes this issue automatically on merge
+          gh api repos/${{ github.repository }}/issues/${ISSUE_NUMBER}/assignees \
+            --method POST \
+            --field assignees[]="copilot" \
+            || echo "Copilot assignee not available — assign manually in repo Settings → Copilot → Coding agent."

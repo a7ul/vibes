@@ -16,10 +16,11 @@ A GitHub Actions workflow runs every day at 9am UTC. It checks whether a new ver
 1. **Fetches the release notes** from the Pydantic AI GitHub release
 2. **Diffs the changed files** between the old and new tags to identify what actually changed
 3. **Highlights the relevant files**  -  agent logic, tool handling, result validators, streaming, MCP, graph  -  the parts that map to Vibes concepts
-4. **Opens a PR** that bumps the tracked version in `.github/pydantic-ai-version.txt` and includes the full porting checklist in the PR body
-5. **Assigns the PR to the GitHub Copilot coding agent**, which uses `.claude/vibes-pydantic-porting.md` as its porting guide to attempt an implementation
+4. **Opens a GitHub Issue** with the full porting checklist and assigns it to the GitHub Copilot coding agent
+5. **Copilot opens exactly one PR** referencing the issue, using `.claude/vibes-pydantic-porting.md` as its porting guide
+6. **Merging the PR closes the issue automatically** — no manual cleanup needed
 
-The PR is the single unit of work: the checklist, implementation, and review all happen there. It auto-closes when merged. The Copilot agent's output is always reviewed by a human before merging; complex architectural changes go through a full design review.
+You only ever manage one PR. The issue is just the trigger and disappears when the PR is merged. The Copilot agent's output is always reviewed by a human before merging; complex architectural changes go through a full design review.
 
 ## What gets ported
 
@@ -66,7 +67,7 @@ The currently tracked version of Pydantic AI is stored in `.github/pydantic-ai-v
 cat .github/pydantic-ai-version.txt
 ```
 
-To see the full history of porting work, filter GitHub PRs by the [`pydantic-ai-update`](https://github.com/a7ul/vibes/pulls?q=label%3Apydantic-ai-update) label.
+To see the full history of porting work, filter GitHub Issues by the [`pydantic-ai-update`](https://github.com/a7ul/vibes/issues?q=label%3Apydantic-ai-update) label.
 
 ## Running the workflow manually
 
