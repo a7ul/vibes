@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
     inputs:
       force:
-        description: 'Force create issue even if version unchanged'
+        description: 'Force create PR even if version unchanged'
         required: false
         default: 'false'
 
@@ -15,7 +15,6 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
-      issues: write
       pull-requests: write
 
     steps:
@@ -53,15 +52,6 @@ jobs:
 
           echo "New release detected: $STORED -> $LATEST"
 
-          # Check for existing open issue for this version
-          EXISTING_ISSUE=$(gh api "repos/${{ github.repository }}/issues?state=open&labels=pydantic-ai-update" \
-            --jq ".[] | select(.title | contains(\"v${LATEST}\")) | .number" 2>/dev/null | head -1)
-          if [[ -n "$EXISTING_ISSUE" ]]; then
-            echo "Issue already exists for v${LATEST}: #${EXISTING_ISSUE} — skipping."
-            echo "should_run=false" >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
-
           # Check for existing open PR for this version
           BRANCH="chore/pydantic-ai-update-${LATEST}"
           EXISTING_PR=$(gh api "repos/${{ github.repository }}/pulls?head=${{ github.repository_owner }}:${BRANCH}&state=open" \
@@ -86,9 +76,11 @@ jobs:
 
       - name: Update version marker and push branch
         if: steps.check.outputs.should_run == 'true'
+        id: push
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          OLD="${{ steps.stored-version.outputs.stored }}"
           NEW="${{ steps.fetch-version.outputs.latest }}"
           BRANCH="chore/pydantic-ai-update-${NEW}"
 
@@ -105,41 +97,26 @@ jobs:
           fi
           git push origin "$BRANCH" --force
 
-          PR_URL=$(gh api repos/${{ github.repository }}/pulls \
-              --method POST \
-              --field title="chore: bump tracked pydantic-ai version to ${NEW}" \
-              --field head="$BRANCH" \
-              --field base="main" \
-              --field body="Updates \`.github/pydantic-ai-version.txt\` from \`${OLD}\` to \`${NEW}\`. See the linked issue for the full porting checklist." \
-              --jq '.html_url')
-          echo "Opened PR: $PR_URL"
-
-          echo "branch=$BRANCH" >> "$GITHUB_OUTPUT"
-        id: push
-
-      - name: Open GitHub Issue
-        if: steps.check.outputs.should_run == 'true'
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          NEW="${{ steps.fetch-version.outputs.latest }}"
-
-          OLD="${{ steps.stored-version.outputs.stored }}" \
+          OLD="$OLD" \
           NEW_VERSION="$NEW" \
           SUMMARY="$(cat /tmp/release-summary.md)" \
-          python3 .github/scripts/create-issue-body.py
+          python3 .github/scripts/create-pr-body.py
 
-          ISSUE_BODY=$(cat /tmp/issue-body.md)
-          RESPONSE=$(gh api repos/${{ github.repository }}/issues \
-            --method POST \
-            --field title="chore: port pydantic-ai v${NEW} changes" \
-            --field body="$ISSUE_BODY" \
-            --field labels[]="pydantic-ai-update")
-          ISSUE_NUMBER=$(echo "$RESPONSE" | python3 -c "import sys,json; print(json.load(sys.stdin)['number'])")
-          ISSUE_URL=$(echo "$RESPONSE" | python3 -c "import sys,json; print(json.load(sys.stdin)['html_url'])")
-          echo "Opened issue: $ISSUE_URL"
+          PR_BODY=$(cat /tmp/pr-body.md)
+          RESPONSE=$(gh api repos/${{ github.repository }}/pulls \
+              --method POST \
+              --field title="chore: port pydantic-ai v${NEW} changes" \
+              --field head="$BRANCH" \
+              --field base="main" \
+              --field body="$PR_BODY" \
+              --field labels[]="pydantic-ai-update")
+          PR_NUMBER=$(echo "$RESPONSE" | python3 -c "import sys,json; print(json.load(sys.stdin)['number'])")
+          PR_URL=$(echo "$RESPONSE" | python3 -c "import sys,json; print(json.load(sys.stdin)['html_url'])")
+          echo "Opened PR: $PR_URL"
 
           # Assign to Copilot coding agent if available (requires Copilot to be enabled in repo settings)
-          gh api repos/${{ github.repository }}/issues/${ISSUE_NUMBER}/assignees \
+          gh api repos/${{ github.repository }}/pulls/${PR_NUMBER}/requested_reviewers \
             --method POST \
             --field assignees[]="copilot" || echo "Copilot assignee not available — assign manually or enable GitHub Copilot coding agent in repo settings."
+
+          echo "branch=$BRANCH" >> "$GITHUB_OUTPUT"

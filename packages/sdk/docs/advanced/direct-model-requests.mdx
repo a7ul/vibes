@@ -3,7 +3,7 @@ title: "Direct Model Requests"
 description: "Call AI models directly with generateText and streamText when you don't need the agent wrapper."
 ---
 
-The Vibes `agent()` wrapper adds significant value: tools, structured output, result validators, multi-turn conversation management, RunContext dependency injection, and human-in-the-loop flows. But sometimes you want none of that — just a single model call with a prompt and a response.
+The Vibes `agent()` wrapper adds significant value: tools, structured output, result validators, multi-turn conversation management, RunContext dependency injection, and human-in-the-loop flows. But sometimes you want none of that  -  just a single model call with a prompt and a response.
 
 For those cases, reach for the Vercel AI SDK's `generateText` and `streamText` directly.
 
@@ -26,20 +26,20 @@ flowchart TD
 
 ### Use the Agent when you need
 
-- **Tools** — the model should call functions with side effects
-- **outputSchema** — structured JSON output with Zod validation and retries
-- **Multi-turn conversation** — message history carried across turns
-- **Result validators** — custom post-processing that can trigger retries
-- **RunContext dependencies** — database clients, loggers, auth context injected via DI
-- **Human-in-the-loop** — approval gates before sensitive tool calls
+- **Tools**  -  the model should call functions with side effects
+- **outputSchema**  -  structured JSON output with Zod validation and retries
+- **Multi-turn conversation**  -  message history carried across turns
+- **Result validators**  -  custom post-processing that can trigger retries
+- **RunContext dependencies**  -  database clients, loggers, auth context injected via DI
+- **Human-in-the-loop**  -  approval gates before sensitive tool calls
 
 ### Use direct model calls when you need
 
-- **One-shot text generation** — summarize, translate, classify with no side effects
-- **Classification tasks** — `"Is this text positive, negative, or neutral?"` with a simple string response
-- **Template filling** — populate a template from structured data, no tools needed
-- **Simple summarization** — compress a document into a paragraph
-- **Scripts and background tasks** — cron jobs, batch processing where agent overhead isn't warranted
+- **One-shot text generation**  -  summarize, translate, classify with no side effects
+- **Classification tasks**  -  `"Is this text positive, negative, or neutral?"` with a simple string response
+- **Template filling**  -  populate a template from structured data, no tools needed
+- **Simple summarization**  -  compress a document into a paragraph
+- **Scripts and background tasks**  -  cron jobs, batch processing where agent overhead isn't warranted
 
 ---
 
@@ -81,7 +81,7 @@ async function classifySentiment(review: string): Promise<string> {
 
 ## streamText
 
-Use `streamText` when you want to display tokens as they arrive — ideal for chat UIs, long-form generation, or any scenario where perceived latency matters.
+Use `streamText` when you want to display tokens as they arrive  -  ideal for chat UIs, long-form generation, or any scenario where perceived latency matters.
 
 ```typescript
 import { streamText } from "ai";
@@ -148,13 +148,13 @@ sequenceDiagram
     Model-->>App: response text
 ```
 
-The direct path skips the agent loop entirely — no tool routing, no output validation retries, no multi-turn state. That simplicity is both its strength (less overhead, less complexity) and its limitation (no recovery if the output isn't what you expected).
+The direct path skips the agent loop entirely  -  no tool routing, no output validation retries, no multi-turn state. That simplicity is both its strength (less overhead, less complexity) and its limitation (no recovery if the output isn't what you expected).
 
 ---
 
 ## Using both in the same project
 
-It is completely valid — and often the right call — to mix agents and direct model calls in the same codebase.
+It is completely valid  -  and often the right call  -  to mix agents and direct model calls in the same codebase.
 
 ```typescript
 import { agent } from "@vibesjs/sdk";

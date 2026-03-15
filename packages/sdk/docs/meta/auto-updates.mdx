@@ -3,24 +3,23 @@ title: "Auto-Updates from Pydantic AI"
 description: "How @vibesjs/sdk tracks Pydantic AI releases and stays up to date."
 ---
 
-## How This Framework Stays Current
+## How this framework stays current
 
-Vibes is deliberately modeled on [Pydantic AI](https://ai.pydantic.dev). As Pydantic AI evolves — adding new features, fixing bugs, refining its API — Vibes tracks those changes and ports the relevant ones to TypeScript.
+Vibes is deliberately modeled on [Pydantic AI](https://ai.pydantic.dev). As Pydantic AI evolves  -  adding new features, fixing bugs, refining its API  -  Vibes tracks those changes and ports the relevant ones to TypeScript.
 
 This process is automated.
 
 ## The update pipeline
 
-A GitHub Actions workflow runs every day at 9am UTC. It checks whether a new version of `pydantic-ai` has been published to PyPI. If one has, and no tracking issue or PR already exists for that version, it:
+A GitHub Actions workflow runs every day at 9am UTC. It checks whether a new version of `pydantic-ai` has been published to PyPI. If one has, and no open PR already exists for that version, it:
 
 1. **Fetches the release notes** from the Pydantic AI GitHub release
 2. **Diffs the changed files** between the old and new tags to identify what actually changed
-3. **Highlights the relevant files** — agent logic, tool handling, result validators, streaming, MCP, graph — the parts that map to Vibes concepts
-4. **Opens a GitHub Issue** with a structured porting checklist
-5. **Opens a PR** that bumps the tracked version in `.github/pydantic-ai-version.txt`
-6. **Assigns the issue to the GitHub Copilot coding agent**, which uses `.claude/vibes-pydantic-porting.md` as its porting guide to attempt an implementation
+3. **Highlights the relevant files**  -  agent logic, tool handling, result validators, streaming, MCP, graph  -  the parts that map to Vibes concepts
+4. **Opens a PR** that bumps the tracked version in `.github/pydantic-ai-version.txt` and includes the full porting checklist in the PR body
+5. **Assigns the PR to the GitHub Copilot coding agent**, which uses `.claude/vibes-pydantic-porting.md` as its porting guide to attempt an implementation
 
-The Copilot agent's output is always reviewed by a human before merging. It handles straightforward ports well; complex architectural changes go through a full design review.
+The PR is the single unit of work: the checklist, implementation, and review all happen there. It auto-closes when merged. The Copilot agent's output is always reviewed by a human before merging; complex architectural changes go through a full design review.
 
 ## What gets ported
 
@@ -28,10 +27,10 @@ Not everything in a Pydantic AI release is relevant to Vibes. The porting guide 
 
 | Category | Action |
 |---|---|
-| New agent framework feature | Port to TypeScript — new file in `packages/sdk/lib/`, exported from `mod.ts`, documented |
+| New agent framework feature | Port to TypeScript  -  new file in `packages/sdk/lib/`, exported from `mod.ts`, documented |
 | Breaking API change | Update Vibes equivalent, add migration note to changelog |
 | Bug fix | Port if the same bug could exist in Vibes |
-| Python-only concern | Skip — noted as "not applicable" in the issue |
+| Python-only concern | Skip  -  noted as "not applicable" in the PR |
 | Dependency / tooling | Skip |
 
 The [Feature Parity](/reference/features) table is updated with every porting cycle to reflect current status.
@@ -44,7 +43,7 @@ Some Pydantic AI features have no direct TypeScript equivalent and are intention
 - Features already covered by the Vercel AI SDK (provider integrations, tokenisation)
 - Pydantic-specific validation patterns (replaced by Zod in Vibes)
 
-These are documented in the Feature Parity table as "Not implemented — skipped by design".
+These are documented in the Feature Parity table as "Not implemented  -  skipped by design".
 
 ## The porting guide
 
@@ -67,7 +66,7 @@ The currently tracked version of Pydantic AI is stored in `.github/pydantic-ai-v
 cat .github/pydantic-ai-version.txt
 ```
 
-To see the full history of porting work, filter GitHub Issues by the [`pydantic-ai-update`](https://github.com/a7ul/vibes/issues?q=label%3Apydantic-ai-update) label.
+To see the full history of porting work, filter GitHub PRs by the [`pydantic-ai-update`](https://github.com/a7ul/vibes/pulls?q=label%3Apydantic-ai-update) label.
 
 ## Running the workflow manually
 

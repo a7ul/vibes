@@ -3,7 +3,7 @@ title: RAG (Retrieval-Augmented Generation)
 description: Retrieval-augmented generation using a Vibes tool for vector search - swap the mock retriever for any real vector DB.
 ---
 
-RAG in Vibes is a tool pattern: the agent calls a retrieval tool that searches a knowledge base, then uses the retrieved context to answer the question. This example uses an in-memory mock — replace `vectorSearch()` with your actual vector DB client.
+RAG in Vibes is a tool pattern: the agent calls a retrieval tool that searches a knowledge base, then uses the retrieved context to answer the question. This example uses an in-memory mock  -  replace `vectorSearch()` with your actual vector DB client.
 
 ## What you'll learn
 
@@ -16,7 +16,7 @@ RAG in Vibes is a tool pattern: the agent calls a retrieval tool that searches a
 - `ANTHROPIC_API_KEY` set in your environment
 - Vibes installed (`deno add npm:@vibesjs/sdk npm:@ai-sdk/anthropic npm:zod`)
 
-## Complete Example
+## Complete example
 
 ```typescript
 import { Agent, plainTool } from "npm:@vibesjs/sdk";
@@ -93,7 +93,7 @@ const result = await ragAgent.run("How does dependency injection work in Vibes?"
 console.log(result.output);
 ```
 
-## Run It
+## Run it
 
 ```bash
 deno run --allow-net --allow-env rag.ts
@@ -101,17 +101,17 @@ deno run --allow-net --allow-env rag.ts
 
 ## How it works
 
-**`plainTool()`**: A simpler variant of `tool()` — no `RunContext`, the execute function receives args directly. Use `plainTool()` when your tool doesn't need access to deps. Use `tool()` (or `tool<TDeps>()`) when it does.
+**`plainTool()`**: A simpler variant of `tool()`  -  no `RunContext`, the execute function receives args directly. Use `plainTool()` when your tool doesn't need access to deps. Use `tool()` (or `tool<TDeps>()`) when it does.
 
-**Tool result as context**: When the agent calls `search_docs`, Vibes executes `vectorSearch()` and passes the result back to the model as a tool response. The model uses this retrieved context to form its answer — no prompt engineering needed.
+**Tool result as context**: When the agent calls `search_docs`, Vibes executes `vectorSearch()` and passes the result back to the model as a tool response. The model uses this retrieved context to form its answer  -  no prompt engineering needed.
 
 **Plugging in a real vector DB**: Replace the `vectorSearch()` function body with your vector DB client. The Vibes pattern is identical regardless of the underlying store. For dependency-injected DB clients (e.g., a shared connection pool), use `tool<Deps>()` and access the client via `ctx.deps`.
 
 <Info>
-The retrieval quality in this example is intentionally minimal (keyword overlap). A real RAG system uses embedding-based semantic search. The Vibes pattern — tool calls retriever, model uses results — is identical.
+The retrieval quality in this example is intentionally minimal (keyword overlap). A real RAG system uses embedding-based semantic search. The Vibes pattern  -  tool calls retriever, model uses results  -  is identical.
 </Info>
 
 ## Next steps
 
-- [Tools concept page](/concepts/tools) — `plainTool`, `tool`, `fromSchema`
-- [Dependencies concept page](/concepts/dependencies) — for injecting DB clients into tools
+- [Tools concept page](/concepts/tools)  -  `plainTool`, `tool`, `fromSchema`
+- [Dependencies concept page](/concepts/dependencies)  -  for injecting DB clients into tools

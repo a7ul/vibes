@@ -1,6 +1,6 @@
 ---
 title: "Installation"
-description: "Install Vibes Agent Framework and configure your AI provider in under 2 minutes."
+description: "Install Vibes SDK and configure your AI provider in under 2 minutes."
 ---
 
 Vibes runs on Deno and Node.js. Install the framework, pick a provider, set your API key, and you're ready to build agents.
@@ -64,17 +64,16 @@ Vibes runs on Deno and Node.js. Install the framework, pick a provider, set your
 Vibes is a thin orchestration layer over the Vercel AI SDK. You install Vibes once and choose any supported AI provider separately.
 
 ```mermaid
-graph LR
-    subgraph "Vibes Framework"
+flowchart LR
+    subgraph vibes["Vibes SDK"]
         Agent --> Tools
         Agent --> DI[Dependency Injection]
         Agent --> Validation
     end
-    subgraph "AI SDK · 50+ providers"
-        Agent --> Anthropic
-        Agent --> OpenAI
-        Agent --> More[Google · Groq · Mistral · ...]
-    end
+    Agent --> AISDK[AI SDK]
+    AISDK --> Anthropic
+    AISDK --> OpenAI
+    AISDK --> More[Google · Groq · Mistral · ...]
 ```
 
 ## Choose a provider

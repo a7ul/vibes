@@ -1,9 +1,9 @@
 ---
 title: Agent Skill
-description: Give your coding assistant complete knowledge of @vibesjs/sdk — install in one command.
+description: Give your coding assistant complete knowledge of @vibesjs/sdk  -  install in one command.
 ---
 
-The `@vibesjs/sdk` agent skill gives your coding assistant (Claude Code or any compatible agent) complete, up-to-date knowledge of the framework API — tools, agents, toolsets, dependency injection, structured output, streaming, testing, graph workflows, evals, MCP, and more.
+The `@vibesjs/sdk` agent skill gives your coding assistant (Claude Code or any compatible agent) complete, up-to-date knowledge of the framework API  -  tools, agents, toolsets, dependency injection, structured output, streaming, testing, graph workflows, evals, MCP, and more.
 
 Once installed, your agent writes idiomatic `@vibesjs/sdk` code without needing to look up documentation.
 
@@ -40,17 +40,17 @@ After installing, reference the skill explicitly:
 Use the vibes-sdk skill to help me build an agent that...
 ```
 
-Or just start working — Claude Code picks it up automatically when it detects `@vibesjs/sdk` in your project.
+Or just start working  -  Claude Code picks it up automatically when it detects `@vibesjs/sdk` in your project.
 
 ## How it works
 
 The skill does **not** embed a static copy of the API. Instead it instructs the agent to:
 
-1. **Fetch live docs via [Context7](https://context7.com)** (if available) — always reflects the latest published version
+1. **Fetch live docs via [Context7](https://context7.com)** (if available)  -  always reflects the latest published version
 2. **Fall back to fetching docs directly from GitHub** via `WebFetch`
-3. **Apply a small set of static "gotchas"** — non-obvious patterns that are easy to get wrong regardless of framework version
+3. **Apply a small set of static "gotchas"**  -  non-obvious patterns that are easy to get wrong regardless of framework version
 
-This means the skill stays accurate as the framework evolves — no manual updates needed.
+This means the skill stays accurate as the framework evolves  -  no manual updates needed.
 
 ## Keeping it updated
 

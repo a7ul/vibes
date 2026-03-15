@@ -5,7 +5,7 @@ description: Port of Pydantic AI's canonical bank support example to TypeScript 
 
 This is a TypeScript port of [Pydantic AI's canonical bank support example](https://ai.pydantic.dev/examples/bank-support/). It demonstrates the three defining features of Vibes: typed dependency injection via `RunContext`, dynamic system prompts via the `instructions` function, and structured output via `outputSchema`.
 
-## What You'll Learn
+## What you'll learn
 
 - Typed dependency injection with `Agent<TDeps, TOutput>`
 - Dynamic system prompts with the `instructions` function
@@ -27,7 +27,7 @@ This is a TypeScript port of [Pydantic AI's canonical bank support example](http
 - `ANTHROPIC_API_KEY` set in your environment
 - Vibes installed (`deno add npm:@vibesjs/sdk npm:@ai-sdk/anthropic npm:zod`)
 
-## Complete Example
+## Complete example
 
 ```typescript
 import { Agent, tool } from "npm:@vibesjs/sdk";
@@ -97,7 +97,7 @@ console.log(result.output);
 // }
 ```
 
-## Run It
+## Run it
 
 ```bash
 deno run --allow-net --allow-env bank-support.ts
@@ -105,15 +105,15 @@ deno run --allow-net --allow-env bank-support.ts
 
 ## How it works
 
-**Dependency injection**: `Deps` is a plain TypeScript type. Vibes passes it through `RunContext` to instructions, tools, and validators — no global state, no singletons, fully testable. Swap `DatabaseConn` for a mock in tests by passing different `deps` at call time.
+**Dependency injection**: `Deps` is a plain TypeScript type. Vibes passes it through `RunContext` to instructions, tools, and validators  -  no global state, no singletons, fully testable. Swap `DatabaseConn` for a mock in tests by passing different `deps` at call time.
 
 **`instructions` function**: Called before each agent run. Returns a string that is appended to the system prompt. Use this for per-request context (customer name, user preferences, session data). Unlike a static `systemPrompt`, it can read from the database or any async source.
 
 **`tool<Deps>()`**: The type parameter makes `ctx.deps` typed as `Deps` inside `execute`. Without the type param, `ctx.deps` is `unknown`. The tool receives the full `RunContext` as its first argument.
 
-**Structured output**: `outputSchema` instructs the model to return JSON matching the Zod schema. `result.output` is typed as `z.infer<typeof SupportOutput>` — no parsing or casting needed. Invalid model output raises a typed error.
+**Structured output**: `outputSchema` instructs the model to return JSON matching the Zod schema. `result.output` is typed as `z.infer<typeof SupportOutput>`  -  no parsing or casting needed. Invalid model output raises a typed error.
 
 ## Next steps
 
-- [Dependencies concept page](/concepts/dependencies) — full DI system docs
-- [Results concept page](/concepts/results) — output modes and validators
+- [Dependencies concept page](/concepts/dependencies)  -  full DI system docs
+- [Results concept page](/concepts/results)  -  output modes and validators

@@ -2,11 +2,11 @@
 
 > Maps every Pydantic AI left-sidebar item to our current state.
 > Status: ✅ exists | ⚠️ partial/wrong | ❌ missing
-> Last updated: 2026-03-15 — after P0–P5 rewrite + package rename to `@vibesjs/sdk`
+> Last updated: 2026-03-15  -  after P0–P5 rewrite + package rename to `@vibesjs/sdk`
 
 ---
 
-## Top Level
+## Top level
 
 | Pydantic AI | Our equivalent | Status | Notes |
 |---|---|---|---|
@@ -18,7 +18,7 @@
 
 ---
 
-## Core Concepts
+## Core concepts
 
 | Pydantic AI | Our equivalent | Status | Notes |
 |---|---|---|---|
@@ -27,7 +27,7 @@
 | Function Tools | `concepts/tools.mdx` | ⚠️ | Rewritten; verify `prepare`, `argsValidator`, `requiresApproval` coverage |
 | Output (Results) | `concepts/results.mdx` | ⚠️ | Consolidated from 2 pages; output mode diagram added |
 | Messages and Chat History | `concepts/messages.mdx` | ⚠️ | Rewritten; verify serialization + history processor coverage |
-| Direct Model Requests | `advanced/direct-model-requests.mdx` | ⚠️ | New page — was ❌ |
+| Direct Model Requests | `advanced/direct-model-requests.mdx` | ⚠️ | New page  -  was ❌ |
 | Streaming | `concepts/streaming.mdx` | ⚠️ | Rewritten; verify `runStreamEvents` examples |
 
 ---
@@ -36,7 +36,7 @@
 
 | Pydantic AI | Our equivalent | Status | Notes |
 |---|---|---|---|
-| Models overview | `concepts/models.mdx` | ⚠️ | New page — was ❌; covers model layer + all providers |
+| Models overview | `concepts/models.mdx` | ⚠️ | New page  -  was ❌; covers model layer + all providers |
 | OpenAI | `concepts/models.mdx` (inline) | ⚠️ | No dedicated page; covered in models overview |
 | Anthropic | `concepts/models.mdx` (inline) | ⚠️ | No dedicated page |
 | Google (Gemini) | `concepts/models.mdx` (inline) | ⚠️ | No dedicated page |
@@ -57,20 +57,20 @@
 | Advanced Tool Features | `concepts/tools.mdx` (likely) | ⚠️ | Was ❌; verify `prepare`, dynamic filtering, `sequential` coverage |
 | Toolsets | `concepts/toolsets.mdx` | ⚠️ | Rewritten; verify `WrapperToolset` examples |
 | Deferred Tools | `concepts/toolsets.mdx` (likely) | ⚠️ | Verify `agent.resume()` flow with sequence diagram |
-| Built-in Tools | - | ❌ | Missing — no page listing what tools ship with the framework |
+| Built-in Tools | - | ❌ | Missing  -  no page listing what tools ship with the framework |
 | Common Tools | - | ❌ | Missing |
 | Third-Party Tools | - | ❌ | Missing |
 
 ---
 
-## Advanced Features
+## Advanced features
 
 | Pydantic AI | Our equivalent | Status | Notes |
 |---|---|---|---|
 | Image / Audio / Video / Document Input | `advanced/multimodal.mdx` | ⚠️ | Rewritten; verify audio/video/document examples |
-| Thinking (extended reasoning) | `concepts/thinking.mdx` | ⚠️ | New page — was ❌; covers Anthropic/Google `thinking` config |
+| Thinking (extended reasoning) | `concepts/thinking.mdx` | ⚠️ | New page  -  was ❌; covers Anthropic/Google `thinking` config |
 | HTTP Request Retries | - | ❌ | Missing |
-| Usage Limits | `concepts/models.mdx` (likely) | ⚠️ | No dedicated page; old `reference/advanced/usage-limits.mdx` was ✅ — verify not lost |
+| Usage Limits | `concepts/models.mdx` (likely) | ⚠️ | No dedicated page; old `reference/advanced/usage-limits.mdx` was ✅  -  verify not lost |
 | Error Handling | `advanced/error-handling.mdx` | ⚠️ | Rewritten; verify error taxonomy diagram + recovery flows |
 
 ---
@@ -82,7 +82,7 @@
 | MCP Overview | `integrations/mcp-client.mdx` | ⚠️ | Dedicated page now exists |
 | MCP Client | `integrations/mcp-client.mdx` | ⚠️ | MCPToolset, stdio, HTTP, MCPManager |
 | FastMCP Client | `integrations/mcp-client.mdx` (likely) | ⚠️ | Was ❌; verify FastMCP coverage |
-| MCP Server | `integrations/mcp-server.mdx` | ⚠️ | New page — was ❌; exposing agent as MCP server |
+| MCP Server | `integrations/mcp-server.mdx` | ⚠️ | New page  -  was ❌; exposing agent as MCP server |
 
 ---
 
@@ -92,7 +92,7 @@
 |---|---|---|---|
 | Multi-Agent Patterns | `concepts/multi-agent.mdx` | ⚠️ | Consolidated; verify delegation flow diagrams |
 | Graph Overview | `concepts/graph.mdx` | ⚠️ | Rewritten; API bugs fixed |
-| Graph Steps | - | ❌ | Missing — no dedicated steps deep-dive |
+| Graph Steps | - | ❌ | Missing  -  no dedicated steps deep-dive |
 | Graph Joins & Reducers | - | ❌ | Missing |
 | Graph Decisions | - | ❌ | Missing |
 | Graph Parallel Execution | - | ❌ | Missing |
@@ -110,8 +110,8 @@
 | Durable Execution: Prefect | - | ❌ | Missing |
 | UI Event Streams Overview | - | ❌ | Missing overview page |
 | AG-UI | `integrations/ag-ui.mdx` | ⚠️ | `depsFactory` bug fixed; SSE event sequence diagram TBD |
-| Vercel AI (UI streaming) | `integrations/vercel-ai-ui.mdx` | ⚠️ | New page — was ❌; useChat / useCompletion / RSC |
-| Agent2Agent (A2A) | `integrations/a2a.mdx` | ⚠️ | New page — was ❌; AgentCard, JSON-RPC, task lifecycle, streaming |
+| Vercel AI (UI streaming) | `integrations/vercel-ai-ui.mdx` | ⚠️ | New page  -  was ❌; useChat / useCompletion / RSC |
+| Agent2Agent (A2A) | `integrations/a2a.mdx` | ⚠️ | New page  -  was ❌; AgentCard, JSON-RPC, task lifecycle, streaming |
 
 ---
 
@@ -120,7 +120,7 @@
 | Pydantic AI | Our equivalent | Status | Notes |
 |---|---|---|---|
 | Testing | `concepts/testing.mdx` | ⚠️ | Consolidated; verify `captureRunMessages` examples |
-| Evals Overview | `concepts/evals.mdx` | ⚠️ | New page — was ❌; single page, not full section |
+| Evals Overview | `concepts/evals.mdx` | ⚠️ | New page  -  was ❌; single page, not full section |
 | Eval Quick Start | - | ❌ | Missing |
 | Eval Core Concepts | - | ❌ | Missing |
 | Evaluators Overview | - | ❌ | Missing |
@@ -140,16 +140,16 @@
 
 | Pydantic AI | Our equivalent | Status | Notes |
 |---|---|---|---|
-| Examples landing | `examples/index.mdx` | ⚠️ | New page — was ❌ |
+| Examples landing | `examples/index.mdx` | ⚠️ | New page  -  was ❌ |
 | Pydantic Model (hello world) | `getting-started/hello-world.mdx` + `examples/hello-world.mdx` | ⚠️ | Consolidated from 4 fragmented pages |
-| Weather agent | `examples/weather-agent.mdx` | ⚠️ | New page — was ❌ |
-| Chat App | `examples/chat-app.mdx` | ⚠️ | New page — was ❌ |
-| Bank Support | `examples/bank-support.mdx` | ⚠️ | New page — was ❌ |
+| Weather agent | `examples/weather-agent.mdx` | ⚠️ | New page  -  was ❌ |
+| Chat App | `examples/chat-app.mdx` | ⚠️ | New page  -  was ❌ |
+| Bank Support | `examples/bank-support.mdx` | ⚠️ | New page  -  was ❌ |
 | SQL Generation | - | ❌ | Missing |
-| RAG | `examples/rag.mdx` | ⚠️ | New page — was ❌ |
+| RAG | `examples/rag.mdx` | ⚠️ | New page  -  was ❌ |
 | Stream Markdown | - | ❌ | Missing |
 | Flight Booking | - | ❌ | Missing |
-| Question Graph | `examples/graph-workflow.mdx` | ⚠️ | New page — was ❌ |
+| Question Graph | `examples/graph-workflow.mdx` | ⚠️ | New page  -  was ❌ |
 | AG-UI example | - | ❌ | Missing |
 
 ---
@@ -170,7 +170,7 @@
 | Upgrade Guide / Changelog | - | ❌ | Missing |
 | Version Policy | - | ❌ | Missing |
 | Feature Parity (vs Pydantic AI) | `reference/features.mdx` | ✅ | Exists |
-| Acknowledgments | `meta/acknowledgments.mdx` | ✅ | New — was ❌ |
+| Acknowledgments | `meta/acknowledgments.mdx` | ✅ | New  -  was ❌ |
 
 ---
 
@@ -201,7 +201,7 @@
 
 ---
 
-## Summary Counts
+## Summary counts
 
 | Status | Count |
 |---|---|
@@ -219,20 +219,20 @@
 
 | Gap | Status | Why it matters |
 |---|---|---|
-| **Models / providers section** | ⚠️ `concepts/models.mdx` exists | Pydantic AI has 10 dedicated per-provider pages; we have one unified page — good start but may need splitting |
-| **A2A docs** | ⚠️ `integrations/a2a.mdx` exists | Was fully missing; now exists — verify completeness |
+| **Models / providers section** | ⚠️ `concepts/models.mdx` exists | Pydantic AI has 10 dedicated per-provider pages; we have one unified page  -  good start but may need splitting |
+| **A2A docs** | ⚠️ `integrations/a2a.mdx` exists | Was fully missing; now exists  -  verify completeness |
 | **MCP Server** | ⚠️ `integrations/mcp-server.mdx` exists | Was fully missing; now exists |
 | **Examples section** | ⚠️ 7 of 11 examples exist | Good progress; still missing SQL Generation, Stream Markdown, Flight Booking, AG-UI example |
 | **Thinking / extended reasoning** | ⚠️ `concepts/thinking.mdx` exists | Was fully missing; now exists |
 | **Vercel AI UI streaming** | ⚠️ `integrations/vercel-ai-ui.mdx` exists | Was fully missing; now exists |
 | **Durable execution overview** | ⚠️ covered in `integrations/temporal.mdx` | Verify overview section present; DBOS and Prefect still missing |
-| **Evals** | ⚠️ `concepts/evals.mdx` (single page) | Full 12-page section still missing — needs framework-level support |
-| **Graph sub-pages** | ❌ 4 pages missing | Steps, Joins & Reducers, Decisions, Parallel Execution — all missing |
-| **Built-in / Common / Third-Party Tools** | ❌ | Missing — not yet addressed in rewrite |
+| **Evals** | ⚠️ `concepts/evals.mdx` (single page) | Full 12-page section still missing  -  needs framework-level support |
+| **Graph sub-pages** | ❌ 4 pages missing | Steps, Joins & Reducers, Decisions, Parallel Execution  -  all missing |
+| **Built-in / Common / Third-Party Tools** | ❌ | Missing  -  not yet addressed in rewrite |
 
 ---
 
-## Priority Order for Rewrite
+## Priority order for rewrite
 
 ### P0 - Core teaching flow ✅ DONE
 1. `index.mdx` ✅
@@ -288,13 +288,13 @@
 37. `contributing.mdx` ❌ not yet written
 38. `changelog.mdx` ❌ not yet written
 
-### Next Up - Verification pass
+### Next up - verification pass
 - Audit each ⚠️ page for content quality, correct API, and diagram completeness
 - Add missing examples (SQL, Stream Markdown, Flight Booking, AG-UI)
 - Consider graph sub-pages (Steps, Joins, Decisions, Parallel)
 - Built-in / Common / Third-Party Tools pages
 
-### Future Milestone - Evals
+### Future milestone - evals
 Full evals section (~12 pages). Needs framework-level evals support.
 - `evals/index.mdx`
 - `evals/quick-start.mdx`

@@ -1,6 +1,6 @@
 ---
 title: "Evaluation Framework"
-description: "Test your agents systematically with datasets, built-in evaluators, LLM-as-judge, and experiment runners."
+description: "Production-grade evals in code - typed datasets, built-in and LLM-as-judge evaluators, experiment runners that live in your repo and run in CI."
 ---
 
 ## Introduction
@@ -11,15 +11,15 @@ This is a 1-1 TypeScript port of [Pydantic AI's evals module](https://ai.pydanti
 
 Key benefits:
 
-- **Systematic testing** — catch regressions across many input scenarios
-- **Quantitative scoring** — go beyond pass/fail with numeric scores and summary statistics
-- **LLM-as-judge** — use a language model to evaluate subjective qualities like helpfulness or accuracy
-- **Concurrency** — run cases in parallel with configurable limits
-- **Immutable data** — all dataset transformations return new objects
+- **Systematic testing**  -  catch regressions across many input scenarios
+- **Quantitative scoring**  -  go beyond pass/fail with numeric scores and summary statistics
+- **LLM-as-judge**  -  use a language model to evaluate subjective qualities like helpfulness or accuracy
+- **Concurrency**  -  run cases in parallel with configurable limits
+- **Immutable data**  -  all dataset transformations return new objects
 
 ---
 
-## Quick Start
+## Quick start
 
 ```typescript
 import {
@@ -127,7 +127,7 @@ for (const c of ds) {
 ### Serialization
 
 ```typescript
-// To JSON object (evaluators excluded — they are functions)
+// To JSON object (evaluators excluded  -  they are functions)
 const json = ds.toJSON();
 
 // Write to file

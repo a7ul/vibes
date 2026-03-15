@@ -1,7 +1,7 @@
 {
   "name": "@vibesjs/sdk",
   "version": "0.0.1",
-  "description": "Pydantic AI patterns for TypeScript. Powered by Vercel AI SDK.",
+  "description": "Pydantic AI patterns for TypeScript. Using Vercel AI SDK.",
   "main": "index.js",
   "license": "MIT",
   "keywords": ["ai", "agent", "llm", "typescript"]

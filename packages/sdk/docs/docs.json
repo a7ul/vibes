@@ -1,8 +1,8 @@
 {
   "$schema": "https://mintlify.com/docs.json",
   "theme": "mint",
-  "name": "Vibes Agent Framework",
-  "description": "Pydantic AI patterns for TypeScript. Powered by Vercel AI SDK.",
+  "name": "Vibes SDK",
+  "description": "Pydantic AI patterns for TypeScript. Using Vercel AI SDK.",
   "logo": {
     "light": "/logo/light.svg",
     "dark": "/logo/dark.svg"
@@ -114,8 +114,8 @@
     "github": "https://github.com/a7ul/vibes"
   },
   "llms": {
-    "title": "Vibes Agent Framework",
-    "description": "Pydantic AI patterns for TypeScript. Powered by Vercel AI SDK."
+    "title": "Vibes SDK",
+    "description": "Pydantic AI patterns for TypeScript. Using Vercel AI SDK."
   },
   "search": {
     "prompt": "How can I help you build AI agents?"

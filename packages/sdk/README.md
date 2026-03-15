@@ -11,7 +11,7 @@
 [![npm](https://img.shields.io/npm/v/@vibesjs/sdk)](https://www.npmjs.com/package/@vibesjs/sdk)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
 
-**TypeScript agent framework for building production-grade, type-safe AI applications and workflows, the Pydantic AI way, powered by Vercel AI SDK.**
+**TypeScript agent framework for building production-grade, type-safe AI applications and workflows, the Pydantic AI way, using Vercel AI SDK.**
 
 > Heavily inspired by [Pydantic AI](https://ai.pydantic.dev/). Vibes mirrors its philosophy, API design, and flexibility for the TypeScript ecosystem. If you've used Pydantic AI, you'll feel at home immediately.
 
@@ -27,7 +27,7 @@ Any LLM provider   ← Anthropic, OpenAI, Google, Groq, Mistral, Ollama, ...
 
 ## Installation
 
-**Deno** — add to `deno.json`:
+**Deno** - add to `deno.json`:
 
 ```jsonc
 {
@@ -72,7 +72,7 @@ Set your API key:
 export ANTHROPIC_API_KEY="sk-ant-..."
 ```
 
-## Quick Start
+## Quick start
 
 ```ts
 import { Agent } from "@vibesjs/sdk";
@@ -89,18 +89,17 @@ console.log(result.output); // "Paris"
 
 ## Why Vibes?
 
-1. **Type-safe tools + Dependency injection** — Every tool parameter is validated at runtime with Zod. Carry databases, HTTP clients, and config via `RunContext` through the entire call chain. No `any` types, no global state.
-2. **Model-agnostic** — Switch between Anthropic, OpenAI, Google, Groq, Mistral, Ollama, and 50+ providers by changing one line.
-3. **Structured output + Streaming** — Define a Zod schema, get back a typed object or stream typed partial objects to the client as they arrive.
-4. **Automatic retries + Cost control** — Retries on validation failure and enforces token budgets and request limits to keep costs in check.
-5. **First-class testing — no API calls required** — `TestModel`, `FunctionModel`, `agent.override()`, and `setAllowModelRequests(false)` make every agent fully testable in CI without hitting a real LLM.
-6. **Robust evaluations** — Define typed datasets, score outputs with built-in or LLM-as-judge evaluators, and run experiments with configurable concurrency and retries. Evals are code — they live in your repo and run in CI.
-7. **MCP, AG-UI, A2A + Durable agents via Temporal** — Connect to MCP servers, build AG-UI and A2A agents out of the box. Run long-lived agents that survive crashes and restarts with Temporal.
-8. **OpenTelemetry observability** — Every run emits OTel spans, events, and token usage metrics. Works with Jaeger, Honeycomb, Datadog, and any OTel-compatible backend.
+1. **Type-safe tools + Dependency injection** - Every tool parameter is validated at runtime with Zod. Carry databases, HTTP clients, and config via `RunContext` through the entire call chain. No `any` types, no global state.
+2. **Automatic retries + Cost control** - Retries on validation failure and enforces token budgets and request limits to keep costs in check.
+3. **Structured output + Streaming** - Define a Zod schema, get back a typed object or stream typed partial objects to the client as they arrive.
+4. **Testing + Evals - the only way to ship AI to production** - Unit-test every agent in CI with `TestModel` and `setAllowModelRequests(false)` (no real API calls). Then go further with typed eval datasets, built-in and LLM-as-judge evaluators, and experiment runners with configurable concurrency. Evals are code - they live in your repo, run in CI, and catch regressions before they reach users.
+5. **Model-agnostic** - Switch between Anthropic, OpenAI, Google, Groq, Mistral, Ollama, and 50+ providers by changing one line.
+6. **OpenTelemetry observability** - Every run emits OTel spans, events, and token usage metrics. Works with Jaeger, Honeycomb, Datadog, and any OTel-compatible backend.
+7. **Durable agents + MCP, AG-UI, A2A** - Run long-lived agents that survive crashes and restarts with Temporal. Connect to MCP servers and build AG-UI and A2A agents out of the box.
 
-## Progressive Examples
+## Progressive examples
 
-### 1 — Bare agent (6 lines)
+### 1 - Bare agent (6 lines)
 
 ```ts
 import { Agent } from "@vibesjs/sdk";
@@ -115,7 +114,7 @@ const result = await agent.run("What's the weather like today?");
 console.log(result.output);
 ```
 
-### 2 — Tools + structured output
+### 2 - Tools + structured output
 
 ```ts
 import { Agent, tool } from "@vibesjs/sdk";
@@ -149,7 +148,7 @@ console.log(result.output.city);        // "Tokyo"
 console.log(result.output.temperature); // 22
 ```
 
-### 3 — Dependency injection
+### 3 - Dependency injection
 
 ```ts
 import { Agent, tool } from "@vibesjs/sdk";
@@ -179,7 +178,7 @@ const result = await agent.run("Weather in Paris?", {
 });
 ```
 
-### 4 — Testing without API calls
+### 4 - Testing without API calls
 
 ```ts
 import { Agent, tool, TestModel, setAllowModelRequests } from "@vibesjs/sdk";
@@ -188,7 +187,7 @@ import { z } from "zod";
 setAllowModelRequests(false); // block accidental real API calls in CI
 
 const agent = new Agent({
-  model: /* real model here — overridden below */,
+  model: /* real model here - overridden below */,
   systemPrompt: "You are a weather assistant.",
   tools: [getWeather],
   outputSchema: WeatherReport,
@@ -205,31 +204,31 @@ Deno.test("weather agent returns structured output", async () => {
 });
 ```
 
-## Feature Highlights
+## Feature highlights
 
 | Feature | Description |
 |---------|-------------|
-| **Multi-provider** | Any Vercel AI SDK model — Anthropic, OpenAI, Google, Groq, Mistral, Ollama, and 50+ more |
+| **Multi-provider** | Any Vercel AI SDK model - Anthropic, OpenAI, Google, Groq, Mistral, Ollama, and 50+ more |
 | **Tools** | Type-safe tool definitions with Zod parameter validation |
-| **Toolsets** | Composable, context-aware tool groups — filter, prefix, wrap, combine |
+| **Toolsets** | Composable, context-aware tool groups - filter, prefix, wrap, combine |
 | **Structured output** | Zod-validated typed responses via a `final_result` tool |
 | **Dependency injection** | Type-safe `RunContext<TDeps>` flows through tools, prompts, and validators |
 | **Streaming** | `.stream()`, `textStream`, `partialOutput`, `runStreamEvents()` |
-| **Evaluations** | Typed datasets, built-in evaluators, LLM-as-judge, experiment runners — runs in CI |
+| **Evaluations** | Typed datasets, built-in evaluators, LLM-as-judge, experiment runners - runs in CI |
 | **Multimodal** | Send images, audio, and files via `imageMessage()`, `audioMessage()`, `fileMessage()` |
 | **Extended thinking** | Pass `thinking` settings through to models that support it |
-| **History processors** | Transform message history per-turn — trim, token-limit, summarize, privacy-filter |
+| **History processors** | Transform message history per-turn - trim, token-limit, summarize, privacy-filter |
 | **Deferred tools** | Human-in-the-loop approval flows with `agent.resume()` |
 | **MCP client** | Connect to Model Context Protocol tool servers (stdio + HTTP) |
 | **MCP server** | Expose your agent as an MCP server |
 | **A2A protocol** | Agent-to-Agent protocol adapter for interop with other A2A agents |
 | **AG-UI** | Server-sent events adapter for AG-UI-compatible frontends |
 | **Graph workflows** | FSM-style multi-step pipelines with persistence and Mermaid diagrams |
-| **Temporal** | Durable agent workflows via Temporal.io — survives crashes and restarts |
+| **Temporal** | Durable agent workflows via Temporal.io - survives crashes and restarts |
 | **OpenTelemetry** | First-class tracing with `instrumentAgent()` |
-| **Testing** | `TestModel`, `FunctionModel`, `setAllowModelRequests(false)` — no real API calls needed |
+| **Testing** | `TestModel`, `FunctionModel`, `setAllowModelRequests(false)` - no real API calls needed |
 
-## Agent Skill
+## Agent skill
 
 Install the `@vibesjs/sdk` agent skill so your coding assistant has full API knowledge built-in:
 
@@ -247,46 +246,46 @@ See [skills/README.md](./skills/README.md) for more options.
 
 ## Documentation
 
-### Getting Started
+### Getting started
 - [**Installation**](./docs/getting-started/install.mdx)
 - [**Hello World**](./docs/getting-started/hello-world.mdx)
 
 ### Concepts
-- [**Agents**](./docs/concepts/agents.mdx) — agent loop, system prompts, run context
-- [**Tools**](./docs/concepts/tools.mdx) — type-safe tools with Zod
-- [**Toolsets**](./docs/concepts/toolsets.mdx) — composable tool groups
-- [**Dependencies**](./docs/concepts/dependencies.mdx) — the `RunContext<TDeps>` pattern
-- [**Results**](./docs/concepts/results.mdx) — structured output and validators
-- [**Streaming**](./docs/concepts/streaming.mdx) — text streams and partial output
-- [**Testing**](./docs/concepts/testing.mdx) — TestModel, FunctionModel, no API calls
-- [**Evaluations**](./docs/concepts/evals.mdx) — datasets, evaluators, LLM-as-judge
-- [**Messages**](./docs/concepts/messages.mdx) — message history and serialization
-- [**Human-in-the-Loop**](./docs/concepts/human-in-the-loop.mdx) — deferred tool approval
-- [**Multi-Agent**](./docs/concepts/multi-agent.mdx) — agent composition patterns
-- [**Graph**](./docs/concepts/graph.mdx) — FSM-style multi-step workflows
-- [**Models**](./docs/concepts/models.mdx) — model configuration and providers
-- [**Thinking**](./docs/concepts/thinking.mdx) — extended thinking support
-- [**Debugging**](./docs/concepts/debugging.mdx) — logging and introspection
+- [**Agents**](./docs/concepts/agents.mdx) - agent loop, system prompts, run context
+- [**Tools**](./docs/concepts/tools.mdx) - type-safe tools with Zod
+- [**Toolsets**](./docs/concepts/toolsets.mdx) - composable tool groups
+- [**Dependencies**](./docs/concepts/dependencies.mdx) - the `RunContext<TDeps>` pattern
+- [**Results**](./docs/concepts/results.mdx) - structured output and validators
+- [**Streaming**](./docs/concepts/streaming.mdx) - text streams and partial output
+- [**Testing**](./docs/concepts/testing.mdx) - TestModel, FunctionModel, no API calls
+- [**Evaluations**](./docs/concepts/evals.mdx) - datasets, evaluators, LLM-as-judge
+- [**Messages**](./docs/concepts/messages.mdx) - message history and serialization
+- [**Human-in-the-Loop**](./docs/concepts/human-in-the-loop.mdx) - deferred tool approval
+- [**Multi-Agent**](./docs/concepts/multi-agent.mdx) - agent composition patterns
+- [**Graph**](./docs/concepts/graph.mdx) - FSM-style multi-step workflows
+- [**Models**](./docs/concepts/models.mdx) - model configuration and providers
+- [**Thinking**](./docs/concepts/thinking.mdx) - extended thinking support
+- [**Debugging**](./docs/concepts/debugging.mdx) - logging and introspection
 
 ### Integrations
-- [**MCP Client**](./docs/integrations/mcp-client.mdx) — connect to MCP tool servers
-- [**MCP Server**](./docs/integrations/mcp-server.mdx) — expose your agent as an MCP server
-- [**A2A**](./docs/integrations/a2a.mdx) — Agent-to-Agent protocol adapter
-- [**AG-UI**](./docs/integrations/ag-ui.mdx) — AG-UI SSE adapter
-- [**Vercel AI UI**](./docs/integrations/vercel-ai-ui.mdx) — `useChat` / `useCompletion` integration
-- [**Temporal**](./docs/integrations/temporal.mdx) — durable execution via Temporal.io
+- [**MCP Client**](./docs/integrations/mcp-client.mdx) - connect to MCP tool servers
+- [**MCP Server**](./docs/integrations/mcp-server.mdx) - expose your agent as an MCP server
+- [**A2A**](./docs/integrations/a2a.mdx) - Agent-to-Agent protocol adapter
+- [**AG-UI**](./docs/integrations/ag-ui.mdx) - AG-UI SSE adapter
+- [**Vercel AI UI**](./docs/integrations/vercel-ai-ui.mdx) - `useChat` / `useCompletion` integration
+- [**Temporal**](./docs/integrations/temporal.mdx) - durable execution via Temporal.io
 
 ### Advanced
-- [**Multimodal**](./docs/advanced/multimodal.mdx) — images, audio, and file inputs
-- [**Error Handling**](./docs/advanced/error-handling.mdx) — all error types and recovery
+- [**Multimodal**](./docs/advanced/multimodal.mdx) - images, audio, and file inputs
+- [**Error Handling**](./docs/advanced/error-handling.mdx) - all error types and recovery
 - [**Direct Model Requests**](./docs/advanced/direct-model-requests.mdx)
 
 ### Reference
-- [**Feature Parity**](./docs/reference/features.mdx) — Pydantic AI feature status
+- [**Feature Parity**](./docs/reference/features.mdx) - Pydantic AI feature status
 
 ## Relationship to Pydantic AI
 
-Vibes is deliberately modeled on [Pydantic AI](https://ai.pydantic.dev/). The core abstractions — agents, tools, dependency injection, result validators, streaming, and testing utilities — map almost directly. The key differences:
+Vibes is deliberately modeled on [Pydantic AI](https://ai.pydantic.dev/). The core abstractions - agents, tools, dependency injection, result validators, streaming, and testing utilities - map almost directly. The key differences:
 
 | | Pydantic AI | @vibesjs/sdk |
 |--|------------|-----------------|
@@ -298,6 +297,12 @@ Vibes is deliberately modeled on [Pydantic AI](https://ai.pydantic.dev/). The co
 | Streaming | async generators | AI SDK streams |
 
 If you're porting a Pydantic AI agent to TypeScript, most concepts transfer directly.
+
+## Maintained by AI agents
+
+Vibes was created and is maintained by AI agents under the supervision of [Atul (@a7ul)](https://github.com/a7ul). Every commit is reviewed by a human; every line was written by an agent.
+
+See [Auto-Updates from Pydantic AI](https://vibesjs.dev/meta/auto-updates) for how the framework tracks upstream changes automatically.
 
 ## Contributing
 

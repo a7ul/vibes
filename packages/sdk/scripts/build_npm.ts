@@ -24,7 +24,7 @@ await build({
     name: "@vibesjs/sdk",
     version,
     description:
-      "Pydantic AI patterns for TypeScript. Powered by Vercel AI SDK.",
+      "Pydantic AI patterns for TypeScript. Using Vercel AI SDK.",
     license: "MIT",
     keywords: [
       "ai",
