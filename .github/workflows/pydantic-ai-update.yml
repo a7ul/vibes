@@ -99,6 +99,8 @@ jobs:
           ISSUE_URL=$(gh issue create \
             --title "chore: port pydantic-ai v${NEW} changes" \
             --body-file /tmp/issue-body.md \
-            --label "pydantic-ai-update" \
-            --assignee "@copilot")
+            --label "pydantic-ai-update")
           echo "Opened issue: $ISSUE_URL"
+
+          # Assign to Copilot coding agent if available (requires Copilot to be enabled in repo settings)
+          gh issue edit "$ISSUE_URL" --add-assignee "@copilot" || echo "Copilot assignee not available — assign manually or enable GitHub Copilot coding agent in repo settings."
