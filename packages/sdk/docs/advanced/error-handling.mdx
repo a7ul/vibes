@@ -3,7 +3,7 @@ title: "Error Handling"
 description: "Understand the Vibes error taxonomy and apply the right recovery strategy for each error type."
 ---
 
-Both `agent.run()` and `agent.stream()` throw typed errors when the agent loop cannot complete normally. Wrap every agent call in a `try/catch` and switch on the error type to apply targeted recovery. A single generic `catch (err)` is a code smell — different errors require completely different responses.
+Both `agent.run()` and `agent.stream()` throw typed errors when the agent loop cannot complete normally. Wrap every agent call in a `try/catch` and switch on the error type to apply targeted recovery. A single generic `catch (err)` is a code smell  -  different errors require completely different responses.
 
 ```typescript
 import {
@@ -107,7 +107,7 @@ try {
 
 ## UsageLimitError
 
-Thrown when a `UsageLimits` budget defined in `AgentOptions` is exceeded mid-run. This is a cost-control mechanism — the agent stops before the model can incur more spend.
+Thrown when a `UsageLimits` budget defined in `AgentOptions` is exceeded mid-run. This is a cost-control mechanism  -  the agent stops before the model can incur more spend.
 
 **Fields:**
 
@@ -118,7 +118,7 @@ Thrown when a `UsageLimits` budget defined in `AgentOptions` is exceeded mid-run
 | `err.limit` | `number` | The budget ceiling that was set |
 
 <Warning>
-The correct class name is `UsageLimitError` — **not** `UsageLimitExceededError`. Always import from `@vibesjs/sdk` and rely on TypeScript autocomplete to confirm the name.
+The correct class name is `UsageLimitError`  -  **not** `UsageLimitExceededError`. Always import from `@vibesjs/sdk` and rely on TypeScript autocomplete to confirm the name.
 </Warning>
 
 **Recovery:** Increase the budget in `UsageLimits`, break the task into smaller subtasks, or optimize the prompt to reduce token consumption. See [Results and Usage Limits](/concepts/results) for how to configure limits.
@@ -207,7 +207,7 @@ try {
   const result = await myAgent.run("Hello");
 } catch (err) {
   if (err instanceof ModelRequestsDisabledError) {
-    console.error("Test tried to make a real model request — use TestModel instead.");
+    console.error("Test tried to make a real model request  -  use TestModel instead.");
   }
 }
 ```
@@ -269,12 +269,12 @@ async function runWithRecovery(prompt: string) {
     }
 
     if (err instanceof ApprovalRequiredError) {
-      // Delegate to human approval flow — see /concepts/human-in-the-loop
+      // Delegate to human approval flow  -  see /concepts/human-in-the-loop
       return await handleApproval(err);
     }
 
     if (err instanceof ModelRequestsDisabledError) {
-      // Only in tests — should never reach production
+      // Only in tests  -  should never reach production
       throw new Error("Test configuration error: real model called with requests disabled.");
     }
 
@@ -282,7 +282,7 @@ async function runWithRecovery(prompt: string) {
       throw new Error(`Provider error (${err.statusCode}): ${err.message}`);
     }
 
-    // Unknown error — rethrow
+    // Unknown error  -  rethrow
     throw err;
   }
 }
@@ -306,4 +306,4 @@ sequenceDiagram
     Agent-->>App: Result
 ```
 
-This is the most complex recovery flow because it spans two separate agent invocations. The `err.deferred` object carries all state needed to resume — the agent does not need to restart the conversation from scratch.
+This is the most complex recovery flow because it spans two separate agent invocations. The `err.deferred` object carries all state needed to resume  -  the agent does not need to restart the conversation from scratch.

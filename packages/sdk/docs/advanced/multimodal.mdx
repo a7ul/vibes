@@ -3,7 +3,7 @@ title: "Multimodal"
 description: "Send images, audio, video, and documents to models, and receive binary content from tools."
 ---
 
-Vibes supports four input modalities — images, audio, video, and documents — through a set of message helper functions. Each helper wraps the raw binary or URL data into a `UserModelMessage` that the agent loop passes directly to the model. On the output side, tools can return `BinaryContent` (raw bytes with a MIME type) that flows back to the model as part of the conversation.
+Vibes supports four input modalities  -  images, audio, video, and documents  -  through a set of message helper functions. Each helper wraps the raw binary or URL data into a `UserModelMessage` that the agent loop passes directly to the model. On the output side, tools can return `BinaryContent` (raw bytes with a MIME type) that flows back to the model as part of the conversation.
 
 ```typescript
 import { imageMessage, audioMessage, fileMessage } from "@vibesjs/sdk";
@@ -66,7 +66,7 @@ const msg = imageMessage(bytes, "Summarize this chart.", "image/png");
 </CodeGroup>
 
 <Info>
-When passing a base64 string, include only the encoded payload — not the `data:image/jpeg;base64,` prefix. Vibes sends the data part directly to the model provider.
+When passing a base64 string, include only the encoded payload  -  not the `data:image/jpeg;base64,` prefix. Vibes sends the data part directly to the model provider.
 </Info>
 
 ---
@@ -77,7 +77,7 @@ When passing a base64 string, include only the encoded payload — not the `data
 audioMessage(audio: string | Uint8Array, mediaType: string, text?: string): UserModelMessage
 ```
 
-Unlike `imageMessage`, the `mediaType` argument is **required** for audio — the runtime has no way to infer the codec from raw bytes.
+Unlike `imageMessage`, the `mediaType` argument is **required** for audio  -  the runtime has no way to infer the codec from raw bytes.
 
 ```typescript
 import { audioMessage } from "@vibesjs/sdk";
@@ -153,7 +153,7 @@ When a provider has already stored a file server-side (for example, via the Anth
 import type { UploadedFile } from "@vibesjs/sdk";
 
 const file: UploadedFile = {
-  type: "uploaded_file",  // underscore — not a hyphen
+  type: "uploaded_file",  // underscore  -  not a hyphen
   fileId: "file_abc123",
   mimeType: "application/pdf",
   filename: "contract.pdf",
@@ -188,7 +188,7 @@ const analyzeTool = tool({
 
 ## Binary content from tools
 
-Tools can return `BinaryContent` — raw bytes with a MIME type — which the agent loop forwards to the model as part of the next turn. This lets a tool produce an image, audio clip, or document that the model can reason about.
+Tools can return `BinaryContent`  -  raw bytes with a MIME type  -  which the agent loop forwards to the model as part of the next turn. This lets a tool produce an image, audio clip, or document that the model can reason about.
 
 ```typescript
 import { tool } from "@vibesjs/sdk";

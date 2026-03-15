@@ -1,6 +1,6 @@
 ---
 title: Testing
-description: Fast, deterministic agent tests with TestModel, FunctionModel, and captureRunMessages - no real API calls required.
+description: First-class testing with no real API calls - TestModel, FunctionModel, and setAllowModelRequests(false) make every agent fully testable in CI.
 ---
 
 Testing agents correctly means running them without real model API calls, in a way that's fast and deterministic. Vibes provides two main options: `TestModel` auto-generates plausible tool calls and a final response on every run; `FunctionModel` gives you full per-turn control so you can simulate exact model behavior. Both integrate with `agent.override({ model })` to drop in a test model without changing your agent definition.

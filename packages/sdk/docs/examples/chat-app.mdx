@@ -18,7 +18,7 @@ This example shows a full-stack chat application: a Vibes streaming agent on the
 - For the Deno server: Vibes installed (`deno add npm:@vibesjs/sdk`)
 - For the Next.js route: `npm install @vibesjs/sdk @ai-sdk/anthropic ai`
 
-## Complete Example
+## Complete example
 
 <CodeGroup>
 
@@ -104,7 +104,7 @@ export default function ChatPage() {
 
 </CodeGroup>
 
-## Run It
+## Run it
 
 ```bash
 # Deno server
@@ -118,13 +118,13 @@ npm run dev
 
 **`agent.stream()`**: Returns a result with `textStream` (async iterable of string chunks), `partialOutput`, and accumulated `messages`.
 
-**`toDataStreamResponse()`**: Converts the text stream to the Vercel AI data stream protocol — the format `useChat` expects. Imported from the `"ai"` package (already a dependency in your project).
+**`toDataStreamResponse()`**: Converts the text stream to the Vercel AI data stream protocol  -  the format `useChat` expects. Imported from the `"ai"` package (already a dependency in your project).
 
-**`messageHistory`**: Pass previous messages to maintain conversation context across turns. Vibes accumulates new messages in `result.messages` — or use `result.newMessages` for only the new messages added in that run.
+**`messageHistory`**: Pass previous messages to maintain conversation context across turns. Vibes accumulates new messages in `result.messages`  -  or use `result.newMessages` for only the new messages added in that run.
 
 **`useChat`**: Manages message state, sends POST requests to your API route, and streams tokens into the UI automatically. No manual state management needed.
 
 ## Next steps
 
-- [Vercel AI UI integration](/integrations/vercel-ai-ui) — structured output streaming, `useCompletion`
-- [Messages concept page](/concepts/messages) — `serializeMessages`, history processors
+- [Vercel AI UI integration](/integrations/vercel-ai-ui)  -  structured output streaming, `useCompletion`
+- [Messages concept page](/concepts/messages)  -  `serializeMessages`, history processors

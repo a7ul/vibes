@@ -1,6 +1,6 @@
 ---
-title: "Vibes Agent Framework"
-description: "TypeScript agent framework for building production-grade, type-safe AI applications and workflows, the [Pydantic AI](https://ai.pydantic.dev) way, powered by [Vercel AI SDK](https://sdk.vercel.ai)."
+title: "Vibes SDK"
+description: "TypeScript agent framework for building production-grade, type-safe AI applications and workflows, the [Pydantic AI](https://ai.pydantic.dev) way, using [Vercel AI SDK](https://sdk.vercel.ai)."
 ---
 
 <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '2rem' }}>
@@ -27,19 +27,19 @@ console.log(result.output); // "Paris"
 
 ## Why Vibes?
 
-1. **Type-safe tools with Zod + Dependency injection** - Every tool parameter is validated at runtime with Zod. Carry databases, HTTP clients, and config via `RunContext` through the entire call chain. No `any` types, no global state.
-2. **Model-agnostic** - Switch between Anthropic, OpenAI, Google, Groq, Mistral, Ollama, and 50+ providers by changing one line.
+1. **Type-safe tools + Dependency injection** - Every tool parameter is validated at runtime with Zod. Carry databases, HTTP clients, and config via `RunContext` through the entire call chain. No `any` types, no global state.
+2. **Automatic retries + Cost control** - Vibes retries on validation failure and enforces token budgets and request limits to keep costs in check.
 3. **Structured output + Streaming** - Define a Zod schema, get back a typed object or stream typed partial objects to the client as they arrive.
-4. **Automatic retries + Cost control** - Vibes retries on validation failure and enforces token budgets and request limits to keep costs in check.
-5. **Testing + Evals - the only way to ship AI to production** - Unit-test every agent in CI with `TestModel` and `setAllowModelRequests(false)` (no real API calls). Then go further with typed eval datasets, built-in and LLM-as-judge evaluators, and experiment runners with configurable concurrency. Evals are code - they live in your repo, run in CI, and catch regressions before they reach users.
-6. **MCP, AG-UI, A2A + Durable agents via Temporal** - Connect to MCP servers, build AG-UI and A2A agents out of the box. Run long-lived agents that survive crashes and restarts with Temporal.
-7. **OpenTelemetry observability** - Every run emits OTel spans, events, and token usage metrics. Works with Jaeger, Honeycomb, Datadog, and any OTel-compatible backend.
+4. **Testing + Evals - the only way to ship AI to production** - Unit-test every agent in CI with `TestModel` and `setAllowModelRequests(false)` (no real API calls). Then go further with typed eval datasets, built-in and LLM-as-judge evaluators, and experiment runners with configurable concurrency. Evals are code - they live in your repo, run in CI, and catch regressions before they reach users.
+5. **Model-agnostic** - Switch between Anthropic, OpenAI, Google, Groq, Mistral, Ollama, and 50+ providers by changing one line.
+6. **OpenTelemetry observability** - Every run emits OTel spans, events, and token usage metrics. Works with Jaeger, Honeycomb, Datadog, and any OTel-compatible backend.
+7. **Durable agents + MCP, AG-UI, A2A** - Run long-lived agents that survive crashes and restarts with Temporal. Connect to MCP servers and build AG-UI and A2A agents out of the box.
 
 ## Architecture
 
 ```mermaid
 flowchart TD
-    A[Your Code] --> B[Vibes Framework]
+    A[Your Code] --> B[Vibes SDK]
     B --> C[AI SDK]
     C --> D[Anthropic]
     C --> E[OpenAI]
@@ -51,7 +51,7 @@ flowchart TD
 
 Vibes is inspired by [Pydantic AI](https://ai.pydantic.dev/) - the agent framework by Samuel Colvin and the Pydantic team. Pydantic AI showed that agent frameworks can be type-safe, testable, and dependency-injection-friendly without sacrificing simplicity. Vibes borrows its API design, agent loop architecture, and teaching philosophy, adapted for TypeScript.
 
-The model layer is powered by [Vercel AI SDK](https://sdk.vercel.ai/), which provides a unified interface to 50+ LLM providers. Without the AI SDK, Vibes would require maintaining its own provider integrations.
+Vibes uses [Vercel AI SDK](https://sdk.vercel.ai/) for LLM calls, which provides a unified interface to 50+ LLM providers. Without the AI SDK, Vibes would require maintaining its own provider integrations.
 
 See the [Introduction](/introduction) for the full story.
 

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Writes the pydantic-ai update issue body to /tmp/issue-body.md."""
+"""Writes the pydantic-ai update PR body to /tmp/pr-body.md."""
 import os
 
 old = os.environ["OLD"]
@@ -44,10 +44,9 @@ Use `.claude/vibes-pydantic-porting.md` as the reference for all porting work. I
 - [ ] Update feature parity table at `packages/sdk/docs/reference/features.mdx`
 - [ ] Run `deno lint` in `packages/sdk/` — no lint errors
 - [ ] Run `deno test -A` in `packages/sdk/` — all tests pass
-- [ ] Open PR referencing this issue (branch: `chore/pydantic-ai-update-{new}`)
 """.strip()
 
-with open("/tmp/issue-body.md", "w") as f:
+with open("/tmp/pr-body.md", "w") as f:
     f.write(body)
 
-print("Issue body written to /tmp/issue-body.md")
+print("PR body written to /tmp/pr-body.md")

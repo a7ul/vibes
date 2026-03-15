@@ -21,7 +21,7 @@ This example builds a two-stage article pipeline using Vibes' Graph API: an outl
 Always import `next` and `output` as free functions from `@vibesjs/sdk`. Do **not** call them as instance methods (e.g., prefixed with `this.`) - they are standalone functions, not methods on `BaseNode`, and calling them as such will throw at runtime.
 </Warning>
 
-## Complete Example
+## Complete example
 
 ```typescript
 import { Agent, BaseNode, Graph, next, output } from "npm:@vibesjs/sdk";
@@ -78,7 +78,7 @@ const article = await graph.run({ topic: "The future of AI agents" }, "outline")
 console.log(article);
 ```
 
-## Run It
+## Run it
 
 ```bash
 deno run --allow-net --allow-env graph-workflow.ts

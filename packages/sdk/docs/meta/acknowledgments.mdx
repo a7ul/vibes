@@ -1,11 +1,11 @@
 ---
 title: "Acknowledgments"
-description: "Vibes stands on the shoulders of giants — thanks to the teams who built the foundations we build on."
+description: "Vibes stands on the shoulders of giants  -  thanks to the teams who built the foundations we build on."
 ---
 
 ## Standing on the shoulders of giants
 
-Vibes is a TypeScript framework that directly borrows design patterns, concepts, and teaching style from two extraordinary projects. This page exists to be explicit about that debt — because open-source work builds on open-source work, and the people who created these foundations deserve recognition by name.
+Vibes is a TypeScript framework that directly borrows design patterns, concepts, and teaching style from two extraordinary projects. This page exists to be explicit about that debt  -  because open-source work builds on open-source work, and the people who created these foundations deserve recognition by name.
 
 ## Pydantic AI
 
@@ -13,26 +13,26 @@ Vibes is a TypeScript framework that directly borrows design patterns, concepts,
 
 Vibes directly borrows the following patterns from Pydantic AI:
 
-- **Type-safe dependency injection via RunContext** — The idea of threading a typed context object (`RunContext<TDeps>`) through every tool and validator call, carrying real application dependencies, comes directly from Pydantic AI's `RunContext[Deps]` pattern. To test an agent, you swap the dependencies; you don't mock modules.
-- **Agent-as-tool multi-agent pattern** — The pattern of registering one agent as a tool on another agent (enabling hierarchical multi-agent workflows) originates with Pydantic AI's agent-as-tool design.
-- **Structured output and result validators** — The combination of schema-validated output (`outputSchema`) with explicit `resultValidators` that can reject and retry LLM responses mirrors Pydantic AI's `result_type` + `@agent.result_validator` pattern.
-- **Human-in-the-loop deferred tools** — The concept of a tool that pauses agent execution and returns a value asynchronously (Vibes's `requiresApproval` + `agent.resume()`) is inspired by Pydantic AI's deferred tool pattern.
-- **The teaching philosophy of this documentation** — The structure of these docs — starting from a 5-line hello world, adding one concept at a time, emphasizing testability from the beginning — reflects how Pydantic AI teaches its own framework.
+- **Type-safe dependency injection via RunContext**  -  The idea of threading a typed context object (`RunContext<TDeps>`) through every tool and validator call, carrying real application dependencies, comes directly from Pydantic AI's `RunContext[Deps]` pattern. To test an agent, you swap the dependencies; you don't mock modules.
+- **Agent-as-tool multi-agent pattern**  -  The pattern of registering one agent as a tool on another agent (enabling hierarchical multi-agent workflows) originates with Pydantic AI's agent-as-tool design.
+- **Structured output and result validators**  -  The combination of schema-validated output (`outputSchema`) with explicit `resultValidators` that can reject and retry LLM responses mirrors Pydantic AI's `result_type` + `@agent.result_validator` pattern.
+- **Human-in-the-loop deferred tools**  -  The concept of a tool that pauses agent execution and returns a value asynchronously (Vibes's `requiresApproval` + `agent.resume()`) is inspired by Pydantic AI's deferred tool pattern.
+- **The teaching philosophy of this documentation**  -  The structure of these docs  -  starting from a 5-line hello world, adding one concept at a time, emphasizing testability from the beginning  -  reflects how Pydantic AI teaches its own framework.
 
 <Note>
-  If you find Vibes useful, go star the [Pydantic AI repository](https://github.com/pydantic/pydantic-ai) — it is the intellectual ancestor of this framework.
+  If you find Vibes useful, go star the [Pydantic AI repository](https://github.com/pydantic/pydantic-ai)  -  it is the intellectual ancestor of this framework.
 </Note>
 
 ## Vercel AI SDK
 
-[Vercel AI SDK](https://sdk.vercel.ai) is a unified TypeScript interface to 50+ LLM providers, maintained by the Vercel team. It solves the model-provider abstraction problem that every agent framework has to solve. Vibes does not maintain its own provider integrations — the AI SDK does that work, and does it well.
+[Vercel AI SDK](https://sdk.vercel.ai) is a unified TypeScript interface to 50+ LLM providers, maintained by the Vercel team. It solves the model-provider abstraction problem that every agent framework has to solve. Vibes does not maintain its own provider integrations  -  the AI SDK does that work, and does it well.
 
 Vibes builds on the following from the Vercel AI SDK:
 
-- **Model abstraction layer (`LanguageModelV1`)** — Every Vibes `Agent` accepts a `LanguageModel` from the AI SDK. Switching from Anthropic to OpenAI to a local Ollama instance is a one-line change. You never write provider-specific code in your agent logic.
-- **Provider packages** — `@ai-sdk/anthropic`, `@ai-sdk/openai`, `@ai-sdk/google`, and every other provider package are AI SDK packages, not Vibes packages. Vibes inherits provider coverage for free.
-- **Streaming primitives (`streamText`, `generateText`)** — Vibes's `agent.stream()` and `agent.run()` are built on top of the AI SDK's streaming and generation primitives.
-- **Multi-modal message types** — The message format Vibes uses for images, audio, and file content (via `imageMessage`, `audioMessage`, `fileMessage`) maps directly onto the AI SDK's multi-modal content types.
+- **Model abstraction layer (`LanguageModelV1`)**  -  Every Vibes `Agent` accepts a `LanguageModel` from the AI SDK. Switching from Anthropic to OpenAI to a local Ollama instance is a one-line change. You never write provider-specific code in your agent logic.
+- **Provider packages**  -  `@ai-sdk/anthropic`, `@ai-sdk/openai`, `@ai-sdk/google`, and every other provider package are AI SDK packages, not Vibes packages. Vibes inherits provider coverage for free.
+- **Streaming primitives (`streamText`, `generateText`)**  -  Vibes's `agent.stream()` and `agent.run()` are built on top of the AI SDK's streaming and generation primitives.
+- **Multi-modal message types**  -  The message format Vibes uses for images, audio, and file content (via `imageMessage`, `audioMessage`, `fileMessage`) maps directly onto the AI SDK's multi-modal content types.
 
 ## Why these two
 
@@ -41,3 +41,9 @@ Pydantic AI solved the ergonomics problem of building AI agents in a typed langu
 Vibes combines both insights for the TypeScript ecosystem. The agent design comes from Pydantic AI. The model layer comes from the AI SDK. Together, they make it possible to write production-ready AI agents in TypeScript with the same confidence you'd have in well-tested server code.
 
 For more on how Vibes relates to these projects, see [Introduction](/introduction).
+
+## Maintained by AI agents
+
+Vibes itself is a product of the patterns it implements. The framework - code, tests, and documentation - was created and is maintained by AI agents under the supervision of [Atul (@a7ul)](https://github.com/a7ul). Every commit is reviewed by a human; every line was written by an agent.
+
+See [Auto-Updates from Pydantic AI](/meta/auto-updates) for how the framework tracks upstream changes automatically.
