@@ -96,27 +96,32 @@ jobs:
           NEW="${{ steps.fetch-version.outputs.latest }}"
           SUMMARY="${{ steps.analyze.outputs.summary }}"
 
-          BODY=$(cat <<ISSUE_EOF
+          python3 - <<'PYEOF'
+import os, textwrap
+old = os.environ['OLD']
+new = os.environ['NEW']
+summary = os.environ['SUMMARY']
+body = textwrap.dedent(f"""
 ## Versions
 
 | | Version |
 |--|--|
-| Previous | \`v${OLD}\` |
-| New | \`v${NEW}\` |
-| PyPI | https://pypi.org/project/pydantic-ai/${NEW}/ |
-| Compare | https://github.com/pydantic/pydantic-ai/compare/v${OLD}...v${NEW} |
+| Previous | `v{old}` |
+| New | `v{new}` |
+| PyPI | https://pypi.org/project/pydantic-ai/{new}/ |
+| Compare | https://github.com/pydantic/pydantic-ai/compare/v{old}...v{new} |
 
 ## Release Summary
 
-${SUMMARY}
+{summary}
 
 ## Porting Guide
 
-Use \`.claude/vibes-pydantic-porting.md\` as the reference for all porting work. It covers:
-- Framework structure and file locations (\`packages/sdk/lib/\`)
+Use `.claude/vibes-pydantic-porting.md` as the reference for all porting work. It covers:
+- Framework structure and file locations (`packages/sdk/lib/`)
 - How pydantic-ai Python concepts map to TypeScript / Vercel AI SDK equivalents
 - Conventions: Zod for validation, immutable patterns, Deno test runner
-- Feature parity table at \`packages/sdk/docs/reference/features.mdx\`
+- Feature parity table at `packages/sdk/docs/reference/features.mdx`
 
 ## Implementation Checklist
 
@@ -126,21 +131,23 @@ Use \`.claude/vibes-pydantic-porting.md\` as the reference for all porting work.
 - [ ] Mark items as "not applicable" if Python-only or unrelated to agent framework
 
 ### For each relevant change
-- [ ] Implement TypeScript equivalent in \`packages/sdk/lib/\`
-- [ ] Write / update tests in \`packages/sdk/tests/\`
-- [ ] Update docs in \`packages/sdk/docs/\`
-- [ ] Export from \`packages/sdk/mod.ts\` if new public API
+- [ ] Implement TypeScript equivalent in `packages/sdk/lib/`
+- [ ] Write / update tests in `packages/sdk/tests/`
+- [ ] Update docs in `packages/sdk/docs/`
+- [ ] Export from `packages/sdk/mod.ts` if new public API
 
 ### Wrap-up
-- [ ] Update feature parity table at \`packages/sdk/docs/reference/features.mdx\`
-- [ ] Run \`deno test -A\` in \`packages/sdk/\` — all tests pass
-- [ ] Open PR referencing this issue (branch: \`chore/pydantic-ai-update-${NEW}\`)
-ISSUE_EOF
-          )
+- [ ] Update feature parity table at `packages/sdk/docs/reference/features.mdx`
+- [ ] Run `deno test -A` in `packages/sdk/` — all tests pass
+- [ ] Open PR referencing this issue (branch: `chore/pydantic-ai-update-{new}`)
+""").strip()
+with open('/tmp/issue-body.md', 'w') as f:
+    f.write(body)
+PYEOF
 
           ISSUE_URL=$(gh issue create \
             --title "chore: port pydantic-ai v${NEW} changes" \
-            --body "$BODY" \
+            --body-file /tmp/issue-body.md \
             --label "pydantic-ai-update" \
             --assignee "@copilot")
           echo "Opened issue: $ISSUE_URL"
