@@ -16,11 +16,15 @@ A GitHub Actions workflow runs every day at 9am UTC. It checks whether a new ver
 1. **Fetches the release notes** from the Pydantic AI GitHub release
 2. **Diffs the changed files** between the old and new tags to identify what actually changed
 3. **Highlights the relevant files**  -  agent logic, tool handling, result validators, streaming, MCP, graph  -  the parts that map to Vibes concepts
-4. **Opens a GitHub Issue** with the full porting checklist and assigns it to the GitHub Copilot coding agent
+4. **Opens a GitHub Issue** with the full porting checklist and assigns it to the GitHub Copilot coding agent via GraphQL
 5. **Copilot opens exactly one PR** referencing the issue, using `.claude/vibes-pydantic-porting.md` as its porting guide
 6. **Merging the PR closes the issue automatically** — no manual cleanup needed
 
 You only ever manage one PR. The issue is just the trigger and disappears when the PR is merged. The Copilot agent's output is always reviewed by a human before merging; complex architectural changes go through a full design review.
+
+<Note>
+  The workflow requires a fine-grained PAT stored as `VIBES_GH_PAT` with **Actions**, **Contents**, **Issues**, and **Pull requests** read/write permissions scoped to this repository. This is needed because `GITHUB_TOKEN` cannot assign the Copilot coding agent.
+</Note>
 
 ## What gets ported
 
