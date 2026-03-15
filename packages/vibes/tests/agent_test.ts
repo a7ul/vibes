@@ -8,7 +8,7 @@ import {
   type DoGenerateResult,
 } from "./_helpers.ts";
 import type { CoreAgentDeps } from "../src/types.ts";
-import { setAllowModelRequests } from "@vibes/framework";
+import { setAllowModelRequests } from "@vibesjs/sdk";
 
 const deps: CoreAgentDeps = {
   workflowId: "test-wf",

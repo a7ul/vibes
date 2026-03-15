@@ -1,5 +1,5 @@
 import { Box, Text } from "ink";
-import type { Usage } from "@vibes/framework";
+import type { Usage } from "@vibesjs/sdk";
 import { MODEL, MAX_TURNS } from "../../../constants.ts";
 
 interface StatusBarProps {

@@ -1,6 +1,6 @@
 import { z } from "zod";
-import { Agent, FunctionToolset, tool } from "@vibes/framework";
-import type { ModelMessage } from "@vibes/framework";
+import { Agent, FunctionToolset, tool } from "@vibesjs/sdk";
+import type { ModelMessage } from "@vibesjs/sdk";
 import { anthropic } from "@ai-sdk/anthropic";
 import { AgentTaskStore, type AgentTask, type AgentType } from "./task_store.ts";
 import { bashToolset } from "./bash.ts";

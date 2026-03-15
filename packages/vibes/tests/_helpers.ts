@@ -1,6 +1,6 @@
 import { MockLanguageModelV3, mockValues, convertArrayToReadableStream } from "ai/test";
-import { createUsage } from "@vibes/framework";
-import type { RunContext } from "@vibes/framework";
+import { createUsage } from "@vibesjs/sdk";
+import type { RunContext } from "@vibesjs/sdk";
 import type { CoreAgentDeps } from "../src/types.ts";
 
 export { MockLanguageModelV3, mockValues, convertArrayToReadableStream };

@@ -1,4 +1,4 @@
-import { Agent, CombinedToolset } from "@vibes/framework";
+import { Agent, CombinedToolset } from "@vibesjs/sdk";
 import { anthropic } from "@ai-sdk/anthropic";
 import { bashToolset } from "./toolsets/bash.ts";
 import { filesToolset } from "./toolsets/files.ts";

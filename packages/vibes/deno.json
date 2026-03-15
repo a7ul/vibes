@@ -1,5 +1,5 @@
 {
-  "name": "@vibes/vibes",
+  "name": "@vibesjs/vibes",
   "version": "0.1.0",
   "exports": "./mod.ts",
   "tasks": {
@@ -14,7 +14,7 @@
     "types": ["npm:@types/react@^19"]
   },
   "imports": {
-    "@vibes/framework": "../framework/mod.ts",
+    "@vibesjs/sdk": "../sdk/mod.ts",
     "zod": "npm:zod@^4",
     "@ai-sdk/anthropic": "npm:@ai-sdk/anthropic@^3",
     "@ai-sdk/openai": "npm:@ai-sdk/openai@^3",

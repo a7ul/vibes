@@ -1,5 +1,5 @@
 import { assertEquals } from "@std/assert";
-import { setAllowModelRequests } from "@vibes/framework";
+import { setAllowModelRequests } from "@vibesjs/sdk";
 import {
   MockLanguageModelV3,
   toolCallResponse,

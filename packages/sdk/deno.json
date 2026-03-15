@@ -1,0 +1,23 @@
+{
+  "name": "@vibesjs/sdk",
+  "version": "1.0.1",
+  "exports": "./mod.ts",
+  "tasks": {
+    "test": "deno test -A",
+    "build:npm": "deno run -A scripts/build_npm.ts",
+    "docs:dev": "cd docs && mintlify dev",
+    "docs:build": "cd docs && mintlify build"
+  },
+  "imports": {
+    "ai": "npm:ai@^6",
+    "ai/test": "npm:ai@^6/test",
+    "zod": "npm:zod@^4",
+    "@std/assert": "jsr:@std/assert@^1.0.19",
+    "@ai-sdk/provider": "npm:@ai-sdk/provider@^3",
+    "@modelcontextprotocol/sdk": "npm:@modelcontextprotocol/sdk@^1",
+    "@modelcontextprotocol/sdk/client/index.js": "npm:@modelcontextprotocol/sdk@^1/client/index.js",
+    "@modelcontextprotocol/sdk/client/streamableHttp.js": "npm:@modelcontextprotocol/sdk@^1/client/streamableHttp.js",
+    "@modelcontextprotocol/sdk/client/stdio.js": "npm:@modelcontextprotocol/sdk@^1/client/stdio.js",
+    "@opentelemetry/api": "npm:@opentelemetry/api@^1"
+  }
+}

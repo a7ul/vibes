@@ -1,0 +1,169 @@
+---
+title: Toolsets
+description: Toolsets are collections of tools resolved per turn, letting you group, filter, rename, and compose tools dynamically based on runtime context.
+---
+
+Toolsets are dynamic, per-turn tool groups. Unlike the static `tools` array - which sends every tool to the model on every turn - toolsets are resolved at the start of each turn and can depend on context: the user's role, feature flags, which phase the agent is in, and so on.
+
+An agent can mix static `tools` and any number of `toolsets`. All are merged into a single flat tool list before each model call.
+
+## Toolset Composition
+
+```mermaid
+graph TD
+    A[Per-Turn Tool Resolution] --> B[Static Tools]
+    A --> C[Toolsets]
+    C --> D[Function Toolset]
+    C --> E[Filtered Toolset]
+    C --> F[Combined Toolset]
+    C --> G[Prepared Toolset]
+    E --> H{Condition met?}
+    H -- no --> I[No tools exposed]
+    H -- yes --> J[Inner tools exposed]
+    F --> K[Merged tool list]
+    B --> L[Final Tool List sent to Model]
+    D --> L
+    I --> L
+    J --> L
+    K --> L
+    G --> L
+```
+
+## FunctionToolset - Basic Toolset
+
+`FunctionToolset` is the simplest toolset: a named group of static tools. Use it to logically bundle related tools together.
+
+```typescript
+import { FunctionToolset } from "@vibesjs/sdk";
+
+const myToolset = new FunctionToolset([searchTool, fetchTool]);
+myToolset.addTool(anotherTool);
+
+const agent = new Agent({
+  model,
+  toolsets: [myToolset],
+});
+```
+
+## FilteredToolset - Conditional Tools
+
+`FilteredToolset` wraps another toolset with a boolean predicate. When the predicate returns `false`, the entire inner toolset is hidden from the model for that turn.
+
+```typescript
+import { FilteredToolset } from "@vibesjs/sdk";
+
+const adminToolset = new FilteredToolset(
+  innerToolset,
+  (ctx) => ctx.deps.isAdmin,
+);
+```
+
+The predicate is **all-or-nothing**: the inner toolset is either shown in full or hidden entirely. For per-tool filtering within a toolset, see `PreparedToolset`.
+
+## PreparedToolset - Per-Turn Filtering
+
+`PreparedToolset` lets you return a *subset* of tools based on context. The `prepare` function receives the full `RunContext` and the complete tool list, and returns whichever tools to expose.
+
+```typescript
+import { PreparedToolset } from "@vibesjs/sdk";
+
+const safe = new PreparedToolset(
+  adminTools,
+  (ctx, tools) => ctx.deps.confirmed
+    ? tools
+    : tools.filter((t) => t.name !== "delete"),
+);
+```
+
+**`PreparedToolset` vs `FilteredToolset`:**
+
+| | `FilteredToolset` | `PreparedToolset` |
+|---|---|---|
+| Granularity | All-or-nothing | Per-tool |
+| Predicate receives | `(ctx)` | `(ctx, tools)` |
+| Use when | Hiding entire toolset by role | Filtering individual tools by state |
+
+## CombinedToolset - Merging Toolsets
+
+`CombinedToolset` merges multiple toolsets into one. Tools from later toolsets override earlier ones on name conflict (last name wins).
+
+```typescript
+import { CombinedToolset } from "@vibesjs/sdk";
+
+const combined = new CombinedToolset([toolsetA, toolsetB]);
+```
+
+## PrefixedToolset - Namespacing
+
+`PrefixedToolset` adds a string prefix to every tool name. Use it to avoid collisions when combining toolsets from different domains.
+
+```typescript
+import { PrefixedToolset } from "@vibesjs/sdk";
+
+const namespaced = new PrefixedToolset(innerToolset, "admin_");
+// "search" → "admin_search", "delete" → "admin_delete"
+```
+
+## RenamedToolset - Custom Names
+
+`RenamedToolset` renames specific tools using a mapping object.
+
+```typescript
+import { RenamedToolset } from "@vibesjs/sdk";
+
+const renamed = new RenamedToolset(innerToolset, {
+  old_name: "new_name",
+});
+```
+
+## WrapperToolset - Middleware
+
+`WrapperToolset` wraps another toolset and intercepts `execute` calls. Use it for cross-cutting concerns like logging, tracing, input transformation, or output transformation - without modifying the underlying tools.
+
+```typescript
+import { WrapperToolset } from "@vibesjs/sdk";
+
+const logged = new WrapperToolset(innerToolset, {
+  wrapExecute: async (ctx, tool, args, next) => {
+    console.log(`Calling ${tool.name}`, args);
+    const result = await next(ctx, args);
+    console.log(`Result from ${tool.name}:`, result);
+    return result;
+  },
+});
+```
+
+## ApprovalRequiredToolset - Mark All for Approval
+
+`ApprovalRequiredToolset` wraps a toolset and marks every tool inside it as `requiresApproval: true`. Use it when you want to require human approval for an entire group of tools without modifying them individually.
+
+```typescript
+import { ApprovalRequiredToolset } from "@vibesjs/sdk";
+
+const gated = new ApprovalRequiredToolset(dangerousToolset);
+```
+
+When any tool from this toolset is requested by the model, Vibes throws `ApprovalRequiredError` with the deferred tool requests. See [Human-in-the-Loop](/concepts/human-in-the-loop) for the full approval flow.
+
+## ExternalToolset - Tools Without Zod Schemas
+
+`ExternalToolset` is for tools that have pre-existing JSON schemas - for example, tools loaded from an MCP server. Parameters are passed as raw JSON instead of going through Zod parsing.
+
+```typescript
+import { ExternalToolset } from "@vibesjs/sdk";
+
+const external = new ExternalToolset(mcpTools);
+```
+
+Use `ExternalToolset` when integrating with external tool registries that provide their own JSON Schema definitions.
+
+---
+
+<CardGroup cols={2}>
+  <Card title="Tools" icon="wrench" href="/concepts/tools">
+    Build individual tools with the tool() factory
+  </Card>
+  <Card title="Dependencies" icon="plug" href="/concepts/dependencies">
+    Inject runtime context via RunContext
+  </Card>
+</CardGroup>

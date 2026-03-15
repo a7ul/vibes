@@ -389,7 +389,7 @@ The whole pipeline - intent → specs → code - handled in one system. The inte
 ### Tech Stack
 
 - **Language:** TypeScript / Deno
-- **LLM Framework:** Vibes Framework (`@vibes/framework`) - provider-agnostic, structured outputs
+- **LLM Framework:** Vibes Framework (`@vibesjs/sdk`) - provider-agnostic, structured outputs
 - **File Format:** Pure markdown (README.md, skill.md, [name].md capability files)
 - **Interface:** TUI (framework TBD - parked for now)
 - **Package Manager:** Deno (npm: imports)
@@ -523,7 +523,7 @@ Every generated file includes a header tracing back to source specs:
 ### Implementation Order
 
 **Phase 1: Foundation**
-1. Project structure, `deno.json`, import map wiring (`@vibes/framework`)
+1. Project structure, `deno.json`, import map wiring (`@vibesjs/sdk`)
 2. `VibesProject` - init, read, write operations
 3. `TreeNode` model and `read_tree` - parse directory into tree
 4. Skill loader - resolve `skill.md` from tree position, ship defaults

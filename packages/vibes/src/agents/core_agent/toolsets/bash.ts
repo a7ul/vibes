@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { FunctionToolset, tool } from "@vibes/framework";
+import { FunctionToolset, tool } from "@vibesjs/sdk";
 import { runInSandbox } from "../../../sandbox.ts";
 import { sandboxDir } from "../../../file_system.ts";
 import type { CoreAgentDeps } from "../../../types.ts";

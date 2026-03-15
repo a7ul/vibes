@@ -1,5 +1,5 @@
 import { useState, useCallback, useRef } from "react";
-import type { Agent, Usage } from "@vibes/framework";
+import type { Agent, Usage } from "@vibesjs/sdk";
 import type { CoreAgentDeps, CoreAgentOutput } from "../../../types.ts";
 import type { ConversationEntry, TurnItem, AgentSessionState } from "../types.ts";
 

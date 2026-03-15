@@ -6,7 +6,7 @@ import { StatusBar } from "../../../src/surface/tui/components/status_bar.tsx";
 import { TextBlock } from "../../../src/surface/tui/components/text_block.tsx";
 import { ToolCallItem } from "../../../src/surface/tui/components/tool_call_item.tsx";
 import { ConversationView } from "../../../src/surface/tui/components/conversation_view.tsx";
-import type { Usage } from "@vibes/framework";
+import type { Usage } from "@vibesjs/sdk";
 import type { ConversationEntry } from "../../../src/surface/tui/types.ts";
 
 // ink-testing-library internally creates timers/signal listeners.

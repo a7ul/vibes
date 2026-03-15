@@ -1,4 +1,4 @@
-import type { Usage } from "@vibes/framework";
+import type { Usage } from "@vibesjs/sdk";
 
 export type TurnItem =
   | { kind: "text"; content: string }

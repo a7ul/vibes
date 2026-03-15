@@ -1,0 +1,119 @@
+---
+title: Bank Support
+description: Port of Pydantic AI's canonical bank support example to TypeScript - demonstrates dependency injection, dynamic instructions, and structured output.
+---
+
+This is a TypeScript port of [Pydantic AI's canonical bank support example](https://ai.pydantic.dev/examples/bank-support/). It demonstrates the three defining features of Vibes: typed dependency injection via `RunContext`, dynamic system prompts via the `instructions` function, and structured output via `outputSchema`.
+
+## What You'll Learn
+
+- Typed dependency injection with `Agent<TDeps, TOutput>`
+- Dynamic system prompts with the `instructions` function
+- Tools that access dependencies via `tool<TDeps>()`
+- Structured output with Zod schemas and `outputSchema`
+
+## How Pydantic AI Maps to Vibes
+
+| Pydantic AI | Vibes |
+|-------------|-------|
+| `SupportDependencies` dataclass | `type Deps = { customerId: number; db: DatabaseConn }` |
+| `@support_agent.system_prompt` decorator | `instructions: async (ctx) => ...` in AgentOptions |
+| `SupportOutput(BaseModel)` | `z.object({ supportAdvice, blockCard, risk })` |
+| `Agent(model, output_type=..., deps_type=...)` | `new Agent<Deps, Output>({ outputSchema, instructions })` |
+| `agent.run_sync(...)` | `await agent.run(...)` |
+
+## Prerequisites
+
+- `ANTHROPIC_API_KEY` set in your environment
+- Vibes installed (`deno add npm:@vibesjs/sdk npm:@ai-sdk/anthropic npm:zod`)
+
+## Complete Example
+
+```typescript
+import { Agent, tool } from "npm:@vibesjs/sdk";
+import { anthropic } from "npm:@ai-sdk/anthropic";
+import { z } from "npm:zod";
+
+// --- Mock database ---
+class DatabaseConn {
+  async customerName(id: number): Promise<string> {
+    const names: Record<number, string> = { 123: "Alice", 456: "Bob" };
+    return names[id] ?? "Unknown";
+  }
+
+  async customerBalance(id: number): Promise<number> {
+    const balances: Record<number, number> = { 123: 1250.50, 456: 89.0 };
+    return balances[id] ?? 0;
+  }
+}
+
+// --- Dependency type ---
+type Deps = { customerId: number; db: DatabaseConn };
+
+// --- Output schema ---
+const SupportOutput = z.object({
+  supportAdvice: z.string().describe("Advice to give the customer"),
+  blockCard: z.boolean().describe("Whether to block the customer's card"),
+  risk: z.number().int().min(0).max(10).describe("Risk level 0-10"),
+});
+
+// --- Agent ---
+const supportAgent = new Agent<Deps, z.infer<typeof SupportOutput>>({
+  model: anthropic("claude-sonnet-4-6"),
+  systemPrompt:
+    "You are a support agent in our bank. Give the customer support and " +
+    "judge the risk level of their query. Reply using the customer's name.",
+  // Dynamic instructions - called before each run to inject customer context
+  instructions: async (ctx) => {
+    const name = await ctx.deps.db.customerName(ctx.deps.customerId);
+    return `The customer's name is ${name}.`;
+  },
+  tools: [
+    tool<Deps>({
+      name: "customer_balance",
+      description: "Returns the customer's current account balance",
+      parameters: z.object({}),
+      execute: async (ctx) => {
+        const balance = await ctx.deps.db.customerBalance(ctx.deps.customerId);
+        return `$${balance.toFixed(2)}`;
+      },
+    }),
+  ],
+  outputSchema: SupportOutput,
+});
+
+// --- Run ---
+const db = new DatabaseConn();
+
+const result = await supportAgent.run("What is my balance?", {
+  deps: { customerId: 123, db },
+});
+
+console.log(result.output);
+// {
+//   supportAdvice: "Alice, your current balance is $1,250.50.",
+//   blockCard: false,
+//   risk: 1,
+// }
+```
+
+## Run It
+
+```bash
+deno run --allow-net --allow-env bank-support.ts
+```
+
+## How It Works
+
+**Dependency injection**: `Deps` is a plain TypeScript type. Vibes passes it through `RunContext` to instructions, tools, and validators — no global state, no singletons, fully testable. Swap `DatabaseConn` for a mock in tests by passing different `deps` at call time.
+
+**`instructions` function**: Called before each agent run. Returns a string that is appended to the system prompt. Use this for per-request context (customer name, user preferences, session data). Unlike a static `systemPrompt`, it can read from the database or any async source.
+
+**`tool<Deps>()`**: The type parameter makes `ctx.deps` typed as `Deps` inside `execute`. Without the type param, `ctx.deps` is `unknown`. The tool receives the full `RunContext` as its first argument.
+
+**Structured output**: `outputSchema` instructs the model to return JSON matching the Zod schema. `result.output` is typed as `z.infer<typeof SupportOutput>` — no parsing or casting needed. Invalid model output raises a typed error.
+
+## Next Steps
+
+- [Dependencies concept page](/concepts/dependencies) — full DI system docs
+- [Results concept page](/concepts/results) — output modes and validators
