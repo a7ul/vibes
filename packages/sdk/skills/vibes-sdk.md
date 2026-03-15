@@ -1,5 +1,5 @@
 ---
-name: vibes-framework
+name: vibes-sdk
 description: Expert assistant for building AI agents with @vibesjs/sdk. Fetches live docs before generating code so the API reference is always current.
 ---
 

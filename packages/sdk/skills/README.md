@@ -11,27 +11,27 @@ Once installed, your coding agent can write idiomatic `@vibesjs/sdk` code withou
 **Project-level** (recommended — scoped to this project):
 
 ```bash
-mkdir -p .claude/agents && curl -fsSL https://raw.githubusercontent.com/a7ul/vibes/main/packages/sdk/skills/vibes-framework.md -o .claude/agents/vibes-framework.md
+mkdir -p .claude/agents && curl -fsSL https://raw.githubusercontent.com/a7ul/vibes/main/packages/sdk/skills/vibes-sdk.md -o .claude/agents/vibes-sdk.md
 ```
 
 **Global** (available in all your projects):
 
 ```bash
-mkdir -p ~/.claude/agents && curl -fsSL https://raw.githubusercontent.com/a7ul/vibes/main/packages/sdk/skills/vibes-framework.md -o ~/.claude/agents/vibes-framework.md
+mkdir -p ~/.claude/agents && curl -fsSL https://raw.githubusercontent.com/a7ul/vibes/main/packages/sdk/skills/vibes-sdk.md -o ~/.claude/agents/vibes-sdk.md
 ```
 
 ### Option 2: Copy manually
 
-Copy `vibes-framework.md` from this directory to:
-- **Project-level**: `.claude/agents/vibes-framework.md` in your project root
-- **Global**: `~/.claude/agents/vibes-framework.md`
+Copy `vibes-sdk.md` from this directory to:
+- **Project-level**: `.claude/agents/vibes-sdk.md` in your project root
+- **Global**: `~/.claude/agents/vibes-sdk.md`
 
 ## Usage
 
 After installing, reference the skill in your conversation:
 
 ```
-Use the vibes-framework skill to help me build an agent that...
+Use the vibes-sdk skill to help me build an agent that...
 ```
 
 Or Claude Code will pick it up automatically when you're working on a project that uses `@vibesjs/sdk`.

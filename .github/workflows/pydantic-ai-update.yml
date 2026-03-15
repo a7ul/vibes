@@ -1,0 +1,146 @@
+name: Pydantic AI Release Watcher
+
+on:
+  schedule:
+    - cron: '0 9 * * *'  # Every day at 9am UTC
+  workflow_dispatch:
+    inputs:
+      force:
+        description: 'Force create issue even if version unchanged'
+        required: false
+        default: 'false'
+
+jobs:
+  check-release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      issues: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Fetch latest pydantic-ai version
+        id: fetch-version
+        run: |
+          LATEST=$(curl -fsSL https://pypi.org/pypi/pydantic-ai/json | python3 -c "import sys,json; print(json.load(sys.stdin)['info']['version'])")
+          echo "latest=$LATEST" >> "$GITHUB_OUTPUT"
+          echo "Latest pydantic-ai version: $LATEST"
+
+      - name: Read stored version
+        id: stored-version
+        run: |
+          STORED=$(cat .github/pydantic-ai-version.txt | tr -d '[:space:]')
+          echo "stored=$STORED" >> "$GITHUB_OUTPUT"
+          echo "Stored version: $STORED"
+
+      - name: Check for new release
+        id: check
+        run: |
+          LATEST="${{ steps.fetch-version.outputs.latest }}"
+          STORED="${{ steps.stored-version.outputs.stored }}"
+          FORCE="${{ github.event.inputs.force }}"
+
+          if [[ "$LATEST" == "$STORED" && "$FORCE" != "true" ]]; then
+            echo "No new release (still $LATEST). Exiting."
+            echo "new_release=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "New release detected: $STORED -> $LATEST"
+            echo "new_release=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Analyze release
+        if: steps.check.outputs.new_release == 'true'
+        id: analyze
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          OLD="${{ steps.stored-version.outputs.stored }}"
+          NEW="${{ steps.fetch-version.outputs.latest }}"
+          chmod +x .github/scripts/analyze-pydantic-release.sh
+          SUMMARY=$(.github/scripts/analyze-pydantic-release.sh "$OLD" "$NEW")
+          # Store multi-line output
+          {
+            echo "summary<<SUMMARY_EOF"
+            echo "$SUMMARY"
+            echo "SUMMARY_EOF"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Update version marker and push branch
+        if: steps.check.outputs.new_release == 'true'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          NEW="${{ steps.fetch-version.outputs.latest }}"
+          BRANCH="chore/pydantic-ai-update-${NEW}"
+
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git checkout -b "$BRANCH"
+
+          echo "$NEW" > .github/pydantic-ai-version.txt
+          git add .github/pydantic-ai-version.txt
+          git commit -m "chore: bump tracked pydantic-ai version to ${NEW}"
+          git push origin "$BRANCH"
+
+          echo "branch=$BRANCH" >> "$GITHUB_OUTPUT"
+        id: push
+
+      - name: Open GitHub Issue
+        if: steps.check.outputs.new_release == 'true'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          OLD="${{ steps.stored-version.outputs.stored }}"
+          NEW="${{ steps.fetch-version.outputs.latest }}"
+          SUMMARY="${{ steps.analyze.outputs.summary }}"
+
+          BODY=$(cat <<ISSUE_EOF
+## Versions
+
+| | Version |
+|--|--|
+| Previous | \`v${OLD}\` |
+| New | \`v${NEW}\` |
+| PyPI | https://pypi.org/project/pydantic-ai/${NEW}/ |
+| Compare | https://github.com/pydantic/pydantic-ai/compare/v${OLD}...v${NEW} |
+
+## Release Summary
+
+${SUMMARY}
+
+## Porting Guide
+
+Use \`.claude/vibes-pydantic-porting.md\` as the reference for all porting work. It covers:
+- Framework structure and file locations (\`packages/sdk/lib/\`)
+- How pydantic-ai Python concepts map to TypeScript / Vercel AI SDK equivalents
+- Conventions: Zod for validation, immutable patterns, Deno test runner
+- Feature parity table at \`packages/sdk/docs/reference/features.mdx\`
+
+## Implementation Checklist
+
+### Triage
+- [ ] Review release notes and changed files above
+- [ ] Identify which changes are relevant to vibes (new features, breaking changes, bug fixes)
+- [ ] Mark items as "not applicable" if Python-only or unrelated to agent framework
+
+### For each relevant change
+- [ ] Implement TypeScript equivalent in \`packages/sdk/lib/\`
+- [ ] Write / update tests in \`packages/sdk/tests/\`
+- [ ] Update docs in \`packages/sdk/docs/\`
+- [ ] Export from \`packages/sdk/mod.ts\` if new public API
+
+### Wrap-up
+- [ ] Update feature parity table at \`packages/sdk/docs/reference/features.mdx\`
+- [ ] Run \`deno test -A\` in \`packages/sdk/\` — all tests pass
+- [ ] Open PR referencing this issue (branch: \`chore/pydantic-ai-update-${NEW}\`)
+ISSUE_EOF
+          )
+
+          ISSUE_URL=$(gh issue create \
+            --title "chore: port pydantic-ai v${NEW} changes" \
+            --body "$BODY" \
+            --label "pydantic-ai-update" \
+            --assignee "@copilot")
+          echo "Opened issue: $ISSUE_URL"

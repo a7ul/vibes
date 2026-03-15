@@ -12,11 +12,11 @@ Once installed, your agent writes idiomatic `@vibesjs/sdk` code without needing 
 <CodeGroup>
 
 ```bash Project-level (recommended)
-mkdir -p .claude/agents && curl -fsSL https://raw.githubusercontent.com/a7ul/vibes/main/packages/sdk/skills/vibes-framework.md -o .claude/agents/vibes-framework.md
+mkdir -p .claude/agents && curl -fsSL https://raw.githubusercontent.com/a7ul/vibes/main/packages/sdk/skills/vibes-sdk.md -o .claude/agents/vibes-sdk.md
 ```
 
 ```bash Global (all projects)
-mkdir -p ~/.claude/agents && curl -fsSL https://raw.githubusercontent.com/a7ul/vibes/main/packages/sdk/skills/vibes-framework.md -o ~/.claude/agents/vibes-framework.md
+mkdir -p ~/.claude/agents && curl -fsSL https://raw.githubusercontent.com/a7ul/vibes/main/packages/sdk/skills/vibes-sdk.md -o ~/.claude/agents/vibes-sdk.md
 ```
 
 </CodeGroup>
@@ -27,17 +27,17 @@ mkdir -p ~/.claude/agents && curl -fsSL https://raw.githubusercontent.com/a7ul/v
 
 ## Manual install
 
-If you prefer not to use `curl`, copy `vibes-framework.md` from the [`skills/`](https://github.com/a7ul/vibes/tree/main/packages/sdk/skills) directory of this repo to:
+If you prefer not to use `curl`, copy `vibes-sdk.md` from the [`skills/`](https://github.com/a7ul/vibes/tree/main/packages/sdk/skills) directory of this repo to:
 
-- **Project-level**: `.claude/agents/vibes-framework.md` in your project root
-- **Global**: `~/.claude/agents/vibes-framework.md`
+- **Project-level**: `.claude/agents/vibes-sdk.md` in your project root
+- **Global**: `~/.claude/agents/vibes-sdk.md`
 
 ## Usage
 
 After installing, reference the skill explicitly:
 
 ```
-Use the vibes-framework skill to help me build an agent that...
+Use the vibes-sdk skill to help me build an agent that...
 ```
 
 Or just start working — Claude Code picks it up automatically when it detects `@vibesjs/sdk` in your project.
@@ -58,5 +58,5 @@ The skill is versioned alongside the framework. When you upgrade `@vibesjs/sdk`,
 
 ```bash
 # Re-run the same install command to update
-curl -fsSL https://raw.githubusercontent.com/a7ul/vibes/main/packages/sdk/skills/vibes-framework.md -o .claude/agents/vibes-framework.md
+curl -fsSL https://raw.githubusercontent.com/a7ul/vibes/main/packages/sdk/skills/vibes-sdk.md -o .claude/agents/vibes-sdk.md
 ```

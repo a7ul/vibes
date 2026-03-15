@@ -54,7 +54,7 @@ export class MCPHttpClient implements MCPClient {
     );
 
     const client = new Client(
-      { name: "vibes-framework", version: "0.1.0" },
+      { name: "vibes-sdk", version: "0.1.0" },
       { capabilities: {} },
     );
 

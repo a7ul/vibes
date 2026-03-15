@@ -1,4 +1,15 @@
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="./docs/logo/dark.svg">
+    <img alt="@vibesjs/sdk" src="./docs/logo/light.svg" width="280">
+  </picture>
+</p>
+
 # @vibesjs/sdk
+
+[![JSR](https://jsr.io/badges/@vibesjs/sdk)](https://jsr.io/@vibesjs/sdk)
+[![npm](https://img.shields.io/npm/v/@vibesjs/sdk)](https://www.npmjs.com/package/@vibesjs/sdk)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
 
 **TypeScript agent framework for building production-grade, type-safe AI applications and workflows, the Pydantic AI way, powered by Vercel AI SDK.**
 
@@ -14,16 +25,52 @@ Vercel AI SDK      ← models, streaming, structured output, providers
 Any LLM provider   ← Anthropic, OpenAI, Google, Groq, Mistral, Ollama, ...
 ```
 
-## Why Vibes?
+## Installation
 
-1. **Type-safe tools + Dependency injection** — Every tool parameter is validated at runtime with Zod. Carry databases, HTTP clients, and config via `RunContext` through the entire call chain. No `any` types, no global state.
-2. **Model-agnostic** — Switch between Anthropic, OpenAI, Google, Groq, Mistral, Ollama, and 50+ providers by changing one line.
-3. **Structured output + Streaming** — Define a Zod schema, get back a typed object or stream typed partial objects to the client as they arrive.
-4. **Automatic retries + Cost control** — Retries on validation failure and enforces token budgets and request limits to keep costs in check.
-5. **First-class testing — no API calls required** — `TestModel`, `FunctionModel`, `agent.override()`, and `setAllowModelRequests(false)` make every agent fully testable in CI without hitting a real LLM.
-6. **Robust evaluations** — Define typed datasets, score outputs with built-in or LLM-as-judge evaluators, and run experiments with configurable concurrency and retries. Evals are code — they live in your repo and run in CI.
-7. **MCP, AG-UI, A2A + Durable agents via Temporal** — Connect to MCP servers, build AG-UI and A2A agents out of the box. Run long-lived agents that survive crashes and restarts with Temporal.
-8. **OpenTelemetry observability** — Every run emits OTel spans, events, and token usage metrics. Works with Jaeger, Honeycomb, Datadog, and any OTel-compatible backend.
+**Deno** — add to `deno.json`:
+
+```jsonc
+{
+  "imports": {
+    "@vibesjs/sdk": "jsr:@vibesjs/sdk@^1.0",
+    "ai": "npm:ai@^6",
+    "zod": "npm:zod@^4",
+    "@ai-sdk/anthropic": "npm:@ai-sdk/anthropic@^1"
+  }
+}
+```
+
+Or use the CLI:
+
+```bash
+deno add jsr:@vibesjs/sdk
+deno add npm:@ai-sdk/anthropic
+```
+
+**Node.js** (18+, TypeScript 5+):
+
+```bash
+npx jsr add @vibesjs/sdk
+npm install ai zod @ai-sdk/anthropic
+```
+
+Add to `tsconfig.json`:
+
+```jsonc
+{
+  "compilerOptions": {
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "target": "ES2022"
+  }
+}
+```
+
+Set your API key:
+
+```bash
+export ANTHROPIC_API_KEY="sk-ant-..."
+```
 
 ## Quick Start
 
@@ -39,6 +86,17 @@ const agent = new Agent({
 const result = await agent.run("What is the capital of France?");
 console.log(result.output); // "Paris"
 ```
+
+## Why Vibes?
+
+1. **Type-safe tools + Dependency injection** — Every tool parameter is validated at runtime with Zod. Carry databases, HTTP clients, and config via `RunContext` through the entire call chain. No `any` types, no global state.
+2. **Model-agnostic** — Switch between Anthropic, OpenAI, Google, Groq, Mistral, Ollama, and 50+ providers by changing one line.
+3. **Structured output + Streaming** — Define a Zod schema, get back a typed object or stream typed partial objects to the client as they arrive.
+4. **Automatic retries + Cost control** — Retries on validation failure and enforces token budgets and request limits to keep costs in check.
+5. **First-class testing — no API calls required** — `TestModel`, `FunctionModel`, `agent.override()`, and `setAllowModelRequests(false)` make every agent fully testable in CI without hitting a real LLM.
+6. **Robust evaluations** — Define typed datasets, score outputs with built-in or LLM-as-judge evaluators, and run experiments with configurable concurrency and retries. Evals are code — they live in your repo and run in CI.
+7. **MCP, AG-UI, A2A + Durable agents via Temporal** — Connect to MCP servers, build AG-UI and A2A agents out of the box. Run long-lived agents that survive crashes and restarts with Temporal.
+8. **OpenTelemetry observability** — Every run emits OTel spans, events, and token usage metrics. Works with Jaeger, Honeycomb, Datadog, and any OTel-compatible backend.
 
 ## Progressive Examples
 
@@ -147,53 +205,6 @@ Deno.test("weather agent returns structured output", async () => {
 });
 ```
 
-## Installation
-
-**Deno** — add to `deno.json`:
-
-```jsonc
-{
-  "imports": {
-    "@vibesjs/sdk": "jsr:@vibesjs/sdk@^1.0",
-    "ai": "npm:ai@^6",
-    "zod": "npm:zod@^4",
-    "@ai-sdk/anthropic": "npm:@ai-sdk/anthropic@^1"
-  }
-}
-```
-
-Or use the CLI:
-
-```bash
-deno add jsr:@vibesjs/sdk
-deno add npm:@ai-sdk/anthropic
-```
-
-**Node.js** (18+, TypeScript 5+):
-
-```bash
-npx jsr add @vibesjs/sdk
-npm install ai zod @ai-sdk/anthropic
-```
-
-Add to `tsconfig.json`:
-
-```jsonc
-{
-  "compilerOptions": {
-    "module": "NodeNext",
-    "moduleResolution": "NodeNext",
-    "target": "ES2022"
-  }
-}
-```
-
-Set your API key:
-
-```bash
-export ANTHROPIC_API_KEY="sk-ant-..."
-```
-
 ## Feature Highlights
 
 | Feature | Description |
@@ -224,12 +235,12 @@ Install the `@vibesjs/sdk` agent skill so your coding assistant has full API kno
 
 ```bash
 # Project-level (recommended)
-mkdir -p .claude/agents && curl -fsSL https://raw.githubusercontent.com/a7ul/vibes/main/packages/sdk/skills/vibes-framework.md -o .claude/agents/vibes-framework.md
+mkdir -p .claude/agents && curl -fsSL https://raw.githubusercontent.com/a7ul/vibes/main/packages/sdk/skills/vibes-sdk.md -o .claude/agents/vibes-sdk.md
 ```
 
 ```bash
 # Global (available in all projects)
-mkdir -p ~/.claude/agents && curl -fsSL https://raw.githubusercontent.com/a7ul/vibes/main/packages/sdk/skills/vibes-framework.md -o ~/.claude/agents/vibes-framework.md
+mkdir -p ~/.claude/agents && curl -fsSL https://raw.githubusercontent.com/a7ul/vibes/main/packages/sdk/skills/vibes-sdk.md -o ~/.claude/agents/vibes-sdk.md
 ```
 
 See [skills/README.md](./skills/README.md) for more options.
@@ -287,6 +298,14 @@ Vibes is deliberately modeled on [Pydantic AI](https://ai.pydantic.dev/). The co
 | Streaming | async generators | AI SDK streams |
 
 If you're porting a Pydantic AI agent to TypeScript, most concepts transfer directly.
+
+## Contributing
+
+Contributions are welcome! Please read the [contributing guide](./docs/reference/contributing.mdx) before submitting a PR.
+
+- **Bug reports**: Open an issue with a minimal reproduction
+- **Feature requests**: Open a discussion before coding
+- **PRs**: Run `deno test -A` and ensure all tests pass
 
 ## License
 
