@@ -95,4 +95,15 @@ jobs:
           ISSUE_URL=$(echo "$RESPONSE" | python3 -c "import sys,json; print(json.load(sys.stdin)['html_url'])")
           echo "Opened issue: $ISSUE_URL"
 
-          echo "Issue created with pydantic-ai-update label — Copilot will self-assign automatically."
+          # Assign Copilot via GraphQL (REST API doesn't support bot assignees)
+          ISSUE_NODE_ID=$(echo "$RESPONSE" | python3 -c "import sys,json; print(json.load(sys.stdin)['node_id'])")
+          gh api graphql -f query="
+            mutation {
+              addAssigneesToAssignable(input: {
+                assignableId: \"${ISSUE_NODE_ID}\",
+                assigneeIds: [\"BOT_kgDOC9w8XQ\"]
+              }) {
+                assignable { ... on Issue { number assignees(first: 3) { nodes { login } } } }
+              }
+            }
+          "
