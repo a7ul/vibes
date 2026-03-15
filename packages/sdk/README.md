@@ -1,78 +1,43 @@
 <p align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="./docs/logo/dark.svg">
-    <img alt="@vibesjs/sdk" src="./docs/logo/light.svg" width="280">
+    <img alt="vibes" src="./docs/logo/light.svg" width="280">
   </picture>
 </p>
 
-# @vibesjs/sdk
+<p align="center">
+  <strong>TypeScript agent framework for building production-grade, type-safe AI applications — the Pydantic AI way, using Vercel AI SDK.</strong>
+</p>
 
-[![JSR](https://jsr.io/badges/@vibesjs/sdk)](https://jsr.io/@vibesjs/sdk)
-[![npm](https://img.shields.io/npm/v/@vibesjs/sdk)](https://www.npmjs.com/package/@vibesjs/sdk)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
+<p align="center">
+  <a href="https://jsr.io/@vibesjs/sdk"><img alt="JSR" src="https://jsr.io/badges/@vibesjs/sdk"></a>
+  <a href="https://www.npmjs.com/package/@vibesjs/sdk"><img alt="npm" src="https://img.shields.io/npm/v/@vibesjs/sdk"></a>
+  <a href="./LICENSE"><img alt="License: MIT" src="https://img.shields.io/badge/License-MIT-yellow.svg"></a>
+</p>
 
-**TypeScript agent framework for building production-grade, type-safe AI applications and workflows, the Pydantic AI way, using Vercel AI SDK.**
+<p align="center">
+  <a href="#-quick-start">Quick Start</a> ·
+  <a href="#-installation">Installation</a> ·
+  <a href="#-why-vibes">Why Vibes</a> ·
+  <a href="https://vibes-sdk.a7ul.com">Documentation</a> ·
+  <a href="#-examples">Examples</a>
+</p>
 
-> Heavily inspired by [Pydantic AI](https://ai.pydantic.dev/). Vibes mirrors its philosophy, API design, and flexibility for the TypeScript ecosystem. If you've used Pydantic AI, you'll feel at home immediately.
+---
 
-```
-Your code
-   ↕
-@vibesjs/sdk   ← agent loop, tools, toolsets, DI, evals, graph, testing
-   ↕
-Vercel AI SDK      ← models, streaming, structured output, providers
-   ↕
-Any LLM provider   ← Anthropic, OpenAI, Google, Groq, Mistral, Ollama, ...
-```
+## Architecture
 
-## Installation
-
-**Deno** - add to `deno.json`:
-
-```jsonc
-{
-  "imports": {
-    "@vibesjs/sdk": "jsr:@vibesjs/sdk@^1.0",
-    "ai": "npm:ai@^6",
-    "zod": "npm:zod@^4",
-    "@ai-sdk/anthropic": "npm:@ai-sdk/anthropic@^1"
-  }
-}
+```mermaid
+flowchart TD
+    A[Your Code] --> B["@vibesjs/sdk: agent loop · tools · DI · evals · streaming · graph"]
+    B --> C["Vercel AI SDK: models · streaming · structured output · providers"]
+    C --> D[Anthropic]
+    C --> E[OpenAI]
+    C --> F[Google]
+    C --> G["Groq · Mistral · Ollama · 50+ more"]
 ```
 
-Or use the CLI:
-
-```bash
-deno add jsr:@vibesjs/sdk
-deno add npm:@ai-sdk/anthropic
-```
-
-**Node.js** (18+, TypeScript 5+):
-
-```bash
-npx jsr add @vibesjs/sdk
-npm install ai zod @ai-sdk/anthropic
-```
-
-Add to `tsconfig.json`:
-
-```jsonc
-{
-  "compilerOptions": {
-    "module": "NodeNext",
-    "moduleResolution": "NodeNext",
-    "target": "ES2022"
-  }
-}
-```
-
-Set your API key:
-
-```bash
-export ANTHROPIC_API_KEY="sk-ant-..."
-```
-
-## Quick start
+## Quick Start
 
 ```ts
 import { Agent } from "@vibesjs/sdk";
@@ -87,215 +52,193 @@ const result = await agent.run("What is the capital of France?");
 console.log(result.output); // "Paris"
 ```
 
-## Progressive examples
+## Installation
 
-### 1 - Bare agent (6 lines)
-
-```ts
-import { Agent } from "@vibesjs/sdk";
-import { anthropic } from "@ai-sdk/anthropic";
-
-const agent = new Agent({
-  model: anthropic("claude-haiku-4-5-20251001"),
-  systemPrompt: "You are a helpful weather assistant.",
-});
-
-const result = await agent.run("What's the weather like today?");
-console.log(result.output);
+**Deno:**
+```bash
+deno add jsr:@vibesjs/sdk
 ```
 
-### 2 - Tools + structured output
-
-```ts
-import { Agent, tool } from "@vibesjs/sdk";
-import { anthropic } from "@ai-sdk/anthropic";
-import { z } from "zod";
-
-const getWeather = tool({
-  name: "get_weather",
-  description: "Get the current weather for a city",
-  parameters: z.object({ city: z.string().describe("City name") }),
-  execute: async (_ctx, { city }) => `${city}: 22°C, sunny`,
-});
-
-const WeatherReport = z.object({
-  city: z.string(),
-  temperature: z.number().describe("Temperature in Celsius"),
-  condition: z.string(),
-  summary: z.string(),
-});
-
-const agent = new Agent({
-  model: anthropic("claude-haiku-4-5-20251001"),
-  systemPrompt: "You are a helpful weather assistant.",
-  tools: [getWeather],
-  outputSchema: WeatherReport,
-});
-
-const result = await agent.run("What's the weather in Tokyo?");
-// result.output is typed as { city: string; temperature: number; condition: string; summary: string }
-console.log(result.output.city);        // "Tokyo"
-console.log(result.output.temperature); // 22
+**Node.js:**
+```bash
+npx jsr add @vibesjs/sdk
+npm install ai zod
 ```
 
-### 3 - Dependency injection
+Then install a provider:
+```bash
+# Anthropic
+npm install @ai-sdk/anthropic   # ANTHROPIC_API_KEY
 
-```ts
-import { Agent, tool } from "@vibesjs/sdk";
-import { anthropic } from "@ai-sdk/anthropic";
-import { z } from "zod";
+# OpenAI
+npm install @ai-sdk/openai      # OPENAI_API_KEY
 
-// Declare the deps your agent needs
-type Deps = { weatherApi: { fetch: (city: string) => Promise<string> } };
-
-const getWeather = tool({
-  name: "get_weather",
-  description: "Get weather from the injected API",
-  parameters: z.object({ city: z.string() }),
-  // ctx.deps is fully typed as Deps
-  execute: async (ctx, { city }) => ctx.deps.weatherApi.fetch(city),
-});
-
-const agent = new Agent<Deps>({
-  model: anthropic("claude-haiku-4-5-20251001"),
-  systemPrompt: "You are a weather assistant.",
-  tools: [getWeather],
-});
-
-// Inject real dependencies at run time
-const result = await agent.run("Weather in Paris?", {
-  deps: { weatherApi: { fetch: async (city) => `${city}: 18°C, cloudy` } },
-});
+# Google
+npm install @ai-sdk/google      # GOOGLE_GENERATIVE_AI_API_KEY
 ```
 
-### 4 - Testing without API calls
+> Vibes supports 50+ providers via the [Vercel AI SDK](https://sdk.vercel.ai/providers/ai-sdk-providers). Switching providers is a one-line change.
 
-```ts
-import { Agent, tool, TestModel, setAllowModelRequests } from "@vibesjs/sdk";
-import { z } from "zod";
+## AI coding assistant support
 
-setAllowModelRequests(false); // block accidental real API calls in CI
-
-const agent = new Agent({
-  model: /* real model here - overridden below */,
-  systemPrompt: "You are a weather assistant.",
-  tools: [getWeather],
-  outputSchema: WeatherReport,
-});
-
-Deno.test("weather agent returns structured output", async () => {
-  const result = await agent
-    .override({ model: new TestModel() })
-    .run("Weather in Tokyo?");
-
-  // TestModel auto-calls tools and produces schema-valid output
-  assertEquals(typeof result.output.city, "string");
-  assertEquals(typeof result.output.temperature, "number");
-});
-```
-
-## Feature highlights
-
-| Feature | Description |
-|---------|-------------|
-| **Multi-provider** | Any Vercel AI SDK model - Anthropic, OpenAI, Google, Groq, Mistral, Ollama, and 50+ more |
-| **Tools** | Type-safe tool definitions with Zod parameter validation |
-| **Toolsets** | Composable, context-aware tool groups - filter, prefix, wrap, combine |
-| **Structured output** | Zod-validated typed responses via a `final_result` tool |
-| **Dependency injection** | Type-safe `RunContext<TDeps>` flows through tools, prompts, and validators |
-| **Streaming** | `.stream()`, `textStream`, `partialOutput`, `runStreamEvents()` |
-| **Evaluations** | Typed datasets, built-in evaluators, LLM-as-judge, experiment runners - runs in CI |
-| **Multimodal** | Send images, audio, and files via `imageMessage()`, `audioMessage()`, `fileMessage()` |
-| **Extended thinking** | Pass `thinking` settings through to models that support it |
-| **History processors** | Transform message history per-turn - trim, token-limit, summarize, privacy-filter |
-| **Deferred tools** | Human-in-the-loop approval flows with `agent.resume()` |
-| **MCP client** | Connect to Model Context Protocol tool servers (stdio + HTTP) |
-| **MCP server** | Expose your agent as an MCP server |
-| **A2A protocol** | Agent-to-Agent protocol adapter for interop with other A2A agents |
-| **AG-UI** | Server-sent events adapter for AG-UI-compatible frontends |
-| **Graph workflows** | FSM-style multi-step pipelines with persistence and Mermaid diagrams |
-| **Temporal** | Durable agent workflows via Temporal.io - survives crashes and restarts |
-| **OpenTelemetry** | First-class tracing with `instrumentAgent()` |
-| **Testing** | `TestModel`, `FunctionModel`, `setAllowModelRequests(false)` - no real API calls needed |
-
-## Agent skill
-
-Install the `@vibesjs/sdk` agent skill so your coding assistant has full API knowledge built-in:
+**Claude Code (agent skill)** — install the `@vibesjs/sdk` skill so your coding assistant writes idiomatic Vibes code without looking up docs:
 
 ```bash
-# Project-level (recommended)
 mkdir -p .claude/agents && curl -fsSL https://raw.githubusercontent.com/a7ul/vibes/main/packages/sdk/skills/vibes-sdk.md -o .claude/agents/vibes-sdk.md
 ```
 
-```bash
-# Global (available in all projects)
-mkdir -p ~/.claude/agents && curl -fsSL https://raw.githubusercontent.com/a7ul/vibes/main/packages/sdk/skills/vibes-sdk.md -o ~/.claude/agents/vibes-sdk.md
+**MCP server** — add the Vibes docs MCP server to any MCP-compatible client (Cursor, Windsurf, Claude Desktop, etc.) for in-editor documentation access:
+
+```json
+{
+  "mcpServers": {
+    "vibes-sdk": {
+      "url": "https://vibes-sdk.a7ul.com/mcp"
+    }
+  }
+}
 ```
 
-See [skills/README.md](./skills/README.md) for more options.
+## Why Vibes?
 
-## Documentation
+Most AI frameworks try to hide the model behind magic. Vibes does the opposite — it gives you a thin, typed layer that stays out of the way.
 
-### Getting started
-- [**Installation**](./docs/getting-started/install.mdx)
-- [**Hello World**](./docs/getting-started/hello-world.mdx)
+The core idea is borrowed from Pydantic AI: **agents are just functions**. They take input, call tools, and return typed output. There's no hidden state, no opaque orchestration engine, no DSL to learn. If you know TypeScript and async/await, you already know how to use Vibes.
 
-### Concepts
-- [**Agents**](./docs/concepts/agents.mdx) - agent loop, system prompts, run context
-- [**Tools**](./docs/concepts/tools.mdx) - type-safe tools with Zod
-- [**Toolsets**](./docs/concepts/toolsets.mdx) - composable tool groups
-- [**Dependencies**](./docs/concepts/dependencies.mdx) - the `RunContext<TDeps>` pattern
-- [**Results**](./docs/concepts/results.mdx) - structured output and validators
-- [**Streaming**](./docs/concepts/streaming.mdx) - text streams and partial output
-- [**Testing**](./docs/concepts/testing.mdx) - TestModel, FunctionModel, no API calls
-- [**Evaluations**](./docs/concepts/evals.mdx) - datasets, evaluators, LLM-as-judge
-- [**Messages**](./docs/concepts/messages.mdx) - message history and serialization
-- [**Human-in-the-Loop**](./docs/concepts/human-in-the-loop.mdx) - deferred tool approval
-- [**Multi-Agent**](./docs/concepts/multi-agent.mdx) - agent composition patterns
-- [**Graph**](./docs/concepts/graph.mdx) - FSM-style multi-step workflows
-- [**Models**](./docs/concepts/models.mdx) - model configuration and providers
-- [**Thinking**](./docs/concepts/thinking.mdx) - extended thinking support
-- [**Debugging**](./docs/concepts/debugging.mdx) - logging and introspection
+| Feature | What it means |
+|---------|---------------|
+| **Type-safe tools + Dependency injection** | Every tool parameter is validated at runtime with Zod. Carry databases, HTTP clients, and config via `RunContext` through the entire call chain. No `any` types, no global state. |
+| **Automatic retries + Cost control** | Retries on validation failure and enforces token budgets and request limits to keep costs in check. |
+| **Structured output + Streaming** | Define a Zod schema, get back a typed object — or stream typed partial objects to the client as they arrive. |
+| **Testing + Evals** | Unit-test every agent in CI with `TestModel` and `setAllowModelRequests(false)` — no real API calls. Then go further with typed eval datasets, built-in and LLM-as-judge evaluators, and experiment runners with configurable concurrency. Evals are code — they live in your repo, run in CI, and catch regressions before they reach users. |
+| **Model-agnostic** | Switch between Anthropic, OpenAI, Google, Groq, Mistral, Ollama, and 50+ providers by changing one line. |
+| **OpenTelemetry observability** | Every run emits OTel spans, events, and token usage metrics. Works with Jaeger, Honeycomb, Datadog, and any OTel-compatible backend. |
+| **Durable agents + MCP, AG-UI, A2A** | Run long-lived agents that survive crashes and restarts with Temporal. Connect to MCP servers and build AG-UI and A2A agents out of the box. |
 
-### Integrations
-- [**MCP Client**](./docs/integrations/mcp-client.mdx) - connect to MCP tool servers
-- [**MCP Server**](./docs/integrations/mcp-server.mdx) - expose your agent as an MCP server
-- [**A2A**](./docs/integrations/a2a.mdx) - Agent-to-Agent protocol adapter
-- [**AG-UI**](./docs/integrations/ag-ui.mdx) - AG-UI SSE adapter
-- [**Vercel AI UI**](./docs/integrations/vercel-ai-ui.mdx) - `useChat` / `useCompletion` integration
-- [**Temporal**](./docs/integrations/temporal.mdx) - durable execution via Temporal.io
+## Examples
 
-### Advanced
-- [**Multimodal**](./docs/advanced/multimodal.mdx) - images, audio, and file inputs
-- [**Error Handling**](./docs/advanced/error-handling.mdx) - all error types and recovery
-- [**Direct Model Requests**](./docs/advanced/direct-model-requests.mdx)
+### Type-safe tools + structured output
 
-### Reference
-- [**Feature Parity**](./docs/reference/features.mdx) - Pydantic AI feature status
+```ts
+import { Agent, tool } from "@vibesjs/sdk";
+import { anthropic } from "@ai-sdk/anthropic";
+import { z } from "zod";
 
-## Relationship to Pydantic AI
+// Dependencies
+type Deps = {
+  db: { getUser: (id: string) => Promise<{ name: string; plan: string }> };
+};
 
-Vibes is deliberately modeled on [Pydantic AI](https://ai.pydantic.dev/). The core abstractions - agents, tools, dependency injection, result validators, streaming, and testing utilities - map almost directly. The key differences:
+// Tools
+const getUserInfo = tool({
+  name: "get_user_info",
+  description: "Fetch user details from the database",
+  parameters: z.object({ userId: z.string() }),
+  execute: async (ctx, { userId }) => ctx.deps.db.getUser(userId),
+});
 
-| | Pydantic AI | @vibesjs/sdk |
-|--|------------|-----------------|
-| Language | Python | TypeScript |
-| Runtime | Python 3.9+ | Deno / Node.js 18+ |
-| Model layer | Pydantic AI's own providers | Vercel AI SDK |
+// Structured output schema
+const SupportResponse = z.object({
+  greeting: z.string(),
+  recommendation: z.string(),
+  escalate: z.boolean().describe("Whether to escalate to a human agent"),
+});
+
+// Agent
+const supportAgent = new Agent<Deps>({
+  model: anthropic("claude-haiku-4-5-20251001"),
+  systemPrompt: "You are a customer support agent. Be concise and helpful.",
+  tools: [getUserInfo],
+  outputSchema: SupportResponse,
+});
+
+// Run with injected deps
+const result = await supportAgent.run("Help user-42 with their billing question", {
+  deps: {
+    db: { getUser: async (id) => ({ name: "Ada", plan: "pro" }) },
+  },
+});
+
+console.log(result.output.greeting); // "Hi Ada!"
+console.log(result.output.escalate); // false
+```
+
+### Testing (no API calls)
+
+```ts
+import { Agent, TestModel, setAllowModelRequests } from "@vibesjs/sdk";
+
+setAllowModelRequests(false); // block any real LLM calls in CI
+
+const agent = new Agent({
+  model: new TestModel({ output: "Paris" }),
+  systemPrompt: "You are a helpful assistant.",
+});
+
+const result = await agent.run("What is the capital of France?");
+assert(result.output === "Paris");
+```
+
+### Streaming
+
+```ts
+const stream = agent.stream("Explain async/await in TypeScript");
+
+for await (const chunk of stream.textStream) {
+  process.stdout.write(chunk);
+}
+```
+
+## Pydantic AI comparison
+
+Vibes is, in a real sense, Pydantic AI for TypeScript. Most concepts transfer directly.
+
+| Concept | Pydantic AI | @vibesjs/sdk |
+|---------|------------|--------------|
+| Core class | `Agent` | `Agent` |
+| Run | `agent.run_sync()` | `agent.run()` |
+| Streaming | `agent.run_stream()` | `agent.stream()` |
+| Tools | `@agent.tool` decorator | `tool()` factory |
+| Dependencies | `deps: TDeps` | `deps: TDeps` |
+| Typed output | `result_type: MyModel` | `outputSchema: z.object(...)` |
 | Type validation | Pydantic | Zod |
-| Async | asyncio | native async/await |
-| Streaming | async generators | AI SDK streams |
+| Result validators | `@agent.result_validator` | `resultValidators: [...]` |
+| Testing | `TestModel` / `FunctionModel` | `TestModel` / `FunctionModel` |
+| Language | Python | TypeScript |
+| Model layer | Pydantic AI providers | Vercel AI SDK |
 
-If you're porting a Pydantic AI agent to TypeScript, most concepts transfer directly.
+## Packages
+
+| Package | Description |
+|---------|-------------|
+| [`@vibesjs/sdk`](./packages/sdk) | The core agent framework |
+
+## Maintained by AI agents
+
+Vibes was created and is maintained by AI agents under the supervision of [Atul (@a7ul)](https://github.com/a7ul). Every commit is reviewed by a human; every line was written by an agent.
+
+When Pydantic AI ships a new release, a GitHub Actions workflow automatically detects it, opens an issue with a full porting checklist, and assigns the GitHub Copilot coding agent to implement it. The resulting PR is reviewed and merged by a human.
 
 ## Contributing
 
-Contributions are welcome! Please read the [contributing guide](./docs/reference/contributing.mdx) before submitting a PR.
+Contributions are welcome. Please open an issue before submitting a large PR so we can discuss the approach.
 
-- **Bug reports**: Open an issue with a minimal reproduction
-- **Feature requests**: Open a discussion before coding
-- **PRs**: Run `deno test -A` and ensure all tests pass
+```mermaid
+flowchart LR
+    A[Open Issue] --> B[Discuss Approach]
+    B --> C[Fork & Branch]
+    C --> D[Write Tests First]
+    D --> E[Implement]
+    E --> F[Open PR]
+    F --> G[Review & Merge]
+```
+
+## Acknowledgements
+
+- **[Pydantic AI](https://ai.pydantic.dev/)** — the design philosophy, API shape, and abstractions that Vibes is modeled after. If you like Vibes, go star Pydantic AI.
+- **[Vercel AI SDK](https://sdk.vercel.ai/)** — the model layer powering all providers, streaming, and structured output.
+- **[Zod](https://zod.dev/)** — runtime schema validation used throughout for tools, output, and dependencies.
 
 ## License
 
-MIT
+MIT — see [LICENSE](./LICENSE)
