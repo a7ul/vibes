@@ -1,0 +1,74 @@
+---
+title: "Auto-Updates from Pydantic AI"
+description: "How @vibesjs/sdk tracks Pydantic AI releases and stays up to date."
+---
+
+## How This Framework Stays Current
+
+Vibes is deliberately modeled on [Pydantic AI](https://ai.pydantic.dev). As Pydantic AI evolves — adding new features, fixing bugs, refining its API — Vibes tracks those changes and ports the relevant ones to TypeScript.
+
+This process is automated.
+
+## The Update Pipeline
+
+A GitHub Actions workflow runs every day at 9am UTC. It checks whether a new version of `pydantic-ai` has been published to PyPI. If one has, and no tracking issue or PR already exists for that version, it:
+
+1. **Fetches the release notes** from the Pydantic AI GitHub release
+2. **Diffs the changed files** between the old and new tags to identify what actually changed
+3. **Highlights the relevant files** — agent logic, tool handling, result validators, streaming, MCP, graph — the parts that map to Vibes concepts
+4. **Opens a GitHub Issue** with a structured porting checklist
+5. **Opens a PR** that bumps the tracked version in `.github/pydantic-ai-version.txt`
+6. **Assigns the issue to the GitHub Copilot coding agent**, which uses `.claude/vibes-pydantic-porting.md` as its porting guide to attempt an implementation
+
+The Copilot agent's output is always reviewed by a human before merging. It handles straightforward ports well; complex architectural changes go through a full design review.
+
+## What Gets Ported
+
+Not everything in a Pydantic AI release is relevant to Vibes. The porting guide categorises each change as:
+
+| Category | Action |
+|---|---|
+| New agent framework feature | Port to TypeScript — new file in `packages/sdk/lib/`, exported from `mod.ts`, documented |
+| Breaking API change | Update Vibes equivalent, add migration note to changelog |
+| Bug fix | Port if the same bug could exist in Vibes |
+| Python-only concern | Skip — noted as "not applicable" in the issue |
+| Dependency / tooling | Skip |
+
+The [Feature Parity](/reference/features) table is updated with every porting cycle to reflect current status.
+
+## What Gets Skipped
+
+Some Pydantic AI features have no direct TypeScript equivalent and are intentionally not ported:
+
+- Python-specific runtime concerns (asyncio internals, `__init__.py` organisation)
+- Features already covered by the Vercel AI SDK (provider integrations, tokenisation)
+- Pydantic-specific validation patterns (replaced by Zod in Vibes)
+
+These are documented in the Feature Parity table as "Not implemented — skipped by design".
+
+## The Porting Guide
+
+The file `.claude/vibes-pydantic-porting.md` in this repository is the canonical reference for how Pydantic AI Python concepts map to Vibes TypeScript equivalents. It covers:
+
+- Framework structure and file locations
+- How `RunContext[Deps]` maps to `RunContext<TDeps>`
+- How Pydantic validators map to Zod schemas
+- Streaming patterns (asyncio generators → AI SDK streams)
+- Testing patterns (`TestModel`, `FunctionModel`)
+- MCP, graph workflows, and multi-agent patterns
+
+The Copilot agent and human contributors both use this document when implementing a port.
+
+## Tracking a Specific Release
+
+The currently tracked version of Pydantic AI is stored in `.github/pydantic-ai-version.txt`. To check what version Vibes is currently aligned with:
+
+```bash
+cat .github/pydantic-ai-version.txt
+```
+
+To see the full history of porting work, filter GitHub Issues by the [`pydantic-ai-update`](https://github.com/a7ul/vibes/issues?q=label%3Apydantic-ai-update) label.
+
+## Running the Workflow Manually
+
+The workflow can be triggered manually from the [Actions tab](https://github.com/a7ul/vibes/actions/workflows/pydantic-ai-update.yml) using the **Run workflow** button. This is useful after a manual version bump or to re-run a failed cycle.
