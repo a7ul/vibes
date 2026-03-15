@@ -3,6 +3,11 @@ name: Release SDK
 on:
   release:
     types: [created]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version to publish (e.g. 1.0.3)"
+        required: true
 
 jobs:
   publish:
@@ -17,8 +22,12 @@ jobs:
       - name: Extract version
         id: version
         run: |
-          # Strip leading 'v' from tag (e.g. v0.2.0 → 0.2.0)
-          VERSION="${GITHUB_REF_NAME#v}"
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            VERSION="${{ github.event.inputs.version }}"
+          else
+            # Strip leading 'v' from tag (e.g. v0.2.0 → 0.2.0)
+            VERSION="${GITHUB_REF_NAME#v}"
+          fi
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
 
       - name: Setup Deno
