@@ -73,14 +73,6 @@ await build({
       version: "^4.0.0",
       peerDependency: true,
     },
-    "npm:@ai-sdk/provider@^3.0.0-0": {
-      name: "@ai-sdk/provider",
-      version: "^3.0.0-0",
-    },
-    "npm:@modelcontextprotocol/sdk@^1": {
-      name: "@modelcontextprotocol/sdk",
-      version: "^1.0.0",
-    },
     "npm:@opentelemetry/api@^1": {
       name: "@opentelemetry/api",
       version: "^1.0.0",
