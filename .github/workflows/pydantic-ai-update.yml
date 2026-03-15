@@ -114,9 +114,8 @@ jobs:
           PR_URL=$(echo "$RESPONSE" | python3 -c "import sys,json; print(json.load(sys.stdin)['html_url'])")
           echo "Opened PR: $PR_URL"
 
-          # Tag Copilot coding agent via comment (more reliable than assignees API with GITHUB_TOKEN)
-          gh pr comment "${PR_NUMBER}" --repo ${{ github.repository }} \
-            --body "@copilot Please implement the porting checklist in this PR description. Use \`.claude/vibes-pydantic-porting.md\` as your reference guide." \
-            || echo "Copilot comment failed — tag @copilot manually or enable GitHub Copilot coding agent in repo settings."
+          # Assign Copilot coding agent to the PR (requires Copilot coding agent enabled + added as assignable in repo settings)
+          gh pr edit "${PR_NUMBER}" --repo ${{ github.repository }} --add-assignee copilot \
+            || echo "Copilot not assignable — go to repo Settings → Copilot → Coding agent to enable it."
 
           echo "branch=$BRANCH" >> "$GITHUB_OUTPUT"
