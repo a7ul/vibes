@@ -20,21 +20,13 @@
   "navbar": {
     "links": [
       {
-        "label": "npm",
-        "href": "https://www.npmjs.com/package/@vibesjs/sdk"
-      },
-      {
         "label": "JSR",
         "href": "https://jsr.io/@vibesjs/sdk"
-      },
-      {
-        "type": "github",
-        "label": "GitHub",
-        "href": "https://github.com/a7ul/vibes"
       }
     ],
     "primary": {
-      "type": "github",
+      "type": "button",
+      "label": "GitHub",
       "href": "https://github.com/a7ul/vibes"
     }
   },
