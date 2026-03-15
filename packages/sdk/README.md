@@ -87,16 +87,6 @@ const result = await agent.run("What is the capital of France?");
 console.log(result.output); // "Paris"
 ```
 
-## Why Vibes?
-
-1. **Type-safe tools + Dependency injection** - Every tool parameter is validated at runtime with Zod. Carry databases, HTTP clients, and config via `RunContext` through the entire call chain. No `any` types, no global state.
-2. **Automatic retries + Cost control** - Retries on validation failure and enforces token budgets and request limits to keep costs in check.
-3. **Structured output + Streaming** - Define a Zod schema, get back a typed object or stream typed partial objects to the client as they arrive.
-4. **Testing + Evals - the only way to ship AI to production** - Unit-test every agent in CI with `TestModel` and `setAllowModelRequests(false)` (no real API calls). Then go further with typed eval datasets, built-in and LLM-as-judge evaluators, and experiment runners with configurable concurrency. Evals are code - they live in your repo, run in CI, and catch regressions before they reach users.
-5. **Model-agnostic** - Switch between Anthropic, OpenAI, Google, Groq, Mistral, Ollama, and 50+ providers by changing one line.
-6. **OpenTelemetry observability** - Every run emits OTel spans, events, and token usage metrics. Works with Jaeger, Honeycomb, Datadog, and any OTel-compatible backend.
-7. **Durable agents + MCP, AG-UI, A2A** - Run long-lived agents that survive crashes and restarts with Temporal. Connect to MCP servers and build AG-UI and A2A agents out of the box.
-
 ## Progressive examples
 
 ### 1 - Bare agent (6 lines)
@@ -297,14 +287,6 @@ Vibes is deliberately modeled on [Pydantic AI](https://ai.pydantic.dev/). The co
 | Streaming | async generators | AI SDK streams |
 
 If you're porting a Pydantic AI agent to TypeScript, most concepts transfer directly.
-
-## Maintained by AI agents
-
-Vibes was created and is maintained by AI agents under the supervision of [Atul (@a7ul)](https://github.com/a7ul). Every commit is reviewed by a human; every line was written by an agent.
-
-When Pydantic AI ships a new release, a GitHub Actions workflow automatically detects it, opens an issue with a full porting checklist, and assigns the GitHub Copilot coding agent to implement it. The resulting PR is reviewed and merged by a human.
-
-See [Auto-Updates from Pydantic AI](https://vibesjs.dev/meta/auto-updates) for details.
 
 ## Contributing
 
