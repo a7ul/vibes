@@ -81,8 +81,12 @@ jobs:
 
           echo "$NEW" > .github/pydantic-ai-version.txt
           git add .github/pydantic-ai-version.txt
-          git commit -m "chore: bump tracked pydantic-ai version to ${NEW}"
-          git push origin "$BRANCH"
+          if git diff --cached --quiet; then
+            echo "Version marker already up to date, skipping commit."
+          else
+            git commit -m "chore: bump tracked pydantic-ai version to ${NEW}"
+            git push origin "$BRANCH"
+          fi
 
           echo "branch=$BRANCH" >> "$GITHUB_OUTPUT"
         id: push
