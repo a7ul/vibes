@@ -16,6 +16,7 @@ jobs:
     permissions:
       contents: write
       issues: write
+      pull-requests: write
 
     steps:
       - name: Checkout
@@ -35,8 +36,10 @@ jobs:
           echo "stored=$STORED" >> "$GITHUB_OUTPUT"
           echo "Stored version: $STORED"
 
-      - name: Check for new release
+      - name: Check for new release and duplicates
         id: check
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           LATEST="${{ steps.fetch-version.outputs.latest }}"
           STORED="${{ steps.stored-version.outputs.stored }}"
@@ -44,14 +47,35 @@ jobs:
 
           if [[ "$LATEST" == "$STORED" && "$FORCE" != "true" ]]; then
             echo "No new release (still $LATEST). Exiting."
-            echo "new_release=false" >> "$GITHUB_OUTPUT"
-          else
-            echo "New release detected: $STORED -> $LATEST"
-            echo "new_release=true" >> "$GITHUB_OUTPUT"
+            echo "should_run=false" >> "$GITHUB_OUTPUT"
+            exit 0
           fi
 
+          echo "New release detected: $STORED -> $LATEST"
+
+          # Check for existing open issue for this version
+          EXISTING_ISSUE=$(gh api "repos/${{ github.repository }}/issues?state=open&labels=pydantic-ai-update" \
+            --jq ".[] | select(.title | contains(\"v${LATEST}\")) | .number" 2>/dev/null | head -1)
+          if [[ -n "$EXISTING_ISSUE" ]]; then
+            echo "Issue already exists for v${LATEST}: #${EXISTING_ISSUE} — skipping."
+            echo "should_run=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          # Check for existing open PR for this version
+          BRANCH="chore/pydantic-ai-update-${LATEST}"
+          EXISTING_PR=$(gh api "repos/${{ github.repository }}/pulls?head=${{ github.repository_owner }}:${BRANCH}&state=open" \
+            --jq '.[0].number' 2>/dev/null || echo "")
+          if [[ -n "$EXISTING_PR" && "$EXISTING_PR" != "null" ]]; then
+            echo "PR already exists for v${LATEST}: #${EXISTING_PR} — skipping."
+            echo "should_run=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          echo "should_run=true" >> "$GITHUB_OUTPUT"
+
       - name: Analyze release
-        if: steps.check.outputs.new_release == 'true'
+        if: steps.check.outputs.should_run == 'true'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
@@ -61,7 +85,7 @@ jobs:
           .github/scripts/analyze-pydantic-release.sh "$OLD" "$NEW" > /tmp/release-summary.md
 
       - name: Update version marker and push branch
-        if: steps.check.outputs.new_release == 'true'
+        if: steps.check.outputs.should_run == 'true'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
@@ -78,14 +102,23 @@ jobs:
             echo "Version marker already up to date, skipping commit."
           else
             git commit -m "chore: bump tracked pydantic-ai version to ${NEW}"
-            git push origin "$BRANCH" --force
           fi
+          git push origin "$BRANCH" --force
+
+          PR_URL=$(gh api repos/${{ github.repository }}/pulls \
+              --method POST \
+              --field title="chore: bump tracked pydantic-ai version to ${NEW}" \
+              --field head="$BRANCH" \
+              --field base="main" \
+              --field body="Updates \`.github/pydantic-ai-version.txt\` from \`${OLD}\` to \`${NEW}\`. See the linked issue for the full porting checklist." \
+              --jq '.html_url')
+          echo "Opened PR: $PR_URL"
 
           echo "branch=$BRANCH" >> "$GITHUB_OUTPUT"
         id: push
 
       - name: Open GitHub Issue
-        if: steps.check.outputs.new_release == 'true'
+        if: steps.check.outputs.should_run == 'true'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
