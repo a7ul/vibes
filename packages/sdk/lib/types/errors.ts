@@ -1,3 +1,4 @@
+/** Thrown when an agent run exceeds the configured `maxTurns` limit. */
 export class MaxTurnsError extends Error {
   constructor(turns: number) {
     super(`Agent exceeded maxTurns (${turns})`);
@@ -5,6 +6,7 @@ export class MaxTurnsError extends Error {
   }
 }
 
+/** Thrown when result validation fails after exhausting all configured retries. */
 export class MaxRetriesError extends Error {
   constructor(retries: number, cause?: Error) {
     super(
@@ -15,6 +17,7 @@ export class MaxRetriesError extends Error {
   }
 }
 
+/** Thrown when a token or request usage limit is exceeded during a run. */
 export class UsageLimitError extends Error {
   constructor(
     public readonly limitKind:
@@ -32,6 +35,7 @@ export class UsageLimitError extends Error {
   }
 }
 
+/** Thrown when a real model request is attempted while `setAllowModelRequests(false)` is active. */
 export class ModelRequestsDisabledError extends Error {
   constructor() {
     super(

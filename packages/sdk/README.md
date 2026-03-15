@@ -1,7 +1,7 @@
 <p align="center">
   <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="./docs/logo/dark.svg">
-    <img alt="vibes" src="./docs/logo/light.svg" width="280">
+    <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/a7ul/vibes/main/packages/sdk/docs/logo/dark.svg">
+    <img alt="vibes" src="https://raw.githubusercontent.com/a7ul/vibes/main/packages/sdk/docs/logo/light.svg" width="280">
   </picture>
 </p>
 
@@ -11,7 +11,6 @@
 
 <p align="center">
   <a href="https://jsr.io/@vibesjs/sdk"><img alt="JSR" src="https://jsr.io/badges/@vibesjs/sdk"></a>
-  <a href="https://www.npmjs.com/package/@vibesjs/sdk"><img alt="npm" src="https://img.shields.io/npm/v/@vibesjs/sdk"></a>
   <a href="./LICENSE"><img alt="License: MIT" src="https://img.shields.io/badge/License-MIT-yellow.svg"></a>
 </p>
 

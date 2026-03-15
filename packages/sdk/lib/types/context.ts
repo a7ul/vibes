@@ -12,6 +12,7 @@ export interface Usage {
   requests: number;
 }
 
+/** Creates a zeroed-out {@link Usage} object to accumulate token counts across turns. */
 export function createUsage(): Usage {
   return { inputTokens: 0, outputTokens: 0, totalTokens: 0, requests: 0 };
 }

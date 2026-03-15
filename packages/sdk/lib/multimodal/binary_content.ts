@@ -22,6 +22,7 @@ export type BinaryContent = {
 /** Convenience alias - all binary content is also image-compatible. */
 export type BinaryImage = BinaryContent & { type: "binary" };
 
+/** Returns `true` if `v` is a {@link BinaryContent} object. */
 export function isBinaryContent(v: unknown): v is BinaryContent {
   return (
     typeof v === "object" &&
@@ -43,6 +44,7 @@ export type UploadedFile = {
   filename?: string;
 };
 
+/** Returns `true` if `v` is an {@link UploadedFile} reference. */
 export function isUploadedFile(v: unknown): v is UploadedFile {
   return (
     typeof v === "object" &&
@@ -60,6 +62,7 @@ export function isUploadedFile(v: unknown): v is UploadedFile {
 /** All non-text tool return types. */
 export type MultiModalContent = BinaryContent | UploadedFile;
 
+/** Returns `true` if `v` is any non-text tool return value ({@link BinaryContent} or {@link UploadedFile}). */
 export function isMultiModalContent(v: unknown): v is MultiModalContent {
   return isBinaryContent(v) || isUploadedFile(v);
 }
@@ -201,6 +204,7 @@ export function uploadedFileToToolResult(file: UploadedFile): {
 export const BINARY_IMAGE_OUTPUT: unique symbol = Symbol("BINARY_IMAGE_OUTPUT");
 export type BinaryImageOutputSentinel = typeof BINARY_IMAGE_OUTPUT;
 
+/** Returns `true` if `schema` is the {@link BINARY_IMAGE_OUTPUT} sentinel value. */
 export function isBinaryImageOutput(
   schema: unknown,
 ): schema is BinaryImageOutputSentinel {

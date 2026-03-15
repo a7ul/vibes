@@ -14,6 +14,7 @@ export interface TaskStore {
   delete(id: string): void;
 }
 
+/** In-memory implementation of {@link TaskStore} for development and testing. */
 export class MemoryTaskStore implements TaskStore {
   private readonly tasks = new Map<string, A2ATask>();
 
