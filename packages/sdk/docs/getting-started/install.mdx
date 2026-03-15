@@ -20,7 +20,7 @@ Vibes runs on Deno and Node.js. Install the framework, pick a provider, set your
     ```jsonc
     {
       "imports": {
-        "@vibesjs/sdk": "jsr:@vibesjs/sdk@^0.1",
+        "@vibesjs/sdk": "jsr:@vibesjs/sdk@^1.0",
         "ai": "npm:ai@^6",
         "zod": "npm:zod@^4",
         "@ai-sdk/anthropic": "npm:@ai-sdk/anthropic@^1"
@@ -33,7 +33,7 @@ Vibes runs on Deno and Node.js. Install the framework, pick a provider, set your
 
     ```bash
     npx jsr add @vibesjs/sdk
-    npm install ai zod
+    npm install ai zod@^4
     ```
 
     Then add your provider to `package.json`:
@@ -146,6 +146,56 @@ mkdir -p .claude/agents && curl -fsSL https://raw.githubusercontent.com/a7ul/vib
 ```
 
 See the [Agent Skill](/meta/agent-skill) page for global install, manual setup, and details on how it works.
+
+## Troubleshooting
+
+### Wrong registry: `npm:@vibesjs/sdk` does nothing
+
+If you import from `npm:@vibesjs/sdk` instead of `jsr:@vibesjs/sdk`, the import will resolve silently but produce no useful exports — the npm name is a placeholder stub.
+
+**Fix:** Always use the JSR registry:
+
+```jsonc
+// deno.json
+{
+  "imports": {
+    "@vibesjs/sdk": "jsr:@vibesjs/sdk@^1.0"   // ✓ correct
+  //  "@vibesjs/sdk": "npm:@vibesjs/sdk"        // ✗ wrong — stub package
+  }
+}
+```
+
+### Zod version mismatch (Zod v3 vs v4)
+
+Vibes requires Zod v4. If you install `zod` without a version constraint you may get Zod v3, which uses a different API. Symptoms include TypeScript errors on `z.object`, `z.string`, etc.
+
+**Fix:**
+
+```bash
+# Node.js
+npm install zod@^4
+
+# Deno — ensure your import map pins the version
+"zod": "npm:zod@^4"
+```
+
+### Deno cache corruption
+
+If Deno reports an empty module or missing export for a package that exists, its local cache entry may be corrupted. This can happen after a failed download.
+
+**Detect:** The import resolves but the module exports nothing (e.g. `import { z } from "zod"` gives `z is undefined`).
+
+**Fix:** Clear the corrupted cache entry and re-run:
+
+```bash
+# Remove the specific package version from Deno's npm cache
+rm -rf ~/Library/Caches/deno/npm/registry.npmjs.org/<package>/<version>
+
+# Then re-run your script — Deno will re-fetch
+deno run --allow-env --allow-net hello.ts
+```
+
+Replace `<package>` and `<version>` with the affected package (e.g. `zod/4.0.0`).
 
 ## Next steps
 

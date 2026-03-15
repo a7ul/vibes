@@ -22,6 +22,7 @@
     "jsr:@std/path@~0.225.2": "0.225.2",
     "jsr:@ts-morph/bootstrap@0.24": "0.24.0",
     "jsr:@ts-morph/common@0.24": "0.24.0",
+    "npm:@ai-sdk/anthropic@*": "3.0.58_zod@4.3.6",
     "npm:@ai-sdk/provider@3": "3.0.8",
     "npm:@modelcontextprotocol/sdk@1": "1.27.1_zod@4.3.6_hono@4.12.8_ajv@8.18.0_express@5.2.1",
     "npm:@opentelemetry/api@1": "1.9.0",
@@ -136,6 +137,14 @@
     }
   },
   "npm": {
+    "@ai-sdk/anthropic@3.0.58_zod@4.3.6": {
+      "integrity": "sha512-/53SACgmVukO4bkms4dpxpRlYhW8Ct6QZRe6sj1Pi5H00hYhxIrqfiLbZBGxkdRvjsBQeP/4TVGsXgH5rQeb8Q==",
+      "dependencies": [
+        "@ai-sdk/provider",
+        "@ai-sdk/provider-utils",
+        "zod"
+      ]
+    },
     "@ai-sdk/gateway@3.0.66_zod@4.3.6": {
       "integrity": "sha512-SIQ0YY0iMuv+07HLsZ+bB990zUJ6S4ujORAh+Jv1V2KGNn73qQKnGO0JBk+w+Res8YqOFSycwDoWcFlQrVxS4A==",
       "dependencies": [
