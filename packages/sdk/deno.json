@@ -1,6 +1,6 @@
 {
   "name": "@vibesjs/sdk",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "exports": "./mod.ts",
   "description": "TypeScript agent framework for production-grade, type-safe AI applications — Pydantic AI patterns powered by Vercel AI SDK.",
   "runtimes": ["deno", "node"],
