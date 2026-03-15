@@ -11,7 +11,6 @@
 
 <p align="center">
   <a href="https://jsr.io/@vibesjs/sdk"><img alt="JSR" src="https://jsr.io/badges/@vibesjs/sdk"></a>
-  <a href="https://www.npmjs.com/package/@vibesjs/sdk"><img alt="npm" src="https://img.shields.io/npm/v/@vibesjs/sdk"></a>
   <a href="./packages/sdk/LICENSE"><img alt="License: MIT" src="https://img.shields.io/badge/License-MIT-yellow.svg"></a>
 </p>
 
