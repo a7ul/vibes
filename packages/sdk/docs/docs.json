@@ -17,27 +17,27 @@
   "modeToggle": {
     "default": "dark"
   },
-  "topbarCtaButton": {
-    "name": "GitHub",
-    "url": "https://github.com/a7ul/vibes"
+  "navbar": {
+    "links": [
+      {
+        "label": "npm",
+        "href": "https://www.npmjs.com/package/@vibesjs/sdk"
+      },
+      {
+        "label": "JSR",
+        "href": "https://jsr.io/@vibesjs/sdk"
+      },
+      {
+        "type": "github",
+        "label": "GitHub",
+        "href": "https://github.com/a7ul/vibes"
+      }
+    ],
+    "primary": {
+      "type": "github",
+      "href": "https://github.com/a7ul/vibes"
+    }
   },
-  "topbarLinks": [
-    {
-      "name": "npm",
-      "url": "https://www.npmjs.com/package/@vibesjs/sdk"
-    },
-    {
-      "name": "JSR",
-      "url": "https://jsr.io/@vibesjs/sdk"
-    }
-  ],
-  "anchors": [
-    {
-      "name": "GitHub",
-      "icon": "github",
-      "url": "https://github.com/a7ul/vibes"
-    }
-  ],
   "navigation": {
     "groups": [
       {
