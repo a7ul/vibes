@@ -44,5 +44,6 @@ Use `.claude/vibes-pydantic-porting.md` as the reference for all porting work. I
 
 ### Wrap-up
 - [ ] Update feature parity table at `packages/sdk/docs/reference/features.mdx`
+- [ ] Run `deno lint` in `packages/sdk/` — no lint errors
 - [ ] Run `deno test -A` in `packages/sdk/` — all tests pass
 - [ ] Open PR referencing this issue
