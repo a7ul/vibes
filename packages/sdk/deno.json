@@ -1,6 +1,6 @@
 {
   "name": "@vibesjs/sdk",
-  "version": "1.0.1",
+  "version": "1.0.3",
   "exports": "./mod.ts",
   "tasks": {
     "test": "deno test -A",

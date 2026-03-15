@@ -30,7 +30,6 @@ jobs:
         uses: actions/setup-node@v6
         with:
           node-version: "20"
-          registry-url: "https://registry.npmjs.org"
 
       - name: Update package version
         run: |
@@ -46,13 +45,3 @@ jobs:
           cd packages/sdk
           deno publish --allow-dirty
 
-      - name: Build npm package
-        run: |
-          VERSION="${{ steps.version.outputs.version }}"
-          cd packages/sdk
-          deno run -A scripts/build_npm.ts "$VERSION"
-
-      - name: Publish to npm
-        run: |
-          cd packages/sdk/npm
-          npm publish --access public --provenance
