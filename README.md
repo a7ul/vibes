@@ -79,6 +79,26 @@ npm install @ai-sdk/google      # GOOGLE_GENERATIVE_AI_API_KEY
 
 > Vibes supports 50+ providers via the [Vercel AI SDK](https://sdk.vercel.ai/providers/ai-sdk-providers). Switching providers is a one-line change.
 
+## AI coding assistant support
+
+**Claude Code (agent skill)** — install the `@vibesjs/sdk` skill so your coding assistant writes idiomatic Vibes code without looking up docs:
+
+```bash
+mkdir -p .claude/agents && curl -fsSL https://raw.githubusercontent.com/a7ul/vibes/main/packages/sdk/skills/vibes-sdk.md -o .claude/agents/vibes-sdk.md
+```
+
+**MCP server** — add the Vibes docs MCP server to any MCP-compatible client (Cursor, Windsurf, Claude Desktop, etc.) for in-editor documentation access:
+
+```json
+{
+  "mcpServers": {
+    "vibes-sdk": {
+      "url": "https://vibes-sdk.a7ul.com/mcp"
+    }
+  }
+}
+```
+
 ## Why Vibes?
 
 Most AI frameworks try to hide the model behind magic. Vibes does the opposite — it gives you a thin, typed layer that stays out of the way.
