@@ -26,7 +26,6 @@
     "npm:@modelcontextprotocol/sdk@1": "1.27.1_zod@4.3.6_hono@4.12.8_ajv@8.18.0_express@5.2.1",
     "npm:@opentelemetry/api@1": "1.9.0",
     "npm:@types/node@*": "22.15.15",
-    "npm:@vibesjs/sdk@*": "0.0.1",
     "npm:ai@6": "6.0.116_zod@4.3.6",
     "npm:zod@4": "4.3.6"
   },
@@ -203,9 +202,6 @@
     },
     "@vercel/oidc@3.1.0": {
       "integrity": "sha512-Fw28YZpRnA3cAHHDlkt7xQHiJ0fcL+NRcIqsocZQUSmbzeIKRpwttJjik5ZGanXP+vlA4SbTg+AbA3bP363l+w=="
-    },
-    "@vibesjs/sdk@0.0.1": {
-      "integrity": "sha512-6DmAwQjhG/5AIgo8XicaVGyPS9bKA+JxXyH/ZiMrUjt/eXhtvXU7y81JGECZjbUwWnj802mZmOg02ObqxT8Bxw=="
     },
     "accepts@2.0.0": {
       "integrity": "sha512-5cvg6CtKwfgdmVqY1WIiXKc3Q1bkRqGLi+2W/6ao+6Y7gu/RCwRuAhGEzh5B4KlszSuTLgZYuqFqo5bImjNKng==",
