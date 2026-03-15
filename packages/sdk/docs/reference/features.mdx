@@ -250,11 +250,12 @@ framework. Use it as a backlog when deciding what to port next.
 
 ## AG-UI Protocol
 
-| Feature                | Pydantic AI                                     | Status | Docs | Notes |
-| ---------------------- | ----------------------------------------------- | ------ | ---- | ----- |
-| AG-UI event streaming  | `AGUIAdapter.run_stream()` - agent-to-UI events | ✅     | [AG-UI](/integrations/ag-ui) | `AGUIAdapter.handleRequest(input)` returns SSE `Response` |
-| Follow-up messaging    | Continue conversation after tool call results   | ✅     | [AG-UI](/integrations/ag-ui) | `input.messages` history passed as `messageHistory` automatically |
-| Structured event types | Typed event payloads for all agent actions      | ✅     | [AG-UI](/integrations/ag-ui) | `AGUIEvent` discriminated union with 16 event variants |
+| Feature                      | Pydantic AI                                     | Status | Docs | Notes |
+| ---------------------------- | ----------------------------------------------- | ------ | ---- | ----- |
+| AG-UI event streaming        | `AGUIAdapter.run_stream()` - agent-to-UI events | ✅     | [AG-UI](/integrations/ag-ui) | `AGUIAdapter.handleRequest(input)` returns SSE `Response` |
+| Text follow-up messaging     | Continue conversation via user/assistant history | ✅     | [AG-UI](/integrations/ag-ui) | `input.messages` (role: user/assistant) passed as `messageHistory`; plain text turns are preserved across requests |
+| Structured event types       | Typed event payloads for all agent actions      | ✅     | [AG-UI](/integrations/ag-ui) | `AGUIEvent` discriminated union with 16 event variants |
+| Tool-call message history    | Re-hydrate tool call/result pairs from AG-UI history | ❌     | - | Python adapter's `load_messages()` re-builds `ToolCallPart`/`ToolReturnPart` from `AssistantMessage`/`ToolMessage`; TypeScript adapter only converts simple role:user/assistant string messages — tool call records from previous turns are not preserved across requests |
 
 ---
 
