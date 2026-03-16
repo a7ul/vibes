@@ -39,7 +39,7 @@ RELEASE_BODY=$(echo "$RELEASE_JSON" | python3 -c "import sys,json; d=json.load(s
 
 echo "### Release Notes"
 echo ""
-echo "$RELEASE_BODY"
+echo "$RELEASE_BODY" | sed 's/@\([a-zA-Z0-9_][a-zA-Z0-9_-]*\)/\1/g'
 echo ""
 
 # Fetch changed files between tags
