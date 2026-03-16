@@ -192,6 +192,30 @@ for await (const chunk of stream.textStream) {
 }
 ```
 
+## Feature parity
+
+Vibes tracks feature-for-feature parity with Pydantic AI. See the [full feature parity breakdown](./packages/sdk/docs/reference/features.mdx) for per-feature status and notes.
+
+| Area | Status |
+|------|--------|
+| Agent API | ✅ |
+| Tools | ✅ |
+| Toolsets | ✅ |
+| Deferred tools (human-in-the-loop) | ✅ |
+| Output & Structured Results | ✅ |
+| Message history | ✅ |
+| Dependencies | ✅ |
+| Usage & Limits | ✅ |
+| Errors | ✅ |
+| MCP (Model Context Protocol) | ✅ |
+| Testing | ✅ |
+| Multi-Agent & Graph | ✅ |
+| Observability | ✅ |
+| Evaluation framework | ✅ |
+| Durable execution | ✅ |
+| AG-UI Protocol | ✅ |
+| Multi-Modal Support | ✅ |
+
 ## Pydantic AI comparison
 
 Vibes is, in a real sense, Pydantic AI for TypeScript. Most concepts transfer directly.
