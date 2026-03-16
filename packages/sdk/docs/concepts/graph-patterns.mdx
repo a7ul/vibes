@@ -1,0 +1,236 @@
+---
+title: Graph Patterns
+description: Practical patterns for conditional branching, error handling, and state design in Vibes graph workflows.
+---
+
+This page covers common patterns for building robust graph workflows. Read the [Graph Workflows](/concepts/graph) page first for core API concepts.
+
+## Conditional branching
+
+A node can route to different next nodes based on the current state. Return `next()` with the appropriate `nodeId`:
+
+```typescript
+import { BaseNode, next, output } from "jsr:@vibesjs/sdk";
+
+type State = {
+  text: string;
+  wordCount?: number;
+  summary?: string;
+};
+
+class RouterNode extends BaseNode<State, string> {
+  readonly id = "router";
+  readonly nextNodes = ["short_handler", "long_handler"];
+
+  async run(state: State) {
+    const wordCount = state.text.split(/\s+/).length;
+    const updated = { ...state, wordCount };
+
+    if (wordCount < 100) {
+      return next<State, string>("short_handler", updated);
+    }
+    return next<State, string>("long_handler", updated);
+  }
+}
+```
+
+<Note>
+  `nextNodes` is used only by `graph.toMermaid()` to draw diagram edges. It is not enforced at runtime — any string is a valid `nodeId` in a `next()` call, as long as a node with that ID is registered in the `Graph`.
+</Note>
+
+## Error handling in nodes
+
+Node errors propagate out of `graph.run()` as normal exceptions. Wrap the `run()` call to catch and handle them:
+
+```typescript
+import { Graph, MaxGraphIterationsError, UnknownNodeError } from "jsr:@vibesjs/sdk";
+
+const graph = new Graph([new FetchNode(), new ProcessNode()]);
+
+try {
+  const result = await graph.run(initialState, "fetch");
+  console.log(result);
+} catch (err) {
+  if (err instanceof MaxGraphIterationsError) {
+    // A node was visited too many times - likely a cycle
+    console.error("Possible infinite loop in graph:", err.message);
+  } else if (err instanceof UnknownNodeError) {
+    // A next() call referenced a node ID not registered in the Graph
+    console.error("Missing node:", err.message);
+  } else {
+    throw err;
+  }
+}
+```
+
+### Error recovery inside a node
+
+To recover from an error within a node (rather than letting it propagate), catch it in `run()` and transition to a dedicated error-handling node:
+
+```typescript
+class FetchNode extends BaseNode<State, string> {
+  readonly id = "fetch";
+  readonly nextNodes = ["process", "error"];
+
+  async run(state: State) {
+    try {
+      const content = await fetch(state.url).then((r) => r.text());
+      return next<State, string>("process", { ...state, content });
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : String(err);
+      return next<State, string>("error", { ...state, error: errorMessage });
+    }
+  }
+}
+
+class ErrorNode extends BaseNode<State, string> {
+  readonly id = "error";
+
+  async run(state: State) {
+    return output<State, string>(`Failed: ${state.error ?? "unknown error"}`);
+  }
+}
+```
+
+## State design patterns
+
+### Keep state flat and serialisable
+
+Graph state is JSON-serialised when you use `FileStatePersistence`. Avoid storing class instances, functions, or `Date` objects — use plain primitives, arrays, and objects.
+
+```typescript
+// Good: flat, serialisable
+type State = {
+  url: string;
+  content?: string;
+  attempts: number;
+  error?: string;
+};
+
+// Avoid: non-serialisable values
+type BadState = {
+  db: DatabaseConnection;   // not JSON-serialisable
+  createdAt: Date;          // loses type on deserialise
+};
+```
+
+### Immutable state transitions
+
+Always spread the previous state when building the next one. `BaseNode.run()` receives the state by value, but adopting an immutable style prevents subtle bugs, especially when nodes are used in multiple branches.
+
+```typescript
+async run(state: State) {
+  // Create a new object - do not mutate the incoming state
+  return next("next-node", { ...state, content: "new value" });
+}
+```
+
+### Carrying error context through state
+
+Add an optional `error` field to your state type so error nodes can surface details in the final output:
+
+```typescript
+type State = {
+  input: string;
+  result?: string;
+  error?: string;
+};
+```
+
+## Cycle prevention
+
+By default, the `Graph` throws `MaxGraphIterationsError` if any single node is visited more than 100 times. Adjust this with the `maxIterations` option:
+
+```typescript
+import { Graph } from "jsr:@vibesjs/sdk";
+
+const graph = new Graph(nodes, {
+  maxIterations: 20, // lower the cap for tight retry loops
+});
+```
+
+For intentional retry loops, track the attempt count in state and transition to an error node when the limit is reached:
+
+```typescript
+class RetryNode extends BaseNode<State, string> {
+  readonly id = "retry";
+  readonly nextNodes = ["process", "give_up"];
+  private readonly maxAttempts = 3;
+
+  async run(state: State) {
+    const attempts = (state.attempts ?? 0) + 1;
+
+    if (attempts > this.maxAttempts) {
+      return next<State, string>("give_up", { ...state, attempts });
+    }
+
+    try {
+      const result = await doWork(state.input);
+      return next<State, string>("process", { ...state, result, attempts });
+    } catch {
+      return next<State, string>("retry", { ...state, attempts });
+    }
+  }
+}
+```
+
+## Step-by-step inspection with `runIter()`
+
+Use `graph.runIter()` to inspect or log state between every node transition. This is useful for debugging and for human-in-the-loop workflows:
+
+```typescript
+import { Graph } from "jsr:@vibesjs/sdk";
+
+const run = graph.runIter(initialState, "fetch");
+
+let step = await run.next();
+while (step !== null && step.kind === "node") {
+  console.log(`Completed node: ${step.nodeId}`);
+  console.log("State:", JSON.stringify(step.state, null, 2));
+  step = await run.next();
+}
+
+if (step?.kind === "output") {
+  console.log("Final output:", step.output);
+}
+```
+
+## Resumable runs with persistence
+
+Combine `FileStatePersistence` with a stable `graphId` to make a graph resumable across process restarts. The graph saves state after each node and resumes from the last checkpoint on restart:
+
+```typescript
+import { FileStatePersistence, Graph } from "jsr:@vibesjs/sdk";
+
+const persistence = new FileStatePersistence<State>("./graph-checkpoints");
+
+// First run (or resume after crash)
+const result = await graph.run(initialState, "fetch", {
+  persistence,
+  graphId: "pipeline-run-42",
+});
+// State file is deleted on successful completion
+```
+
+For testing, use `MemoryStatePersistence` to avoid writing files:
+
+```typescript
+import { MemoryStatePersistence } from "jsr:@vibesjs/sdk";
+
+const persistence = new MemoryStatePersistence<State>();
+const result = await graph.run(initialState, "fetch", {
+  persistence,
+  graphId: "test-run",
+});
+```
+
+---
+
+<CardGroup cols={2}>
+  <Card title="Graph Workflows" icon="diagram-project" href="/concepts/graph">
+    Core Graph API: BaseNode, Graph, runIter, toMermaid
+  </Card>
+  <Card title="Human in the Loop" icon="user" href="/concepts/human-in-the-loop">
+    Pause and resume patterns with ApprovalRequiredError
+  </Card>
+</CardGroup>

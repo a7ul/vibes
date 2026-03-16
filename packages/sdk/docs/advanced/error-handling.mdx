@@ -12,7 +12,7 @@ import {
   UsageLimitError,
   ApprovalRequiredError,
   ModelRequestsDisabledError,
-} from "@vibesjs/sdk";
+} from "jsr:@vibesjs/sdk";
 ```
 
 ## Error taxonomy
@@ -45,8 +45,8 @@ Thrown when the agent loop exceeds the `maxTurns` limit set in `AgentOptions`. E
 **Recovery:** Increase `maxTurns`, simplify the task, or add instructions to the system prompt guiding the model to finish sooner.
 
 ```typescript
-import { agent } from "@vibesjs/sdk";
-import { MaxTurnsError } from "@vibesjs/sdk";
+import { agent } from "jsr:@vibesjs/sdk";
+import { MaxTurnsError } from "jsr:@vibesjs/sdk";
 
 const myAgent = agent({
   model: "claude-opus-4-5",
@@ -59,7 +59,7 @@ try {
   console.log(result.output);
 } catch (err) {
   if (err instanceof MaxTurnsError) {
-    console.error(`Agent stopped after ${err.turns} turns. Simplify the task or increase maxTurns.`);
+    console.error(`Agent stopped at turn limit. Simplify the task or increase maxTurns. (${err.message})`);
     // Option: retry with a simpler reformulated prompt
   } else {
     throw err;
@@ -78,8 +78,8 @@ Thrown when the model fails to produce a valid response for structured output af
 **Recovery:** Simplify the `outputSchema`, add field descriptions to guide the model, or increase `maxRetries` in `AgentOptions`.
 
 ```typescript
-import { agent } from "@vibesjs/sdk";
-import { MaxRetriesError } from "@vibesjs/sdk";
+import { agent } from "jsr:@vibesjs/sdk";
+import { MaxRetriesError } from "jsr:@vibesjs/sdk";
 import { z } from "zod";
 
 const myAgent = agent({
@@ -124,8 +124,8 @@ The correct class name is `UsageLimitError`  -  **not** `UsageLimitExceededError
 **Recovery:** Increase the budget in `UsageLimits`, break the task into smaller subtasks, or optimize the prompt to reduce token consumption. See [Results and Usage Limits](/concepts/results) for how to configure limits.
 
 ```typescript
-import { agent } from "@vibesjs/sdk";
-import { UsageLimitError } from "@vibesjs/sdk";
+import { agent } from "jsr:@vibesjs/sdk";
+import { UsageLimitError } from "jsr:@vibesjs/sdk";
 
 const myAgent = agent({
   model: "claude-opus-4-5",
@@ -159,8 +159,7 @@ Thrown when the agent encounters a tool call that has been marked as requiring h
 For the full human-in-the-loop pattern including UI integration, see [Human in the Loop](/concepts/human-in-the-loop).
 
 ```typescript
-import { agent } from "@vibesjs/sdk";
-import { ApprovalRequiredError } from "@vibesjs/sdk";
+import { agent, ApprovalRequiredError } from "jsr:@vibesjs/sdk";
 
 try {
   const result = await myAgent.run("Transfer $500 to account 12345");
@@ -174,7 +173,14 @@ try {
 
     const approved = await promptHumanForApproval(err.deferred.requests);
     if (approved) {
-      const result = await myAgent.resume(err.deferred);
+      // Provide results for each pending tool call and resume
+      const results = {
+        results: err.deferred.requests.map((r) => ({
+          toolCallId: r.toolCallId,
+          result: "approved",
+        })),
+      };
+      const result = await myAgent.resume(err.deferred, results);
       console.log(result.output);
     }
   } else {
@@ -196,8 +202,7 @@ Thrown only in test environments when `setAllowModelRequests(false)` has been ca
 For the full testing guide and `TestModel` usage, see [Testing](/concepts/testing).
 
 ```typescript
-import { agent, TestModel, setAllowModelRequests } from "@vibesjs/sdk";
-import { ModelRequestsDisabledError } from "@vibesjs/sdk";
+import { agent, TestModel, setAllowModelRequests, ModelRequestsDisabledError } from "jsr:@vibesjs/sdk";
 
 // In your test setup:
 setAllowModelRequests(false);
@@ -246,7 +251,7 @@ import {
   UsageLimitError,
   ApprovalRequiredError,
   ModelRequestsDisabledError,
-} from "@vibesjs/sdk";
+} from "jsr:@vibesjs/sdk";
 import { APICallError } from "ai";
 
 async function runWithRecovery(prompt: string) {
@@ -255,7 +260,7 @@ async function runWithRecovery(prompt: string) {
     return result.output;
   } catch (err) {
     if (err instanceof MaxTurnsError) {
-      throw new Error(`Agent hit turn limit (${err.turns} turns). Simplify the task.`);
+      throw new Error(`Agent hit turn limit. Simplify the task. (${err.message})`);
     }
 
     if (err instanceof MaxRetriesError) {

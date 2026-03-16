@@ -1,129 +1,355 @@
 ---
 title: Multi-Agent Systems
-description: Delegate to specialist agents using the agent-as-tool pattern - compose independent agents without any special multi-agent API.
+description: One agent is rarely enough for complex tasks. Learn how to compose specialist agents, pass dependencies through the hierarchy, and aggregate usage across an entire delegation chain.
 ---
 
-Multi-agent systems let you divide complex tasks across specialist agents, each with its own system prompt, tools, and model. Vibes has no dedicated multi-agent API: you delegate to a child agent by wrapping it in `tool()`. The orchestrating agent calls that tool like any other, and the framework handles usage aggregation automatically.
+Real-world tasks often push against the limits of a single agent. A research request might need deep web search, code execution, and finally a polished summary — three concerns that benefit from three different system prompts, three different tool sets, and potentially three different models. When you feel the urge to write a sprawling system prompt that says "first search, then analyze, then format", that's the signal to split.
 
-Use sub-agents when a sub-task needs a different persona or toolset, or when the output of one stage becomes structured input for the next.
+Vibes has no dedicated multi-agent API. A sub-agent is just a regular `Agent` whose `run()` call lives inside a `tool()` `execute` function. The framework handles everything else: the orchestrator's model decides when to call the tool, Vibes executes it, appends the result to history, and the run continues. Nesting is unlimited and usage aggregates automatically.
 
-## Agent delegation flow
+## The agent-as-tool pattern
 
-```mermaid
-sequenceDiagram
-    participant App
-    participant Orchestrator
-    participant Specialist
-
-    App->>Orchestrator: run task
-    Orchestrator->>Orchestrator: model decides to delegate
-    Orchestrator->>Specialist: run sub-task
-    Specialist-->>Orchestrator: result
-    Orchestrator->>Orchestrator: model generates final answer
-    Orchestrator-->>App: final result
-```
-
-## Agent-as-tool pattern
-
-Wrap a child agent in `tool()`. The `execute` function calls the child agent and returns its output.
+The fundamental building block is wrapping one agent's `run()` call inside a `tool()`. The outer agent gets a tool it can call by name; the inner agent does focused work and returns a string. From the model's perspective it's just a tool call — there's nothing special about the implementation.
 
 ```typescript
-import { Agent, tool } from "@vibesjs/sdk";
-import { anthropic } from "@ai-sdk/anthropic";
-import { z } from "zod";
+import { Agent, tool } from "jsr:@vibesjs/sdk";
+import { anthropic } from "npm:@ai-sdk/anthropic";
+import { z } from "npm:zod";
 
-const researchAgent = new Agent({
-  model: anthropic("claude-sonnet-4-6"),
-  systemPrompt: "You are a research specialist. Answer questions with detailed, factual information.",
+// (1) A specialist agent with a tight, focused system prompt
+const searchSpecialist = new Agent({
+  model: anthropic("claude-haiku-4-5"),
+  systemPrompt:
+    "You are a web research specialist. Given a query, return a concise factual summary with sources.",
 });
 
-const researchTool = tool({
-  name: "research",
-  description: "Delegate a research question to the research specialist",
-  parameters: z.object({ question: z.string() }),
-  execute: async (_ctx, { question }) => {
-    const result = await researchAgent.run(question);
+// (2) Wrap the specialist in a tool the orchestrator can call
+const searchTool = tool({
+  name: "search",
+  description: "Research a topic and return a factual summary with sources.",
+  parameters: z.object({
+    query: z.string().describe("The research question to investigate"),
+  }),
+  execute: async (_ctx, { query }) => {
+    const result = await searchSpecialist.run(query); // (3)
     return result.output;
   },
 });
 
-const orchestratorAgent = new Agent({
+// (4) The orchestrator knows about search but not about how it works
+const orchestrator = new Agent({
   model: anthropic("claude-sonnet-4-6"),
-  systemPrompt: "You are an orchestrator. Use the research tool for in-depth questions, then summarize the findings.",
-  tools: [researchTool],
+  systemPrompt:
+    "You coordinate research tasks. Use the search tool to gather information, then synthesize a final answer.",
+  tools: [searchTool],
 });
 
-const result = await orchestratorAgent.run("Research and summarize the history of TypeScript");
+const result = await orchestrator.run(
+  "What are the main differences between Deno and Node.js?",
+);
 console.log(result.output);
+// "Deno and Node.js are both JavaScript runtimes, but they differ in several
+//  key ways: Deno has built-in TypeScript support without a build step, uses
+//  URL-based imports instead of npm, runs in a secure sandbox by default..."
 ```
 
-## Usage aggregation
+**(1)** The specialist has a narrow system prompt. It doesn't need to know about synthesis or formatting — it just researches.<br/>
+**(2)** `tool()` is the only glue needed. The specialist's `run()` call is a plain async function call inside `execute`.<br/>
+**(3)** `result.output` is a `string` here because `searchSpecialist` has no `outputSchema`. If the specialist returned a structured type, you'd get that instead.<br/>
+**(4)** The orchestrator's system prompt is completely decoupled from the specialist's. You can swap the specialist model, rewrite its prompt, or add tools to it without touching the orchestrator.
 
-`RunResult.usage` automatically sums token usage across all nested agent calls. You do not need to track usage manually - the orchestrator's `result.usage` reflects the total cost of the entire delegation chain.
+<Note>
+You don't need to import any special multi-agent module. The only imports you need are `Agent`, `tool`, and `z` — the same ones you use for any other agent.
+</Note>
+
+## Why multi-agent instead of more tools?
+
+Before adding a sub-agent, ask: can I solve this with another tool on the same agent?
+
+Use a sub-agent when:
+
+- The sub-task needs a **different persona** — a strict grader, a creative writer, a terse summarizer. Mixing prompts in one agent produces confused output.
+- The sub-task needs **different tools** that should be invisible to the orchestrator. If the orchestrator doesn't need to call `read_file` directly, don't clutter its tool list.
+- You want to **reuse the same specialist** from multiple orchestrators, keeping a single source of truth for its instructions and tools.
+- The output of one stage is **structured input** for the next stage and you want that boundary enforced by a Zod schema.
+
+Avoid a sub-agent when the orchestrator can do the work in one model call without confusion — the extra round trip costs tokens and latency.
+
+## Passing dependencies through the hierarchy
+
+Dependencies flow through the `deps` field on `RunOptions`. When your tools receive a `RunContext`, the `ctx.deps` field holds whatever you passed at run time. A sub-agent called inside a tool can receive its own deps at call time.
 
 ```typescript
-const result = await orchestratorAgent.run("Research and summarize the history of TypeScript");
+import { Agent, tool } from "jsr:@vibesjs/sdk";
+import { anthropic } from "npm:@ai-sdk/anthropic";
+import { z } from "npm:zod";
 
-console.log(result.usage.inputTokens.total);   // total input tokens (all agents)
-console.log(result.usage.outputTokens.total);  // total output tokens (all agents)
+type OrchestratorDeps = {
+  userId: string;
+  apiKey: string;
+};
+
+type SpecialistDeps = {
+  apiKey: string;
+};
+
+const summarizer = new Agent<SpecialistDeps>({
+  model: anthropic("claude-haiku-4-5"),
+  systemPrompt: "Summarize the provided text in three bullet points.",
+});
+
+const summarizeTool = tool<OrchestratorDeps>({
+  name: "summarize",
+  description: "Summarize a long piece of text",
+  parameters: z.object({ text: z.string() }),
+  execute: async (ctx, { text }) => {
+    // (1) Forward the apiKey from the orchestrator's deps to the sub-agent
+    const result = await summarizer.run(text, {
+      deps: { apiKey: ctx.deps.apiKey },
+    });
+    return result.output;
+  },
+});
+
+const orchestrator = new Agent<OrchestratorDeps>({
+  model: anthropic("claude-sonnet-4-6"),
+  systemPrompt: (ctx) =>
+    `You are helping user ${ctx.deps.userId}. Use the summarize tool for long texts.`,
+  tools: [summarizeTool],
+});
+
+const result = await orchestrator.run(
+  "Please summarize this 5000-word article: ...",
+  {
+    deps: { userId: "user-123", apiKey: Deno.env.get("API_KEY")! },
+  },
+);
 ```
 
-## Programmatic handoff
+**(1)** The sub-agent only receives what it needs. It never sees `userId` — good for least-privilege design.
 
-You can route to different specialist agents based on runtime conditions. Use a plain TypeScript `if`/`else` inside `tool.execute()` - there is no special routing API.
+<Tip>
+If the orchestrator and specialist share a dep type, you can pass `ctx.deps` directly: `deps: ctx.deps`. For narrower sharing, destructure only the fields the specialist needs.
+</Tip>
+
+## Aggregating usage across the hierarchy
+
+Token usage aggregates automatically. `result.usage` on the top-level run reflects the combined cost of the orchestrator plus every sub-agent call made during that run — you do not need to track sub-agent usage separately.
 
 ```typescript
-const routerTool = tool({
-  name: "delegate",
-  description: "Route the task to the appropriate specialist",
-  parameters: z.object({
-    taskType: z.enum(["research", "code", "math"]),
-    prompt: z.string(),
-  }),
-  execute: async (_ctx, { taskType, prompt }) => {
-    if (taskType === "research") {
-      return (await researchAgent.run(prompt)).output;
-    } else if (taskType === "code") {
-      return (await codeAgent.run(prompt)).output;
-    } else {
-      return (await mathAgent.run(prompt)).output;
-    }
+const result = await orchestrator.run("Research and summarize the latest AI papers");
+
+console.log(result.usage.inputTokens);   // total input tokens across all agents
+console.log(result.usage.outputTokens);  // total output tokens across all agents
+console.log(result.usage.totalTokens);   // combined total
+console.log(result.usage.requests);      // total model API calls made
+// Example output:
+// inputTokens:  4823
+// outputTokens: 1204
+// totalTokens:  6027
+// requests:     3       ← orchestrator called search twice + summarize once
+```
+
+This works because the `RunContext.usage` object is shared within a run and sub-agents accumulate into the same counter through the tool's `ctx`. Sub-agents started in separate `agent.run()` calls (outside of a tool context) maintain their own usage counters.
+
+## Structured output from sub-agents
+
+Sub-agents can return structured data just like any agent. Declare an `outputSchema` on the specialist, and the returned `result.output` is fully typed.
+
+```typescript
+import { Agent, tool } from "jsr:@vibesjs/sdk";
+import { anthropic } from "npm:@ai-sdk/anthropic";
+import { z } from "npm:zod";
+
+const SummarySchema = z.object({
+  headline: z.string().describe("One sentence headline"),
+  bullets: z.array(z.string()).describe("Three key points"),
+  sentiment: z.enum(["positive", "negative", "neutral"]),
+});
+
+const analyzerAgent = new Agent({
+  model: anthropic("claude-haiku-4-5"),
+  systemPrompt: "Analyze text and return structured results.",
+  outputSchema: SummarySchema,
+});
+
+const analyzeTool = tool({
+  name: "analyze",
+  description: "Analyze a piece of text and return structured findings",
+  parameters: z.object({ text: z.string() }),
+  execute: async (_ctx, { text }) => {
+    const result = await analyzerAgent.run(text);
+    // result.output is typed as { headline: string; bullets: string[]; sentiment: ... }
+    return JSON.stringify(result.output); // (1)
   },
 });
 ```
 
-## When to use sub-agents
+**(1)** Tool `execute` must return a string or plain object. Serializing the structured output lets the orchestrator see the full structure in its message history.
 
-Use sub-agents when:
+## Common patterns
 
-- A sub-task requires a **different system prompt** (different persona, different instructions)
-- A sub-task needs **different tools** that should not be exposed to the orchestrator
-- The output of one stage becomes **structured input** for the next stage
-- You want to **reuse an agent** across multiple orchestrators
+<CardGroup cols={2}>
+  <Card title="Orchestrator + specialists" icon="sitemap">
+    One orchestrator agent with multiple specialist tools. The orchestrator routes tasks; specialists execute them. Good for open-ended tasks where the model should decide the order.
+  </Card>
+  <Card title="Pipeline" icon="arrow-right">
+    Agent A produces output that feeds directly into Agent B. Use message history (`messageHistory` option) or tool chaining. Good when stages are deterministic and sequential.
+  </Card>
+  <Card title="Dynamic routing" icon="shuffle">
+    A router tool that calls different specialists based on task type. Implement with an `if`/`else` in the tool's `execute` — no special routing API required.
+  </Card>
+  <Card title="Peer agents" icon="arrows-left-right">
+    Two agents that can each call the other as a tool. Useful for critique/review loops where one generates and one evaluates. Set `maxTurns` carefully to bound recursion.
+  </Card>
+</CardGroup>
 
-Avoid sub-agents for:
+### Full example: research pipeline
 
-- Simple single-tool operations that do not need a separate model call
-- Cases where the orchestrator can solve the problem directly without specialist knowledge
+Here's a complete three-agent system: a search specialist, a summarizer, and an orchestrator that coordinates them.
 
-## API reference
+```typescript
+import { Agent, tool } from "jsr:@vibesjs/sdk";
+import { anthropic } from "npm:@ai-sdk/anthropic";
+import { z } from "npm:zod";
 
-There is no special multi-agent API in Vibes. Sub-agents are just agents wrapped in tools.
+// ── Specialist 1: search ─────────────────────────────────────────────────────
 
-| Symbol | Description |
-|--------|-------------|
-| `agent.run(prompt, options?)` | Run an agent and return `RunResult<TOutput>` |
-| `RunResult.output` | The agent's final output |
-| `RunResult.usage` | Token usage - summed across all nested agent calls automatically |
-| `tool({ execute })` | Wrap any async function as a tool, including `agent.run()` calls |
+const searchAgent = new Agent({
+  name: "search-specialist",
+  model: anthropic("claude-haiku-4-5"),           // (1) cheaper model for focused task
+  systemPrompt:
+    "You are a search specialist. Given a query, produce a detailed factual " +
+    "answer with specific data points. Be comprehensive.",
+});
+
+const searchTool = tool({
+  name: "search",
+  description: "Research a specific topic in depth",
+  parameters: z.object({
+    query: z.string().describe("Specific research question"),
+  }),
+  execute: async (_ctx, { query }) => {
+    const r = await searchAgent.run(query);
+    return r.output;
+  },
+});
+
+// ── Specialist 2: summarizer ──────────────────────────────────────────────────
+
+const summarySchema = z.object({
+  title: z.string(),
+  keyFindings: z.array(z.string()).min(3).max(5),
+  recommendation: z.string(),
+});
+
+const summarizerAgent = new Agent({
+  name: "summarizer",
+  model: anthropic("claude-haiku-4-5"),
+  systemPrompt:
+    "You receive raw research and produce concise, structured summaries. " +
+    "Extract only the most important findings.",
+  outputSchema: summarySchema,              // (2) structured output from sub-agent
+});
+
+const summarizeTool = tool({
+  name: "summarize",
+  description: "Condense raw research into a structured summary",
+  parameters: z.object({
+    rawResearch: z.string().describe("The research content to summarize"),
+    topic: z.string().describe("The original topic for context"),
+  }),
+  execute: async (_ctx, { rawResearch, topic }) => {
+    const r = await summarizerAgent.run(
+      `Topic: ${topic}\n\nResearch:\n${rawResearch}`,
+    );
+    return JSON.stringify(r.output);        // (3) serialize for history
+  },
+});
+
+// ── Orchestrator ──────────────────────────────────────────────────────────────
+
+const orchestrator = new Agent({
+  name: "orchestrator",
+  model: anthropic("claude-sonnet-4-6"),    // (4) stronger model for coordination
+  systemPrompt:
+    "You coordinate research tasks. First use the search tool to gather " +
+    "information, then use the summarize tool to condense it, then present " +
+    "the final findings to the user in a readable format.",
+  tools: [searchTool, summarizeTool],
+  maxTurns: 6,                              // (5) search + summarize + final = 3 tool calls + overhead
+});
+
+const result = await orchestrator.run(
+  "What are the performance characteristics of Deno vs Node.js for I/O-heavy workloads?",
+);
+
+console.log(result.output);
+// "Based on my research, here are the key findings about Deno vs Node.js performance:
+//
+//  **Key Findings:**
+//  - Deno shows 10-15% lower latency for HTTP servers in benchmarks...
+//  - Node.js has a larger ecosystem with more optimized native modules...
+//  - Deno's permissions model adds <1ms overhead to I/O calls...
+//
+//  **Recommendation:** For new I/O-heavy projects, either runtime is viable..."
+
+console.log(`Total requests: ${result.usage.requests}`);
+// Total requests: 3
+console.log(`Total tokens: ${result.usage.totalTokens}`);
+// Total tokens: 5842
+```
+
+**(1)** Use a smaller model for specialists. They do focused work with a tight prompt — Haiku is often sufficient and significantly cheaper.<br/>
+**(2)** The summarizer declares a Zod `outputSchema`. The framework injects a `final_result` tool and validates the output automatically.<br/>
+**(3)** `JSON.stringify` converts the structured output to a string so the orchestrator can read it in its message history.<br/>
+**(4)** The orchestrator coordinates and synthesizes, which benefits from a stronger model's reasoning ability.<br/>
+**(5)** With three tool calls in the plan, `maxTurns: 6` gives buffer for the model to think before and after each tool call.
+
+## Dynamic routing
+
+When the right specialist depends on what the user asked, route inside the tool's `execute` function:
+
+```typescript
+const codeAgent = new Agent({
+  model: anthropic("claude-sonnet-4-6"),
+  systemPrompt: "You are a software engineer. Answer technical coding questions precisely.",
+});
+
+const writingAgent = new Agent({
+  model: anthropic("claude-haiku-4-5"),
+  systemPrompt: "You are a writing coach. Help with prose, structure, and clarity.",
+});
+
+const delegateTool = tool({
+  name: "delegate",
+  description: "Route the task to the appropriate specialist",
+  parameters: z.object({
+    taskType: z.enum(["code", "writing", "general"]),
+    prompt: z.string(),
+  }),
+  execute: async (_ctx, { taskType, prompt }) => {
+    // (1) Plain TypeScript branching — no special routing API
+    if (taskType === "code") {
+      return (await codeAgent.run(prompt)).output;
+    }
+    if (taskType === "writing") {
+      return (await writingAgent.run(prompt)).output;
+    }
+    return "I'll handle this directly.";
+  },
+});
+```
+
+**(1)** The router is plain TypeScript. You have the full language available — `switch`, `Map` lookups, database queries — whatever the routing logic requires.
 
 ---
 
 <CardGroup cols={2}>
   <Card title="Tools" icon="wrench" href="/concepts/tools">
-    Define tools and wrap any function for agent use
+    Define tools and wrap any async function
   </Card>
-  <Card title="Agents" icon="robot" href="/concepts/agents">
-    Configure agents with models, tools, and system prompts
+  <Card title="Dependencies" icon="plug" href="/concepts/dependencies">
+    Pass runtime deps through RunContext
   </Card>
 </CardGroup>

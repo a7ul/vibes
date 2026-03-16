@@ -117,10 +117,15 @@ import { summarizeHistoryProcessor } from "@vibesjs/sdk";
 const agent = new Agent({
   model,
   historyProcessors: [
-    summarizeHistoryProcessor(model, { maxMessages: 10 }),
+    summarizeHistoryProcessor(model, {
+      maxMessages: 10,           // default: 20 - summarize when history exceeds this
+      summarizePrompt: "Summarize the conversation so far:", // optional custom prompt
+    }),
   ],
 });
 ```
+
+The second argument accepts `{ maxMessages?: number; summarizePrompt?: string }`. When the non-system message count exceeds `maxMessages`, the older portion is summarized and replaced with a single summary message. The most recent `floor(maxMessages / 2)` messages are always kept verbatim. System messages are always preserved.
 
 ### privacyFilterProcessor
 

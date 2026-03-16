@@ -1,0 +1,152 @@
+---
+title: Contributing
+description: How to set up the development environment, run tests, follow code style, and open a pull request.
+---
+
+Contributions are welcome — bug fixes, new features, documentation improvements, and community toolsets. This page covers everything you need to get started.
+
+## Repository structure
+
+```
+vibes/
+├── deno.json                  # Workspace root — tasks run across all packages
+├── packages/
+│   └── sdk/
+│       ├── deno.json          # SDK package config, tasks, import map
+│       ├── mod.ts             # Public exports entry point
+│       ├── lib/               # Source code
+│       │   ├── agent.ts       # Agent class
+│       │   ├── tool.ts        # Tool factories (tool, plainTool, outputTool, fromSchema)
+│       │   ├── types/         # Core types: errors, usage limits, results, events
+│       │   ├── graph/         # Graph FSM: BaseNode, Graph, persistence
+│       │   ├── execution/     # Internal run loop, streaming, deferred approvals
+│       │   ├── toolsets/      # Toolset base class
+│       │   ├── testing/       # Test utilities (TestModel, setAllowModelRequests)
+│       │   └── ...
+│       ├── community/         # Community toolsets (memory, skills, todo, etc.)
+│       ├── tests/             # Integration and unit tests
+│       ├── docs/              # Mintlify documentation source
+│       └── skills/            # Agent skill files for Claude Code
+```
+
+## Development setup
+
+You need [Deno](https://deno.land/) to work on this project. There is no separate install step — Deno fetches dependencies on first run.
+
+```bash
+# Clone the repo
+git clone https://github.com/a7ul/vibes.git
+cd vibes
+```
+
+That is all. No `npm install`, no build step for running tests.
+
+## Running tests
+
+```bash
+# Run all tests across all packages (from repo root)
+deno task test
+
+# Run only the SDK tests (from packages/sdk)
+cd packages/sdk
+deno task test
+```
+
+Tests use the built-in Deno test runner (`deno test -A`). Test files live in `packages/sdk/tests/` and alongside source files as `*.test.ts`.
+
+## Building the npm package
+
+The SDK is published to both JSR and npm. The npm build transpiles Deno source to a Node.js-compatible package:
+
+```bash
+cd packages/sdk
+deno task build:npm
+```
+
+You do not need this for local development or running tests.
+
+## Documentation
+
+The docs use [Mintlify](https://mintlify.com). To preview docs locally:
+
+```bash
+cd packages/sdk
+deno task docs:dev
+# Mintlify starts a local dev server at http://localhost:3000
+```
+
+To build the docs for production:
+
+```bash
+deno task docs:build
+```
+
+Doc source files are in `packages/sdk/docs/` as `.mdx` files. Navigation is configured in `packages/sdk/docs/docs.json`.
+
+## Code style
+
+- **TypeScript** everywhere — no plain JavaScript in `lib/` or `community/`.
+- **Immutable patterns** — create new objects rather than mutating existing ones.
+- **Small, focused files** — aim for 200–400 lines per file; 800 is the maximum.
+- **Explicit error handling** — never silently swallow errors. Provide typed error classes where useful.
+- **No hardcoded values** — use constants or configuration.
+
+Deno's built-in formatter handles style automatically:
+
+```bash
+deno fmt
+deno lint
+```
+
+## Commit format
+
+Follow [Conventional Commits](https://www.conventionalcommits.org/):
+
+```
+<type>: <short description>
+
+<optional body>
+```
+
+Types: `feat`, `fix`, `refactor`, `docs`, `test`, `chore`, `perf`, `ci`.
+
+Examples:
+
+```
+feat: add MemoryStatePersistence for in-process graph state
+fix: correct UsageLimitError limitKind type to include outputTokens
+docs: add graph-patterns page to concepts
+```
+
+## Pull request process
+
+1. **Fork** the repository and create a branch from `main`.
+2. **Write tests first** — add or update tests in `packages/sdk/tests/` before implementing the change.
+3. **Run the full test suite** with `deno task test` from the repo root.
+4. **Run the linter and formatter** with `deno lint && deno fmt`.
+5. **Open a PR** against `main` with a clear description of what changed and why.
+
+<Note>
+  For significant changes (new API surface, breaking changes, new community toolsets), open an issue first to discuss the approach before writing code.
+</Note>
+
+## Adding a community toolset
+
+Community toolsets live in `packages/sdk/community/`. Each toolset is a directory:
+
+```
+community/
+└── my_toolset/
+    ├── mod.ts          # Public exports
+    ├── toolset.ts      # Toolset implementation
+    └── toolset.test.ts # Tests
+```
+
+See the [Community overview](/community/overview) page and the `port-pydantic-ai-community-plugins` skill for a step-by-step porting guide.
+
+## Useful links
+
+- [GitHub repository](https://github.com/a7ul/vibes)
+- [Open an issue](https://github.com/a7ul/vibes/issues/new)
+- [JSR package page](https://jsr.io/@vibesjs/sdk)
+- [Deno documentation](https://docs.deno.com)

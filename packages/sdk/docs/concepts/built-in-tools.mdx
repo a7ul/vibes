@@ -1,0 +1,449 @@
+---
+title: "Built-in Toolsets"
+description: "Reference for every toolset class that ships with the Vibes SDK, with constructor signatures, options, and usage examples."
+---
+
+The SDK ships ten toolset classes in `jsr:@vibesjs/sdk`. All implement the `Toolset<TDeps>` interface and can be passed in the `toolsets` array when constructing an `Agent`.
+
+```typescript
+import {
+  FunctionToolset,
+  FilteredToolset,
+  PreparedToolset,
+  PrefixedToolset,
+  RenamedToolset,
+  WrapperToolset,
+  CombinedToolset,
+  ApprovalRequiredToolset,
+  ExternalToolset,
+} from "jsr:@vibesjs/sdk";
+```
+
+MCP-specific toolsets live in the same package and are covered below:
+
+```typescript
+import {
+  MCPToolset,
+  MCPManager,
+  MCPStdioClient,
+  MCPHttpClient,
+} from "jsr:@vibesjs/sdk";
+```
+
+## Summary
+
+| Toolset | Purpose |
+|---------|---------|
+| [`FunctionToolset`](#functiontoolset) | Wrap a static array of tool definitions |
+| [`FilteredToolset`](#filteredtoolset) | Show or hide an entire toolset based on a per-turn predicate |
+| [`PreparedToolset`](#preparedtoolset) | Filter individual tools per turn with a prepare function |
+| [`PrefixedToolset`](#prefixedtoolset) | Add a namespace prefix to every tool name |
+| [`RenamedToolset`](#renamedtoolset) | Rename specific tools with a mapping object |
+| [`WrapperToolset`](#wrappertoolset) | Intercept every tool call (middleware / logging / tracing) |
+| [`CombinedToolset`](#combinedtoolset) | Merge multiple toolsets into one |
+| [`ApprovalRequiredToolset`](#approvalrequiredtoolset) | Mark every tool in a toolset as requiring human approval |
+| [`ExternalToolset`](#externaltoolset) | Expose tools with raw JSON Schema (no Zod) executed outside the agent |
+| [`MCPToolset`](#mcptoolset) | Expose all tools from one MCP server connection |
+| [`MCPManager`](#mcpmanager) | Manage and merge tools from multiple MCP servers |
+
+---
+
+## FunctionToolset
+
+The simplest toolset: wraps an array of `ToolDefinition` objects. Use it when you have a fixed set of tools that do not need dynamic filtering.
+
+```typescript
+constructor(tools?: ToolDefinition<TDeps>[])
+```
+
+**Methods:**
+
+| Method | Signature | Description |
+|--------|-----------|-------------|
+| `addTool(t)` | `(ToolDefinition<TDeps>) => void` | Append a tool after construction |
+| `tools()` | `() => ToolDefinition<TDeps>[]` | Return all tool definitions |
+
+```typescript
+import { FunctionToolset, tool } from "jsr:@vibesjs/sdk";
+import { z } from "npm:zod";
+
+const searchTool = tool({
+  name: "search",
+  description: "Search the web",
+  parameters: z.object({ query: z.string() }),
+  execute: async (_ctx, { query }) => fetchResults(query),
+});
+
+const toolset = new FunctionToolset([searchTool]);
+toolset.addTool(anotherTool);
+
+const agent = new Agent({ model, toolsets: [toolset] });
+```
+
+---
+
+## FilteredToolset
+
+Wraps an inner toolset with a per-turn boolean predicate. When the predicate returns `false` the entire inner toolset is hidden from the model for that turn. When it returns `true` the full inner toolset is exposed.
+
+This is an all-or-nothing gate. For per-tool filtering, use [`PreparedToolset`](#preparedtoolset).
+
+```typescript
+constructor(
+  inner: Toolset<TDeps>,
+  predicate: (ctx: RunContext<TDeps>) => boolean | Promise<boolean>,
+)
+```
+
+```typescript
+import { FilteredToolset } from "jsr:@vibesjs/sdk";
+
+// Only expose admin tools when the user is an admin
+const adminGated = new FilteredToolset(
+  adminToolset,
+  (ctx) => ctx.deps.user.isAdmin,
+);
+
+const agent = new Agent({ model, toolsets: [adminGated] });
+```
+
+---
+
+## PreparedToolset
+
+Wraps an inner toolset with a `prepare` function that runs once per turn. Unlike `FilteredToolset`, which hides the entire set, `PreparedToolset` can add, remove, or reorder individual tools.
+
+```typescript
+constructor(
+  inner: Toolset<TDeps>,
+  prepare: PrepareFunction<TDeps>,
+)
+
+type PrepareFunction<TDeps> = (
+  ctx: RunContext<TDeps>,
+  tools: ToolDefinition<TDeps>[],
+) => ToolDefinition<TDeps>[] | Promise<ToolDefinition<TDeps>[]>;
+```
+
+```typescript
+import { PreparedToolset } from "jsr:@vibesjs/sdk";
+
+// Hide the "delete" tool until the user has explicitly confirmed
+const safe = new PreparedToolset(
+  adminTools,
+  (ctx, tools) =>
+    ctx.deps.confirmed
+      ? tools
+      : tools.filter((t) => t.name !== "delete"),
+);
+```
+
+| | `FilteredToolset` | `PreparedToolset` |
+|---|---|---|
+| Granularity | All-or-nothing | Per-tool |
+| Predicate receives | `(ctx)` | `(ctx, tools)` |
+| Use when | Hiding entire toolset by role/flag | Filtering individual tools by state |
+
+---
+
+## PrefixedToolset
+
+Adds a string prefix to every tool name in the wrapped toolset. Useful when composing two toolsets that define tools with the same name.
+
+```typescript
+constructor(inner: Toolset<TDeps>, prefix: string)
+```
+
+```typescript
+import { PrefixedToolset } from "jsr:@vibesjs/sdk";
+
+const prefixed = new PrefixedToolset(searchToolset, "web_");
+// A tool named "search" becomes "web_search"
+```
+
+---
+
+## RenamedToolset
+
+Renames specific tools using a `{ oldName: newName }` mapping. Tools whose names are not in the map are passed through unchanged.
+
+```typescript
+constructor(inner: Toolset<TDeps>, nameMap: Record<string, string>)
+```
+
+```typescript
+import { RenamedToolset } from "jsr:@vibesjs/sdk";
+
+const renamed = new RenamedToolset(myToolset, {
+  search: "find",
+  delete: "remove",
+});
+```
+
+---
+
+## WrapperToolset
+
+An abstract base class that intercepts every tool execution in the wrapped toolset. Subclass it and implement `callTool` to add cross-cutting behaviour: logging, metrics, rate limiting, argument transformation, or result transformation.
+
+```typescript
+abstract class WrapperToolset<TDeps = undefined> implements Toolset<TDeps> {
+  constructor(inner: Toolset<TDeps>)
+
+  abstract callTool(
+    ctx: RunContext<TDeps>,
+    toolName: string,
+    args: Record<string, unknown>,
+    next: ToolCallNext<TDeps>,
+  ): Promise<unknown>;
+}
+
+type ToolCallNext<TDeps> = (
+  ctx: RunContext<TDeps>,
+  args: Record<string, unknown>,
+) => Promise<unknown>;
+```
+
+Call `next(ctx, args)` to invoke the underlying tool. You may modify `args` before forwarding or transform the return value afterward.
+
+```typescript
+import { WrapperToolset } from "jsr:@vibesjs/sdk";
+import type { ToolCallNext, RunContext } from "jsr:@vibesjs/sdk";
+
+class LoggingToolset extends WrapperToolset<MyDeps> {
+  async callTool(
+    ctx: RunContext<MyDeps>,
+    toolName: string,
+    args: Record<string, unknown>,
+    next: ToolCallNext<MyDeps>,
+  ): Promise<unknown> {
+    console.log(`[tool] ${toolName}`, args);
+    const result = await next(ctx, args);
+    console.log(`[tool] ${toolName} →`, result);
+    return result;
+  }
+}
+
+const agent = new Agent({
+  model,
+  toolsets: [new LoggingToolset(myToolset)],
+});
+```
+
+---
+
+## CombinedToolset
+
+Merges any number of toolsets into one. Tools are collected from all members on each turn. When two toolsets expose a tool with the same name, the last one in the constructor argument list wins.
+
+```typescript
+constructor(...toolsets: Toolset<TDeps>[])
+```
+
+```typescript
+import { CombinedToolset } from "jsr:@vibesjs/sdk";
+
+const combined = new CombinedToolset(searchToolset, fetchToolset, dbToolset);
+
+const agent = new Agent({ model, toolsets: [combined] });
+```
+
+---
+
+## ApprovalRequiredToolset
+
+Wraps a toolset and sets `requiresApproval: true` on every tool inside it. When the model calls any of these tools, the run pauses and throws `ApprovalRequiredError` with a `DeferredToolRequests` object.
+
+```typescript
+constructor(inner: Toolset<TDeps>)
+```
+
+```typescript
+import { ApprovalRequiredToolset, ApprovalRequiredError } from "jsr:@vibesjs/sdk";
+
+const gated = new ApprovalRequiredToolset(dangerousToolset);
+const agent = new Agent({ model, toolsets: [gated] });
+
+try {
+  const result = await agent.run("Delete all temporary files");
+} catch (err) {
+  if (err instanceof ApprovalRequiredError) {
+    // Inspect pending calls
+    for (const req of err.deferred.requests) {
+      console.log(`Pending: ${req.toolName}(${JSON.stringify(req.args)})`);
+    }
+    // Approve and resume
+    const result = await agent.resume(err.deferred, {
+      results: err.deferred.requests.map((r) => ({
+        toolCallId: r.toolCallId,
+        result: "approved",
+      })),
+    });
+  }
+}
+```
+
+See [Human-in-the-Loop](/concepts/human-in-the-loop) for the full approval workflow.
+
+---
+
+## ExternalToolset
+
+For tools whose execution happens outside the agent process — in the browser, a sandboxed environment, or a remote service. The agent is shown the tools and can call them; each call pauses the run and throws `ApprovalRequiredError` so the caller can execute the tool externally and return results.
+
+Uses raw JSON Schema instead of Zod for parameter validation.
+
+```typescript
+type ExternalToolDefinition = {
+  name: string;
+  description: string;
+  jsonSchema: Record<string, unknown>;
+};
+
+constructor(definitions: ExternalToolDefinition[])
+```
+
+```typescript
+import {
+  ExternalToolset,
+  ApprovalRequiredError,
+  type DeferredToolResults,
+} from "jsr:@vibesjs/sdk";
+
+const browserTools = new ExternalToolset([
+  {
+    name: "click",
+    description: "Click a DOM element by CSS selector",
+    jsonSchema: {
+      type: "object",
+      properties: { selector: { type: "string" } },
+      required: ["selector"],
+    },
+  },
+]);
+
+const agent = new Agent({ model, toolsets: [browserTools] });
+
+try {
+  await agent.run("Click the submit button");
+} catch (err) {
+  if (err instanceof ApprovalRequiredError) {
+    // Execute externally, collect results
+    const results: DeferredToolResults = {
+      results: await executeInBrowser(err.deferred.requests),
+    };
+    const finalResult = await agent.resume(err.deferred, results);
+  }
+}
+```
+
+---
+
+## MCPToolset
+
+Wraps a single `MCPClient` and adapts it to the `Toolset` interface. Tools are fetched lazily on the first call to `tools()` and cached for `toolCacheTtlMs` milliseconds.
+
+```typescript
+constructor(client: MCPClient, options?: MCPToolsetOptions)
+
+type MCPToolsetOptions = {
+  toolCacheTtlMs?: number;   // default: 60_000
+  instructions?: boolean;    // default: true
+};
+```
+
+**Methods:**
+
+| Method | Description |
+|--------|-------------|
+| `tools(ctx)` | Return cached tool list from the MCP server |
+| `getServerInstructions()` | Return server-provided instruction text if any |
+| `invalidateCache()` | Force tool list re-fetch on next `tools()` call |
+
+```typescript
+import { MCPStdioClient, MCPToolset, Agent } from "jsr:@vibesjs/sdk";
+import { anthropic } from "npm:@ai-sdk/anthropic";
+
+const client = new MCPStdioClient({
+  command: "npx",
+  args: ["-y", "@modelcontextprotocol/server-filesystem", "/tmp"],
+});
+await client.connect();
+
+const toolset = new MCPToolset(client, { toolCacheTtlMs: 30_000 });
+const agent = new Agent({ model: anthropic("claude-opus-4-5"), toolsets: [toolset] });
+
+try {
+  const result = await agent.run("List files in /tmp");
+  console.log(result.output);
+} finally {
+  await client.disconnect();
+}
+```
+
+See [MCP Client](/integrations/mcp-client) for the full guide including `MCPManager` and config-file loading.
+
+---
+
+## MCPManager
+
+Manages multiple MCP server connections, connects them in parallel, and merges their tools into a single flat list. Implements `Toolset` directly — pass it to an agent without further wrapping.
+
+```typescript
+constructor()  // no arguments
+```
+
+**Methods:**
+
+| Method | Signature | Description |
+|--------|-----------|-------------|
+| `addServer(client, opts?)` | `(MCPClient, opts?) => this` | Register an MCP server (chainable) |
+| `connect()` | `() => Promise<void>` | Connect all registered servers in parallel |
+| `disconnect()` | `() => Promise<void>` | Disconnect all servers. Throws `AggregateError` on partial failure. |
+| `tools(ctx)` | `(RunContext) => Promise<ToolDefinition[]>` | Merged tool list (last-wins on name collision) |
+| `getServerInstructions()` | `() => string \| undefined` | Aggregated instructions from all servers |
+| `serverCount` | `number` | Number of registered servers |
+
+```typescript
+import { MCPManager, MCPStdioClient, MCPHttpClient, Agent } from "jsr:@vibesjs/sdk";
+import { anthropic } from "npm:@ai-sdk/anthropic";
+
+const manager = new MCPManager()
+  .addServer(new MCPStdioClient({ command: "npx", args: ["-y", "@mcp/filesystem", "/data"] }), { name: "fs" })
+  .addServer(new MCPHttpClient({ url: "https://search-mcp.example.com/mcp" }), { name: "search" });
+
+await manager.connect();
+
+const agent = new Agent({
+  model: anthropic("claude-opus-4-5"),
+  toolsets: [manager],
+});
+
+try {
+  const result = await agent.run("Search for docs and list /data/results");
+  console.log(result.output);
+} finally {
+  await manager.disconnect();
+}
+```
+
+<Note>
+`MCPManager` and `MCPToolset` live in the MCP module but are re-exported from the main `jsr:@vibesjs/sdk` entry point alongside the other toolsets.
+</Note>
+
+---
+
+<CardGroup cols={2}>
+  <Card title="Toolsets" icon="layer-group" href="/concepts/toolsets">
+    Per-turn tool resolution and composition overview
+  </Card>
+  <Card title="Tool Patterns" icon="wand-magic-sparkles" href="/concepts/tool-patterns">
+    Advanced patterns: conditional tools, approval flows, sequential tools
+  </Card>
+  <Card title="MCP Client" icon="plug" href="/integrations/mcp-client">
+    Full guide to connecting MCP servers
+  </Card>
+  <Card title="Human-in-the-Loop" icon="user-check" href="/concepts/human-in-the-loop">
+    Handling ApprovalRequiredError and resuming runs
+  </Card>
+</CardGroup>

@@ -1,161 +1,410 @@
 ---
 title: Toolsets
-description: Toolsets are collections of tools resolved per turn, letting you group, filter, rename, and compose tools dynamically based on runtime context.
+description: Toolsets are composable, per-turn tool collections. They let you group, filter, rename, intercept, and dynamically expose tools based on runtime context.
 ---
 
-Toolsets are dynamic, per-turn tool groups. Unlike the static `tools` array - which sends every tool to the model on every turn - toolsets are resolved at the start of each turn and can depend on context: the user's role, feature flags, which phase the agent is in, and so on.
+The `tools` array on an agent is simple and static: every tool in it is sent to the model on every turn. That works well when you have a handful of tools that are always relevant.
 
-An agent can mix static `tools` and any number of `toolsets`. All are merged into a single flat tool list before each model call.
+Real applications are messier. You might have admin tools that only certain users can access. You might have tools that depend on which phase of a workflow the agent is in. You might be integrating tools from an external MCP server. You might want to add logging or rate-limiting across a whole group of tools without touching each one individually.
 
-## Toolset composition
-
-```mermaid
-graph TD
-    A[Per-Turn Tool Resolution] --> B[Static Tools]
-    A --> C[Toolsets]
-    C --> D[Function Toolset]
-    C --> E[Filtered Toolset]
-    C --> F[Combined Toolset]
-    C --> G[Prepared Toolset]
-    E --> H{Condition met?}
-    H -- no --> I[No tools exposed]
-    H -- yes --> J[Inner tools exposed]
-    F --> K[Merged tool list]
-    B --> L[Final Tool List sent to Model]
-    D --> L
-    I --> L
-    J --> L
-    K --> L
-    G --> L
-```
-
-## FunctionToolset - basic toolset
-
-`FunctionToolset` is the simplest toolset: a named group of static tools. Use it to logically bundle related tools together.
+Toolsets solve all of these. A toolset is an object with a single method, `tools(ctx)`, that returns a list of tool definitions. Because it receives the `RunContext`, it can decide *at the start of each turn* which tools to expose. Agents accept any number of toolsets via the `toolsets` option, and Vibes merges them with the static `tools` array before each model call.
 
 ```typescript
-import { FunctionToolset } from "@vibesjs/sdk";
-
-const myToolset = new FunctionToolset([searchTool, fetchTool]);
-myToolset.addTool(anotherTool);
-
 const agent = new Agent({
-  model,
-  toolsets: [myToolset],
+  model: anthropic("claude-sonnet-4-6"),
+  tools: [alwaysAvailableTool],      // static, always present
+  toolsets: [conditionalToolset],    // resolved fresh each turn
 });
 ```
 
-## FilteredToolset - conditional tools
+## FunctionToolset — the basic collection
 
-`FilteredToolset` wraps another toolset with a boolean predicate. When the predicate returns `false`, the entire inner toolset is hidden from the model for that turn.
+`FunctionToolset` is the simplest toolset: a plain wrapper around an array of tool definitions. Use it to logically bundle related tools and pass them as a unit.
 
 ```typescript
-import { FilteredToolset } from "@vibesjs/sdk";
+import { Agent, FunctionToolset, plainTool, tool } from "jsr:@vibesjs/sdk";
+import { anthropic } from "@ai-sdk/anthropic";
+import { z } from "zod";
 
-const adminToolset = new FilteredToolset(
-  innerToolset,
-  (ctx) => ctx.deps.isAdmin,
-);
+const searchTool = plainTool({
+  name: "search",
+  description: "Search documents",
+  parameters: z.object({ query: z.string() }),
+  execute: async ({ query }) => doSearch(query),
+});
+
+const fetchTool = plainTool({
+  name: "fetch_url",
+  description: "Fetch a URL",
+  parameters: z.object({ url: z.string().url() }),
+  execute: async ({ url }) => fetchPage(url),
+});
+
+// (1) Group them into a named collection
+const webTools = new FunctionToolset([searchTool, fetchTool]);
+
+// (2) Add tools after construction if needed
+webTools.addTool(anotherTool);
+
+const agent = new Agent({
+  model: anthropic("claude-sonnet-4-6"),
+  toolsets: [webTools], // (3) pass the toolset
+});
 ```
 
-The predicate is **all-or-nothing**: the inner toolset is either shown in full or hidden entirely. For per-tool filtering within a toolset, see `PreparedToolset`.
+1. `FunctionToolset` takes an optional array in the constructor.
+2. `addTool()` lets you add tools incrementally — useful when building a toolset dynamically.
+3. Toolsets are passed to `toolsets`, not `tools`.
 
-## PreparedToolset - per-turn filtering
+## FilteredToolset — all-or-nothing gating
 
-`PreparedToolset` lets you return a *subset* of tools based on context. The `prepare` function receives the full `RunContext` and the complete tool list, and returns whichever tools to expose.
+`FilteredToolset` wraps another toolset and hides it entirely when a predicate returns `false`. Use it when a whole category of tools should be invisible to the model based on the caller's context — user role, feature flags, environment, and so on.
 
 ```typescript
-import { PreparedToolset } from "@vibesjs/sdk";
+import { FilteredToolset, FunctionToolset } from "jsr:@vibesjs/sdk";
 
-const safe = new PreparedToolset(
+type Deps = { user: { isAdmin: boolean } };
+
+const adminTools = new FunctionToolset([deleteRecordTool, exportDataTool]);
+
+// (1) Only expose admin tools when the user is an admin
+const gatedAdminTools = new FilteredToolset(
   adminTools,
-  (ctx, tools) => ctx.deps.confirmed
-    ? tools
-    : tools.filter((t) => t.name !== "delete"),
+  (ctx: RunContext<Deps>) => ctx.deps.user.isAdmin, // (2) predicate
 );
 ```
 
-**`PreparedToolset` vs `FilteredToolset`:**
+1. The wrapped `adminTools` is either shown in full or hidden entirely — there's no partial exposure.
+2. The predicate receives the `RunContext` and can be async. Return `true` to expose the inner toolset, `false` to hide it.
+
+When `false`, the model won't see any of these tools. It won't try to call them and won't know they exist.
+
+<Note>
+`FilteredToolset` is all-or-nothing at the toolset level. If you need to filter *individual tools within a toolset* based on state, use `PreparedToolset` instead.
+</Note>
+
+## PreparedToolset — per-tool control per turn
+
+`PreparedToolset` gives you fine-grained control over which tools inside a toolset are exposed each turn. The `prepare` function receives the full `RunContext` *and* the complete list of tools from the inner toolset, and returns whichever tools to expose.
+
+```typescript
+import { FunctionToolset, PreparedToolset } from "jsr:@vibesjs/sdk";
+
+type Deps = { workflow: { currentPhase: "research" | "write" | "review"; confirmed: boolean } };
+
+const allTools = new FunctionToolset([searchTool, draftTool, editTool, deleteTool]);
+
+const phaseAwareTools = new PreparedToolset(
+  allTools,
+  (ctx: RunContext<Deps>, tools) => {
+    const { currentPhase, confirmed } = ctx.deps.workflow;
+
+    // (1) Filter to tools relevant for the current phase
+    const phaseTools = tools.filter((t) => {
+      if (currentPhase === "research") return t.name === "search";
+      if (currentPhase === "write") return t.name === "draft" || t.name === "search";
+      return true; // review phase: all tools available
+    });
+
+    // (2) Also hide "delete" unless the user has confirmed
+    return confirmed ? phaseTools : phaseTools.filter((t) => t.name !== "delete");
+  },
+);
+```
+
+1. The `tools` parameter is the full resolved list from the inner toolset — you return a subset.
+2. You can apply multiple conditions in sequence. The function just returns an array.
+
+**`FilteredToolset` vs `PreparedToolset` at a glance:**
 
 | | `FilteredToolset` | `PreparedToolset` |
 |---|---|---|
-| Granularity | All-or-nothing | Per-tool |
+| Granularity | All tools, or none | Individual tools |
 | Predicate receives | `(ctx)` | `(ctx, tools)` |
-| Use when | Hiding entire toolset by role | Filtering individual tools by state |
+| Can modify tool definitions | No | Yes |
+| Use when | Role-based toolset gating | Phase-based tool availability, per-tool state |
 
-## CombinedToolset - merging toolsets
+## PrefixedToolset — namespacing tool names
 
-`CombinedToolset` merges multiple toolsets into one. Tools from later toolsets override earlier ones on name conflict (last name wins).
+When you combine tools from multiple sources, name collisions become a real risk. `PrefixedToolset` prepends a string to every tool name in the wrapped toolset, giving you a clean namespace.
 
 ```typescript
-import { CombinedToolset } from "@vibesjs/sdk";
+import { FunctionToolset, PrefixedToolset } from "jsr:@vibesjs/sdk";
 
-const combined = new CombinedToolset([toolsetA, toolsetB]);
+const githubTools = new FunctionToolset([searchReposTool, createIssueTool]);
+const linearTools = new FunctionToolset([searchIssuesTool, createIssueTool]); // same name!
+
+// (1) Namespace each toolset to avoid the collision
+const namespacedGitHub = new PrefixedToolset(githubTools, "github_");
+const namespacedLinear = new PrefixedToolset(linearTools, "linear_");
+
+// Now the model sees "github_search_repos", "github_create_issue",
+// "linear_search_issues", "linear_create_issue"
 ```
 
-## PrefixedToolset - namespacing
+1. The prefix is prepended to every tool name. `"search_repos"` becomes `"github_search_repos"`. The model's tool call will use the prefixed name, and Vibes routes it correctly.
 
-`PrefixedToolset` adds a string prefix to every tool name. Use it to avoid collisions when combining toolsets from different domains.
-
-```typescript
-import { PrefixedToolset } from "@vibesjs/sdk";
-
-const namespaced = new PrefixedToolset(innerToolset, "admin_");
-// "search" → "admin_search", "delete" → "admin_delete"
-```
-
-## RenamedToolset - custom names
-
-`RenamedToolset` renames specific tools using a mapping object.
+For renaming specific tools rather than all of them, use `RenamedToolset`:
 
 ```typescript
-import { RenamedToolset } from "@vibesjs/sdk";
+import { RenamedToolset } from "jsr:@vibesjs/sdk";
 
-const renamed = new RenamedToolset(innerToolset, {
-  old_name: "new_name",
+const renamed = new RenamedToolset(myToolset, {
+  legacy_search: "search",      // rename legacy_search → search
+  old_fetch: "fetch_document",  // rename old_fetch → fetch_document
+  // other tools are unchanged
 });
 ```
 
-## WrapperToolset - middleware
+## WrapperToolset — middleware for tool execution
 
-`WrapperToolset` wraps another toolset and intercepts `execute` calls. Use it for cross-cutting concerns like logging, tracing, input transformation, or output transformation - without modifying the underlying tools.
+`WrapperToolset` is an abstract base class that intercepts every tool call in the wrapped toolset. Subclass it and implement `callTool` to add cross-cutting behavior — logging, metrics, rate limiting, error transformation, argument sanitization — without touching the underlying tools.
 
 ```typescript
-import { WrapperToolset } from "@vibesjs/sdk";
+import { WrapperToolset } from "jsr:@vibesjs/sdk";
+import type { ToolCallNext } from "jsr:@vibesjs/sdk";
+import type { RunContext } from "jsr:@vibesjs/sdk";
 
-const logged = new WrapperToolset(innerToolset, {
-  wrapExecute: async (ctx, tool, args, next) => {
-    console.log(`Calling ${tool.name}`, args);
-    const result = await next(ctx, args);
-    console.log(`Result from ${tool.name}:`, result);
-    return result;
+type Deps = { logger: { info(msg: string, meta?: object): void } };
+
+// (1) Extend WrapperToolset with your deps type
+class LoggingToolset extends WrapperToolset<Deps> {
+  async callTool(
+    ctx: RunContext<Deps>,
+    toolName: string,
+    args: Record<string, unknown>,
+    next: ToolCallNext<Deps>, // (2) next invokes the original tool
+  ) {
+    ctx.deps.logger.info(`tool:start ${toolName}`, { args });
+    const start = Date.now();
+
+    try {
+      const result = await next(ctx, args); // (3) delegate to the actual tool
+      ctx.deps.logger.info(`tool:ok ${toolName}`, { ms: Date.now() - start });
+      return result;
+    } catch (err) {
+      ctx.deps.logger.info(`tool:error ${toolName}`, { ms: Date.now() - start, err });
+      throw err; // (4) re-throw so the error propagates normally
+    }
+  }
+}
+
+const logged = new LoggingToolset(myFunctionToolset);
+```
+
+1. Provide the deps type as a generic parameter so `ctx.deps` is properly typed inside `callTool`.
+2. `next` is a function that invokes the original tool's `execute`. You must call it (unless you want to short-circuit).
+3. You can modify `args` before calling `next`, or transform the result it returns.
+4. Re-throwing preserves normal error handling. You can also wrap in a custom error type here.
+
+Another example — rate-limiting a toolset:
+
+```typescript
+class RateLimitedToolset extends WrapperToolset {
+  private _limiter = new RateLimiter({ callsPerSecond: 5 });
+
+  async callTool(ctx, toolName, args, next) {
+    await this._limiter.throttle();
+    return next(ctx, args);
+  }
+}
+```
+
+## CombinedToolset — merging multiple toolsets
+
+`CombinedToolset` merges any number of toolsets into one. The resolved tools from all member toolsets are combined into a single flat list. If two toolsets expose a tool with the same name, the last one wins.
+
+```typescript
+import { CombinedToolset } from "jsr:@vibesjs/sdk";
+
+const combined = new CombinedToolset(
+  searchToolset,   // contributes "search", "index"
+  fetchToolset,    // contributes "fetch_url", "fetch_page"
+  utilityToolset,  // contributes "format_date", "parse_json"
+);
+
+// Agent sees all 6 tools merged into one list
+const agent = new Agent({ model, toolsets: [combined] });
+```
+
+`CombinedToolset` is especially useful when you want to aggregate several independently-defined toolsets and expose them as a single unit — for example, packaging a plugin or feature module.
+
+## ExternalToolset — tools that execute outside the agent
+
+Sometimes a tool must run in a different environment than the agent's process. A browser extension needs to manipulate the DOM. A desktop app needs to read local files. A sandboxed service needs to call a restricted API.
+
+`ExternalToolset` handles this. Each tool is described with a JSON Schema instead of Zod. When the model calls any of these tools, the run pauses and throws an `ApprovalRequiredError` containing the pending `DeferredToolRequests`. The caller executes the tools externally, collects the results, and calls `agent.resume()` to continue.
+
+```typescript
+import { Agent, ExternalToolset } from "jsr:@vibesjs/sdk";
+import { ApprovalRequiredError } from "jsr:@vibesjs/sdk";
+import { anthropic } from "@ai-sdk/anthropic";
+
+// (1) Define tools with plain JSON Schema — no Zod needed
+const browserTools = new ExternalToolset([
+  {
+    name: "click_element",
+    description: "Click a DOM element by CSS selector",
+    jsonSchema: {
+      type: "object",
+      properties: { selector: { type: "string" } },
+      required: ["selector"],
+    },
   },
+  {
+    name: "read_text",
+    description: "Read the text content of an element",
+    jsonSchema: {
+      type: "object",
+      properties: { selector: { type: "string" } },
+      required: ["selector"],
+    },
+  },
+]);
+
+const agent = new Agent({
+  model: anthropic("claude-sonnet-4-6"),
+  toolsets: [browserTools],
 });
+
+// (2) The run throws when the model calls any external tool
+try {
+  await agent.run("Click the submit button and read the confirmation message");
+} catch (err) {
+  if (err instanceof ApprovalRequiredError) {
+    // (3) err.deferred.requests contains the pending tool calls
+    const results = await executeInBrowser(err.deferred.requests);
+
+    // (4) Resume with the results — the run continues from where it paused
+    const finalResult = await agent.resume(err.deferred, { results });
+    console.log(finalResult.output);
+  }
+}
 ```
 
-## ApprovalRequiredToolset - mark all for approval
+1. Tool definitions use raw JSON Schema objects — no Zod dependency in the external environment.
+2. The run pauses immediately when an external tool is called.
+3. `err.deferred.requests` is an array of `{ toolName, args, toolCallId }` objects describing what the model wants to do.
+4. `agent.resume()` feeds the results back and continues the run. The run may pause again if more external tool calls follow.
 
-`ApprovalRequiredToolset` wraps a toolset and marks every tool inside it as `requiresApproval: true`. Use it when you want to require human approval for an entire group of tools without modifying them individually.
+<Note>
+See [Human-in-the-Loop](/concepts/human-in-the-loop) for the full `DeferredToolRequests` / `DeferredToolResults` API and patterns for multi-step external execution.
+</Note>
+
+## MCPToolset — tools from MCP servers
+
+The [Model Context Protocol](https://modelcontextprotocol.io) (MCP) is an open standard for exposing tools from external servers. `MCPToolset` connects to an MCP server and exposes all of its tools as a Vibes toolset. Tools are discovered lazily on the first call and cached for 60 seconds by default.
 
 ```typescript
-import { ApprovalRequiredToolset } from "@vibesjs/sdk";
+import { Agent } from "jsr:@vibesjs/sdk";
+import { MCPStdioClient, MCPToolset } from "jsr:@vibesjs/sdk/mcp";
+import { anthropic } from "@ai-sdk/anthropic";
 
-const gated = new ApprovalRequiredToolset(dangerousToolset);
+// (1) Create and connect an MCP client (stdio transport launches a subprocess)
+const client = new MCPStdioClient({
+  command: "npx",
+  args: ["-y", "@modelcontextprotocol/server-filesystem", "/tmp/sandbox"],
+});
+await client.connect();
+
+// (2) Wrap it in a toolset
+const fsToolset = new MCPToolset(client);
+
+const agent = new Agent({
+  model: anthropic("claude-sonnet-4-6"),
+  toolsets: [fsToolset],
+});
+
+await agent.run("List the files in /tmp/sandbox and summarize their contents");
+
+// (3) Always disconnect when done
+await client.disconnect();
 ```
 
-When any tool from this toolset is requested by the model, Vibes throws `ApprovalRequiredError` with the deferred tool requests. See [Human-in-the-Loop](/concepts/human-in-the-loop) for the full approval flow.
+1. `MCPStdioClient` spawns the MCP server as a child process. Use `MCPHttpClient` for HTTP-based servers.
+2. `MCPToolset` wraps the client and implements the `Toolset` interface. Tools are fetched from the server and cached.
+3. Disconnect the client when the agent is done to avoid leaving zombie processes.
 
-## ExternalToolset - tools without Zod schemas
-
-`ExternalToolset` is for tools that have pre-existing JSON schemas - for example, tools loaded from an MCP server. Parameters are passed as raw JSON instead of going through Zod parsing.
+For connecting to multiple MCP servers at once, use `MCPManager`:
 
 ```typescript
-import { ExternalToolset } from "@vibesjs/sdk";
+import { MCPManager, MCPStdioClient, MCPHttpClient } from "jsr:@vibesjs/sdk/mcp";
 
-const external = new ExternalToolset(mcpTools);
+const manager = new MCPManager();
+manager.addServer(new MCPStdioClient({ command: "npx", args: ["-y", "my-local-server"] }));
+manager.addServer(new MCPHttpClient({ url: "https://mcp.example.com" }));
+
+await manager.connect(); // connects all servers in parallel
+
+const agent = new Agent({ model, toolsets: [manager] });
+await agent.run("...");
+await manager.disconnect();
 ```
 
-Use `ExternalToolset` when integrating with external tool registries that provide their own JSON Schema definitions.
+You can also load server configurations from a JSON file (compatible with Claude Desktop format):
+
+```typescript
+import { createManagerFromConfig } from "jsr:@vibesjs/sdk/mcp";
+
+// mcp.config.json:
+// [
+//   { "type": "stdio", "command": "npx", "args": ["-y", "my-server"] },
+//   { "type": "http", "url": "https://mcp.example.com" }
+// ]
+
+const manager = await createManagerFromConfig("./mcp.config.json");
+const agent = new Agent({ model, toolsets: [manager] });
+await agent.run("...");
+await manager.disconnect();
+```
+
+## Composing toolsets
+
+All toolset classes implement the same `Toolset<TDeps>` interface, so they compose freely. You can nest them to build precisely the behavior you need:
+
+```typescript
+import {
+  CombinedToolset,
+  FilteredToolset,
+  FunctionToolset,
+  PrefixedToolset,
+  WrapperToolset,
+} from "jsr:@vibesjs/sdk";
+
+type Deps = { user: { isAdmin: boolean }; logger: Console };
+
+// Start with raw tools
+const coreTools = new FunctionToolset([searchTool, fetchTool]);
+const adminTools = new FunctionToolset([deleteRecordTool, exportDataTool]);
+
+// Gate admin tools by role
+const gatedAdminTools = new FilteredToolset(
+  adminTools,
+  (ctx: RunContext<Deps>) => ctx.deps.user.isAdmin,
+);
+
+// Namespace to avoid collisions
+const namespacedAdmin = new PrefixedToolset(gatedAdminTools, "admin_");
+
+// Add logging around everything
+class LoggingToolset extends WrapperToolset<Deps> {
+  async callTool(ctx, toolName, args, next) {
+    ctx.deps.logger.log(`→ ${toolName}`);
+    const result = await next(ctx, args);
+    ctx.deps.logger.log(`← ${toolName}`);
+    return result;
+  }
+}
+
+// Combine into a single toolset
+const allTools = new LoggingToolset(
+  new CombinedToolset(coreTools, namespacedAdmin),
+);
+
+const agent = new Agent({ model, toolsets: [allTools] });
+```
+
+The composition reads from the outside in: `LoggingToolset` wraps a `CombinedToolset` that merges `coreTools` with `namespacedAdmin`. Each layer adds a single concern. None of the layers need to know about the others.
 
 ---
 
@@ -163,7 +412,7 @@ Use `ExternalToolset` when integrating with external tool registries that provid
   <Card title="Tools" icon="wrench" href="/concepts/tools">
     Build individual tools with the tool() factory
   </Card>
-  <Card title="Dependencies" icon="plug" href="/concepts/dependencies">
-    Inject runtime context via RunContext
+  <Card title="Human-in-the-Loop" icon="user" href="/concepts/human-in-the-loop">
+    Pause and resume runs for external tool execution and approval
   </Card>
 </CardGroup>

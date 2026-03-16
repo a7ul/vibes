@@ -90,7 +90,7 @@ const agent = new Agent<undefined, z.infer<typeof AgentOutput>>({
 
 ## Result validators
 
-`resultValidators` are post-parse validation functions that run after Vibes parses the output. Throw an error to reject the output and trigger a retry.
+`resultValidators` are post-parse validation functions that run after Vibes parses the output. Return the (optionally modified) output to accept it, or throw an error to reject it and trigger a retry.
 
 ```typescript
 const agent = new Agent<undefined, z.infer<typeof Schema>>({
@@ -102,6 +102,7 @@ const agent = new Agent<undefined, z.infer<typeof Schema>>({
       if (output.confidence < 0.5) {
         throw new Error("Confidence too low - please try again.");
       }
+      return output; // return the output to accept it (or return a modified copy)
     },
   ],
 });
@@ -119,6 +120,9 @@ const agent = new Agent<undefined, z.infer<typeof Schema>>({
 | `messages` | `ModelMessage[]` | Full conversation history including this run |
 | `newMessages` | `ModelMessage[]` | Only messages added during this run |
 | `usage` | `Usage` | Accumulated token usage for this run |
+| `retryCount` | `number` | Number of result validation retries that occurred |
+| `runId` | `string` | Unique identifier for this run |
+| `toolMetadata` | `Map<string, Record<string, unknown>>` | Metadata attached by tools during the run, keyed by tool call ID |
 
 ```typescript
 const result = await agent.run("Summarize this document.");
@@ -126,7 +130,9 @@ const result = await agent.run("Summarize this document.");
 console.log(result.output);       // TOutput
 console.log(result.messages);     // full history
 console.log(result.newMessages);  // messages from this run only
-console.log(result.usage);        // { promptTokens, completionTokens, totalTokens }
+console.log(result.usage);        // { inputTokens, outputTokens, totalTokens, requests }
+console.log(result.retryCount);   // number of validation retries
+console.log(result.runId);        // unique run identifier
 ```
 
 ## StreamResult interface

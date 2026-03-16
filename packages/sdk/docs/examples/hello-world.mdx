@@ -21,17 +21,28 @@ The minimal Vibes agent: import, create, run.
 _Source: [`examples/hello-world.ts`](https://github.com/a7ul/vibes/blob/main/packages/sdk/examples/hello-world.ts)_
 
 ```typescript
-import { Agent } from "jsr:@vibesjs/sdk";
+import { Agent, tool } from "jsr:@vibesjs/sdk";
 import { anthropic } from "npm:@ai-sdk/anthropic";
+import { z } from "npm:zod";
+
+const getCurrentTime = tool({
+  name: "get_current_time",
+  description: "Get the current date and time",
+  parameters: z.object({}),
+  execute: () => {
+    return new Date().toISOString();
+  },
+});
 
 const agent = new Agent({
   model: anthropic("claude-haiku-4-5-20251001"),
   systemPrompt: "You are a helpful assistant.",
+  tools: [getCurrentTime],
 });
 
-const result = await agent.run("What is the capital of France?");
+const result = await agent.run("What is the capital of France and what time is it?");
 console.log(result.output);
-// "The capital of France is Paris."
+// "The capital of France is Paris. The current time is 2025-01-15T10:30:00.000Z."
 ```
 
 ## Run it
@@ -45,6 +56,8 @@ deno run --allow-net --allow-env hello-world.ts
 **Model**: `anthropic("claude-haiku-4-5-20251001")` creates a model instance using the Vercel AI SDK Anthropic provider. Any Vercel AI SDK-compatible model works here.
 
 **System Prompt**: Sets the agent's persona. Vibes supports both static strings and dynamic functions - see the [Agents concept page](/concepts/agents).
+
+**`tool()`**: Defines a type-safe tool with Zod parameter validation. The agent automatically calls tools when relevant. `parameters: z.object({})` means this tool takes no arguments.
 
 **`result.output`**: For agents without `outputSchema`, output is a `string`. Add `outputSchema` with a Zod schema to get structured output - see the Weather Agent example.
 

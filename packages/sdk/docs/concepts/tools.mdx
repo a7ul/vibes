@@ -1,175 +1,395 @@
 ---
 title: Tools
-description: Tools are functions the agent can call during a run. The model decides when to call them; Vibes validates the arguments, executes them, and feeds results back.
+description: Tools are how agents act on the world. The model decides when to call them; Vibes validates the arguments, runs the function, and feeds results back into the conversation.
 ---
 
-Tools are the primary way agents take actions - searching databases, calling APIs, reading files, or computing values. The model decides when to call a tool and with what arguments; Vibes validates the arguments against a Zod schema, executes the function, and appends the result to the message history for the next turn.
+Language models are powerful reasoners but they live in a text box. They cannot roll a die, look up your database, or call an API — unless you give them tools.
 
-Vibes provides four tool factories for different use cases: `tool()` (with dependency injection), `plainTool()` (no context), `outputTool()` (terminal - ends the run), and `fromSchema()` (raw JSON Schema instead of Zod).
+A tool is a function you register with an agent. The model receives a description of the tool and its parameters. During a run, whenever the model decides it needs information or wants to take an action, it emits a structured tool call. Vibes validates the arguments, executes your function, and appends the result to the message history so the model can continue reasoning.
 
-## Tool execution pipeline
+This is more powerful than stuffing everything into the system prompt. Tools are called on demand, only when needed, with typed and validated arguments. The model can call them zero times or ten times in a single run — it decides.
 
-```mermaid
-flowchart TD
-    A[Model Requests Tool Call] --> B[Validate Arguments]
-    B -- invalid --> C[Return Error to Model]
-    B -- valid --> D{Approval Required?}
-    D -- yes --> E([Pause for Human Approval])
-    D -- no --> F[Execute Tool]
-    F -- error --> G{Retries left?}
-    G -- yes --> F
-    G -- no --> H([Propagate Error])
-    F -- success --> I{Terminal Tool?}
-    I -- yes --> J([End Run with Output])
-    I -- no --> K[Append Result to History]
-    K --> L[Continue to Next Turn]
-```
+## A motivating example: a dice game
 
-## tool() - tools with dependencies
-
-`tool<TDeps>()` is the full-featured factory. The `execute` function receives a `RunContext<TDeps>` as its first argument, giving it access to injected deps, token usage, the current run ID, and more.
+Let's build something concrete. Imagine a game where the agent rolls dice and asks for the player's name. Two tools, two different styles.
 
 ```typescript
-import { tool } from "@vibesjs/sdk";
+import { Agent } from "jsr:@vibesjs/sdk";
+import { plainTool, tool } from "jsr:@vibesjs/sdk";
+import { anthropic } from "@ai-sdk/anthropic";
 import { z } from "zod";
 
-type Deps = { db: Database };
-
-const search = tool<Deps>({
-  name: "search",
-  description: "Search the database",
-  parameters: z.object({ query: z.string() }),
-  execute: async (ctx, { query }) => ctx.deps.db.search(query),
-  argsValidator: ({ query }) => {
-    if (query.length < 3) throw new Error("Query too short");
+// (1) plainTool — no context needed, pure function
+const rollDice = plainTool({
+  name: "roll_dice",
+  description: "Roll an N-sided die and return the result",
+  parameters: z.object({
+    sides: z.number().int().min(2).describe("Number of sides on the die"),
+  }),
+  execute: async ({ sides }) => {
+    const result = Math.floor(Math.random() * sides) + 1;
+    return `Rolled a ${result}`;
   },
-  prepare: async (ctx) => ctx.deps.db.isConnected() ? undefined : null,
-  requiresApproval: false,
-  sequential: false,
-  maxRetries: 1,
 });
-```
 
-## plainTool() - simple tools
+// (2) tool — receives RunContext so it can read injected dependencies
+type Deps = { playerStore: { getName(): Promise<string> } };
 
-`plainTool()` is a simpler factory for tools with no side effects and no dependency injection requirements. The `execute` function receives only the validated args - no `RunContext`.
-
-```typescript
-import { plainTool } from "@vibesjs/sdk";
-import { z } from "zod";
-
-const add = plainTool({
-  name: "add",
-  description: "Add two numbers",
-  parameters: z.object({ a: z.number(), b: z.number() }),
-  execute: async ({ a, b }) => String(a + b),
-});
-```
-
-Use `plainTool` when your tool is a pure function: math, formatting, text transformation, or any computation that doesn't need external resources.
-
-## outputTool() - terminal tools
-
-`outputTool()` creates a tool that ends the run. When the model calls it, the tool's return value becomes the agent's final output and no further turns occur. Use this with `outputMode: 'tool'` for structured output that the model fills in via a tool call.
-
-```typescript
-import { outputTool } from "@vibesjs/sdk";
-import { z } from "zod";
-
-const done = outputTool({
-  name: "done",
-  description: "Return the final answer",
-  parameters: z.object({ answer: z.string(), confidence: z.number() }),
-  execute: async (_ctx, args) => args,
+const getPlayerName = tool<Deps>({
+  name: "get_player_name",
+  description: "Look up the current player's name",
+  parameters: z.object({}),
+  execute: async (ctx) => {
+    // ctx.deps is typed as Deps
+    return ctx.deps.playerStore.getName();
+  },
 });
 
 const agent = new Agent({
   model: anthropic("claude-sonnet-4-6"),
-  tools: [done],
-  outputMode: "tool",
+  systemPrompt: "You are a game host. Greet the player by name and roll them a 20-sided die.",
+  tools: [rollDice, getPlayerName], // (3) register both tools
 });
+
+const result = await agent.run("Start the game", {
+  deps: { playerStore: { getName: async () => "Alex" } },
+});
+
+console.log(result.output);
+// "Hello Alex! You rolled a 14 on your d20. Not bad!"
 ```
 
-## fromSchema() - raw JSON schema tools
+1. `plainTool` is the simplest factory. `execute` receives only the validated args — no context object. Use it for pure functions.
+2. `tool<Deps>` is the full-featured factory. `execute` receives a `RunContext<Deps>` as its first argument, then the args second. The `ctx` gives you access to injected dependencies, current token usage, the run ID, and more.
+3. Tools are passed as a plain array. Vibes sends the full list to the model on every turn unless you use `prepare` to conditionally exclude a tool (see below).
 
-`fromSchema()` builds a tool from a plain JSON Schema object instead of Zod. Use this when integrating with external schema registries, OpenAPI specs, or when Zod is overkill for a simple schema. Note: no TypeScript type inference is available for the args.
+## What the message trace looks like
+
+Under the hood, each turn is a structured conversation. After the run above, `result.messages` would contain something like this:
+
+```json
+[
+  {
+    "role": "user",
+    "content": "Start the game"
+  },
+  {
+    "role": "assistant",
+    "content": [
+      {
+        "type": "tool-call",
+        "toolCallId": "call_1",
+        "toolName": "get_player_name",
+        "args": {}
+      },
+      {
+        "type": "tool-call",
+        "toolCallId": "call_2",
+        "toolName": "roll_dice",
+        "args": { "sides": 20 }
+      }
+    ]
+  },
+  {
+    "role": "tool",
+    "content": [
+      { "type": "tool-result", "toolCallId": "call_1", "result": "Alex" },
+      { "type": "tool-result", "toolCallId": "call_2", "result": "Rolled a 14" }
+    ]
+  },
+  {
+    "role": "assistant",
+    "content": "Hello Alex! You rolled a 14 on your d20. Not bad!"
+  }
+]
+```
+
+The model called both tools in a single turn (it can do that), received both results, then produced the final text. Vibes handles all the serialization and routing. You only write the `execute` functions.
+
+## tool() — with dependencies
+
+Use `tool<TDeps>()` whenever your tool needs to call a database, an API client, or any other injected service. The `TDeps` type parameter tells TypeScript what shape `ctx.deps` will have.
 
 ```typescript
-import { fromSchema } from "@vibesjs/sdk";
+import { tool } from "jsr:@vibesjs/sdk";
+import { z } from "zod";
 
-const legacy = fromSchema({
-  name: "legacy_api",
-  description: "Call a legacy API",
-  jsonSchema: {
-    type: "object",
-    properties: { endpoint: { type: "string" } },
-    required: ["endpoint"],
+type Deps = { db: { search(q: string): Promise<string[]> } };
+
+const search = tool<Deps>({
+  name: "search",
+  description: "Search the knowledge base",
+  parameters: z.object({
+    query: z.string().describe("The search query"),
+  }),
+  execute: async (ctx, { query }) => {
+    // ctx.deps is fully typed — no casting needed
+    const hits = await ctx.deps.db.search(query);
+    return hits.join("\n");
   },
-  execute: async (_ctx, args) => callApi(args.endpoint as string),
 });
 ```
 
-## Tool options reference
+The deps are injected at call time via `agent.run("...", { deps: { db: myDb } })`. This keeps your tools testable — pass a mock in tests, a real connection in production.
+
+`ctx` also exposes:
+- `ctx.usage` — token counts accumulated so far in this run
+- `ctx.runId` — a unique ID for this run (useful for logging)
+- `ctx.toolName` — the name of the currently executing tool
+- `ctx.retryCount` — how many times this result has been retried
+- `ctx.metadata` — per-run metadata supplied by the caller
+- `ctx.attachMetadata(toolCallId, meta)` — attach structured metadata for a tool call that callers can inspect after the run
+
+## plainTool() — no context
+
+`plainTool()` is a convenience wrapper for tools that are pure functions. The `execute` receives only the validated arguments — there is no `RunContext` parameter.
+
+```typescript
+import { plainTool } from "jsr:@vibesjs/sdk";
+import { z } from "zod";
+
+const formatDate = plainTool({
+  name: "format_date",
+  description: "Format a Unix timestamp as a human-readable date",
+  parameters: z.object({
+    timestamp: z.number().describe("Unix timestamp in seconds"),
+    format: z.enum(["short", "long"]).default("short"),
+  }),
+  execute: async ({ timestamp, format }) => {
+    const d = new Date(timestamp * 1000);
+    return format === "long"
+      ? d.toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" })
+      : d.toLocaleDateString("en-US");
+  },
+});
+```
+
+<Note>
+`plainTool` also supports `maxRetries` and `argsValidator`. It does not support `prepare`, `requiresApproval`, or `sequential` — those require access to the run context. Use `tool()` if you need those features.
+</Note>
+
+## outputTool() — terminal tools
+
+Sometimes you want the model to fill in a structured result and stop. `outputTool()` creates a tool that ends the run. When the model calls it, the return value becomes the agent's final output and no further turns occur.
+
+```typescript
+import { Agent, outputTool } from "jsr:@vibesjs/sdk";
+import { anthropic } from "@ai-sdk/anthropic";
+import { z } from "zod";
+
+// (1) Declare the structured output shape
+const submitSummary = outputTool({
+  name: "submit_summary",
+  description: "Submit the final structured summary",
+  parameters: z.object({
+    title: z.string(),
+    keyPoints: z.array(z.string()),
+    sentiment: z.enum(["positive", "neutral", "negative"]),
+  }),
+  execute: async (_ctx, args) => args, // (2) return the args as-is
+});
+
+const agent = new Agent({
+  model: anthropic("claude-sonnet-4-6"),
+  systemPrompt: "Summarize the text the user provides.",
+  tools: [submitSummary],
+  outputMode: "tool", // (3) tell the agent to expect a tool call for output
+});
+
+const result = await agent.run("Vibes is a great SDK for building AI agents.");
+console.log(result.output);
+// { title: "Vibes SDK", keyPoints: ["..."], sentiment: "positive" }
+```
+
+1. The output schema is defined inline in the tool's `parameters`.
+2. `execute` typically returns `args` directly — the model has already structured the data.
+3. `outputMode: "tool"` tells Vibes to treat the tool call as the output mechanism.
+
+## fromSchema() — raw JSON Schema
+
+When you already have a JSON Schema — from an OpenAPI spec, a schema registry, or a third-party library — use `fromSchema()` to avoid rewriting it in Zod. There is no TypeScript inference for `args`, so you'll need to cast.
+
+```typescript
+import { fromSchema } from "jsr:@vibesjs/sdk";
+
+const createOrder = fromSchema({
+  name: "create_order",
+  description: "Create a new order in the system",
+  jsonSchema: {
+    type: "object",
+    properties: {
+      productId: { type: "string" },
+      quantity: { type: "integer", minimum: 1 },
+    },
+    required: ["productId", "quantity"],
+  },
+  execute: async (_ctx, args) => {
+    const { productId, quantity } = args as { productId: string; quantity: number };
+    return await placeOrder(productId, quantity);
+  },
+});
+```
+
+## Tool return types
+
+A tool's `execute` function can return:
+
+| Return type | What happens |
+|-------------|-------------|
+| `string` | Passed directly to the model as text |
+| `object` | JSON-serialized and passed to the model |
+| `BinaryContent` | Converted to an image content part (base64 data URI) |
+| `UploadedFile` | Converted to a file reference text part |
+
+For image-returning tools, return a `BinaryContent` object:
+
+```typescript
+import { tool } from "jsr:@vibesjs/sdk";
+import type { BinaryContent } from "jsr:@vibesjs/sdk";
+import { z } from "zod";
+
+const screenshot = tool({
+  name: "screenshot",
+  description: "Capture a screenshot of a URL",
+  parameters: z.object({
+    url: z.string().url(),
+  }),
+  execute: async (_ctx, { url }): Promise<BinaryContent> => {
+    const buffer = await captureScreenshot(url);
+    return {
+      type: "binary",
+      mimeType: "image/png",
+      data: buffer, // Uint8Array
+    };
+  },
+});
+```
+
+The image is passed back to the model as a vision content part. Vision-capable models can then reason about the image content.
+
+## Conditional availability with prepare
+
+Every tool is sent to the model on every turn by default. The `prepare` function lets you change that. It is called once per turn before the tool list is sent. Return `null` or `undefined` to exclude the tool from that turn; return the tool definition (or a modified version of it) to include it.
+
+```typescript
+import { tool } from "jsr:@vibesjs/sdk";
+import { z } from "zod";
+
+type Deps = { user: { isPremium: boolean }; db: { isConnected(): boolean } };
+
+const advancedSearch = tool<Deps>({
+  name: "advanced_search",
+  description: "Run an advanced query with filters",
+  parameters: z.object({ query: z.string(), filters: z.record(z.string()) }),
+  execute: async (ctx, { query, filters }) => ctx.deps.db.advancedSearch(query, filters),
+
+  // (1) Only expose when the DB is connected AND the user has a premium plan
+  prepare: async (ctx) => {
+    if (!ctx.deps.db.isConnected()) return null; // (2) null = hide this turn
+    if (!ctx.deps.user.isPremium) return null;
+    return undefined; // (3) undefined = include as-is
+  },
+});
+```
+
+1. `prepare` receives the `RunContext`, giving it access to deps and all run metadata.
+2. Returning `null` hides the tool. The model won't know it exists for this turn.
+3. Returning `undefined` (or the tool definition itself) includes it normally.
+
+You can also return a *modified* tool definition from `prepare` to dynamically update the description or parameters based on runtime state:
+
+```typescript
+prepare: async (ctx) => ({
+  ...advancedSearch,
+  description: `Run an advanced query. Available filters: ${ctx.deps.db.getAvailableFilters().join(", ")}`,
+}),
+```
+
+## Argument validation with argsValidator
+
+Zod validates the shape and types of each argument. But sometimes you need cross-field validation — for example, ensuring a `start` date is before an `end` date. That's what `argsValidator` is for.
+
+```typescript
+import { tool } from "jsr:@vibesjs/sdk";
+import { z } from "zod";
+
+const getEvents = tool({
+  name: "get_events",
+  description: "Fetch calendar events in a date range",
+  parameters: z.object({
+    start: z.string().describe("ISO 8601 start date"),
+    end: z.string().describe("ISO 8601 end date"),
+  }),
+  argsValidator: ({ start, end }) => {
+    if (new Date(start) > new Date(end)) {
+      throw new Error("start must be before end"); // (1) throw to reject
+    }
+  },
+  execute: async (_ctx, { start, end }) => fetchEvents(start, end),
+});
+```
+
+1. Throwing inside `argsValidator` rejects the call. The error message is sent back to the model without consuming a retry — it's treated as a validation failure, not an execution failure.
+
+## Retries with maxRetries
+
+Tool execution errors are surfaced back to the model by default. If you want Vibes to automatically retry before giving up, set `maxRetries`:
+
+```typescript
+import { tool } from "jsr:@vibesjs/sdk";
+import { z } from "zod";
+
+const fetchPrice = tool({
+  name: "fetch_price",
+  description: "Look up the current price for a ticker symbol",
+  parameters: z.object({ ticker: z.string() }),
+  maxRetries: 2, // (1) retry up to 2 times on failure
+  execute: async (_ctx, { ticker }) => {
+    const res = await fetch(`https://api.example.com/price/${ticker}`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`); // (2) throw triggers a retry
+    const data = await res.json() as { price: number };
+    return `$${data.price}`;
+  },
+});
+```
+
+1. `maxRetries: 2` means up to 3 total attempts (1 initial + 2 retries).
+2. Any thrown error triggers a retry. After all attempts are exhausted, the final error is propagated.
+
+<Note>
+`maxRetries` on a tool retries the *execution*. It is independent of result validation retries (configured on the agent via `maxRetries`).
+</Note>
+
+## Full options reference
 
 All options accepted by `tool()`:
 
 | Option | Type | Required | Description |
 |--------|------|----------|-------------|
-| `name` | `string` | yes | Tool name - must be unique within an agent |
-| `description` | `string` | yes | Describes the tool to the model |
+| `name` | `string` | yes | Tool name — must be unique within an agent |
+| `description` | `string` | yes | Describes the tool to the model; clear descriptions improve call accuracy |
 | `parameters` | `ZodType` | yes | Zod schema for the arguments |
-| `execute` | `(ctx, args) => Promise<string \| object>` | yes | Implementation function |
-| `argsValidator` | `(args) => void \| Promise<void>` | no | Cross-field validation - throw to reject without consuming a retry |
-| `prepare` | `(ctx) => ToolDefinition \| null \| undefined` | no | Per-turn availability check - return `null` to exclude this turn |
-| `requiresApproval` | `boolean \| (ctx, args) => boolean` | no | When `true`, throws `ApprovalRequiredError` before execution |
-| `sequential` | `boolean?` | no | When `true`, acquires a run-level mutex so this tool never runs concurrently |
-| `maxRetries` | `number?` | no | Max retries on execution failure (independent of result validation retries) |
+| `execute` | `(ctx, args) => Promise<string \| object \| BinaryContent \| UploadedFile>` | yes | Implementation function |
+| `maxRetries` | `number` | no | Max retries on execution failure. Default: 0 |
+| `argsValidator` | `(args) => void \| Promise<void>` | no | Cross-field validation — throw to reject without consuming a retry |
+| `prepare` | `(ctx) => ToolDefinition \| null \| undefined` | no | Per-turn availability check — return `null` to hide this turn |
+| `isOutput` | `boolean` | no | When `true`, calling this tool ends the run. Prefer `outputTool()` factory |
+| `sequential` | `boolean` | no | When `true`, acquires a run-level mutex so this tool never runs concurrently with other sequential tools |
+| `requiresApproval` | `boolean \| (ctx, args) => boolean` | no | When `true`, throws `ApprovalRequiredError` before execution — see [Human-in-the-Loop](/concepts/human-in-the-loop) |
 
-## prepare - conditional tool availability
+`plainTool()` supports `name`, `description`, `parameters`, `execute`, `maxRetries`, and `argsValidator` only.
 
-The `prepare` function is called once per model turn before the tool list is sent to the model. Return `null` or `undefined` to exclude the tool from that turn's available set:
+`outputTool()` supports `name`, `description`, `parameters`, and `execute` only.
 
-```typescript
-const search = tool<Deps>({
-  name: "search",
-  description: "Search the database",
-  parameters: z.object({ query: z.string() }),
-  execute: async (ctx, { query }) => ctx.deps.db.search(query),
-  // Only include this tool when the database is connected
-  prepare: async (ctx) => ctx.deps.db.isConnected() ? undefined : null,
-});
-```
-
-You can also return a modified tool definition from `prepare` to dynamically change its description or parameters based on the current context.
-
-## Multi-modal returns
-
-Tool `execute` functions can return strings, plain objects, or multi-modal content (images and uploaded files). Vibes serializes the result into the message history automatically:
-
-```typescript
-import { tool } from "@vibesjs/sdk";
-import type { BinaryContent } from "@vibesjs/sdk";
-
-const screenshot = tool({
-  name: "screenshot",
-  description: "Take a screenshot",
-  parameters: z.object({ url: z.string() }),
-  execute: async (_ctx, { url }): Promise<BinaryContent> => {
-    const buffer = await captureScreenshot(url);
-    return { type: "image", data: buffer, mimeType: "image/png" };
-  },
-});
-```
-
-The result is passed back to the model as a multi-modal message part, enabling vision-capable models to reason about images.
+`fromSchema()` supports `name`, `description`, `jsonSchema`, `execute`, and `maxRetries` only.
 
 ---
 
 <CardGroup cols={2}>
   <Card title="Toolsets" icon="layers" href="/concepts/toolsets">
-    Compose and conditionally expose groups of tools
+    Group, filter, and compose tools into reusable collections
   </Card>
   <Card title="Dependencies" icon="plug" href="/concepts/dependencies">
-    Access injected deps inside tool execute
+    Inject runtime context via RunContext deps
   </Card>
 </CardGroup>

@@ -1,161 +1,398 @@
 ---
 title: Dependencies
-description: RunContext is Vibes's dependency injection system. Type your agent's external dependencies once, inject them at run time, and access them everywhere - in tools, prompts, validators, and history processors.
+description: Dependency injection in Vibes — declare what your agent needs, inject it at run time, and access it everywhere inside tools, prompts, and validators without globals.
 ---
 
-`RunContext<TDeps>` is the primary dependency injection mechanism in Vibes. When you construct an `Agent<TDeps>`, you declare what external resources it needs. At `agent.run()` time you supply those resources as `deps`, and every callback in the agent - system prompts, instructions, tools, validators, toolsets, and history processors - receives the same `RunContext` carrying those deps.
+## Why dependency injection?
 
-This is a signature feature of Vibes: you never need to close over global variables or pass deps out-of-band. Your agent is fully self-contained and trivially testable.
+Consider a support agent that queries a database. Without dependency injection you have two bad options:
 
-## RunContext fan-out
+- **Global variable** — the database is a module-level singleton. This makes tests fragile (they share state), makes the dependency invisible in the type signature, and creates ordering problems at startup.
+- **Closure** — you close over the database when building the tool. This ties every tool to one specific database instance and makes it impossible to swap for a test double.
 
-Every entry point to the agent resolves a single `RunContext<TDeps>` and fans it out to all callbacks:
+Vibes takes a third path: **declare what you need as a type, inject the concrete instance at `agent.run()` time, and every callback inside the agent receives it automatically via `RunContext`**.
 
-```mermaid
-graph LR
-    A([Run]) --> B[Run Context]
-    B --> C[System Prompt]
-    B --> D[Tool Execution]
-    B --> E[Tool Availability]
-    B --> F[Output Validation]
-    B --> G[Toolsets]
-    B --> H[History Processors]
-```
+The result is a fully self-contained, trivially testable agent where the type checker verifies the dependency contract at every boundary.
 
-## Defining dependencies
+---
 
-Define a `Deps` type, pass it as the first type parameter to `Agent`, and supply the concrete instance at run time:
+## A motivating example
+
+Let's build a customer lookup agent that needs a database to work. We'll see the dependency flow from declaration → injection → usage in tools and prompts.
 
 ```typescript
-import { Agent } from "@vibesjs/sdk";
+import { Agent, tool } from "jsr:@vibesjs/sdk";
 import { anthropic } from "@ai-sdk/anthropic";
+import { z } from "zod";
 
-type Deps = { db: Database };
+// (1) Declare what the agent needs — just a TypeScript interface
+interface SupportDeps {
+  db: {
+    getCustomer(id: string): Promise<{ name: string; plan: string } | null>;
+    listTickets(customerId: string): Promise<{ id: string; summary: string }[]>;
+  };
+  region: string;
+}
 
-const agent = new Agent<Deps>({
+// (2) Define tools typed to the same deps
+const getCustomer = tool<SupportDeps>({
+  name: "get_customer",
+  description: "Look up a customer by ID.",
+  parameters: z.object({ customerId: z.string() }),
+  execute: async (ctx, { customerId }) => {    // (3) ctx carries ctx.deps.db
+    const customer = await ctx.deps.db.getCustomer(customerId);
+    if (!customer) return "Customer not found.";
+    return `${customer.name} is on the ${customer.plan} plan.`;
+  },
+});
+
+const listTickets = tool<SupportDeps>({
+  name: "list_tickets",
+  description: "List open tickets for a customer.",
+  parameters: z.object({ customerId: z.string() }),
+  execute: async (ctx, { customerId }) => {
+    const tickets = await ctx.deps.db.listTickets(customerId);
+    if (tickets.length === 0) return "No open tickets.";
+    return tickets.map((t) => `#${t.id}: ${t.summary}`).join("\n");
+  },
+});
+
+// (4) Create the agent — typed to SupportDeps
+const supportAgent = new Agent<SupportDeps>({
   model: anthropic("claude-sonnet-4-6"),
-  systemPrompt: "You are a research assistant.",
+  systemPrompt: (ctx) =>                       // (5) dynamic prompt uses deps too
+    `You are a customer support agent in the ${ctx.deps.region} region.`,
+  tools: [getCustomer, listTickets],
 });
 
-// Inject deps at run time
-const result = await agent.run("Find recent papers on LLMs", {
-  deps: { db: myDatabase },
-});
+// (6) Inject the real database at run time
+const result = await supportAgent.run(
+  "Look up customer C-42 and summarize their open tickets.",
+  { deps: { db: productionDb, region: "us-east-1" } },
+);
+
+console.log(result.output);
+// "Customer Alice Smith (Pro plan) has 2 open tickets:
+//  #101: Login fails after password reset
+//  #104: Invoice PDF not loading"
 ```
+
+Walk through the annotations:
+
+1. `SupportDeps` is a plain TypeScript interface. No framework types, no decorators. Define it wherever makes sense in your codebase.
+2. `tool<SupportDeps>` binds the tool to the deps type. TypeScript will catch any mismatch between the deps declared here and what you pass at `agent.run()` time.
+3. `ctx.deps.db` is the injected database. The tool implementation never imports a global — it only uses what is given through `ctx`.
+4. `new Agent<SupportDeps>(...)` declares the agent's dependency contract. The second type parameter (`TOutput`) is omitted and defaults to `string`.
+5. `systemPrompt` as a function receives the same `RunContext`. You can build dynamic prompts from runtime state without any closures or globals.
+6. `deps` is passed in `RunOptions`. Swap in a test double here for testing — the agent code stays completely unchanged.
+
+---
 
 ## The RunContext interface
 
-The full interface available in every callback:
+Every callback inside an agent — system prompts, tool `execute` functions, result validators, history processors — receives a `RunContext<TDeps>`. Its full interface is:
 
 ```typescript
-// Source: lib/types/context.ts
 interface RunContext<TDeps = undefined> {
-  deps: TDeps;                                              // injected dependencies
-  usage: Usage;                                             // token usage accumulated so far
-  retryCount: number;                                       // result validation retries
+  deps: TDeps;                                              // your injected dependencies
+  usage: Usage;                                             // tokens accumulated so far this run
+  retryCount: number;                                       // result validation retries so far
   toolName: string | null;                                  // current tool name (null outside tool.execute)
-  runId: string;                                            // unique run identifier
-  metadata: Record<string, unknown>;                        // per-run metadata from caller
+  runId: string;                                            // unique UUID for this run
+  metadata: Record<string, unknown>;                        // per-run metadata from the caller
   toolResultMetadata: Map<string, Record<string, unknown>>; // metadata attached by tools
   attachMetadata(toolCallId: string, meta: Record<string, unknown>): void;
 }
 ```
 
-Reference table:
-
-| Field / Method | Type | Description |
-|----------------|------|-------------|
-| `deps` | `TDeps` | User-supplied dependencies injected at run time |
-| `usage` | `Usage` | Accumulated token usage (`inputTokens`, `outputTokens`, `totalTokens`, `requests`) |
+| Field | Type | Description |
+|-------|------|-------------|
+| `deps` | `TDeps` | Your injected dependencies |
+| `usage` | `Usage` | Accumulated token counts: `inputTokens`, `outputTokens`, `totalTokens`, `requests` |
 | `retryCount` | `number` | How many result validation retries have occurred so far |
-| `toolName` | `string \| null` | Name of the currently executing tool, or `null` outside a tool call |
+| `toolName` | `string \| null` | Name of the currently executing tool; `null` outside `tool.execute` |
 | `runId` | `string` | Unique identifier for this run (UUID) |
 | `metadata` | `Record<string, unknown>` | Per-run caller metadata passed via `RunOptions.metadata` |
 | `toolResultMetadata` | `Map<string, Record<string, unknown>>` | Metadata attached by tools via `attachMetadata()` |
 | `attachMetadata(id, meta)` | `void` | Attach arbitrary metadata for a specific tool call ID |
 
+<Note>
+`ctx.usage` is a live snapshot. Read it inside a tool to check how many tokens have been consumed before making an expensive API call. Read it inside a result validator to enforce cost limits per run.
+</Note>
+
+---
+
+## Passing deps to `agent.run()`
+
+Every run method — `run()`, `stream()`, `runStreamEvents()` — accepts a `RunOptions` second argument where you pass `deps`:
+
+```typescript
+// Plain run
+const result = await supportAgent.run(prompt, {
+  deps: { db: productionDb, region: "eu-west-1" },
+});
+
+// Streaming
+const stream = supportAgent.stream(prompt, {
+  deps: { db: productionDb, region: "eu-west-1" },
+});
+
+// Event stream
+for await (const event of supportAgent.runStreamEvents(prompt, {
+  deps: { db: productionDb, region: "eu-west-1" },
+})) { /* ... */ }
+```
+
+You can also pass `metadata` alongside `deps`. Metadata is caller-controlled, per-run, and separate from deps:
+
+```typescript
+const result = await supportAgent.run(prompt, {
+  deps: { db: productionDb, region: "us-east-1" },
+  metadata: { requestId: "req-abc123", source: "web-chat" },
+});
+
+// Inside a tool:
+// ctx.metadata.requestId === "req-abc123"
+```
+
+---
+
 ## Using deps in tools
 
-Tools receive `RunContext<TDeps>` as their first argument, giving them direct access to your injected dependencies:
+Tools receive `RunContext<TDeps>` as their first argument. Access anything you injected:
 
 ```typescript
-import { tool } from "@vibesjs/sdk";
+type Deps = { emailClient: EmailClient; featureFlags: FeatureFlags };
+
+const sendWelcome = tool<Deps>({
+  name: "send_welcome_email",
+  description: "Send a welcome email to a new user.",
+  parameters: z.object({ userId: z.string(), email: z.string().email() }),
+  execute: async (ctx, { userId, email }) => {
+    // Access deps — no imports, no globals
+    if (!ctx.deps.featureFlags.welcomeEmailsEnabled) {
+      return "Welcome emails are currently disabled.";
+    }
+    await ctx.deps.emailClient.send({
+      to: email,
+      subject: "Welcome!",
+      body: `Hi, your user ID is ${userId}.`,
+    });
+    return `Welcome email sent to ${email}.`;
+  },
+});
+```
+
+---
+
+## Using deps in dynamic system prompts
+
+System prompts and instructions can be functions that receive `RunContext`. This gives you per-run personalization without any closures:
+
+```typescript
+type Deps = { user: { name: string; plan: "free" | "pro" }; locale: string };
+
+const agent = new Agent<Deps>({
+  model: anthropic("claude-sonnet-4-6"),
+
+  // Core persona — stable, changes with user data
+  systemPrompt: (ctx) => {
+    const { user } = ctx.deps;
+    return `You are a helpful assistant for ${user.name}. They are on the ${user.plan} plan.`;
+  },
+
+  // Ephemeral instructions — not recorded in message history
+  instructions: (ctx) => {
+    const { user, locale } = ctx.deps;
+    return [
+      `Always respond in ${locale}.`,
+      user.plan === "free" ? "Keep replies under 80 words." : "You may give detailed answers.",
+    ].join(" ");
+  },
+});
+```
+
+<Tip>
+Use `systemPrompt` for persistent identity and `instructions` for per-run rules that should NOT accumulate in message history across multi-turn conversations.
+</Tip>
+
+---
+
+## Using deps in result validators
+
+Result validators also receive `RunContext`, so you can use runtime state to decide whether an output is acceptable:
+
+```typescript
+const Schema = z.object({ totalCost: z.number(), items: z.array(z.string()) });
+
+type Deps = { maxBudget: number };
+
+const agent = new Agent<Deps, z.infer<typeof Schema>>({
+  model: anthropic("claude-sonnet-4-6"),
+  outputSchema: Schema,
+  maxRetries: 2,
+  resultValidators: [
+    (ctx, output) => {
+      if (output.totalCost > ctx.deps.maxBudget) {
+        throw new Error(
+          `Total cost ${output.totalCost} exceeds budget ${ctx.deps.maxBudget}. Please reduce the item list.`
+        );
+      }
+      return output;
+    },
+  ],
+});
+
+// Budget is injected at run time — the same agent works for any budget
+const result = await agent.run("Plan a team lunch for 8 people.", {
+  deps: { maxBudget: 150 },
+});
+```
+
+If the validator throws, Vibes sends the error message back to the model as feedback and retries (up to `maxRetries` times). The model can then produce a revised answer that satisfies the constraint.
+
+---
+
+## Full end-to-end example
+
+Here is an agent that uses deps in all three places — system prompt, tool, and result validator — with a complete type-safe flow:
+
+```typescript
+import { Agent, tool } from "jsr:@vibesjs/sdk";
+import { anthropic } from "@ai-sdk/anthropic";
 import { z } from "zod";
 
-type Deps = { db: Database };
+// Deps declaration
+interface InventoryDeps {
+  inventory: {
+    lookup(sku: string): Promise<{ name: string; stock: number; price: number } | null>;
+  };
+  currencySymbol: string;
+}
 
-const search = tool<Deps>({
-  name: "search",
-  description: "Search the database",
-  parameters: z.object({ query: z.string() }),
-  execute: async (ctx, { query }) => ctx.deps.db.search(query),
+// Output schema
+const QuoteSchema = z.object({
+  sku: z.string(),
+  productName: z.string(),
+  quantity: z.number().int().positive(),
+  unitPrice: z.number(),
+  totalPrice: z.number(),
+  available: z.boolean(),
 });
 
-const agent = new Agent<Deps>({
+// Tool — uses deps.inventory
+const lookupProduct = tool<InventoryDeps>({
+  name: "lookup_product",
+  description: "Look up a product's stock and price by SKU.",
+  parameters: z.object({ sku: z.string() }),
+  execute: async (ctx, { sku }) => {
+    const item = await ctx.deps.inventory.lookup(sku);
+    if (!item) return `SKU ${sku} not found.`;
+    return item;
+  },
+});
+
+// Agent — deps in systemPrompt, tool, and resultValidator
+const quoteAgent = new Agent<InventoryDeps, z.infer<typeof QuoteSchema>>({
   model: anthropic("claude-sonnet-4-6"),
-  tools: [search],
+  systemPrompt: (ctx) =>
+    `You are a pricing agent. All prices are in ${ctx.deps.currencySymbol}.`,
+  tools: [lookupProduct],
+  outputSchema: QuoteSchema,
+  resultValidators: [
+    (ctx, output) => {
+      // Validate the math before accepting
+      const expected = output.quantity * output.unitPrice;
+      if (Math.abs(expected - output.totalPrice) > 0.01) {
+        throw new Error(`Total price mismatch: ${output.quantity} × ${output.unitPrice} ≠ ${output.totalPrice}`);
+      }
+      return output;
+    },
+  ],
 });
+
+// Production run
+const result = await quoteAgent.run("Quote me 5 units of SKU-7291.", {
+  deps: {
+    inventory: productionInventory,
+    currencySymbol: "USD",
+  },
+});
+
+console.log(result.output);
+// {
+//   sku: "SKU-7291",
+//   productName: "Wireless Headset Pro",
+//   quantity: 5,
+//   unitPrice: 89.99,
+//   totalPrice: 449.95,
+//   available: true,
+// }
 ```
 
-## Using deps in system prompts
+---
 
-System prompts and instructions can be functions that receive `RunContext`. This lets you build dynamic prompts from runtime state:
+## Testing with mock dependencies
 
-```typescript
-const agent = new Agent<Deps>({
-  model: anthropic("claude-sonnet-4-6"),
-  systemPrompt: (ctx) => `Helping from region: ${ctx.deps.db.region}`,
-  instructions: (ctx) =>
-    ctx.deps.db.isReadOnly ? "Do not perform write operations." : "",
-});
-```
-
-## Testing with dependencies
-
-The canonical testing pattern is to create fake deps and pass them via `agent.override()`:
+The deps pattern makes testing straightforward: swap the real database for an in-memory mock. No patching, no module mocking — just pass different deps.
 
 ```typescript
-const fakeDeps: Deps = {
-  db: {
-    region: "us-east-1",
-    isReadOnly: false,
-    search: async (q) => `Fake results for: ${q}`,
+import { TestModel } from "jsr:@vibesjs/sdk/testing";
+
+// Build a minimal fake that satisfies the interface
+const mockInventory: InventoryDeps["inventory"] = {
+  async lookup(sku) {
+    const fixtures: Record<string, { name: string; stock: number; price: number }> = {
+      "SKU-7291": { name: "Wireless Headset Pro", stock: 42, price: 89.99 },
+    };
+    return fixtures[sku] ?? null;
   },
 };
 
-const result = await agent
-  .override({ model: testModel, maxTurns: 3 })
-  .run("Find papers on attention mechanisms", { deps: fakeDeps });
+const mockDeps: InventoryDeps = {
+  inventory: mockInventory,
+  currencySymbol: "USD",
+};
+
+// TestModel lets you script exactly what the model will do — no API calls
+const testModel = new TestModel([
+  {
+    // First turn: model calls the lookup tool
+    toolCalls: [{ toolName: "lookup_product", args: { sku: "SKU-7291" } }],
+  },
+  {
+    // Second turn: model returns final structured output
+    toolCalls: [
+      {
+        toolName: "final_result",
+        args: {
+          sku: "SKU-7291",
+          productName: "Wireless Headset Pro",
+          quantity: 5,
+          unitPrice: 89.99,
+          totalPrice: 449.95,
+          available: true,
+        },
+      },
+    ],
+  },
+]);
+
+const result = await quoteAgent
+  .override({ model: testModel })
+  .run("Quote me 5 units of SKU-7291.", { deps: mockDeps });
+
+console.log(result.output.productName); // "Wireless Headset Pro"
+console.log(result.output.totalPrice);  // 449.95
 ```
 
-<Info>
-This is the recommended testing pattern - inject test doubles via `deps`, never mock the framework internals. Your agent code stays unchanged; only the dep implementations swap.
-</Info>
+<Tip>
+`agent.override({ model: testModel })` bypasses the `setAllowModelRequests(false)` guard automatically, so your test suite can call override runs even when live model access is disabled.
+</Tip>
 
-## History processors and privacy
-
-History processors run before each model call and can transform or filter the message history. The `privacyFilterProcessor` is a built-in processor that redacts sensitive content before messages are sent to the model.
-
-The `PrivacyRule` union type supports two shapes:
-
-```typescript
-import { privacyFilterProcessor } from "@vibesjs/sdk";
-
-const agent = new Agent({
-  model: anthropic("claude-sonnet-4-6"),
-  historyProcessors: [
-    privacyFilterProcessor([
-      // RegexPrivacyRule - redact credit card numbers
-      { pattern: /\d{4}-\d{4}-\d{4}-\d{4}/g, replacement: "[CARD]" },
-      // FieldPrivacyRule - remove a specific field from tool results
-      { messageType: "tool", fieldPath: "content.0.result.ssn" },
-    ]),
-  ],
-});
-```
-
-- **`RegexPrivacyRule`**: `{ pattern: RegExp, replacement?: string }` - replace matches of the pattern with the replacement string (defaults to `"[REDACTED]"` if omitted).
-- **`FieldPrivacyRule`**: `{ messageType: string, fieldPath: string }` - remove the value at `fieldPath` from messages of the given type.
+<Note>
+The recommended testing pattern: inject test doubles via `deps`, script model behavior with `TestModel`, and assert on `result.output`. Never mock Vibes internals — the framework stays intact; only the external dependencies change.
+</Note>
 
 ---
 
@@ -164,6 +401,6 @@ const agent = new Agent({
     Use deps inside tool execute functions
   </Card>
   <Card title="Agents" icon="robot" href="/concepts/agents">
-    Full Agent constructor options reference
+    Full Agent constructor options and run methods
   </Card>
 </CardGroup>

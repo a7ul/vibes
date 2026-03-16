@@ -1,0 +1,226 @@
+---
+title: Troubleshooting
+description: Solutions for common setup issues, provider errors, failed tool calls, and Zod schema mistakes.
+---
+
+This page covers the most common problems developers run into when setting up and using `@vibesjs/sdk`.
+
+## Setup issues
+
+### Wrong registry: `npm:@vibesjs/sdk`
+
+If you import from `npm:@vibesjs/sdk` instead of `jsr:@vibesjs/sdk`, the import resolves silently but produces no useful exports — the npm name is a placeholder stub.
+
+**Fix:** Always use the JSR registry.
+
+```jsonc
+// deno.json
+{
+  "imports": {
+    "@vibesjs/sdk": "jsr:@vibesjs/sdk@^1.0"   // correct
+  //  "@vibesjs/sdk": "npm:@vibesjs/sdk"        // wrong — stub package
+  }
+}
+```
+
+For Node.js, install via the JSR CLI:
+
+```bash
+npx jsr add @vibesjs/sdk
+```
+
+### Zod version mismatch (v3 vs v4)
+
+Vibes requires Zod v4. Installing `zod` without a version pin may give you Zod v3, which has a different API. Symptoms include TypeScript errors on `z.object`, `z.string`, and similar.
+
+**Fix:**
+
+```bash
+# Node.js
+npm install zod@^4
+
+# Deno — pin in your import map
+"zod": "npm:zod@^4"
+```
+
+### Missing API key
+
+Every provider requires an API key set as an environment variable. If the key is absent, the provider throws a `401` or similar authentication error at runtime.
+
+**Fix:** Export the key before running your script:
+
+```bash
+export ANTHROPIC_API_KEY="sk-ant-..."   # Anthropic
+export OPENAI_API_KEY="sk-..."          # OpenAI
+export GOOGLE_GENERATIVE_AI_API_KEY="..." # Google
+```
+
+<Note>
+  Never commit API keys to source control. Add `.env` to your `.gitignore` and use your deployment platform's secret management in production.
+</Note>
+
+### Deno cache corruption
+
+If Deno reports a missing export for a package that exists, a corrupted cache entry may be to blame. This can happen after a failed or partial download.
+
+**Detect:** The import resolves but `z` (or another export) is `undefined` at runtime.
+
+**Fix:** Clear the affected entry and re-run:
+
+```bash
+# Remove the specific package from Deno's npm cache
+rm -rf ~/Library/Caches/deno/npm/registry.npmjs.org/<package>/<version>
+
+# Deno re-fetches automatically on next run
+deno run --allow-env --allow-net your_script.ts
+```
+
+Replace `<package>` and `<version>` with the affected package (e.g. `zod/4.0.0`).
+
+---
+
+## Provider errors
+
+### `APICallError` / connection refused
+
+This usually means the provider's API is unreachable or the model name is incorrect.
+
+**Check:**
+1. Your API key is set and valid.
+2. The model string matches the provider's naming (e.g. `"claude-sonnet-4-6"` for Anthropic, `"gpt-4o"` for OpenAI).
+3. You have network access from where the script runs.
+
+### Model not found
+
+Passing an unrecognised model ID to a provider function causes the provider to reject the request.
+
+```typescript
+// Wrong - invented model name
+anthropic("claude-ultra-9000")
+
+// Correct - check provider docs for valid model IDs
+anthropic("claude-sonnet-4-6")
+```
+
+---
+
+## Understanding error classes
+
+`@vibesjs/sdk` throws typed errors that you can catch and handle specifically. Import them from `jsr:@vibesjs/sdk`:
+
+| Error class | When it is thrown |
+|---|---|
+| `MaxTurnsError` | The agent exceeded `maxTurns` without producing a final result |
+| `MaxRetriesError` | Result validation failed after all configured retries |
+| `UsageLimitError` | A token or request limit set via `usageLimits` was exceeded |
+| `ApprovalRequiredError` | A tool with `requiresApproval: true` was called and needs human sign-off |
+| `ModelRequestsDisabledError` | A real model call was made while `setAllowModelRequests(false)` is active in tests |
+
+### Catching a specific error
+
+```typescript
+import { Agent, MaxTurnsError, UsageLimitError } from "jsr:@vibesjs/sdk";
+
+try {
+  const result = await agent.run("Do a complex task");
+  console.log(result.output);
+} catch (err) {
+  if (err instanceof MaxTurnsError) {
+    console.error("Agent ran too long — increase maxTurns or simplify the task.");
+  } else if (err instanceof UsageLimitError) {
+    console.error(`Limit exceeded: ${err.limitKind} reached ${err.current} (limit: ${err.limit})`);
+  } else {
+    throw err; // re-throw unexpected errors
+  }
+}
+```
+
+### `UsageLimitError` fields
+
+When you catch a `UsageLimitError`, it carries three properties:
+
+| Property | Type | Description |
+|---|---|---|
+| `limitKind` | `"requests" \| "inputTokens" \| "outputTokens" \| "totalTokens"` | Which limit was exceeded |
+| `current` | `number` | Usage at the point of failure |
+| `limit` | `number` | The configured cap |
+
+---
+
+## Debugging failed tool calls
+
+When a tool call fails, the SDK feeds the error back to the model so it can retry or adjust. If failures persist, add logging inside your `execute` function:
+
+```typescript
+import { tool } from "jsr:@vibesjs/sdk";
+import { z } from "zod";
+
+const myTool = tool({
+  name: "my_tool",
+  description: "Does something",
+  parameters: z.object({ input: z.string() }),
+  execute: async (_ctx, { input }) => {
+    console.log("[my_tool] called with:", input);
+    try {
+      const result = await doSomething(input);
+      console.log("[my_tool] result:", result);
+      return result;
+    } catch (err) {
+      console.error("[my_tool] error:", err);
+      throw err; // let the SDK handle the retry
+    }
+  },
+});
+```
+
+<Tip>
+  Set `maxRetries` on a tool to control how many times the SDK retries a failing execution before propagating the error to the model as a permanent failure.
+</Tip>
+
+---
+
+## Common Zod schema mistakes
+
+### Using `.optional()` on required parameters
+
+The model will not pass optional fields reliably. Prefer explicit defaults or separate tools.
+
+```typescript
+// Avoid: model may omit the field unpredictably
+parameters: z.object({ city: z.string().optional() })
+
+// Better: always require it, let the model ask for clarification
+parameters: z.object({ city: z.string().describe("City name, required") })
+```
+
+### Forgetting `.describe()` on fields
+
+Without descriptions, the model has no guidance on what each field means. Always add `.describe()` to every parameter.
+
+```typescript
+// Missing descriptions
+parameters: z.object({ q: z.string(), n: z.number() })
+
+// With descriptions — much better model behaviour
+parameters: z.object({
+  q: z.string().describe("Search query"),
+  n: z.number().describe("Maximum number of results to return"),
+})
+```
+
+### Overly deep or recursive schemas
+
+Deeply nested or self-referential Zod schemas can cause providers to reject the generated JSON Schema. Keep tool parameters flat where possible.
+
+---
+
+## Next steps
+
+<CardGroup cols={2}>
+  <Card title="Getting Help" icon="life-ring" href="/getting-started/getting-help">
+    Where to ask questions and report bugs
+  </Card>
+  <Card title="Installation" icon="download" href="/getting-started/install">
+    Back to the installation guide
+  </Card>
+</CardGroup>

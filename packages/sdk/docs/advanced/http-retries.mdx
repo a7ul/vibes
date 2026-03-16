@@ -1,0 +1,100 @@
+---
+title: "HTTP Retries"
+description: "How the Vibes SDK handles retries for model requests and how to configure retry behaviour."
+---
+
+The Vibes SDK does not implement its own HTTP retry layer. Retry behaviour for model API calls is fully delegated to the [Vercel AI SDK](https://sdk.vercel.ai), which is the underlying transport used by `agent.run()`, `agent.stream()`, and `agent.runStreamEvents()`.
+
+## Tool-level retries
+
+The SDK does expose one retry mechanism: per-tool execution retries. Set `maxRetries` on any `ToolDefinition` to re-attempt a failing tool call before propagating the error:
+
+```typescript
+import { tool } from "jsr:@vibesjs/sdk";
+import { z } from "npm:zod";
+
+const fetchData = tool({
+  name: "fetch_data",
+  description: "Fetch data from an external API",
+  parameters: z.object({ endpoint: z.string() }),
+  maxRetries: 2, // retry up to 2 more times on error (3 total attempts)
+  execute: async (_ctx, { endpoint }) => {
+    const res = await fetch(endpoint);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    return res.text();
+  },
+});
+```
+
+`maxRetries` applies only to the tool's own `execute` function. It does not retry the model call that triggered the tool.
+
+## Result validation retries
+
+The `Agent` constructor accepts a `maxRetries` option for structured output validation. When `outputSchema` is set and the model produces output that fails Zod validation, the SDK retries the model call up to `maxRetries` times (default: 3):
+
+```typescript
+import { Agent } from "jsr:@vibesjs/sdk";
+import { anthropic } from "npm:@ai-sdk/anthropic";
+import { z } from "npm:zod";
+
+const agent = new Agent({
+  model: anthropic("claude-opus-4-5"),
+  outputSchema: z.object({
+    sentiment: z.enum(["positive", "negative", "neutral"]),
+  }),
+  maxRetries: 5, // retry model call up to 5 times on schema validation failure
+});
+```
+
+When all retries are exhausted, a `MaxRetriesError` is thrown. See [Error Handling](/advanced/error-handling) for recovery patterns.
+
+## Model-level retries (Vercel AI SDK)
+
+For retrying transient provider errors (network failures, rate limits, 5xx responses), configure the Vercel AI SDK provider or wrap the model:
+
+```typescript
+import { anthropic } from "npm:@ai-sdk/anthropic";
+import { wrapLanguageModel, experimental_customProvider } from "npm:ai";
+
+// The Vercel AI SDK retries on network errors by default.
+// To customise retry behaviour, wrap the model with middleware:
+const model = wrapLanguageModel({
+  model: anthropic("claude-opus-4-5"),
+  middleware: {
+    wrapGenerate: async ({ doGenerate, params }) => {
+      // Custom retry logic here
+      return doGenerate(params);
+    },
+  },
+});
+```
+
+Refer to the [Vercel AI SDK middleware documentation](https://sdk.vercel.ai/docs/ai-sdk-core/middleware) for the full API.
+
+## Rate limits
+
+Rate limit errors from a provider arrive as `APICallError` with `statusCode: 429`. The Vibes SDK does not automatically back off on rate limits — implement exponential backoff at the call site or via AI SDK middleware:
+
+```typescript
+import { ApprovalRequiredError, MaxTurnsError, UsageLimitError } from "jsr:@vibesjs/sdk";
+import { APICallError } from "npm:ai";
+
+async function runWithBackoff(prompt: string, retries = 3) {
+  for (let attempt = 0; attempt < retries; attempt++) {
+    try {
+      return await agent.run(prompt);
+    } catch (err) {
+      if (err instanceof APICallError && err.statusCode === 429 && attempt < retries - 1) {
+        const delay = Math.pow(2, attempt) * 1000; // 1s, 2s, 4s
+        await new Promise((r) => setTimeout(r, delay));
+        continue;
+      }
+      throw err;
+    }
+  }
+}
+```
+
+<Note>
+For comprehensive error handling including `MaxTurnsError`, `UsageLimitError`, and `ApprovalRequiredError`, see [Error Handling](/advanced/error-handling).
+</Note>

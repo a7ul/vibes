@@ -1,149 +1,327 @@
 ---
 title: Agents
-description: The Agent class is the central abstraction in Vibes. It wraps the Vercel AI SDK model loop, manages tool execution, and delivers structured output.
+description: An Agent is the central building block in Vibes — a typed, reusable container that combines a model, system prompt, tools, and output schema into a single cohesive object.
 ---
 
-The `Agent` class is the primary way you build an AI agent in Vibes. It wraps the Vercel AI SDK's `generateText` / `streamText` loop, manages multi-turn tool execution, injects dependencies, and validates structured output - all in a single cohesive interface.
+## What is an agent?
 
-An agent is typed over its dependencies (`TDeps`) and output (`TOutput`), making it fully type-safe end to end.
+An agent is not a single model call. It is a **loop** — a stateful orchestrator that calls a model, executes tools based on the response, feeds results back into the next turn, and repeats until a validated output emerges or a limit is reached.
 
-## Agent loop
+<CardGroup cols={2}>
+  <Card title="Model" icon="cpu">
+    The language model that generates responses. Anything from the Vercel AI SDK: `anthropic(...)`, `openai(...)`, `google(...)`.
+  </Card>
+  <Card title="System Prompt" icon="terminal">
+    A static string or a dynamic function called each turn. Describes the agent's role and persona.
+  </Card>
+  <Card title="Tools" icon="wrench">
+    Functions the model can call during a run. Each tool has a Zod schema, a description, and an `execute` function.
+  </Card>
+  <Card title="Output Schema" icon="braces">
+    A Zod schema that shapes the agent's return type. When set, Vibes validates and parses the model's structured response.
+  </Card>
+  <Card title="Dependencies" icon="plug">
+    Runtime values (databases, API clients, config) injected at `agent.run()` time and available everywhere inside the agent.
+  </Card>
+  <Card title="Result Validators" icon="shield-check">
+    Functions that run after the output is parsed. Throw to reject and retry; return to accept (optionally modifying the output).
+  </Card>
+</CardGroup>
 
-Every call to `agent.run()`, `agent.stream()`, or `agent.runStreamEvents()` goes through the same loop:
+An agent is typed over two parameters: `Agent<TDeps, TOutput>`. Defaults are `undefined` (no deps) and `string` (plain text output). TypeScript infers these for you in almost all cases.
 
-```mermaid
-flowchart TD
-    A([Start Run]) --> B[Build Context]
-    B --> C{Turn Loop}
-    C --> D[Prepare Turn]
-    D --> E[Generate Response]
-    E --> F{Response Type?}
-    F -- text --> G([Return Result])
-    F -- structured output --> H[Validate Output]
-    H -- valid --> G
-    H -- invalid --> I{Retries left?}
-    I -- yes --> C
-    I -- no --> J([Max Retries Error])
-    F -- tool calls --> K[Execute Tools]
-    K -- needs approval --> L([Approval Required Error])
-    K -- approved --> M[Append Results to History]
-    M --> N{Turn limit reached?}
-    N -- yes --> O([Max Turns Error])
-    N -- no --> C
-```
+---
 
-## Basic usage
+## A motivating example
+
+Let's build something concrete: a roulette advisor that rolls a virtual wheel and recommends whether to bet on red or black.
 
 ```typescript
-import { Agent } from "@vibesjs/sdk";
+import { Agent, tool } from "jsr:@vibesjs/sdk";
 import { anthropic } from "@ai-sdk/anthropic";
+import { z } from "zod";
 
+// (1) Define the tool — the model calls this to roll the wheel
+const rollWheel = tool({
+  name: "roll_wheel",
+  description: "Spin the roulette wheel and return a number between 0 and 36.",
+  parameters: z.object({}),
+  execute: async () => {
+    const n = Math.floor(Math.random() * 37); // 0–36
+    return { number: n };
+  },
+});
+
+// (2) Define structured output — we want more than a plain string
+const Recommendation = z.object({
+  number: z.number(),
+  color: z.enum(["red", "black", "green"]),
+  advice: z.string(),
+});
+
+// (3) Create the agent — instantiate once, reuse everywhere
+const rouletteAgent = new Agent({
+  name: "roulette-advisor",                            // (4) human-readable label
+  model: anthropic("claude-haiku-4-5-20251001"),       // (5) cheapest model for simple tasks
+  systemPrompt: "You are a roulette advisor. Roll the wheel, then give a brief recommendation.", // (6)
+  tools: [rollWheel],                                  // (7) tools array, not decorator
+  outputSchema: Recommendation,                        // (8) Zod schema → typed output
+});
+
+// (9) Run the agent — single await, no streaming needed here
+const result = await rouletteAgent.run("Should I bet on red or black this round?");
+
+console.log(result.output.number);  // e.g. 14
+console.log(result.output.color);   // "red"
+console.log(result.output.advice);  // "14 is red — a classic bet."
+console.log(result.usage);          // { inputTokens, outputTokens, totalTokens, requests }
+```
+
+Walk through each annotation:
+
+1. `tool()` creates a typed tool. The `execute` function receives `RunContext` as its first argument (unused here — `_ctx`) and the validated args as the second. It returns any serializable value.
+2. The Zod schema defines the shape of `result.output`. No schema → `result.output` is a plain `string`.
+3. `new Agent(...)` is cheap — it just stores config. Do it once at module level, not inside request handlers.
+4. `name` is optional but makes traces and logs much easier to read.
+5. Pick the smallest model that does the job well. `claude-haiku-4-5-20251001` is 3× cheaper than Sonnet for simple tasks.
+6. `systemPrompt` can be a plain string (evaluated once) or a function `(ctx) => string` (evaluated every turn).
+7. `tools` is an array — Vibes does not use decorators. Pass all tools the model may need.
+8. `outputSchema` triggers structured output mode. Vibes injects a `final_result` tool under the hood; the model calls it to return the structured data.
+9. `agent.run()` is an ordinary `async` function. Await it.
+
+---
+
+## Running an agent — three ways
+
+Vibes gives you three run methods. They all execute the same loop; they differ only in how you receive the output.
+
+### 1. `agent.run()` — await the result
+
+The simplest option. Returns a `Promise<RunResult<TOutput>>` that resolves when the run is complete.
+
+```typescript
+const result = await rouletteAgent.run("Should I bet this round?");
+
+console.log(result.output);       // typed output (TOutput)
+console.log(result.messages);     // full ModelMessage[] history
+console.log(result.newMessages);  // only messages from this run
+console.log(result.usage);        // { inputTokens, outputTokens, totalTokens, requests }
+console.log(result.runId);        // unique UUID for this run
+```
+
+<Tip>
+Pass `result.messages` back as `messageHistory` in the next call to continue a multi-turn conversation. The agent picks up exactly where it left off.
+</Tip>
+
+### 2. `agent.stream()` — stream text tokens
+
+Returns a `StreamResult<TOutput>` immediately. Consume `textStream` for real-time tokens, then await the remaining promises after iteration.
+
+```typescript
+const stream = rouletteAgent.stream("Tell me the history of roulette.");
+
+// Tokens arrive in real time
+for await (const chunk of stream.textStream) {
+  process.stdout.write(chunk);
+  // "Roulette was invented in 18th-century France..."
+}
+
+// Wait for the full output after streaming ends
+const output   = await stream.output;      // TOutput
+const messages = await stream.messages;    // ModelMessage[]
+const usage    = await stream.usage;       // Usage
+```
+
+For structured output being streamed progressively (only when `outputMode: "tool"`):
+
+```typescript
+for await (const partial of stream.partialOutput) {
+  // Best-effort partial — emitted each time the partial JSON parses cleanly
+  console.log("In progress:", partial);
+}
+```
+
+### 3. `agent.runStreamEvents()` — typed event stream
+
+Returns an `AsyncIterable<AgentStreamEvent<TOutput>>`. Every turn, text token, tool call, and tool result is a distinct event. Use this when you need full observability or custom UI updates.
+
+```typescript
+for await (const event of rouletteAgent.runStreamEvents("Roll for me.")) {
+  switch (event.kind) {                            // (1) discriminated by .kind, not .type
+    case "turn-start":
+      console.log(`--- Turn ${event.turn} ---`);
+      break;
+    case "text-delta":
+      process.stdout.write(event.delta);           // (2) stream text as it arrives
+      break;
+    case "tool-call-start":
+      console.log(`→ ${event.toolName}`, event.args);
+      break;
+    case "tool-call-result":
+      console.log(`← ${event.toolName}:`, event.result);
+      break;
+    case "usage-update":
+      console.log("Usage so far:", event.usage);
+      break;
+    case "final-result":
+      console.log("Final output:", event.output);  // (3) typed TOutput
+      break;
+    case "error":
+      console.error("Error:", event.error);
+      break;
+  }
+}
+```
+
+For the roulette agent, a typical trace looks like this:
+
+```
+--- Turn 0 ---
+→ roll_wheel {}
+← roll_wheel: { number: 22 }
+--- Turn 1 ---
+The wheel landed on 22, which is black.
+Final output: { number: 22, color: "black", advice: "22 is black — good time to bet black." }
+Usage so far: { inputTokens: 312, outputTokens: 48, totalTokens: 360, requests: 2 }
+```
+
+<Warning>
+The event discriminant is `event.kind`, not `event.type`. This is a common mistake when coming from other streaming libraries.
+</Warning>
+
+---
+
+## System prompts — static vs. dynamic
+
+A system prompt can be a plain string (evaluated once at agent construction) or a function evaluated fresh every turn.
+
+**Static string** — simple, predictable, costs no extra computation:
+
+```typescript
 const agent = new Agent({
   model: anthropic("claude-sonnet-4-6"),
-  systemPrompt: "You are a helpful assistant.",
+  systemPrompt: "You are a helpful assistant. Always be concise.",
 });
-
-const result = await agent.run("Hello!");
-console.log(result.output);
 ```
 
-## Type parameters
-
-`Agent<TDeps, TOutput>` accepts two type parameters:
-
-- **`TDeps`** - the shape of the dependencies object injected at run time. Defaults to `undefined` (no deps).
-- **`TOutput`** - the output type. Defaults to `string`. Specify this when using `outputSchema` for structured output.
+**Dynamic function** — receives the full `RunContext` and can inspect deps, usage, or metadata:
 
 ```typescript
-type Deps = { db: Database };
+type Deps = { userTier: "free" | "pro"; locale: string };
 
-const agent = new Agent<Deps, string>({
-  model: anthropic("claude-haiku-4-5-20251001"),
-  systemPrompt: (ctx) => `Helping user from ${ctx.deps.db.region}`,
+const agent = new Agent<Deps>({
+  model: anthropic("claude-sonnet-4-6"),
+  systemPrompt: (ctx) => {
+    const tier = ctx.deps.userTier;
+    const locale = ctx.deps.locale;
+    return [
+      `You are a ${tier === "pro" ? "premium" : "standard"} support assistant.`,
+      `Respond in ${locale}.`,
+      tier === "free" ? "Keep responses under 100 words." : "",
+    ].filter(Boolean).join(" ");
+  },
 });
-
-// Pass deps at run time
-const result = await agent.run("Hello!", { deps: { db: myDb } });
 ```
 
-When `systemPrompt` is a function, it receives the full `RunContext<TDeps>` on every turn, giving it access to the injected deps, current usage, run ID, and more.
+**`instructions` vs `systemPrompt`** — Vibes distinguishes two prompt fields:
 
-## Constructor options
+| Field | Recorded in `result.messages`? | Use for |
+|-------|--------------------------------|---------|
+| `systemPrompt` | Yes | Persistent persona, role, core rules |
+| `instructions` | No | Per-run ephemeral guidance, user-tier rules |
 
-All options are passed to `new Agent(opts: AgentOptions<TDeps, TOutput>)`.
+`instructions` are injected into each turn alongside `systemPrompt` but are never stored in the message history. This matters for multi-turn conversations: when you pass `result.messages` back as `messageHistory`, the instructions are re-injected fresh rather than accumulating in the history.
+
+---
+
+## Agent reuse
+
+Instantiate agents once at module level. They are stateless — all run-specific state lives in `RunContext` and the returned `RunResult`, never on the agent object itself.
+
+```typescript
+// agents/support.ts  — instantiate once
+export const supportAgent = new Agent<SupportDeps>({
+  model: anthropic("claude-sonnet-4-6"),
+  systemPrompt: "You are a customer support agent.",
+  tools: [lookupOrder, createTicket, escalate],
+  maxTurns: 15,
+});
+
+// routes/chat.ts  — call it in every request handler
+app.post("/chat", async (req, res) => {
+  const result = await supportAgent.run(req.body.message, {
+    deps: { db: req.db, userId: req.user.id },
+    messageHistory: req.body.history,
+  });
+  res.json({ reply: result.output, messages: result.newMessages });
+});
+```
+
+<Tip>
+Because agents are stateless, they are safe to share across concurrent requests, workers, or background jobs without any locking.
+</Tip>
+
+---
+
+## `agent.override()` — creating variants
+
+`agent.override(overrides)` returns a scoped runner that applies substituted options for a single call. The original agent is **never mutated**. This is the canonical pattern for testing, A/B model comparisons, and per-request overrides.
+
+```typescript
+// Swap the model and cap turns for a quick test
+const result = await supportAgent
+  .override({ model: fastModel, maxTurns: 3 })
+  .run("Summarize the return policy.");
+
+// Switch to a cheaper model for non-critical paths
+const quick = await supportAgent
+  .override({ model: anthropic("claude-haiku-4-5-20251001") })
+  .run("Is our office open tomorrow?");
+```
+
+`override()` accepts the same fields as `AgentOptions`: `model`, `systemPrompt`, `instructions`, `tools`, `toolsets`, `resultValidators`, `maxRetries`, `maxTurns`, `usageLimits`, `historyProcessors`, `modelSettings`, `endStrategy`, `telemetry`.
+
+<Note>
+Override runs bypass the `setAllowModelRequests(false)` guard, so they work cleanly in test environments that disable live model access.
+</Note>
+
+---
+
+## Constructor options reference
+
+All options passed to `new Agent(opts: AgentOptions<TDeps, TOutput>)`:
 
 | Field | Type | Default | Description |
 |-------|------|---------|-------------|
-| `model` | `LanguageModel` | required | Vercel AI SDK model instance (e.g. `anthropic("claude-sonnet-4-6")`) |
-| `name` | `string?` | - | Human-readable agent name |
-| `systemPrompt` | `string \| (ctx) => string` | - | Base system prompt, static or dynamic |
-| `instructions` | `string \| (ctx) => string` | - | Per-run additions appended after `systemPrompt`. Not recorded in `result.messages` |
-| `tools` | `ToolDefinition<TDeps>[]` | `[]` | Static tools always available to the model |
+| `model` | `LanguageModel` | required | Vercel AI SDK model (e.g. `anthropic("claude-sonnet-4-6")`) |
+| `name` | `string?` | — | Human-readable label for traces and logs |
+| `systemPrompt` | `string \| (ctx) => string` | — | Base system prompt; recorded in message history |
+| `instructions` | `string \| (ctx) => string` | — | Per-turn additions; NOT recorded in message history |
+| `tools` | `ToolDefinition<TDeps>[]` | `[]` | Tools always available to the model |
 | `toolsets` | `Toolset<TDeps>[]` | `[]` | Dynamic per-turn tool groups |
-| `outputSchema` | `ZodType \| ZodType[]` | - | Zod schema for structured output |
-| `outputMode` | `'tool' \| 'native' \| 'prompted'` | `'tool'` | How structured output is requested |
-| `outputTemplate` | `boolean` | `true` | Whether to inject the schema into the system prompt |
-| `resultValidators` | `ResultValidator<TDeps, TOutput>[]` | `[]` | Post-parse validators - throw to reject and retry |
+| `outputSchema` | `ZodType \| ZodType[]` | — | Zod schema for structured output |
+| `outputMode` | `'tool' \| 'native' \| 'prompted'` | `'tool'` | How structured output is requested from the model |
+| `outputTemplate` | `boolean` | `true` | Whether to inject the schema description into the system prompt |
+| `resultValidators` | `ResultValidator[]` | `[]` | Post-parse validators; throw to reject and retry |
 | `maxRetries` | `number` | `3` | Max validation retries before `MaxRetriesError` |
 | `maxTurns` | `number` | `10` | Max tool-call round trips before `MaxTurnsError` |
-| `usageLimits` | `UsageLimits?` | - | Cap cumulative token or request usage |
-| `historyProcessors` | `HistoryProcessor<TDeps>[]` | `[]` | Per-turn message transforms (trim, summarize, filter) |
-| `modelSettings` | `ModelSettings?` | - | Temperature, maxTokens, topP, and other model parameters |
+| `usageLimits` | `UsageLimits?` | — | Cap cumulative token or request usage |
+| `historyProcessors` | `HistoryProcessor[]` | `[]` | Per-turn message transforms (trim, summarize, filter) |
+| `modelSettings` | `ModelSettings?` | — | Temperature, `maxTokens`, `topP`, and other model params |
 | `endStrategy` | `'early' \| 'exhaustive'` | `'early'` | When to stop after receiving `final_result` |
 | `maxConcurrency` | `number?` | unlimited | Max concurrent tool executions per turn |
-| `telemetry` | `TelemetrySettings?` | - | OpenTelemetry settings passed to the AI SDK |
-
-## Running an agent
-
-Vibes provides three run methods depending on how you want to consume the output:
-
-```typescript
-// Awaitable - returns RunResult<TOutput> when the run completes
-const result = await agent.run("What is 2 + 2?");
-
-// Streaming - returns StreamResult<TOutput> immediately
-// Consume textStream, then await output / messages / usage
-const stream = agent.stream("Tell me a story.");
-for await (const chunk of stream.textStream) {
-  process.stdout.write(chunk);
-}
-const output = await stream.output;
-
-// Event stream - returns AsyncIterable<AgentStreamEvent<TOutput>>
-// Full visibility into each turn, tool call, and text delta
-for await (const event of agent.runStreamEvents("What is 2 + 2?")) {
-  // switch on event.kind
-}
-```
-
-See [Streaming](/concepts/streaming) for the full `StreamResult` interface and event kinds, and [Results](/concepts/results) for the `RunResult` API.
-
-## agent.override()
-
-`agent.override(overrides)` returns a scoped runner that substitutes specific options for a single `run()`, `stream()`, or `runStreamEvents()` call. The original agent is never mutated.
-
-```typescript
-const result = await agent
-  .override({ model: testModel, maxTurns: 3 })
-  .run("Test prompt", { deps: fakeDeps });
-```
-
-Override options mirror `AgentOptions`: `model`, `systemPrompt`, `instructions`, `tools`, `toolsets`, `resultValidators`, `maxRetries`, `maxTurns`, `usageLimits`, `historyProcessors`, `modelSettings`, `endStrategy`, `telemetry`.
-
-<Info>
-**Tip:** Use `agent.override()` in tests to swap in a `TestModel` without modifying your production agent. Override runs also bypass the `setAllowModelRequests(false)` guard, so they work in any test environment.
-</Info>
+| `telemetry` | `TelemetrySettings?` | — | OpenTelemetry settings forwarded to the AI SDK |
 
 ---
 
 <CardGroup cols={3}>
-  <Card title="Models" icon="cpu" href="/concepts/models">
-    Choose and configure language models
-  </Card>
   <Card title="Dependencies" icon="plug" href="/concepts/dependencies">
-    Inject runtime dependencies via RunContext
+    Inject runtime values into tools and prompts via RunContext
   </Card>
   <Card title="Tools" icon="wrench" href="/concepts/tools">
     Give agents the ability to take actions
+  </Card>
+  <Card title="Results" icon="check" href="/concepts/results">
+    RunResult, StreamResult, and output validation
   </Card>
 </CardGroup>

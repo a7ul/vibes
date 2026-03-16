@@ -1,0 +1,138 @@
+---
+title: Usage Limits
+description: Cap token consumption and request counts per run to prevent runaway agents and control costs.
+---
+
+`UsageLimits` lets you set hard caps on how much an agent may consume during a single run. When a limit is exceeded, the SDK throws a `UsageLimitError` before the next model request, stopping the run cleanly.
+
+## The `UsageLimits` interface
+
+```typescript
+interface UsageLimits {
+  /** Maximum number of model requests (turns). */
+  maxRequests?: number;
+  /** Maximum input tokens consumed. */
+  maxInputTokens?: number;
+  /** Maximum output tokens generated. */
+  maxOutputTokens?: number;
+  /** Maximum total tokens (input + output). */
+  maxTotalTokens?: number;
+}
+```
+
+All fields are optional. Set only the limits you care about — omitted fields are uncapped.
+
+## When limits are checked
+
+The SDK checks usage limits **before each model request** in the turn loop. This means:
+
+- The check runs after tool results are appended but before sending the next prompt.
+- If the current usage already meets or exceeds a limit, `UsageLimitError` is thrown immediately.
+- A run that stays within limits for its entire lifetime never throws this error.
+
+## Agent-level limits
+
+Set `usageLimits` on the `Agent` constructor to apply the same caps to every run of that agent:
+
+```typescript
+import { Agent } from "jsr:@vibesjs/sdk";
+import { anthropic } from "@ai-sdk/anthropic";
+
+const agent = new Agent({
+  model: anthropic("claude-sonnet-4-6"),
+  systemPrompt: "You are a helpful assistant.",
+  usageLimits: {
+    maxRequests: 5,        // at most 5 model calls per run
+    maxTotalTokens: 10_000, // at most 10 000 tokens in + out combined
+  },
+});
+```
+
+## Per-run limits
+
+Pass `usageLimits` to `agent.run()` (or `agent.stream()`) to override or supplement the agent-level limits for a single run. Per-run limits take precedence.
+
+```typescript
+const result = await agent.run("Summarise this document", {
+  usageLimits: {
+    maxInputTokens: 4_000,
+    maxOutputTokens: 1_000,
+  },
+});
+```
+
+<Tip>
+  Per-run limits are useful when the same agent is used for both short and long tasks. Set conservative agent-level defaults and relax them selectively for expensive operations.
+</Tip>
+
+## Handling `UsageLimitError`
+
+Import and catch `UsageLimitError` to respond gracefully when a limit is hit:
+
+```typescript
+import { Agent, UsageLimitError } from "jsr:@vibesjs/sdk";
+
+try {
+  const result = await agent.run(userMessage);
+  console.log(result.output);
+} catch (err) {
+  if (err instanceof UsageLimitError) {
+    console.error(
+      `Run stopped: ${err.limitKind} reached ${err.current} (limit: ${err.limit})`
+    );
+    // e.g. return a partial result, notify the user, or log for billing
+  } else {
+    throw err;
+  }
+}
+```
+
+### `UsageLimitError` properties
+
+| Property | Type | Description |
+|---|---|---|
+| `limitKind` | `"requests" \| "inputTokens" \| "outputTokens" \| "totalTokens"` | Which limit was exceeded |
+| `current` | `number` | The usage value at the point of failure |
+| `limit` | `number` | The configured cap that was hit |
+| `message` | `string` | Human-readable description, e.g. `"Usage limit exceeded: totalTokens reached 10000 (limit: 10000)"` |
+
+## Combining with `maxTurns`
+
+`usageLimits.maxRequests` and `maxTurns` both cap the number of model calls, but they are distinct:
+
+| Setting | Throws | Checked |
+|---|---|---|
+| `maxTurns` | `MaxTurnsError` | After the turn loop — stops the agent when the turn count is reached |
+| `usageLimits.maxRequests` | `UsageLimitError` | Before each model request — stops the agent when the request count is met |
+
+Use `maxTurns` as a structural safety net and `usageLimits.maxRequests` when you want to track requests against a quota.
+
+## Accessing usage inside a run
+
+The current cumulative usage is available on `RunContext` inside tools and result validators via `ctx.usage`:
+
+```typescript
+import { tool } from "jsr:@vibesjs/sdk";
+import { z } from "zod";
+
+const checkBudget = tool({
+  name: "check_budget",
+  description: "Report current token usage",
+  parameters: z.object({}),
+  execute: async (ctx) => {
+    const { inputTokens, outputTokens, totalTokens, requests } = ctx.usage;
+    return `Used ${totalTokens} tokens across ${requests} requests so far.`;
+  },
+});
+```
+
+---
+
+<CardGroup cols={2}>
+  <Card title="Agents" icon="robot" href="/concepts/agents">
+    Full Agent constructor options including maxTurns
+  </Card>
+  <Card title="Troubleshooting" icon="wrench" href="/getting-started/troubleshooting">
+    Understanding and catching UsageLimitError
+  </Card>
+</CardGroup>

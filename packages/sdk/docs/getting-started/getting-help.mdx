@@ -1,0 +1,45 @@
+---
+title: Getting Help
+description: Where to ask questions, report bugs, and get the most out of the Vibes community.
+---
+
+If you are stuck, there are several ways to get help.
+
+## GitHub
+
+The primary support channel is GitHub. The repository is at [github.com/a7ul/vibes](https://github.com/a7ul/vibes).
+
+<CardGroup cols={2}>
+  <Card title="Open an Issue" icon="bug" href="https://github.com/a7ul/vibes/issues/new">
+    Report a bug or unexpected behaviour. Include a minimal reproducible example and the Vibes version you are using.
+  </Card>
+  <Card title="Start a Discussion" icon="comments" href="https://github.com/a7ul/vibes/discussions">
+    Ask a question, share a pattern, or propose a feature. Discussions are the right place for open-ended topics.
+  </Card>
+</CardGroup>
+
+## Reporting a bug
+
+Good bug reports get fixed faster. Include:
+
+1. **Vibes version** — run `deno eval "import pkg from 'jsr:@vibesjs/sdk/package.json' assert { type: 'json' }; console.log(pkg.version)"` or check `deno.json`.
+2. **Minimal reproduction** — the smallest piece of code that triggers the issue.
+3. **Expected vs actual behaviour** — what you expected to happen and what actually happened.
+4. **Environment** — Deno or Node.js, OS, TypeScript version.
+
+## Agent skill for Claude Code
+
+If you use Claude Code, the `@vibesjs/sdk` agent skill gives your coding assistant complete, up-to-date knowledge of the framework API. Install it once and Claude Code will write idiomatic Vibes code without needing to look things up.
+
+```bash
+# Project-level (recommended)
+mkdir -p .claude/agents && curl -fsSL \
+  https://raw.githubusercontent.com/a7ul/vibes/main/packages/sdk/skills/vibes-sdk.md \
+  -o .claude/agents/vibes-sdk.md
+```
+
+See the [Agent Skill](/meta/agent-skill) page for global install, manual setup, and details.
+
+## Common issues
+
+Before opening an issue, check the [Troubleshooting](/getting-started/troubleshooting) page — it covers the most frequent setup problems, error classes, and Zod schema mistakes.

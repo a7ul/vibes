@@ -10,7 +10,7 @@ Testing agents correctly means running them without real model API calls, in a w
 Call `setAllowModelRequests(false)` once at the top of your test file to raise an error if any agent accidentally reaches the real model API. This guards against tests that forget to use a test model.
 
 ```typescript
-import { setAllowModelRequests } from "@vibesjs/sdk/testing";
+import { setAllowModelRequests } from "@vibesjs/sdk";
 
 // At the top of your test file - prevents any real model call
 setAllowModelRequests(false);
@@ -39,7 +39,7 @@ sequenceDiagram
 `TestModel` is the simplest option. It auto-generates schema-valid tool calls for any tools the agent has, then returns a final result.
 
 ```typescript
-import { setAllowModelRequests, TestModel, createTestModel } from "@vibesjs/sdk/testing";
+import { setAllowModelRequests, TestModel, createTestModel } from "@vibesjs/sdk";
 import { z } from "zod";
 
 setAllowModelRequests(false);
@@ -68,10 +68,10 @@ const typedResult = await agent.override({ model: typedModel }).run("Hello");
 
 ## FunctionModel - per-turn control
 
-When you need precise control over what the model returns on each turn, use `FunctionModel`. Its constructor takes a function that receives `{ messages, tools, turn }` and returns a `ModelResponse`.
+When you need precise control over what the model returns on each turn, use `FunctionModel`. Its constructor takes a function that receives `{ messages, tools, turn }` and returns a `DoGenerateResult`.
 
 ```typescript
-import { FunctionModel } from "@vibesjs/sdk/testing";
+import { FunctionModel } from "@vibesjs/sdk";
 
 const model = new FunctionModel(({ messages, tools, turn }) => {
   if (turn === 0) {
@@ -115,7 +115,7 @@ The function receives the current `messages` array and `tools` definition on eve
 `captureRunMessages` wraps an agent run and captures the `ModelMessage[]` arrays that were passed to the model on each turn, letting you assert on exact message content:
 
 ```typescript
-import { captureRunMessages, TestModel } from "@vibesjs/sdk/testing";
+import { captureRunMessages, TestModel } from "@vibesjs/sdk";
 
 const model = new TestModel();
 

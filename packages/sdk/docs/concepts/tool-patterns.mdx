@@ -1,0 +1,332 @@
+---
+title: "Tool Patterns"
+description: "Advanced patterns for building tools: conditional availability with prepare, multimodal returns, sequential execution, role-based toolset composition, and approval workflows."
+---
+
+The `tool()` factory and the toolset classes compose to cover a wide range of runtime requirements. This page documents five patterns that appear repeatedly in production agents.
+
+## Conditional tools with `prepare`
+
+Every `ToolDefinition` accepts an optional `prepare` function. It runs once per model turn and returns either a (possibly modified) tool definition to include in the turn, or `null`/`undefined` to exclude the tool entirely.
+
+```typescript
+prepare?: (ctx: RunContext<TDeps>) =>
+  | ToolDefinition<TDeps>
+  | null
+  | undefined
+  | Promise<ToolDefinition<TDeps> | null | undefined>;
+```
+
+`prepare` on a single tool differs from `PreparedToolset` (which operates over a full set) in that it targets exactly one tool and can mutate its description or parameters before the turn.
+
+```typescript
+import { tool, Agent } from "jsr:@vibesjs/sdk";
+import { z } from "npm:zod";
+
+type Deps = { featureFlags: Record<string, boolean> };
+
+const experimentalTool = tool<Deps>({
+  name: "beta_analysis",
+  description: "Run beta analysis pipeline",
+  parameters: z.object({ data: z.string() }),
+  prepare: (ctx) => {
+    // Exclude this tool unless the beta flag is enabled
+    if (!ctx.deps.featureFlags["beta_analysis"]) return null;
+    return undefined; // returning undefined means "keep tool as-is"
+  },
+  execute: async (_ctx, { data }) => runBetaAnalysis(data),
+});
+
+const agent = new Agent<Deps>({ model, tools: [experimentalTool] });
+```
+
+<Note>
+Return `undefined` (or nothing) from `prepare` to include the tool unchanged. Return a modified `ToolDefinition` to alter its name, description, or parameters for that turn. Return `null` to exclude it.
+</Note>
+
+---
+
+## Tools returning multimodal content
+
+Tool `execute` functions can return `BinaryContent` (raw bytes with a MIME type) in addition to strings and objects. The agent run loop converts the value to an AI SDK image content part and forwards it to the model in the next turn.
+
+```typescript
+type ToolExecuteReturn = string | object | BinaryContent | UploadedFile;
+
+type BinaryContent = {
+  type: "binary";
+  mimeType: string;
+  data: Uint8Array;
+};
+```
+
+A common use case is a screenshot tool that returns an image the model can reason about:
+
+```typescript
+import { tool, Agent } from "jsr:@vibesjs/sdk";
+import type { BinaryContent } from "jsr:@vibesjs/sdk";
+import { z } from "npm:zod";
+
+const screenshotTool = tool({
+  name: "take_screenshot",
+  description: "Capture a screenshot of a URL and return it as an image",
+  parameters: z.object({ url: z.string().url() }),
+  execute: async (_ctx, { url }): Promise<BinaryContent> => {
+    const bytes = await captureScreenshot(url); // your implementation
+    return {
+      type: "binary",
+      mimeType: "image/png",
+      data: bytes,
+    };
+  },
+});
+
+const agent = new Agent({
+  model, // model must support vision
+  tools: [screenshotTool],
+});
+
+const result = await agent.run(
+  "Go to https://example.com, take a screenshot, and describe what you see.",
+);
+```
+
+Tools can also return an `UploadedFile` reference when the file has already been uploaded server-side:
+
+```typescript
+import type { UploadedFile } from "jsr:@vibesjs/sdk";
+
+const fetchFileTool = tool({
+  name: "get_report",
+  description: "Retrieve the latest monthly report",
+  parameters: z.object({}),
+  execute: async (): Promise<UploadedFile> => ({
+    type: "uploaded_file",
+    fileId: "file_abc123",
+    mimeType: "application/pdf",
+    filename: "monthly-report.pdf",
+  }),
+});
+```
+
+---
+
+## Sequential tools for transactional operations
+
+When the model issues multiple tool calls in a single response, Vibes executes them concurrently by default. Set `sequential: true` on a `ToolDefinition` to serialize those tools using a run-level mutex — no two `sequential` tools will run at the same time within one agent run.
+
+```typescript
+import { tool, Agent } from "jsr:@vibesjs/sdk";
+import { z } from "npm:zod";
+
+// These two tools share a mutex — they never execute concurrently
+const debitAccount = tool({
+  name: "debit_account",
+  description: "Debit the specified amount from an account",
+  parameters: z.object({
+    accountId: z.string(),
+    amount: z.number().positive(),
+  }),
+  sequential: true,
+  execute: async (_ctx, { accountId, amount }) => {
+    return db.debit(accountId, amount);
+  },
+});
+
+const creditAccount = tool({
+  name: "credit_account",
+  description: "Credit the specified amount to an account",
+  parameters: z.object({
+    accountId: z.string(),
+    amount: z.number().positive(),
+  }),
+  sequential: true,
+  execute: async (_ctx, { accountId, amount }) => {
+    return db.credit(accountId, amount);
+  },
+});
+
+const agent = new Agent({ model, tools: [debitAccount, creditAccount] });
+```
+
+<Warning>
+`sequential` only serializes tools that also have `sequential: true`. Tools without this flag are unaffected and may run concurrently with each other — but not with a currently-executing sequential tool.
+</Warning>
+
+---
+
+## Composing toolsets for role-based access
+
+Combine `FilteredToolset`, `PrefixedToolset`, and `CombinedToolset` to build role-based tool access without modifying underlying tool definitions.
+
+```typescript
+import {
+  FilteredToolset,
+  PrefixedToolset,
+  CombinedToolset,
+  FunctionToolset,
+  Agent,
+} from "jsr:@vibesjs/sdk";
+
+type Deps = { user: { role: "guest" | "member" | "admin" } };
+
+// Three raw toolsets — tools defined elsewhere
+const publicTools = new FunctionToolset([searchTool, helpTool]);
+const memberTools = new FunctionToolset([exportTool, historyTool]);
+const adminTools = new FunctionToolset([deleteTool, auditTool]);
+
+// Gate each toolset behind a role predicate
+const gatedPublic = publicTools; // always available
+
+const gatedMember = new FilteredToolset(
+  memberTools,
+  (ctx) => ctx.deps.user.role === "member" || ctx.deps.user.role === "admin",
+);
+
+const gatedAdmin = new FilteredToolset(
+  new PrefixedToolset(adminTools, "admin_"), // prefix avoids name collision
+  (ctx) => ctx.deps.user.role === "admin",
+);
+
+// Merge all into one toolset passed to the agent
+const allTools = new CombinedToolset(gatedPublic, gatedMember, gatedAdmin);
+
+const agent = new Agent<Deps>({
+  model,
+  toolsets: [allTools],
+});
+
+// Tools available depend entirely on ctx.deps.user.role at runtime
+const result = await agent.run("Export my data", {
+  deps: { user: { role: "member" } },
+});
+```
+
+---
+
+## Approval workflows
+
+Two mechanisms exist for requiring human approval before a tool executes:
+
+### Per-tool approval with `requiresApproval`
+
+Set `requiresApproval` on a `ToolDefinition` to require approval every time the model calls that tool. It accepts a static boolean or a conditional function:
+
+```typescript
+import { tool, Agent, ApprovalRequiredError } from "jsr:@vibesjs/sdk";
+import { z } from "npm:zod";
+
+type Deps = { trustedDomains: string[] };
+
+const fetchTool = tool<Deps>({
+  name: "fetch_url",
+  description: "Fetch content from a URL",
+  parameters: z.object({ url: z.string().url() }),
+  // Require approval only for URLs not in the trusted list
+  requiresApproval: (ctx, args) => {
+    const url = new URL(args.url as string);
+    return !ctx.deps.trustedDomains.includes(url.hostname);
+  },
+  execute: async (_ctx, { url }) => {
+    const res = await fetch(url);
+    return res.text();
+  },
+});
+
+const agent = new Agent<Deps>({
+  model,
+  tools: [fetchTool],
+});
+```
+
+### Toolset-level approval with `ApprovalRequiredToolset`
+
+Wrap any toolset to mark all its tools as requiring approval:
+
+```typescript
+import {
+  ApprovalRequiredToolset,
+  FunctionToolset,
+  ApprovalRequiredError,
+  Agent,
+} from "jsr:@vibesjs/sdk";
+
+const dangerous = new ApprovalRequiredToolset(
+  new FunctionToolset([deleteTool, writeTool]),
+);
+
+const agent = new Agent({ model, toolsets: [dangerous] });
+```
+
+### Handling `ApprovalRequiredError`
+
+When the model calls an approval-gated tool, `agent.run()` throws `ApprovalRequiredError`. Inspect the pending requests, supply results, and call `agent.resume()`:
+
+```typescript
+import { ApprovalRequiredError } from "jsr:@vibesjs/sdk";
+import type { DeferredToolResults } from "jsr:@vibesjs/sdk";
+
+async function runWithApproval(prompt: string) {
+  try {
+    return await agent.run(prompt, { deps: { trustedDomains: ["example.com"] } });
+  } catch (err) {
+    if (err instanceof ApprovalRequiredError) {
+      const pending = err.deferred.requests;
+
+      // Display pending calls to a human reviewer
+      for (const req of pending) {
+        console.log(`Approve ${req.toolName}(${JSON.stringify(req.args)})?`);
+      }
+
+      const approved = await promptHuman(pending); // your UI / CLI
+      if (!approved) throw new Error("User rejected tool call");
+
+      // Resume with explicit results or let the tool re-execute unchanged
+      const results: DeferredToolResults = {
+        results: pending.map((r) => ({
+          toolCallId: r.toolCallId,
+          // omit `result` to re-execute the tool with original args
+          // or supply `result` to inject a value without re-executing
+          result: "approved",
+        })),
+      };
+
+      return agent.resume(err.deferred, results, {
+        deps: { trustedDomains: ["example.com"] },
+      });
+    }
+    throw err;
+  }
+}
+```
+
+`DeferredToolResult` accepts either `result` (inject a pre-computed value) or `argsOverride` (re-execute the tool with modified arguments):
+
+```typescript
+type DeferredToolResult = {
+  toolCallId: string;
+  result?: string | object;       // inject this as the tool output
+  argsOverride?: Record<string, unknown>; // re-run with these args instead
+};
+```
+
+<Tip>
+For a complete walkthrough of human-in-the-loop patterns including UI integration, see [Human-in-the-Loop](/concepts/human-in-the-loop).
+</Tip>
+
+---
+
+<CardGroup cols={2}>
+  <Card title="Built-in Toolsets" icon="toolbox" href="/concepts/built-in-tools">
+    Reference for all toolset classes
+  </Card>
+  <Card title="Tools" icon="wrench" href="/concepts/tools">
+    tool() factory, plainTool(), outputTool(), fromSchema()
+  </Card>
+  <Card title="Human-in-the-Loop" icon="user-check" href="/concepts/human-in-the-loop">
+    Full approval workflow and UI integration
+  </Card>
+  <Card title="Multimodal" icon="image" href="/advanced/multimodal">
+    Images, audio, files in messages and tool returns
+  </Card>
+</CardGroup>

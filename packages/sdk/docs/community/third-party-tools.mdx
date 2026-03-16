@@ -1,0 +1,316 @@
+---
+title: "Publishing Custom Toolsets"
+description: "How to build, package, and publish a community toolset for the Vibes SDK — conventions, the SkillLoader pattern, and guidelines for toolset authors."
+---
+
+The Vibes community toolset ecosystem lets you package reusable tool groups as independent libraries and share them via [JSR](https://jsr.io) or npm. Any toolset that implements the `Toolset<TDeps>` interface can be plugged into any Vibes agent — no special framework coupling required.
+
+<Note>
+The three toolsets bundled inside `@vibesjs/sdk` (`TodoToolset`, `SkillsToolset`, `MemoryToolset`) follow exactly the same patterns described here. They are community contributions that were promoted into the core package. Your own published toolset is structurally identical.
+</Note>
+
+## What makes a good toolset
+
+A toolset is a good candidate for extraction if it:
+
+- Groups tools that share a single domain (task tracking, web browsing, file I/O, etc.)
+- Maintains its own state that benefits from a replaceable storage interface
+- Can be configured with options that vary across deployments
+- Has no hard dependency on a specific agent or model
+
+---
+
+## Anatomy of a published toolset
+
+```
+my-toolset/
+├── deno.json          # package metadata, exports map
+├── mod.ts             # re-exports everything public
+├── toolset.ts         # the Toolset<TDeps> class
+├── types.ts           # public interfaces (Store, Config, etc.)
+├── store.ts           # default in-memory store implementation
+└── tests/
+    └── toolset_test.ts
+```
+
+### `deno.json` (JSR)
+
+```json
+{
+  "name": "@yourscope/my-toolset",
+  "version": "0.1.0",
+  "exports": {
+    ".": "./mod.ts"
+  }
+}
+```
+
+For npm: use a standard `package.json` with `"exports"` pointing at the compiled entry.
+
+### `mod.ts` — public surface
+
+```typescript
+export { MyToolset } from "./toolset.ts";
+export type { MyToolsetConfig, MyStore } from "./types.ts";
+```
+
+### `types.ts` — interfaces
+
+Define a storage interface so consumers can swap in their own persistence layer:
+
+```typescript
+export type MyItem = {
+  id: string;
+  content: string;
+  createdAt: Date;
+};
+
+export interface MyStore {
+  add(content: string): Promise<MyItem>;
+  list(): Promise<MyItem[]>;
+  delete(id: string): Promise<boolean>;
+}
+
+export type MyToolsetConfig = {
+  store?: MyStore;
+};
+```
+
+### `store.ts` — default in-memory implementation
+
+```typescript
+import type { MyItem, MyStore } from "./types.ts";
+
+export class InMemoryMyStore implements MyStore {
+  private _items = new Map<string, MyItem>();
+  private _nextId = 1;
+
+  async add(content: string): Promise<MyItem> {
+    const id = String(this._nextId++);
+    const item: MyItem = { id, content, createdAt: new Date() };
+    this._items = new Map(this._items).set(id, item); // immutable update
+    return item;
+  }
+
+  async list(): Promise<MyItem[]> {
+    return [...this._items.values()];
+  }
+
+  async delete(id: string): Promise<boolean> {
+    if (!this._items.has(id)) return false;
+    const next = new Map(this._items);
+    next.delete(id);
+    this._items = next;
+    return true;
+  }
+}
+```
+
+### `toolset.ts` — the toolset class
+
+```typescript
+import { FunctionToolset, tool, type ToolDefinition } from "jsr:@vibesjs/sdk";
+import type { Toolset } from "jsr:@vibesjs/sdk";
+import { z } from "npm:zod";
+import { InMemoryMyStore } from "./store.ts";
+import type { MyStore, MyToolsetConfig } from "./types.ts";
+
+export class MyToolset<TDeps = undefined> implements Toolset<TDeps> {
+  private readonly _store: MyStore;
+  private readonly _inner: FunctionToolset<TDeps>;
+
+  constructor(storeOrConfig?: MyStore | MyToolsetConfig) {
+    if (storeOrConfig && "add" in storeOrConfig) {
+      this._store = storeOrConfig as MyStore;
+    } else {
+      this._store = (storeOrConfig as MyToolsetConfig)?.store ?? new InMemoryMyStore();
+    }
+    this._inner = new FunctionToolset<TDeps>(this._buildTools());
+  }
+
+  tools(ctx: Parameters<Toolset<TDeps>["tools"]>[0]) {
+    return this._inner.tools(ctx);
+  }
+
+  private _buildTools(): ToolDefinition<TDeps>[] {
+    return [
+      tool<TDeps>({
+        name: "my_add",
+        description: "Add a new item",
+        parameters: z.object({ content: z.string() }),
+        execute: async (_ctx, { content }) => {
+          const item = await this._store.add(content);
+          return JSON.stringify(item);
+        },
+      }),
+      tool<TDeps>({
+        name: "my_list",
+        description: "List all items",
+        parameters: z.object({}),
+        execute: async () => {
+          const items = await this._store.list();
+          return JSON.stringify(items);
+        },
+      }),
+      tool<TDeps>({
+        name: "my_delete",
+        description: "Delete an item by ID",
+        parameters: z.object({ id: z.string() }),
+        execute: async (_ctx, { id }) => {
+          const removed = await this._store.delete(id);
+          return JSON.stringify({ removed });
+        },
+      }),
+    ];
+  }
+}
+```
+
+---
+
+## Publishing to JSR
+
+```bash
+# One-time: log in
+deno publish --dry-run    # verify what will be published
+
+# Publish
+deno publish
+```
+
+After publishing, consumers import like this:
+
+```typescript
+import { MyToolset } from "jsr:@yourscope/my-toolset";
+
+const agent = new Agent({
+  model,
+  toolsets: [new MyToolset()],
+});
+```
+
+## Publishing to npm
+
+Compile to JavaScript (e.g. with `deno bundle` or `esbuild`), then:
+
+```bash
+npm publish
+```
+
+---
+
+## Guidelines for toolset authors
+
+### Naming
+
+- Package name: `@scope/vibes-<domain>-toolset` (e.g. `@acme/vibes-crm-toolset`)
+- Tool names: `snake_case` with a descriptive verb prefix (e.g. `crm_search`, `crm_update`)
+- Avoid generic names like `search` or `get` — they collide with other toolsets
+
+### Storage interfaces
+
+Always define a `<Domain>Store` interface and provide a default `InMemory<Domain>Store`. This lets consumers plug in Redis, PostgreSQL, or any other store without forking your code.
+
+### Generic over `TDeps`
+
+Make your toolset class generic over `TDeps` even if the tools themselves do not use `ctx.deps`:
+
+```typescript
+export class MyToolset<TDeps = undefined> implements Toolset<TDeps> {
+```
+
+This lets consumers use your toolset alongside agents that have typed dependencies, without type errors.
+
+### Dependency injection
+
+If your tools need runtime configuration (API keys, base URLs), accept them through the constructor — never hardcode or read directly from `Deno.env` inside the toolset. Let the consumer decide how configuration is supplied.
+
+```typescript
+// Good
+export class SearchToolset<TDeps = undefined> implements Toolset<TDeps> {
+  constructor(private readonly apiKey: string) {}
+}
+
+// Avoid
+execute: async () => {
+  const key = Deno.env.get("SEARCH_API_KEY"); // ties the toolset to Deno
+}
+```
+
+### Error handling
+
+Return structured error strings from `execute` rather than throwing for expected failures (tool not found, empty result). Throw for unexpected/unrecoverable errors only — the SDK will propagate those to the caller.
+
+```typescript
+execute: async (_ctx, { id }) => {
+  const item = await this._store.get(id);
+  if (!item) return JSON.stringify({ error: `Item ${id} not found` });
+  return JSON.stringify(item);
+},
+```
+
+### Testing
+
+Use `TestModel` from `@vibesjs/sdk` to write unit tests without making real model calls:
+
+```typescript
+import { Agent, TestModel, setAllowModelRequests } from "jsr:@vibesjs/sdk";
+import { MyToolset } from "./toolset.ts";
+
+setAllowModelRequests(false);
+
+Deno.test("MyToolset.my_add stores and returns an item", async () => {
+  const toolset = new MyToolset();
+  const model = new TestModel([
+    {
+      toolCalls: [{ toolName: "my_add", args: { content: "hello" } }],
+    },
+    { output: "done" },
+  ]);
+  const agent = new Agent({ model, toolsets: [toolset] });
+  await agent.run("add hello");
+});
+```
+
+### Documentation
+
+- Write a `README.md` with a quick-start example
+- Document every tool name, parameter, and return value
+- Note provider or runtime dependencies (e.g. "requires Deno", "requires a browser environment")
+
+---
+
+## Contributing to the bundled community toolsets
+
+The three toolsets bundled inside `@vibesjs/sdk` live in `packages/sdk/community/` in the [vibes repository](https://github.com/a7ul/vibes). To add a new bundled toolset:
+
+1. Create `packages/sdk/community/<name>/` with `types.ts`, implementation, and `mod.ts`.
+2. Export from `packages/sdk/community/mod.ts` and `packages/sdk/mod.ts`.
+3. Add tests in `packages/sdk/tests/community_<name>_test.ts`.
+4. Add a doc page at `packages/sdk/docs/community/<name>.mdx`.
+5. Open a PR with the title `feat(community): add <YourToolset>`.
+
+The **port-pydantic-ai-community-plugins** agent skill provides step-by-step guidance for porting any pydantic-ai plugin:
+
+```bash
+mkdir -p .claude/agents && curl -fsSL \
+  https://raw.githubusercontent.com/a7ul/vibes/main/packages/sdk/skills/port-pydantic-ai-community-plugins.md \
+  -o .claude/agents/port-pydantic-ai-community-plugins.md
+```
+
+---
+
+<CardGroup cols={2}>
+  <Card title="Community Overview" icon="users" href="/community/overview">
+    Available bundled community toolsets
+  </Card>
+  <Card title="Built-in Toolsets" icon="toolbox" href="/concepts/built-in-tools">
+    Core SDK toolset classes and their APIs
+  </Card>
+  <Card title="TodoToolset" icon="list-check" href="/community/todo-toolset">
+    Example of a well-structured community toolset
+  </Card>
+  <Card title="MemoryToolset" icon="brain" href="/community/memory-toolset">
+    Example of a toolset with a pluggable store
+  </Card>
+</CardGroup>

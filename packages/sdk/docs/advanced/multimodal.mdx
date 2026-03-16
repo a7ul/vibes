@@ -6,7 +6,7 @@ description: "Send images, audio, video, and documents to models, and receive bi
 Vibes supports four input modalities  -  images, audio, video, and documents  -  through a set of message helper functions. Each helper wraps the raw binary or URL data into a `UserModelMessage` that the agent loop passes directly to the model. On the output side, tools can return `BinaryContent` (raw bytes with a MIME type) that flows back to the model as part of the conversation.
 
 ```typescript
-import { imageMessage, audioMessage, fileMessage } from "@vibesjs/sdk";
+import { imageMessage, audioMessage, fileMessage } from "jsr:@vibesjs/sdk";
 ```
 
 ## Content type routing
@@ -32,12 +32,12 @@ flowchart LR
 imageMessage(image: string | Uint8Array | URL, text?: string, mediaType?: string): UserModelMessage
 ```
 
-The `image` parameter accepts a URL string, a base64-encoded string, or raw bytes. The optional `text` parameter adds a text prompt alongside the image. `mediaType` defaults to `"image/jpeg"` when omitted and the runtime cannot infer it.
+The `image` parameter accepts a URL string, a base64-encoded string, or raw bytes. The optional `text` parameter adds a text prompt alongside the image. `mediaType` is optional — when omitted, no MIME type hint is sent and the provider infers the format from the content.
 
 <CodeGroup>
 
 ```typescript URL string
-import { imageMessage } from "@vibesjs/sdk";
+import { imageMessage } from "jsr:@vibesjs/sdk";
 
 const msg = imageMessage(
   "https://example.com/photo.jpg",
@@ -46,7 +46,7 @@ const msg = imageMessage(
 ```
 
 ```typescript Base64 string
-import { imageMessage } from "@vibesjs/sdk";
+import { imageMessage } from "jsr:@vibesjs/sdk";
 
 const base64 = fs.readFileSync("./screenshot.png").toString("base64");
 
@@ -54,7 +54,7 @@ const msg = imageMessage(base64, "What is on this screen?", "image/png");
 ```
 
 ```typescript Uint8Array (raw bytes)
-import { imageMessage } from "@vibesjs/sdk";
+import { imageMessage } from "jsr:@vibesjs/sdk";
 
 const bytes = await fetch("https://example.com/chart.png").then((r) =>
   r.arrayBuffer().then((b) => new Uint8Array(b))
@@ -80,7 +80,7 @@ audioMessage(audio: string | Uint8Array, mediaType: string, text?: string): User
 Unlike `imageMessage`, the `mediaType` argument is **required** for audio  -  the runtime has no way to infer the codec from raw bytes.
 
 ```typescript
-import { audioMessage } from "@vibesjs/sdk";
+import { audioMessage } from "jsr:@vibesjs/sdk";
 
 const audioBytes = fs.readFileSync("./recording.mp3");
 const base64Audio = audioBytes.toString("base64");
@@ -99,7 +99,7 @@ Audio modality support depends on the model provider. Check your provider's docu
 Video follows the same shape as audio: use `fileMessage` with a `video/*` MIME type. Provider support varies.
 
 ```typescript
-import { fileMessage } from "@vibesjs/sdk";
+import { fileMessage } from "jsr:@vibesjs/sdk";
 
 const videoBytes = fs.readFileSync("./clip.mp4");
 const base64Video = videoBytes.toString("base64");
@@ -122,7 +122,7 @@ fileMessage(data: string | Uint8Array, mediaType: string, text?: string): UserMo
 ```
 
 ```typescript
-import { fileMessage } from "@vibesjs/sdk";
+import { fileMessage } from "jsr:@vibesjs/sdk";
 
 const pdfBytes = fs.readFileSync("./contract.pdf");
 const base64Pdf = Buffer.from(pdfBytes).toString("base64");
@@ -150,7 +150,7 @@ Common document MIME types:
 When a provider has already stored a file server-side (for example, via the Anthropic Files API), you reference it with an `UploadedFile` object rather than re-uploading the bytes.
 
 ```typescript
-import type { UploadedFile } from "@vibesjs/sdk";
+import type { UploadedFile } from "jsr:@vibesjs/sdk";
 
 const file: UploadedFile = {
   type: "uploaded_file",  // underscore  -  not a hyphen
@@ -167,17 +167,17 @@ The `type` discriminant is `"uploaded_file"` with an **underscore**. Using `"upl
 Use `uploadedFileSchema` when an agent tool needs to accept an `UploadedFile` as a parameter:
 
 ```typescript
-import { uploadedFileSchema } from "@vibesjs/sdk";
-import { tool } from "@vibesjs/sdk";
+import { uploadedFileSchema, tool } from "jsr:@vibesjs/sdk";
 import { z } from "zod";
 
 const analyzeTool = tool({
+  name: "analyze_file",
   description: "Analyze an already-uploaded file",
   parameters: z.object({
     file: uploadedFileSchema,
     question: z.string(),
   }),
-  execute: async ({ file, question }) => {
+  execute: async (_ctx, { file, question }) => {
     // file.fileId, file.mimeType, file.filename available here
     return `Analyzing ${file.filename ?? file.fileId} for: ${question}`;
   },
@@ -191,16 +191,17 @@ const analyzeTool = tool({
 Tools can return `BinaryContent`  -  raw bytes with a MIME type  -  which the agent loop forwards to the model as part of the next turn. This lets a tool produce an image, audio clip, or document that the model can reason about.
 
 ```typescript
-import { tool } from "@vibesjs/sdk";
-import type { BinaryContent } from "@vibesjs/sdk";
+import { tool } from "jsr:@vibesjs/sdk";
+import type { BinaryContent } from "jsr:@vibesjs/sdk";
 import { z } from "zod";
 
 const screenshotTool = tool({
+  name: "take_screenshot",
   description: "Capture a screenshot of a URL and return it as an image",
   parameters: z.object({
     url: z.string().url(),
   }),
-  execute: async ({ url }): Promise<BinaryContent> => {
+  execute: async (_ctx, { url }): Promise<BinaryContent> => {
     const imageBytes = await captureScreenshot(url); // your implementation
     return {
       type: "binary",
@@ -233,3 +234,23 @@ sequenceDiagram
 <Info>
 To learn how tools integrate with the broader agent loop and how to compose toolsets, see [Tools](/concepts/tools).
 </Info>
+
+---
+
+## Provider compatibility
+
+The table below summarises which content types are accepted by major providers. Always verify your provider's current documentation before sending multimodal content in production — provider capabilities change frequently.
+
+| Modality | Function | Anthropic (Claude) | OpenAI (GPT-4o) | Google (Gemini) |
+|----------|----------|--------------------|-----------------|-----------------|
+| Image (URL) | `imageMessage` | Yes | Yes | Yes |
+| Image (bytes / base64) | `imageMessage` | Yes | Yes | Yes |
+| Audio | `audioMessage` | No | Yes (Whisper/GPT-4o-audio) | Yes |
+| Video | `fileMessage` with `video/*` | No | No | Yes |
+| PDF / document | `fileMessage` with `application/pdf` | Yes (Claude 3+ with PDF support) | No | Yes |
+| Binary tool result (image) | `BinaryContent` from `execute` | Yes | Yes | Yes |
+| Uploaded file reference | `UploadedFile` from `execute` | Yes (Files API) | Yes (Files API) | No |
+
+<Warning>
+Audio content is encoded as a `FilePart` (type `"file"`) because the AI SDK `UserContent` union does not include a separate audio part. Providers that support audio consume it via the file part with the appropriate `mediaType` (e.g. `"audio/wav"`, `"audio/mpeg"`).
+</Warning>
