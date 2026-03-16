@@ -15,11 +15,15 @@
 </p>
 
 <p align="center">
-  <a href="#-quick-start">Quick Start</a> ·
-  <a href="#-installation">Installation</a> ·
-  <a href="#-why-vibes">Why Vibes</a> ·
+  <strong>📖 <a href="https://vibes-sdk.a7ul.com">vibes-sdk.a7ul.com</a> — full documentation, guides, and API reference</strong>
+</p>
+
+<p align="center">
+  <a href="https://vibes-sdk.a7ul.com/getting-started/install">Quick Start</a> ·
+  <a href="https://vibes-sdk.a7ul.com/getting-started/install">Installation</a> ·
+  <a href="https://vibes-sdk.a7ul.com/introduction">Why Vibes</a> ·
   <a href="https://vibes-sdk.a7ul.com">Documentation</a> ·
-  <a href="#-examples">Examples</a>
+  <a href="https://vibes-sdk.a7ul.com/examples">Examples</a>
 </p>
 
 ---
