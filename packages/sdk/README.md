@@ -114,6 +114,31 @@ The core idea is borrowed from Pydantic AI: **agents are just functions**. They 
 | **OpenTelemetry observability** | Every run emits OTel spans, events, and token usage metrics. Works with Jaeger, Honeycomb, Datadog, and any OTel-compatible backend. |
 | **Durable agents + MCP, AG-UI, A2A** | Run long-lived agents that survive crashes and restarts with Temporal. Connect to MCP servers and build AG-UI and A2A agents out of the box. |
 
+## Community Toolsets
+
+Drop-in toolsets built by the community, exported directly from `@vibesjs/sdk`:
+
+| Toolset | Description |
+|---------|-------------|
+| `TodoToolset` | Task tracking — add, list, update, and clear todos |
+| `SkillsToolset` | Dynamic skill discovery — load skill instructions at runtime from a directory of markdown files |
+
+```ts
+import { Agent } from "@vibesjs/sdk";
+import { TodoToolset, SkillsToolset } from "@vibesjs/sdk/community";
+import { anthropic } from "@ai-sdk/anthropic";
+
+const agent = new Agent({
+  model: anthropic("claude-sonnet-4-6"),
+  toolsets: [
+    new TodoToolset(),                      // task tracking
+    new SkillsToolset(".claude/agents"),    // dynamic skill loading
+  ],
+});
+```
+
+See the [Community docs](https://vibes-sdk.a7ul.com/community/overview) for API reference and custom storage examples.
+
 ## Examples
 
 ### Type-safe tools + structured output

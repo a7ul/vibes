@@ -234,7 +234,7 @@ export class Dataset<TInput = unknown, TExpected = unknown> {
    * @param options Concurrency, retry, and callback options.
    */
   async evaluate<TOutput>(
-    task: (input: TInput) => Promise<TOutput>,
+    task: (input: TInput) => TOutput | Promise<TOutput>,
     options?: EvaluateOptions<TOutput>,
   ): Promise<ExperimentResult<TInput, TExpected, TOutput>> {
     const maxConcurrency = options?.maxConcurrency ?? 5;
@@ -291,7 +291,7 @@ export class Dataset<TInput = unknown, TExpected = unknown> {
 
 async function runCase<TInput, TExpected, TOutput>(
   c: Case<TInput, TExpected>,
-  task: (input: TInput) => Promise<TOutput>,
+  task: (input: TInput) => TOutput | Promise<TOutput>,
   datasetEvaluators: Evaluator<TOutput, TExpected>[],
   maxRetries: number,
 ): Promise<CaseResult<TInput, TExpected, TOutput>> {

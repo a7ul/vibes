@@ -3,14 +3,14 @@ import { anthropic } from "npm:@ai-sdk/anthropic";
 import { z } from "zod";
 
 class DatabaseConn {
-  async customerName(id: number): Promise<string> {
+  customerName(id: number): Promise<string> {
     const names: Record<number, string> = { 123: "Alice", 456: "Bob" };
-    return names[id] ?? "Unknown";
+    return Promise.resolve(names[id] ?? "Unknown");
   }
 
-  async customerBalance(id: number): Promise<number> {
+  customerBalance(id: number): Promise<number> {
     const balances: Record<number, number> = { 123: 1250.50, 456: 89.0 };
-    return balances[id] ?? 0;
+    return Promise.resolve(balances[id] ?? 0);
   }
 }
 

@@ -73,6 +73,15 @@
         ]
       },
       {
+        "group": "Community",
+        "pages": [
+          "community/overview",
+          "community/todo-toolset",
+          "community/skills-toolset",
+          "community/memory-toolset"
+        ]
+      },
+      {
         "group": "Examples",
         "pages": [
           "examples/index",

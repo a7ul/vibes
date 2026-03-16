@@ -21,7 +21,7 @@ export interface RunExperimentOptions<TInput, TExpected, TOutput> {
   /** The dataset of cases to evaluate. */
   dataset: Dataset<TInput, TExpected>;
   /** The task function to evaluate. */
-  task: (input: TInput) => Promise<TOutput>;
+  task: (input: TInput) => TOutput | Promise<TOutput>;
   /**
    * Additional evaluators to run alongside the dataset's own evaluators.
    * These are merged with the dataset's evaluators.

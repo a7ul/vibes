@@ -52,6 +52,31 @@ The skill does **not** embed a static copy of the API. Instead it instructs the 
 
 This means the skill stays accurate as the framework evolves  -  no manual updates needed.
 
+## Porting pydantic-ai plugins
+
+The `port-pydantic-ai-community-plugins` skill guides you through porting any Python pydantic-ai community plugin to a TypeScript `@vibesjs/sdk` community toolset.
+
+<CodeGroup>
+
+```bash Project-level (recommended)
+mkdir -p .claude/agents && curl -fsSL https://raw.githubusercontent.com/a7ul/vibes/main/packages/sdk/skills/port-pydantic-ai-community-plugins.md -o .claude/agents/port-pydantic-ai-community-plugins.md
+```
+
+```bash Global (all projects)
+mkdir -p ~/.claude/agents && curl -fsSL https://raw.githubusercontent.com/a7ul/vibes/main/packages/sdk/skills/port-pydantic-ai-community-plugins.md -o ~/.claude/agents/port-pydantic-ai-community-plugins.md
+```
+
+</CodeGroup>
+
+The skill covers:
+- **Conceptual mapping** — Python pydantic-ai constructs → TypeScript vibes equivalents
+- **Step-by-step conversion** — from reading Python source to finished TypeScript
+- **Worked example** — pydantic-ai-todo → `TodoToolset`
+- **Quick reference** — `Toolset<TDeps>`, `tool()`, `plainTool()` snippets
+- **Contributing** — where to add new toolsets and how to open a PR
+
+See the [Community](/community/overview) section for existing community toolsets you can use today.
+
 ## Keeping it updated
 
 The skill is versioned alongside the framework. When you upgrade `@vibesjs/sdk`, re-run the install command to pull the latest skill.

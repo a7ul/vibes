@@ -1,0 +1,104 @@
+---
+title: Community Toolsets
+description: Ready-made toolsets built by the community that you can drop into any @vibesjs/sdk agent.
+---
+
+Community toolsets extend your agent's capabilities without writing tool definitions from scratch. They live inside `@vibesjs/sdk` and ship with their own dedicated sub-path export.
+
+## Import paths
+
+Community toolsets are available from two entry points:
+
+```ts
+// Sub-path (community only — lighter import)
+import { TodoToolset, SkillsToolset } from "@vibesjs/sdk/community";
+
+// Main entry point (full SDK)
+import { TodoToolset, SkillsToolset } from "@vibesjs/sdk";
+```
+
+Use `@vibesjs/sdk/community` when you only need community toolsets and want to keep your imports lean. Both paths export identical symbols.
+
+## Available toolsets
+
+| Toolset | What it does |
+|---------|--------------|
+| [`TodoToolset`](/community/todo-toolset) | Task tracking — add, list, update, and clear todos |
+| [`SkillsToolset`](/community/skills-toolset) | Dynamic skill discovery — let the agent load skill instructions at runtime |
+| [`MemoryToolset`](/community/memory-toolset) | Persistent key-value memory — save, recall, search, and delete named facts |
+
+## Quick start
+
+```ts
+import { Agent } from "@vibesjs/sdk";
+import { TodoToolset } from "@vibesjs/sdk/community";
+import { anthropic } from "@ai-sdk/anthropic";
+
+const agent = new Agent({
+  model: anthropic("claude-sonnet-4-6"),
+  toolsets: [new TodoToolset()],
+});
+
+const result = await agent.run(
+  "Plan my week: I need to finish the report, review the PR, and set up the deployment."
+);
+```
+
+## Combining toolsets
+
+Community toolsets compose with each other and with core toolsets:
+
+```ts
+import { Agent } from "@vibesjs/sdk";
+import { TodoToolset, SkillsToolset } from "@vibesjs/sdk/community";
+
+const agent = new Agent({
+  model: anthropic("claude-sonnet-4-6"),
+  toolsets: [
+    new TodoToolset(),
+    new SkillsToolset(".claude/agents"),
+  ],
+});
+```
+
+## Custom storage
+
+All community toolsets that manage state accept a custom store implementation so you can plug in your own persistence layer:
+
+```ts
+import { TodoToolset } from "@vibesjs/sdk/community";
+import type { TodoStore } from "@vibesjs/sdk/community";
+
+// Your persistent store (database, Redis, etc.)
+class PostgresTodoStore implements TodoStore {
+  async add(todo) { /* INSERT INTO todos ... */ }
+  async list(filter) { /* SELECT ... WHERE ... */ }
+  async update(id, status) { /* UPDATE todos SET status = ... */ }
+  async clear() { /* DELETE FROM todos WHERE status IN ('done', 'cancelled') */ }
+}
+
+const agent = new Agent({
+  model: anthropic("claude-sonnet-4-6"),
+  toolsets: [new TodoToolset(new PostgresTodoStore())],
+});
+```
+
+## How to contribute
+
+Community toolsets live in `packages/sdk/community/` in the [vibes repository](https://github.com/a7ul/vibes).
+
+To add a new toolset:
+
+1. Create `packages/sdk/community/<name>/` with `types.ts`, implementation, and `mod.ts`.
+2. Export from `packages/sdk/community/mod.ts` and `packages/sdk/mod.ts`.
+3. Add tests in `packages/sdk/tests/community_<name>_test.ts`.
+4. Add a doc page at `packages/sdk/docs/community/<name>.mdx`.
+5. Open a PR with the title `feat(community): add <YourToolset>`.
+
+The **port-pydantic-ai-community-plugins** agent skill gives your coding assistant step-by-step instructions for porting any existing pydantic-ai plugin:
+
+```bash
+mkdir -p .claude/agents && curl -fsSL https://raw.githubusercontent.com/a7ul/vibes/main/packages/sdk/skills/port-pydantic-ai-community-plugins.md -o .claude/agents/port-pydantic-ai-community-plugins.md
+```
+
+See the [Agent Skill docs](/meta/agent-skill#porting-pydantic-ai-plugins) for more detail on how it works.

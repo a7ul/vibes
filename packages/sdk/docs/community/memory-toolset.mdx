@@ -1,0 +1,238 @@
+---
+title: MemoryToolset
+description: Persistent key-value memory scratchpad — store, recall, search, and delete named facts from inside any @vibesjs/sdk agent.
+---
+
+`MemoryToolset` gives an agent an explicit, named memory system. Instead of relying on its context window to remember facts across turns, the agent can **write information down by name, recall it later, and search across everything it has stored** — a persistent scratchpad for things like user preferences, research findings, or decisions made earlier in a long workflow.
+
+## What it's for
+
+Agents working on long tasks frequently "forget" facts they discovered early in the conversation once those messages scroll out of context. `MemoryToolset` solves this by giving the agent a key-value store it controls directly:
+
+- **Remember facts by name** — the agent calls `memory_save` with a descriptive key like `user_preferred_language`
+- **Retrieve exactly what it needs** — it calls `memory_recall` to fetch a single memory by key
+- **Search when unsure of the key** — `memory_search` does a case-insensitive substring match across keys, content, and tags
+- **Organise with tags** — memories can be grouped with labels like `["user", "preference"]` for targeted search
+- **Clean up** — `memory_delete` removes stale memories when they're no longer relevant
+
+This is especially useful for personal assistant agents, research workflows, multi-session agents, and any scenario where important facts need to outlive a single context window.
+
+## Installation
+
+```ts
+// Sub-path (community only — lighter import)
+import { MemoryToolset } from "@vibesjs/sdk/community";
+
+// Or from the main entry point
+import { MemoryToolset } from "@vibesjs/sdk";
+```
+
+No extra package needed — `MemoryToolset` is bundled inside `@vibesjs/sdk`.
+
+## Quick start
+
+```ts
+import { Agent } from "@vibesjs/sdk";
+import { MemoryToolset } from "@vibesjs/sdk/community";
+import { anthropic } from "@ai-sdk/anthropic";
+
+const agent = new Agent({
+  model: anthropic("claude-sonnet-4-6"),
+  systemPrompt: "You are a helpful assistant. Use memory tools to remember user preferences.",
+  toolsets: [new MemoryToolset()],
+});
+
+const result = await agent.run(
+  "My name is Alice and I prefer TypeScript. Remember this for future reference."
+);
+```
+
+The agent will autonomously call `memory_save` to store facts, `memory_recall` when it needs them back, and `memory_search` when it wants to find related memories.
+
+## Tools exposed
+
+| Tool | What it does |
+|------|--------------|
+| `memory_save` | Store a named memory. Upserts by key — calling again with the same key overwrites. |
+| `memory_recall` | Retrieve a single memory by exact key. Returns `null` if not found. |
+| `memory_search` | Search across all memories by keyword (key, content, and tags — case-insensitive). |
+| `memory_delete` | Remove a memory by key. Returns `{ removed: true }` if it existed. |
+| `memory_list` | List all memory keys and tags. Does not include full content to keep token use low. |
+
+### `memory_save`
+
+Stores or updates a memory under the given key. Returns the saved memory as JSON.
+
+```
+Parameters:
+  key      string    Unique name / identifier for this memory
+  content  string    The fact or value to store
+  tags?    string[]  Optional labels for grouping (e.g. ["user", "preference"])
+```
+
+**Example model call:**
+```json
+{ "key": "user_name", "content": "Alice", "tags": ["user"] }
+```
+
+### `memory_recall`
+
+Retrieves a single memory by exact key. Returns the memory as JSON, or `null` if not found.
+
+```
+Parameters:
+  key  string  Exact key of the memory to retrieve
+```
+
+**Example model call:**
+```json
+{ "key": "user_name" }
+```
+
+### `memory_search`
+
+Searches all memories with a case-insensitive substring match across key, content, and all tags. Returns a JSON array (may be empty).
+
+```
+Parameters:
+  query  string  Keyword to search
+```
+
+**Example model call:**
+```json
+{ "query": "preference" }
+```
+
+### `memory_delete`
+
+Removes a memory by key. Returns `{ "removed": true }` if it existed, `{ "removed": false }` otherwise.
+
+```
+Parameters:
+  key  string  Key of the memory to remove
+```
+
+### `memory_list`
+
+Lists all stored memory keys and their tags — without full content — to keep the response token-efficient.
+
+Takes no parameters.
+
+## Default storage: `InMemoryStore`
+
+By default memories are stored in a `Map` in process memory. State is reset when the process exits, which is fine for single-session agents:
+
+```ts
+const agent = new Agent({
+  model: anthropic("claude-sonnet-4-6"),
+  toolsets: [new MemoryToolset()],   // InMemoryStore created automatically
+});
+```
+
+## Persistent storage
+
+Pass any object that implements the `MemoryStore` interface to persist memories across sessions:
+
+```ts
+import type { Memory, MemoryStore } from "@vibesjs/sdk/community";
+
+class RedisMemoryStore implements MemoryStore {
+  async save(key: string, content: string, tags: string[] = []): Promise<Memory> {
+    const now = new Date();
+    const existing = await this.recall(key);
+    const memory: Memory = {
+      key, content, tags,
+      createdAt: existing?.createdAt ?? now,
+      updatedAt: now,
+    };
+    await redis.set(`memory:${key}`, JSON.stringify(memory));
+    return memory;
+  }
+  async recall(key: string): Promise<Memory | null> {
+    const raw = await redis.get(`memory:${key}`);
+    return raw ? JSON.parse(raw) : null;
+  }
+  async search(query: string): Promise<Memory[]> {
+    const keys = await redis.keys("memory:*");
+    const all = await Promise.all(keys.map((k) => redis.get(k).then(JSON.parse)));
+    const lower = query.toLowerCase();
+    return all.filter((m) =>
+      m.key.includes(lower) || m.content.toLowerCase().includes(lower) ||
+      m.tags.some((t: string) => t.toLowerCase().includes(lower))
+    );
+  }
+  async delete(key: string): Promise<boolean> {
+    const count = await redis.del(`memory:${key}`);
+    return count > 0;
+  }
+  async list(): Promise<Array<{ key: string; tags: string[] }>> {
+    const keys = await redis.keys("memory:*");
+    const all = await Promise.all(keys.map((k) => redis.get(k).then(JSON.parse)));
+    return all.map(({ key, tags }) => ({ key, tags }));
+  }
+}
+
+const agent = new Agent({
+  model: anthropic("claude-sonnet-4-6"),
+  toolsets: [new MemoryToolset(new RedisMemoryStore())],
+});
+```
+
+## Combining with other toolsets
+
+`MemoryToolset` composes naturally with `TodoToolset` and other community toolsets:
+
+```ts
+import { Agent } from "@vibesjs/sdk";
+import { MemoryToolset, TodoToolset } from "@vibesjs/sdk/community";
+import { anthropic } from "@ai-sdk/anthropic";
+
+const agent = new Agent({
+  model: anthropic("claude-sonnet-4-6"),
+  toolsets: [
+    new MemoryToolset(),   // remember user preferences and research facts
+    new TodoToolset(),     // track tasks as the agent works
+  ],
+});
+```
+
+## With dependency injection
+
+`MemoryToolset` is generic over `TDeps` so its type aligns with any agent that uses dependency injection:
+
+```ts
+type Deps = { userId: string };
+
+const agent = new Agent<Deps>({
+  model: anthropic("claude-sonnet-4-6"),
+  toolsets: [new MemoryToolset<Deps>()],
+});
+
+await agent.run("remember my settings", { deps: { userId: "u1" } });
+```
+
+## Types
+
+### `Memory`
+
+```ts
+interface Memory {
+  key: string;       // unique name / identifier
+  content: string;   // the fact or value being stored
+  tags: string[];    // optional labels for grouping
+  createdAt: Date;
+  updatedAt: Date;
+}
+```
+
+### `MemoryStore`
+
+```ts
+interface MemoryStore {
+  save(key: string, content: string, tags?: string[]): Promise<Memory>;
+  recall(key: string): Promise<Memory | null>;
+  search(query: string): Promise<Memory[]>;
+  delete(key: string): Promise<boolean>;
+  list(): Promise<Array<{ key: string; tags: string[] }>>;
+}
+```

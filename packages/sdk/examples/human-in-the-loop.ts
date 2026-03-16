@@ -10,7 +10,7 @@ const sendEmail = tool({
     subject: z.string().describe("Email subject line"),
     body: z.string().describe("Email body content"),
   }),
-  execute: async (_ctx, { to, subject }) => {
+  execute: (_ctx, { to, subject }) => {
     console.log(`[EMAIL SENT] To: ${to}, Subject: "${subject}"`);
     return "Email sent successfully.";
   },
@@ -23,12 +23,12 @@ const agent = new Agent({
   tools: [sendEmail],
 });
 
-async function requestApproval(toolName: string, args: unknown): Promise<boolean> {
+function requestApproval(toolName: string, args: unknown): Promise<boolean> {
   console.log(`\n--- Approval Required ---`);
   console.log(`Tool: ${toolName}`);
   console.log(`Args:`, JSON.stringify(args, null, 2));
   console.log(`Decision: APPROVED`);
-  return true;
+  return Promise.resolve(true);
 }
 
 try {

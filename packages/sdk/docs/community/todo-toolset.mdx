@@ -1,0 +1,210 @@
+---
+title: TodoToolset
+description: Task tracking toolset — add, list, update, and clear todos from inside any @vibesjs/sdk agent.
+---
+
+`TodoToolset` gives an agent a lightweight, structured task-tracking system. Instead of holding a plan only in its context window, the agent can **write tasks down, track their status, and clean them up** as it works — just like a developer using a todo list.
+
+## What it's for
+
+Large, multi-step tasks are hard for agents because every intermediate thought has to stay in the context window. When the agent works on step 7, it can easily lose track of steps 3–6. `TodoToolset` solves this by giving the agent a persistent scratchpad it can write to and read from:
+
+- **Break work into tasks** — the agent calls `todo_add` for each discrete unit of work
+- **Track progress** — it calls `todo_update` to move tasks from `pending` → `in_progress` → `done`
+- **Show the user what's happening** — a structured todo list is easier for users to inspect than raw agent reasoning
+- **Unblock sub-tasks** — `dependsOn` lets the agent model dependencies between tasks
+
+This is especially useful for coding agents, project planning, research workflows, or any task that takes more than a few turns to complete.
+
+## Installation
+
+```ts
+// Sub-path (community only — lighter import)
+import { TodoToolset } from "@vibesjs/sdk/community";
+
+// Or from the main entry point
+import { TodoToolset } from "@vibesjs/sdk";
+```
+
+No extra package needed — `TodoToolset` is bundled inside `@vibesjs/sdk`.
+
+## Quick start
+
+```ts
+import { Agent } from "@vibesjs/sdk";
+import { TodoToolset } from "@vibesjs/sdk/community";
+import { anthropic } from "@ai-sdk/anthropic";
+
+const agent = new Agent({
+  model: anthropic("claude-sonnet-4-6"),
+  systemPrompt: "You are a project planning assistant. Use todos to track tasks as you work.",
+  toolsets: [new TodoToolset()],
+});
+
+const result = await agent.run(
+  "Help me plan the launch of my new product. Break it into tasks and track them."
+);
+```
+
+The agent will autonomously call `todo_add` for each task, `todo_update` as work progresses, and `todo_clear` to remove completed items at the end.
+
+## Tools exposed
+
+| Tool | What it does |
+|------|--------------|
+| `todo_add` | Create a new todo. Assign an optional parent (for sub-tasks) and dependencies. |
+| `todo_list` | List all todos. Optionally filter by status to see only what's pending or in-progress. |
+| `todo_update` | Mark a todo as `pending`, `in_progress`, `done`, or `cancelled`. |
+| `todo_clear` | Remove all `done` and `cancelled` todos to keep the list clean. |
+
+### `todo_add`
+
+Creates a new todo in `pending` state and returns it as JSON, including the auto-assigned `id`.
+
+```
+Parameters:
+  title      string    What needs to be done
+  parentId?  string    ID of a parent todo (makes this a sub-task)
+  dependsOn? string[]  IDs of todos that must complete before this one starts
+```
+
+**Example model call:**
+```json
+{ "title": "Write unit tests", "dependsOn": ["3"] }
+```
+
+### `todo_list`
+
+Returns a JSON array of todos. Without a filter it returns everything; with a filter it narrows by status.
+
+```
+Parameters:
+  status?  "pending" | "in_progress" | "done" | "cancelled"
+```
+
+**Example model call:**
+```json
+{ "status": "pending" }
+```
+
+### `todo_update`
+
+Updates the status of a single todo. Returns the updated todo as JSON.
+
+```
+Parameters:
+  id      string  The todo's ID (returned by todo_add)
+  status  "pending" | "in_progress" | "done" | "cancelled"
+```
+
+### `todo_clear`
+
+Removes every todo whose status is `done` or `cancelled`. Takes no parameters. Useful at the end of a session to clean up.
+
+## Default storage: `MemoryTodoStore`
+
+By default todos are stored in memory inside a `Map`. State is reset when the process exits, which is fine for single-session agents:
+
+```ts
+const agent = new Agent({
+  model: anthropic("claude-sonnet-4-6"),
+  toolsets: [new TodoToolset()],   // MemoryTodoStore created automatically
+});
+```
+
+## Persistent storage
+
+Pass any object that implements the `TodoStore` interface to persist todos across sessions (database, Redis, file system, etc.):
+
+```ts
+import type { TodoStore, Todo, TodoStatus } from "@vibesjs/sdk/community";
+
+class PostgresTodoStore implements TodoStore {
+  async add(todo: Omit<Todo, "id" | "createdAt" | "updatedAt">): Promise<Todo> {
+    const row = await db.query(
+      "INSERT INTO todos (title, status, parent_id, depends_on) VALUES ($1,$2,$3,$4) RETURNING *",
+      [todo.title, todo.status, todo.parentId ?? null, todo.dependsOn],
+    );
+    return rowToTodo(row);
+  }
+  async list(filter?: { status?: TodoStatus }): Promise<Todo[]> {
+    const rows = filter?.status
+      ? await db.query("SELECT * FROM todos WHERE status = $1", [filter.status])
+      : await db.query("SELECT * FROM todos");
+    return rows.map(rowToTodo);
+  }
+  async update(id: string, status: TodoStatus): Promise<Todo> {
+    const row = await db.query(
+      "UPDATE todos SET status = $1, updated_at = now() WHERE id = $2 RETURNING *",
+      [status, id],
+    );
+    return rowToTodo(row);
+  }
+  async clear(): Promise<void> {
+    await db.query("DELETE FROM todos WHERE status IN ('done', 'cancelled')");
+  }
+}
+
+const agent = new Agent({
+  model: anthropic("claude-sonnet-4-6"),
+  toolsets: [new TodoToolset(new PostgresTodoStore())],
+});
+```
+
+## With dependency injection
+
+`TodoToolset` is generic over `TDeps` so its type signature aligns with any agent that uses dependency injection:
+
+```ts
+type Deps = { db: Database; userId: string };
+
+const agent = new Agent<Deps>({
+  model: anthropic("claude-sonnet-4-6"),
+  toolsets: [new TodoToolset<Deps>()],   // generic aligns, tools don't need deps
+});
+
+await agent.run("plan my sprint", { deps: { db: myDb, userId: "u1" } });
+```
+
+## Types
+
+### `Todo`
+
+```ts
+interface Todo {
+  id: string;
+  title: string;
+  status: TodoStatus;
+  parentId?: string;     // set when this todo is a sub-task of another
+  dependsOn: string[];   // IDs of todos that must complete first
+  createdAt: Date;
+  updatedAt: Date;
+}
+```
+
+### `TodoStatus`
+
+```ts
+type TodoStatus = "pending" | "in_progress" | "done" | "cancelled";
+```
+
+### `TodoStore`
+
+```ts
+interface TodoStore {
+  add(todo: Omit<Todo, "id" | "createdAt" | "updatedAt">): Promise<Todo>;
+  list(filter?: { status?: TodoStatus }): Promise<Todo[]>;
+  update(id: string, status: TodoStatus): Promise<Todo>;
+  clear(): Promise<void>;
+}
+```
+
+## Want to build your own?
+
+`TodoToolset` was ported from the pydantic-ai ecosystem using the **port-pydantic-ai-community-plugins** agent skill. Install the skill to get step-by-step guidance for porting any pydantic-ai plugin into a community toolset:
+
+```bash
+mkdir -p .claude/agents && curl -fsSL https://raw.githubusercontent.com/a7ul/vibes/main/packages/sdk/skills/port-pydantic-ai-community-plugins.md -o .claude/agents/port-pydantic-ai-community-plugins.md
+```
+
+See the [Agent Skill docs](/meta/agent-skill#porting-pydantic-ai-plugins) for more detail.

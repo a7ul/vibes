@@ -284,3 +284,23 @@ export {
 	MCPStdioClient,
 	MCPToolset,
 } from "./lib/mcp/mod.ts";
+
+// Community toolsets
+export {
+	DirectorySkillLoader,
+	InMemoryStore,
+	MemoryTodoStore,
+	MemoryToolset,
+	SkillsToolset,
+	TodoToolset,
+} from "./community/mod.ts";
+export type {
+	Memory,
+	MemoryStore,
+	Skill,
+	SkillLoader,
+	SkillMeta,
+	Todo,
+	TodoStatus,
+	TodoStore,
+} from "./community/mod.ts";

@@ -1,0 +1,240 @@
+---
+title: SkillsToolset
+description: Dynamic skill discovery toolset — let an agent load skill instructions at runtime from a directory of markdown files.
+---
+
+`SkillsToolset` lets an agent **discover and load skill instructions at runtime** instead of embedding every capability in the system prompt up-front. It is a TypeScript port of [pydantic-ai-skills](https://github.com/DougTrajano/pydantic-ai-skills).
+
+## What it's for
+
+As you build more capable agents, the system prompt grows. Eventually you hit a wall: you can't fit every skill's instructions into context, the model gets confused by too many capabilities at once, and updating one skill means re-deploying the whole agent.
+
+`SkillsToolset` solves this with **progressive disclosure**:
+
+1. At startup the agent is told only that skills exist — not what they contain.
+2. The agent calls `skills_list` to see what's available (names + one-line descriptions).
+3. It calls `skills_load` to read the full instructions for the skill it needs right now.
+4. It follows those instructions, then loads a different skill if the task changes.
+
+This keeps the active context small, makes it trivial to add or update skills without touching the agent, and lets the agent choose the right capability for each sub-task dynamically.
+
+**Typical use cases:**
+- Coding agents that can switch between "write tests", "write docs", "refactor" skill modes
+- Research agents with separate skills for web search, citation formatting, and summarisation
+- Customer support bots with different skills per product line
+- Any agent where capabilities should be modular and updateable independently
+
+## Installation
+
+```ts
+// Sub-path (community only — lighter import)
+import { SkillsToolset } from "@vibesjs/sdk/community";
+
+// Or from the main entry point
+import { SkillsToolset } from "@vibesjs/sdk";
+```
+
+No extra package needed — `SkillsToolset` is bundled inside `@vibesjs/sdk`.
+
+## Quick start
+
+Point the toolset at a directory of skill files:
+
+```ts
+import { Agent } from "@vibesjs/sdk";
+import { SkillsToolset } from "@vibesjs/sdk/community";
+import { anthropic } from "@ai-sdk/anthropic";
+
+const agent = new Agent({
+  model: anthropic("claude-sonnet-4-6"),
+  systemPrompt: `You are a helpful assistant.
+When you need a specific capability, first call skills_list to see what is available,
+then call skills_load to get the full instructions for the skill you need.`,
+  toolsets: [new SkillsToolset(".claude/agents")],
+});
+
+const result = await agent.run("Search the web for the latest news on TypeScript 6.");
+// The agent will call skills_list, find "web-search", call skills_load("web-search"),
+// then follow those instructions to complete the task.
+```
+
+## Tools exposed
+
+| Tool | What it does |
+|------|--------------|
+| `skills_list` | Returns all skill names and descriptions. Call this first to discover what's available. |
+| `skills_load` | Returns the full markdown content of a named skill so the agent can follow its instructions. |
+
+### `skills_list`
+
+Takes no parameters. Returns a JSON array of `{ name, description }` objects:
+
+```json
+[
+  { "name": "web-search", "description": "Search the web for current information" },
+  { "name": "calculator", "description": "Perform arithmetic calculations" }
+]
+```
+
+### `skills_load`
+
+```
+Parameters:
+  name  string  The skill name (as returned by skills_list)
+```
+
+Returns the full markdown content of the skill file so the agent can follow its instructions. If the skill is not found, returns a JSON error object with a suggestion to call `skills_list`.
+
+## Skill file format
+
+Skills are plain markdown files with optional YAML frontmatter. Organize them in any directory structure you like.
+
+### Flat file (`my-skill.md`)
+
+```markdown
+---
+name: web-search
+description: Search the web for current information
+---
+
+# Web Search
+
+When the user asks about recent events or facts you are uncertain about:
+1. Identify the key search query from the user's request.
+2. Use the `web_fetch` tool to retrieve results.
+3. Summarise findings in 2–3 sentences, citing the source URL.
+```
+
+### Packaged skill (`data-analysis/SKILL.md`)
+
+For more complex skills that include reference files, use a subdirectory:
+
+```
+.claude/agents/
+├── web-search.md             ← simple flat skill
+└── data-analysis/
+    └── SKILL.md              ← packaged skill
+```
+
+The subdirectory name (`data-analysis`) is used as the skill name when the frontmatter `name` field is absent.
+
+### Frontmatter fields
+
+| Field | Required | Description |
+|-------|----------|-------------|
+| `name` | No | Skill name shown in `skills_list` (defaults to filename without `.md`) |
+| `description` | No | One-line summary shown in `skills_list` |
+
+<Tip>
+The `@vibesjs/sdk` agent skill (`vibes-sdk.md`) is itself a valid skill file — you can load it with `SkillsToolset` by pointing it at your `.claude/agents/` directory.
+</Tip>
+
+## Directory loader: `DirectorySkillLoader`
+
+When you pass a string to `SkillsToolset`, it creates a `DirectorySkillLoader` internally. You can also construct one directly if you need to pass it to other code:
+
+```ts
+import { DirectorySkillLoader, SkillsToolset } from "@vibesjs/sdk/community";
+
+const loader = new DirectorySkillLoader("/path/to/skills");
+
+// Check what's available without an agent
+const skills = await loader.listSkills();
+console.log(skills);
+// [{ name: "web-search", description: "Search the web..." }, ...]
+
+// Load a specific skill
+const skill = await loader.loadSkill("web-search");
+console.log(skill?.content);
+```
+
+## Custom loader
+
+Pass any object implementing `SkillLoader` to load skills from any source — a remote registry, a database, or a generated list:
+
+```ts
+import type { SkillLoader, Skill, SkillMeta } from "@vibesjs/sdk/community";
+
+class RemoteSkillLoader implements SkillLoader {
+  async listSkills(): Promise<SkillMeta[]> {
+    const res = await fetch("https://my-registry.example.com/skills");
+    return res.json();
+  }
+  async loadSkill(name: string): Promise<Skill | null> {
+    const res = await fetch(`https://my-registry.example.com/skills/${name}`);
+    if (!res.ok) return null;
+    return res.json();
+  }
+}
+
+const agent = new Agent({
+  model: anthropic("claude-sonnet-4-6"),
+  toolsets: [new SkillsToolset(new RemoteSkillLoader())],
+});
+```
+
+## Combining with other toolsets
+
+```ts
+import { Agent } from "@vibesjs/sdk";
+import { TodoToolset, SkillsToolset } from "@vibesjs/sdk/community";
+
+const agent = new Agent({
+  model: anthropic("claude-sonnet-4-6"),
+  toolsets: [
+    new SkillsToolset(".claude/agents"),   // dynamic capability loading
+    new TodoToolset(),                      // task tracking while working
+  ],
+});
+```
+
+## With dependency injection
+
+`SkillsToolset` is generic over `TDeps` so its type signature aligns with any agent:
+
+```ts
+type Deps = { userId: string };
+
+const agent = new Agent<Deps>({
+  model: anthropic("claude-sonnet-4-6"),
+  toolsets: [new SkillsToolset<Deps>(".claude/agents")],
+});
+```
+
+## Types
+
+### `SkillMeta`
+
+```ts
+interface SkillMeta {
+  name: string;         // unique identifier
+  description: string;  // shown in skills_list
+}
+```
+
+### `Skill`
+
+```ts
+interface Skill extends SkillMeta {
+  content: string;   // full markdown content returned by skills_load
+}
+```
+
+### `SkillLoader`
+
+```ts
+interface SkillLoader {
+  listSkills(): Promise<SkillMeta[]>;
+  loadSkill(name: string): Promise<Skill | null>;
+}
+```
+
+## Want to build your own?
+
+`SkillsToolset` was ported from the pydantic-ai ecosystem using the **port-pydantic-ai-community-plugins** agent skill. Install the skill to get step-by-step guidance for porting any pydantic-ai plugin into a community toolset:
+
+```bash
+mkdir -p .claude/agents && curl -fsSL https://raw.githubusercontent.com/a7ul/vibes/main/packages/sdk/skills/port-pydantic-ai-community-plugins.md -o .claude/agents/port-pydantic-ai-community-plugins.md
+```
+
+See the [Agent Skill docs](/meta/agent-skill#porting-pydantic-ai-plugins) for more detail.
