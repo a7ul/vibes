@@ -39,7 +39,42 @@ RELEASE_BODY=$(echo "$RELEASE_JSON" | python3 -c "import sys,json; d=json.load(s
 
 echo "### Release Notes"
 echo ""
-echo "$RELEASE_BODY" | sed 's/@\([a-zA-Z0-9_][a-zA-Z0-9_-]*\)/\1/g'
+echo "$RELEASE_BODY" | python3 -c "
+import sys, re
+
+text = sys.stdin.read()
+
+# Drop 'New Contributors' section and everything after it
+text = re.split(r'#+\s*New Contributors', text, maxsplit=1)[0]
+
+# Strip markdown links [text](url) -> text, also removing trailing cross-repo ref from text
+def strip_link(m):
+    label = m.group(1)
+    # Remove trailing 'pydantic/pydantic-ai#NNN' from label
+    label = re.sub(r'\s*\w[\w/-]*#\d+\s*$', '', label).strip()
+    return label
+text = re.sub(r'\[([^\]]+)\]\([^)]+\)', strip_link, text)
+
+# Strip bare URLs
+text = re.sub(r'https?://\S+', '', text)
+
+# Strip cross-repo references like pydantic/pydantic-ai#4697
+text = re.sub(r'\w[\w/-]*#\d+', '', text)
+
+# Strip #NNN issue/PR auto-links
+text = re.sub(r'#\d+', '', text)
+
+# Strip @mentions and 'by username' attributions
+text = re.sub(r'@[\w-]+', '', text)
+text = re.sub(r'\bby\s+[\w-]+', '', text)
+
+# Clean up excess whitespace/blank lines
+text = re.sub(r'[ \t]+', ' ', text)
+text = re.sub(r' +\n', '\n', text)
+text = re.sub(r'\n{3,}', '\n\n', text)
+
+print(text.strip())
+"
 echo ""
 
 # Fetch changed files between tags
