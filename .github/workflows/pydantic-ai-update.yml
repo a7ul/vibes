@@ -89,7 +89,7 @@ jobs:
           RESPONSE=$(gh api repos/${{ github.repository }}/issues \
             --method POST \
             --field title="chore: port pydantic-ai v${NEW} changes" \
-            --field body="$(cat /tmp/issue-body.md)" \
+            --field body=@/tmp/issue-body.md \
             --field labels[]="pydantic-ai-update")
           ISSUE_NUMBER=$(echo "$RESPONSE" | python3 -c "import sys,json; print(json.load(sys.stdin)['number'])")
           ISSUE_URL=$(echo "$RESPONSE" | python3 -c "import sys,json; print(json.load(sys.stdin)['html_url'])")
