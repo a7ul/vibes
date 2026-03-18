@@ -6,6 +6,13 @@ old = os.environ["OLD"]
 new = os.environ["NEW_VERSION"]
 summary = os.environ.get("SUMMARY", "")
 
+GITHUB_BODY_LIMIT = 65536
+SUMMARY_RESERVE = 2000  # headroom for template text
+
+max_summary = GITHUB_BODY_LIMIT - SUMMARY_RESERVE
+if len(summary) > max_summary:
+    summary = summary[:max_summary] + "\n\n_(summary truncated — see compare link above for full diff)_"
+
 body = f"""## Versions
 
 | | Version |
