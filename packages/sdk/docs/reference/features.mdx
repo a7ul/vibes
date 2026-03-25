@@ -76,6 +76,8 @@ Vibes is designed to stay current with Pydantic AI  -  an AI agent automatically
 | `ApprovalRequiredToolset` | Enforce human approval on a toolset         | ✅     | [Human-in-the-Loop](/concepts/human-in-the-loop) | `new ApprovalRequiredToolset(inner)` - all tools get `requiresApproval` |
 | `WrapperToolset`          | Custom execution behaviour around a toolset | ✅     | [Toolsets](/concepts/toolsets) | `class MyWrapper extends WrapperToolset { callTool(...) { ... } }` |
 | `ExternalToolset`         | Deferred execution outside agent process    | ✅     | [Human-in-the-Loop](/concepts/human-in-the-loop) | `new ExternalToolset([{ name, description, jsonSchema }])` - schema-only |
+| `forRun` hook             | Per-run state isolation (`AbstractToolset.for_run`)      | ✅     | [Toolsets](/concepts/toolsets) | Optional `forRun(ctx)` method on `Toolset` interface - called once before first turn |
+| `forRunStep` hook         | Per-step state isolation (`AbstractToolset.for_run_step`)| ✅     | [Toolsets](/concepts/toolsets) | Optional `forRunStep(ctx)` method on `Toolset` interface - called at start of each turn |
 
 ---
 

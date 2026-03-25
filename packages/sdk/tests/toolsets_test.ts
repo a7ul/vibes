@@ -7,7 +7,9 @@ import {
   PrefixedToolset,
   RenamedToolset,
   tool,
+  type Toolset,
 } from "../mod.ts";
+import type { RunContext } from "../mod.ts";
 import {
   type DoGenerateResult,
   MockLanguageModelV3,
@@ -207,4 +209,188 @@ Deno.test("tools and toolsets combined - both appear in model call", async () =>
 
   assertEquals(capturedNames.includes("direct"), true);
   assertEquals(capturedNames.includes("from_toolset"), true);
+});
+
+// ---------------------------------------------------------------------------
+// forRun / forRunStep lifecycle hooks
+// ---------------------------------------------------------------------------
+
+Deno.test("forRun - called once before turn loop, returned instance used for all turns", async () => {
+  let forRunCallCount = 0;
+  let forRunCtx: RunContext<undefined> | null = null;
+
+  const innerTs = new FunctionToolset([makeTool("my_tool")]);
+
+  const ts: Toolset = {
+    tools: (ctx) => innerTs.tools(ctx),
+    forRun(ctx) {
+      forRunCallCount++;
+      forRunCtx = ctx;
+      return innerTs; // return the inner toolset as the run-scoped instance
+    },
+  };
+
+  const responses = mockValues<DoGenerateResult>(
+    toolCallResponse("my_tool", {}),
+    textResponse("done"),
+  );
+  const model = new MockLanguageModelV3({
+    doGenerate: () => Promise.resolve(responses()),
+  });
+
+  const agent = new Agent({ model, toolsets: [ts] });
+  await agent.run("go");
+
+  assertEquals(forRunCallCount, 1, "forRun should be called exactly once per run");
+  assertEquals(forRunCtx !== null, true, "forRun should receive the run context");
+});
+
+Deno.test("forRun - run isolation: separate instances per run", async () => {
+  const instancesUsed: string[] = [];
+
+  function makeInstance(id: string): Toolset {
+    return {
+      tools: () =>
+        Promise.resolve([
+          tool({
+            name: "my_tool",
+            description: `tool from ${id}`,
+            parameters: z.object({}),
+            execute: () => Promise.resolve(`result from ${id}`),
+          }),
+        ]),
+    };
+  }
+
+  let runCount = 0;
+  const ts: Toolset = {
+    tools: () => Promise.resolve([]),
+    forRun() {
+      const id = `run-${++runCount}`;
+      instancesUsed.push(id);
+      return makeInstance(id);
+    },
+  };
+
+  const responses = mockValues<DoGenerateResult>(
+    textResponse("done"),
+    textResponse("done"),
+  );
+  const model = new MockLanguageModelV3({
+    doGenerate: () => Promise.resolve(responses()),
+  });
+
+  const agent = new Agent({ model, toolsets: [ts] });
+  await agent.run("first run");
+  await agent.run("second run");
+
+  assertEquals(instancesUsed.length, 2, "forRun should be called once per agent.run()");
+  assertEquals(instancesUsed[0], "run-1");
+  assertEquals(instancesUsed[1], "run-2");
+});
+
+Deno.test("forRunStep - called at the start of every model turn", async () => {
+  let stepCallCount = 0;
+
+  const innerTs = new FunctionToolset([makeTool("step_tool")]);
+
+  const ts: Toolset = {
+    tools: (ctx) => innerTs.tools(ctx),
+    forRunStep() {
+      stepCallCount++;
+      return innerTs;
+    },
+  };
+
+  // Two turns: turn 1 calls a tool, turn 2 returns text
+  const responses = mockValues<DoGenerateResult>(
+    toolCallResponse("step_tool", {}),
+    textResponse("done"),
+  );
+  const model = new MockLanguageModelV3({
+    doGenerate: () => Promise.resolve(responses()),
+  });
+
+  const agent = new Agent({ model, toolsets: [ts] });
+  await agent.run("go");
+
+  assertEquals(stepCallCount, 2, "forRunStep should be called once per model turn");
+});
+
+Deno.test("forRunStep - can return different instance each step", async () => {
+  const stepsObserved: number[] = [];
+  let step = 0;
+
+  function makeStepInstance(s: number): Toolset {
+    return {
+      tools: () =>
+        Promise.resolve([
+          tool({
+            name: "step_tool",
+            description: `tool for step ${s}`,
+            parameters: z.object({}),
+            execute: () => {
+              stepsObserved.push(s);
+              return Promise.resolve(`step ${s} result`);
+            },
+          }),
+        ]),
+    };
+  }
+
+  const ts: Toolset = {
+    tools: () => Promise.resolve([]),
+    forRunStep() {
+      return makeStepInstance(++step);
+    },
+  };
+
+  // Two turns: turn 1 calls the tool, turn 2 returns text
+  const responses = mockValues<DoGenerateResult>(
+    toolCallResponse("step_tool", {}),
+    textResponse("done"),
+  );
+  const model = new MockLanguageModelV3({
+    doGenerate: () => Promise.resolve(responses()),
+  });
+
+  const agent = new Agent({ model, toolsets: [ts] });
+  await agent.run("go");
+
+  // The tool was called in turn 1, which used the instance from forRunStep(1)
+  assertEquals(stepsObserved, [1]);
+});
+
+Deno.test("forRun and forRunStep - both hooks can be combined", async () => {
+  const log: string[] = [];
+
+  const innerTs = new FunctionToolset([makeTool("combined_tool")]);
+
+  const ts: Toolset = {
+    tools: (ctx) => innerTs.tools(ctx),
+    forRun() {
+      log.push("forRun");
+      return {
+        tools: (ctx) => innerTs.tools(ctx),
+        forRunStep() {
+          log.push("forRunStep");
+          return innerTs;
+        },
+      };
+    },
+  };
+
+  const responses = mockValues<DoGenerateResult>(
+    toolCallResponse("combined_tool", {}),
+    textResponse("done"),
+  );
+  const model = new MockLanguageModelV3({
+    doGenerate: () => Promise.resolve(responses()),
+  });
+
+  const agent = new Agent({ model, toolsets: [ts] });
+  await agent.run("go");
+
+  assertEquals(log[0], "forRun", "forRun should be called first");
+  assertEquals(log.filter((x) => x === "forRunStep").length, 2, "forRunStep called once per turn");
 });
