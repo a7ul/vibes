@@ -194,6 +194,40 @@ export function buildInitialMessages(
 // ---------------------------------------------------------------------------
 
 /**
+ * Called once per run before the first model turn. Invokes `forRun` on each
+ * toolset to obtain the run-scoped instance. Toolsets that do not implement
+ * `forRun` are returned unchanged (the interface default returns `this`).
+ *
+ * Equivalent to Pydantic AI's `AbstractToolset.for_run`.
+ */
+export async function initToolsetsForRun<TDeps>(
+  toolsets: ReadonlyArray<Toolset<TDeps>>,
+  ctx: RunContext<TDeps>,
+): Promise<Toolset<TDeps>[]> {
+  return Promise.all(
+    toolsets.map((ts) => ts.forRun ? ts.forRun(ctx) : Promise.resolve(ts)),
+  );
+}
+
+/**
+ * Called at the start of every model turn. Invokes `forRunStep` on each
+ * run-scoped toolset to obtain the step-scoped instance. Toolsets that do not
+ * implement `forRunStep` are returned unchanged.
+ *
+ * Equivalent to Pydantic AI's `AbstractToolset.for_run_step`.
+ */
+async function resolveToolsetsForStep<TDeps>(
+  toolsets: ReadonlyArray<Toolset<TDeps>>,
+  ctx: RunContext<TDeps>,
+): Promise<Toolset<TDeps>[]> {
+  return Promise.all(
+    toolsets.map((ts) =>
+      ts.forRunStep ? ts.forRunStep(ctx) : Promise.resolve(ts)
+    ),
+  );
+}
+
+/**
  * Resolves all tools for a single model turn. Calls `prepare()` on each tool
  * to allow dynamic inclusion/exclusion, and flattens toolsets.
  */
@@ -430,6 +464,13 @@ export async function prepareTurn<TDeps, TOutput>(
   systemPrompt: string | undefined,
   /** Shared mutex for sequential tools (created once per run). */
   sequentialMutex?: Semaphore,
+  /**
+   * Run-scoped toolsets returned by `initToolsetsForRun`. When provided,
+   * `forRunStep` is called on each to obtain the step-scoped instance before
+   * resolving tools. When omitted the raw toolsets from `opts`/`agent` are
+   * used directly (backward-compatible path).
+   */
+  runScopedToolsets?: ReadonlyArray<Toolset<TDeps>>,
 ): Promise<TurnSetup<TDeps>> {
   // Check usage limits (agent-level, then per-run override)
   const limits = opts._override?.usageLimits ?? opts.usageLimits ??
@@ -437,7 +478,11 @@ export async function prepareTurn<TDeps, TOutput>(
   if (limits) checkUsageLimits(limits, ctx.usage);
 
   const tools = opts._override?.tools ?? agent.tools;
-  const toolsets = opts._override?.toolsets ?? agent.toolsets;
+  // If run-scoped toolsets were provided, apply forRunStep for this step;
+  // otherwise fall back to toolsets from opts/agent (no lifecycle hooks).
+  const toolsets = runScopedToolsets
+    ? await resolveToolsetsForStep(runScopedToolsets, ctx)
+    : (opts._override?.toolsets ?? agent.toolsets);
   const resolvedTools = await resolveTools(tools, toolsets, ctx);
   const outputToolNames = findOutputToolNames(resolvedTools);
   const toolMap = buildToolMap(

@@ -17,6 +17,7 @@ import {
   createRunContext,
   createSequentialMutex,
   DeferredToolRequests,
+  initToolsetsForRun,
   type InternalRunOpts,
   isFinalResultTool,
   modelSettingsToAISDKOptions,
@@ -73,6 +74,10 @@ export async function executeRun<TDeps, TOutput>(
   // Shared mutex for sequential tools - created once per run
   const sequentialMutex = createSequentialMutex();
 
+  // Resolve run-scoped toolsets once before the turn loop (forRun lifecycle hook).
+  const rawToolsets = opts._override?.toolsets ?? agent.toolsets;
+  const runScopedToolsets = await initToolsetsForRun(rawToolsets, ctx);
+
   // When resuming from deferred results, the messageHistory already contains
   // the full conversation (including the assistant's tool call message).
   // In that case, don't add the prompt as a new user message.
@@ -91,8 +96,7 @@ export async function executeRun<TDeps, TOutput>(
     const dr = opts.deferredResults;
     // Reconstruct the tools for resume so we can re-execute with argsOverride
     const toolDefs = opts._override?.tools ?? agent.tools;
-    const toolsetDefs = opts._override?.toolsets ?? agent.toolsets;
-    const resolvedForResume = await resolveTools(toolDefs, toolsetDefs, ctx);
+    const resolvedForResume = await resolveTools(toolDefs, runScopedToolsets, ctx);
     // Use the original pending requests (with real toolNames) if available,
     // falling back to placeholders keyed by toolCallId.
     const pendingRequests = opts._deferredPendingRequests ??
@@ -121,6 +125,7 @@ export async function executeRun<TDeps, TOutput>(
       messages,
       systemPrompt,
       sequentialMutex,
+      runScopedToolsets,
     );
     const { msgsForModel, system, outputToolNames, resolvedTools } = turnSetup;
 

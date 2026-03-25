@@ -10,6 +10,7 @@ import {
   checkModelRequestsAllowed,
   createRunContext,
   createSequentialMutex,
+  initToolsetsForRun,
   type InternalRunOpts,
   isFinalResultTool,
   modelSettingsToAISDKOptions,
@@ -170,6 +171,10 @@ async function runStreamLoop<TDeps, TOutput>(
     opts._override?.systemPrompts,
   );
 
+  // Resolve run-scoped toolsets once before the turn loop (forRun lifecycle hook).
+  const rawToolsets = opts._override?.toolsets ?? agent.toolsets;
+  const runScopedToolsets = await initToolsetsForRun(rawToolsets, ctx);
+
   const inputOffset = opts.messageHistory?.length ?? 0;
   const messages = buildInitialMessages(opts.messageHistory, prompt);
 
@@ -195,6 +200,7 @@ async function runStreamLoop<TDeps, TOutput>(
           messages,
           systemPrompt,
           sequentialMutex,
+          runScopedToolsets,
         );
 
       const stream = streamText({
