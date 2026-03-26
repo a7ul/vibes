@@ -200,7 +200,7 @@ export function buildInitialMessages(
  *
  * Equivalent to Pydantic AI's `AbstractToolset.for_run`.
  */
-export async function initToolsetsForRun<TDeps>(
+export function initToolsetsForRun<TDeps>(
   toolsets: ReadonlyArray<Toolset<TDeps>>,
   ctx: RunContext<TDeps>,
 ): Promise<Toolset<TDeps>[]> {
@@ -216,7 +216,7 @@ export async function initToolsetsForRun<TDeps>(
  *
  * Equivalent to Pydantic AI's `AbstractToolset.for_run_step`.
  */
-async function resolveToolsetsForStep<TDeps>(
+function resolveToolsetsForStep<TDeps>(
   toolsets: ReadonlyArray<Toolset<TDeps>>,
   ctx: RunContext<TDeps>,
 ): Promise<Toolset<TDeps>[]> {
