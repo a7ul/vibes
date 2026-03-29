@@ -229,6 +229,7 @@ export { SpanNode, SpanTree } from "./lib/evals/span_tree.ts";
 export type { SpanData } from "./lib/evals/span_tree.ts";
 export { Dataset } from "./lib/evals/dataset.ts";
 export type { DatasetOptions, EvaluateOptions } from "./lib/evals/dataset.ts";
+export { CaseLifecycle } from "./lib/evals/lifecycle.ts";
 export {
   contains,
   custom,

@@ -40,6 +40,9 @@ export type { SpanData } from "./span_tree.ts";
 export { Dataset } from "./dataset.ts";
 export type { DatasetOptions, EvaluateOptions } from "./dataset.ts";
 
+// Lifecycle
+export { CaseLifecycle } from "./lifecycle.ts";
+
 // Built-in case-level evaluators
 export {
   contains,
