@@ -238,6 +238,7 @@ Vibes is designed to stay current with Pydantic AI  -  an AI agent automatically
 | Experiments           | Run and compare datasets across model/prompt combos | ✅     | [Evals](/concepts/evals) | `dataset.evaluate(task, opts)` or `runExperiment({ dataset, task, evaluators })` |
 | Logfire integration   | Visualize eval results in Logfire                   | ❌     | - | Not applicable (Logfire is Python-only) |
 | Async + concurrency   | Configurable concurrency and retries for evals      | ✅     | [Evals](/concepts/evals) | `maxConcurrency` + `maxRetries` on `EvaluateOptions`; Semaphore-based |
+| Case lifecycle hooks  | `CaseLifecycle` - per-case setup/context/teardown   | ✅     | [Evals](/concepts/evals) | Subclass `CaseLifecycle` and pass the class to `evaluate({ lifecycle })` |
 | Dataset generation    | LLM-generated test cases from Zod schemas           | ✅     | [Evals](/concepts/evals) | `generateDataset({ model, inputSchema, nExamples })` |
 
 ---

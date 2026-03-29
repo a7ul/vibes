@@ -15,6 +15,7 @@ import type {
   ReportEvaluator,
 } from "./types.ts";
 import { EvaluatorContext } from "./context.ts";
+import type { CaseLifecycle } from "./lifecycle.ts";
 
 // ---------------------------------------------------------------------------
 // Options
@@ -29,13 +30,24 @@ export interface DatasetOptions<TInput, TExpected> {
   reportEvaluators?: ReportEvaluator[];
 }
 
-export interface EvaluateOptions<_TOutput> {
+export interface EvaluateOptions<
+  TInput = unknown,
+  TExpected = unknown,
+  TOutput = unknown,
+> {
   /** Maximum number of cases evaluated concurrently. Default: 5. */
   maxConcurrency?: number;
   /** Maximum number of times to retry a failing task. Default: 1. */
   maxRetries?: number;
   /** Callback invoked when each case completes (success or failure). */
   onCaseComplete?: (result: CaseResult) => void;
+  /**
+   * Optional lifecycle class for per-case setup, context preparation, and teardown hooks.
+   * A new instance is created for each case. Subclass `CaseLifecycle` and pass the class here.
+   */
+  lifecycle?: new (
+    c: Case<TInput, TExpected>,
+  ) => CaseLifecycle<TInput, TExpected, TOutput>;
 }
 
 // ---------------------------------------------------------------------------
@@ -235,11 +247,12 @@ export class Dataset<TInput = unknown, TExpected = unknown> {
    */
   async evaluate<TOutput>(
     task: (input: TInput) => TOutput | Promise<TOutput>,
-    options?: EvaluateOptions<TOutput>,
+    options?: EvaluateOptions<TInput, TExpected, TOutput>,
   ): Promise<ExperimentResult<TInput, TExpected, TOutput>> {
     const maxConcurrency = options?.maxConcurrency ?? 5;
     const maxRetries = options?.maxRetries ?? 1;
     const onCaseComplete = options?.onCaseComplete;
+    const lifecycle = options?.lifecycle;
     const sem = new Semaphore(maxConcurrency);
 
     const experimentStart = Date.now();
@@ -259,6 +272,7 @@ export class Dataset<TInput = unknown, TExpected = unknown> {
           task,
           datasetEvaluators,
           maxRetries,
+          lifecycle,
         )
       ).then((result) => {
         onCaseComplete?.(result);
@@ -294,73 +308,99 @@ async function runCase<TInput, TExpected, TOutput>(
   task: (input: TInput) => TOutput | Promise<TOutput>,
   datasetEvaluators: Evaluator<TOutput, TExpected>[],
   maxRetries: number,
+  LifecycleClass?: new (
+    c: Case<TInput, TExpected>,
+  ) => CaseLifecycle<TInput, TExpected, TOutput>,
 ): Promise<CaseResult<TInput, TExpected, TOutput>> {
-  let output: TOutput | undefined;
-  let error: Error | undefined;
-  let durationMs = 0;
+  const lc = LifecycleClass ? new LifecycleClass(c) : undefined;
 
-  // Run task with retries
-  const maxAttempts = maxRetries;
-  let lastError: Error | undefined;
-  for (let attempt = 0; attempt < maxAttempts; attempt++) {
-    const start = Date.now();
-    try {
-      output = await task(c.inputs);
-      durationMs = Date.now() - start;
-      lastError = undefined;
-      break;
-    } catch (e) {
-      durationMs = Date.now() - start;
-      lastError = e instanceof Error ? e : new Error(String(e));
-      if (attempt < maxAttempts - 1) {
-        // Will retry
-        continue;
+  let output: TOutput | undefined;
+  let durationMs = 0;
+  let result: CaseResult<TInput, TExpected, TOutput>;
+
+  try {
+    // 1. setup()
+    if (lc) await lc.setup();
+
+    // 2. Run task with retries
+    const maxAttempts = maxRetries;
+    let taskError: Error | undefined;
+    for (let attempt = 0; attempt < maxAttempts; attempt++) {
+      const start = Date.now();
+      try {
+        output = await task(c.inputs);
+        durationMs = Date.now() - start;
+        taskError = undefined;
+        break;
+      } catch (e) {
+        durationMs = Date.now() - start;
+        taskError = e instanceof Error ? e : new Error(String(e));
+        if (attempt < maxAttempts - 1) {
+          // Will retry
+          continue;
+        }
       }
     }
-  }
-  if (lastError !== undefined) {
-    error = lastError;
-  }
 
-  // Build evaluator context
-  const ctx = new EvaluatorContext<TInput, TExpected, TOutput>({
-    inputs: c.inputs,
-    output,
-    expectedOutput: c.expectedOutput,
-    metadata: c.metadata ?? {},
-    spanTree: undefined,
-    usage: undefined,
-    durationMs,
-  });
+    // 3. Build evaluator context
+    let ctx = new EvaluatorContext<TInput, TExpected, TOutput>({
+      inputs: c.inputs,
+      output,
+      expectedOutput: c.expectedOutput,
+      metadata: c.metadata ?? {},
+      spanTree: undefined,
+      usage: undefined,
+      durationMs,
+    });
 
-  // Run evaluators: dataset-level + per-case
-  const allEvaluators: Evaluator<TOutput, TExpected>[] = [
-    ...datasetEvaluators,
-    ...((c.evaluators as Evaluator<TOutput, TExpected>[]) ?? []),
-  ];
+    // 4. prepareContext()
+    if (lc) ctx = await lc.prepareContext(ctx);
 
-  const scores: Record<string, EvalScore> = {};
-  for (const ev of allEvaluators) {
-    try {
-      const score = await ev.evaluate(ctx);
-      scores[ev.name] = score;
-    } catch (evErr) {
-      scores[ev.name] = {
-        score: false,
-        reason: `Evaluator error: ${evErr instanceof Error ? evErr.message : String(evErr)}`,
-      };
+    // 5. Run evaluators: dataset-level + per-case
+    const allEvaluators: Evaluator<TOutput, TExpected>[] = [
+      ...datasetEvaluators,
+      ...((c.evaluators as Evaluator<TOutput, TExpected>[]) ?? []),
+    ];
+
+    const scores: Record<string, EvalScore> = {};
+    for (const ev of allEvaluators) {
+      try {
+        const score = await ev.evaluate(ctx);
+        scores[ev.name] = score;
+      } catch (evErr) {
+        scores[ev.name] = {
+          score: false,
+          reason: `Evaluator error: ${evErr instanceof Error ? evErr.message : String(evErr)}`,
+        };
+      }
     }
+
+    result = {
+      case: c,
+      output,
+      error: taskError,
+      scores,
+      duration: durationMs,
+      attributes: ctx.getAttributes(),
+      metrics: ctx.getMetrics(),
+    };
+  } catch (e) {
+    // setup() or prepareContext() threw — build partial result for teardown
+    result = {
+      case: c,
+      output,
+      error: e instanceof Error ? e : new Error(String(e)),
+      scores: {},
+      duration: durationMs,
+      attributes: {},
+      metrics: {},
+    };
   }
 
-  return {
-    case: c,
-    output,
-    error,
-    scores,
-    duration: durationMs,
-    attributes: ctx.getAttributes(),
-    metrics: ctx.getMetrics(),
-  };
+  // 6. teardown() — always called; propagates if it throws (intentional)
+  if (lc) await lc.teardown(result);
+
+  return result;
 }
 
 // ---------------------------------------------------------------------------
