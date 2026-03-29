@@ -22,7 +22,7 @@ export class FunctionToolset<TDeps = undefined> implements Toolset<TDeps> {
     this._tools.push(t);
   }
 
-  tools(): ToolDefinition<TDeps>[] {
+  tools(_ctx?: unknown): ToolDefinition<TDeps>[] {
     return [...this._tools];
   }
 }

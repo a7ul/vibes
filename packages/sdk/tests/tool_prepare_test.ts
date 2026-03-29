@@ -112,3 +112,61 @@ Deno.test("tool.prepare - can modify tool description per turn", async () => {
   await agent.run("say hello", { deps: { language: "French" } });
   assertEquals(capturedDescription?.includes("French"), true);
 });
+
+Deno.test("tool.prepare - sync prepare function is supported", async () => {
+  // pydantic-ai v1.72.0: sync tool preparation functions are supported.
+  // In TypeScript, await works transparently with both sync and async returns.
+  let prepareCallCount = 0;
+
+  const syncPreparedTool: ToolDefinition<undefined> = {
+    name: "sync_tool",
+    description: "A tool with a sync prepare function",
+    parameters: z.object({}),
+    // Sync prepare - returns ToolDefinition directly (no Promise)
+    prepare: (_ctx) => {
+      prepareCallCount++;
+      return syncPreparedTool; // sync return
+    },
+    execute: () => Promise.resolve("executed"),
+  };
+
+  const responses = mockValues<DoGenerateResult>(
+    toolCallResponse("sync_tool", {}),
+    textResponse("done"),
+  );
+  const model = new MockLanguageModelV3({
+    doGenerate: () => Promise.resolve(responses()),
+  });
+
+  const agent = new Agent({ model, tools: [syncPreparedTool] });
+  await agent.run("use the tool");
+
+  assertEquals(prepareCallCount >= 1, true);
+});
+
+Deno.test("tool.prepare - sync prepare returning null excludes tool", async () => {
+  // Sync prepare returning null/undefined should exclude the tool, same as async.
+  let toolNamesSeenByModel: string[] = [];
+
+  const syncExcludedTool: ToolDefinition<undefined> = {
+    name: "excluded_tool",
+    description: "A tool excluded by sync prepare",
+    parameters: z.object({}),
+    prepare: (_ctx) => null, // sync null return
+    execute: () => Promise.resolve("should not be called"),
+  };
+
+  const model = new MockLanguageModelV3({
+    doGenerate: (opts) => {
+      toolNamesSeenByModel = (opts.tools ?? []).map(
+        (t: { name: string }) => t.name,
+      );
+      return Promise.resolve(textResponse("done"));
+    },
+  });
+
+  const agent = new Agent({ model, tools: [syncExcludedTool] });
+  await agent.run("do something");
+
+  assertEquals(toolNamesSeenByModel.includes("excluded_tool"), false);
+});
