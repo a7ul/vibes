@@ -80,6 +80,7 @@ export type {
 // Toolsets
 export type { Toolset } from "./lib/toolsets/toolset.ts";
 export { FunctionToolset } from "./lib/toolsets/function_toolset.ts";
+export type { FunctionToolsetOptions } from "./lib/toolsets/function_toolset.ts";
 export { CombinedToolset } from "./lib/toolsets/combined_toolset.ts";
 export { FilteredToolset } from "./lib/toolsets/filtered_toolset.ts";
 export {

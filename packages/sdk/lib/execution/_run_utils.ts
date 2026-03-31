@@ -164,6 +164,11 @@ export function resolveSystemPrompt<TDeps, TOutput>(
  * resolved system prompt. Instructions differ from systemPrompt in that they
  * are resolved per-turn (allowing dynamic per-turn values) and are NOT stored
  * in the message history (they only exist in the `system` field of each call).
+ *
+ * Toolset instructions (from `Toolset.getInstructions`) are collected from the
+ * provided step-scoped toolsets and appended after the agent-level instructions.
+ * Equivalent to Pydantic AI's `_get_instructions` which combines base
+ * instructions with `AbstractToolset.get_instructions`.
  */
 export async function resolveSystemWithInstructions<TDeps, TOutput>(
   agent: Agent<TDeps, TOutput>,
@@ -172,14 +177,47 @@ export async function resolveSystemWithInstructions<TDeps, TOutput>(
   overrideInstructions?: Array<
     string | ((ctx: RunContext<TDeps>) => string | Promise<string>)
   >,
+  toolsets?: ReadonlyArray<Toolset<TDeps>>,
 ): Promise<string | undefined> {
   const instructionParts = overrideInstructions ?? [...agent.instructions];
-  const instructions = await resolvePromptParts(instructionParts, ctx);
+  const agentInstructions = await resolvePromptParts(instructionParts, ctx);
+
+  // Collect per-toolset instructions (get_instructions equivalent)
+  const toolsetInstructions = await resolveToolsetInstructions(toolsets, ctx);
+
+  const allInstructions = [agentInstructions, toolsetInstructions]
+    .filter(Boolean)
+    .join("\n\n");
+
+  const instructions = allInstructions || undefined;
 
   if (systemPrompt && instructions) {
     return `${systemPrompt}\n\n${instructions}`;
   }
   return systemPrompt ?? instructions;
+}
+
+/**
+ * Collects and joins instructions from all toolsets that implement
+ * `getInstructions`. Returns `undefined` if no toolset provides instructions.
+ */
+async function resolveToolsetInstructions<TDeps>(
+  toolsets: ReadonlyArray<Toolset<TDeps>> | undefined,
+  ctx: RunContext<TDeps>,
+): Promise<string | undefined> {
+  if (!toolsets || toolsets.length === 0) return undefined;
+  const parts: string[] = [];
+  for (const ts of toolsets) {
+    if (!ts.getInstructions) continue;
+    const result = await ts.getInstructions(ctx);
+    if (!result) continue;
+    if (Array.isArray(result)) {
+      parts.push(...result.filter(Boolean));
+    } else {
+      parts.push(result);
+    }
+  }
+  return parts.length > 0 ? parts.join("\n\n") : undefined;
 }
 
 export function buildInitialMessages(
@@ -509,6 +547,7 @@ export async function prepareTurn<TDeps, TOutput>(
     ctx,
     systemPrompt,
     opts._override?.instructions,
+    toolsets,
   );
 
   if (

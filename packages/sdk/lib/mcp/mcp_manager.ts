@@ -101,6 +101,19 @@ export class MCPManager<TDeps = undefined> implements Toolset<TDeps> {
   /**
    * Returns aggregated server instructions from all servers that provide them.
    * Each server's instructions are separated by a blank line.
+   *
+   * Implements the `Toolset.getInstructions` interface so that instructions
+   * are automatically included in the agent's system prompt each turn.
+   * Equivalent to Pydantic AI's `MCPServer.get_instructions` with
+   * `include_instructions`.
+   */
+  getInstructions(_ctx: RunContext<TDeps>): string | null {
+    return this.getServerInstructions() ?? null;
+  }
+
+  /**
+   * Returns aggregated server instructions from all servers that provide them.
+   * Each server's instructions are separated by a blank line.
    */
   getServerInstructions(): string | undefined {
     const parts: string[] = [];

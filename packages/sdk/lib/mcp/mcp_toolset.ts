@@ -78,6 +78,21 @@ export class MCPToolset<TDeps = undefined> implements Toolset<TDeps> {
   /**
    * Returns server-level instructions if the server provided them and
    * the `instructions` option is enabled.
+   *
+   * Implements the `Toolset.getInstructions` interface so that instructions
+   * are automatically included in the agent's system prompt each turn.
+   * Equivalent to Pydantic AI's `MCPServer.get_instructions` with
+   * `include_instructions`.
+   */
+  getInstructions(
+    _ctx: RunContext<TDeps>,
+  ): string | null {
+    return this.getServerInstructions() ?? null;
+  }
+
+  /**
+   * Returns server-level instructions if the server provided them and
+   * the `instructions` option is enabled.
    */
   getServerInstructions(): string | undefined {
     if (!this._useInstructions) return undefined;

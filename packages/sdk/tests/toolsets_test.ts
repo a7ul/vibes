@@ -394,3 +394,173 @@ Deno.test("forRun and forRunStep - both hooks can be combined", async () => {
   assertEquals(log[0], "forRun", "forRun should be called first");
   assertEquals(log.filter((x) => x === "forRunStep").length, 2, "forRunStep called once per turn");
 });
+
+// ---------------------------------------------------------------------------
+// Toolset getInstructions tests (pydantic-ai v1.74.0)
+// ---------------------------------------------------------------------------
+
+Deno.test("FunctionToolset - static instructions are included in system prompt", async () => {
+  const capturedSystems: (string | undefined)[] = [];
+
+  const model = new MockLanguageModelV3({
+    doGenerate: (opts) => {
+      capturedSystems.push(
+        opts.prompt.find((m: { role: string }) => m.role === "system")?.content as string | undefined,
+      );
+      return Promise.resolve(textResponse("done"));
+    },
+  });
+
+  const ts = new FunctionToolset([], {
+    instructions: "Always use the search tool for queries.",
+  });
+  const agent = new Agent({ model, toolsets: [ts] });
+  await agent.run("test");
+
+  assertEquals(capturedSystems[0]?.includes("Always use the search tool"), true);
+});
+
+Deno.test("FunctionToolset - dynamic instructions function is resolved per-turn", async () => {
+  let turnCount = 0;
+  const capturedSystems: (string | undefined)[] = [];
+
+  const responses = mockValues<DoGenerateResult>(
+    toolCallResponse("noop", {}),
+    textResponse("done"),
+  );
+
+  const noopTool = tool({
+    name: "noop",
+    description: "noop",
+    parameters: z.object({}),
+    execute: () => Promise.resolve("ok"),
+  });
+
+  const model = new MockLanguageModelV3({
+    doGenerate: (opts) => {
+      capturedSystems.push(
+        opts.prompt.find((m: { role: string }) => m.role === "system")?.content as string | undefined,
+      );
+      return Promise.resolve(responses());
+    },
+  });
+
+  const ts = new FunctionToolset([noopTool], {
+    instructions: (_ctx) => {
+      turnCount++;
+      return `Turn ${turnCount} instructions`;
+    },
+  });
+  const agent = new Agent({ model, toolsets: [ts] });
+  await agent.run("test");
+
+  assertEquals(capturedSystems.length, 2);
+  assertEquals(capturedSystems[0]?.includes("Turn 1"), true);
+  assertEquals(capturedSystems[1]?.includes("Turn 2"), true);
+});
+
+Deno.test("FunctionToolset - instructions combined with agent instructions", async () => {
+  let capturedSystem: string | undefined;
+
+  const model = new MockLanguageModelV3({
+    doGenerate: (opts) => {
+      capturedSystem = opts.prompt.find((m: { role: string }) => m.role === "system")?.content as string | undefined;
+      return Promise.resolve(textResponse("done"));
+    },
+  });
+
+  const ts = new FunctionToolset([], {
+    instructions: "Toolset instruction.",
+  });
+  const agent = new Agent({
+    model,
+    instructions: "Agent instruction.",
+    toolsets: [ts],
+  });
+  await agent.run("test");
+
+  assertEquals(capturedSystem?.includes("Agent instruction."), true);
+  assertEquals(capturedSystem?.includes("Toolset instruction."), true);
+});
+
+Deno.test("FunctionToolset - getInstructions returns null when no instructions", async () => {
+  const ts = new FunctionToolset([]);
+  const ctx: RunContext<undefined> = {
+    deps: undefined,
+    usage: { inputTokens: 0, outputTokens: 0, totalTokens: 0, requests: 0 },
+    retryCount: 0,
+    toolName: null,
+    runId: "test",
+    metadata: {},
+    toolResultMetadata: new Map(),
+    attachMetadata: () => {},
+  };
+  const result = await ts.getInstructions(ctx);
+  assertEquals(result, null);
+});
+
+Deno.test("CombinedToolset - aggregates getInstructions from child toolsets", async () => {
+  const ctx: RunContext<undefined> = {
+    deps: undefined,
+    usage: { inputTokens: 0, outputTokens: 0, totalTokens: 0, requests: 0 },
+    retryCount: 0,
+    toolName: null,
+    runId: "test",
+    metadata: {},
+    toolResultMetadata: new Map(),
+    attachMetadata: () => {},
+  };
+
+  const ts1 = new FunctionToolset([], { instructions: "Instruction A" });
+  const ts2 = new FunctionToolset([], { instructions: "Instruction B" });
+  const combined = new CombinedToolset(ts1, ts2);
+
+  const instructions = await combined.getInstructions(ctx);
+  assertEquals(Array.isArray(instructions), true);
+  const parts = instructions as string[];
+  assertEquals(parts.includes("Instruction A"), true);
+  assertEquals(parts.includes("Instruction B"), true);
+});
+
+Deno.test("CombinedToolset - getInstructions returns null when no child has instructions", async () => {
+  const ctx: RunContext<undefined> = {
+    deps: undefined,
+    usage: { inputTokens: 0, outputTokens: 0, totalTokens: 0, requests: 0 },
+    retryCount: 0,
+    toolName: null,
+    runId: "test",
+    metadata: {},
+    toolResultMetadata: new Map(),
+    attachMetadata: () => {},
+  };
+
+  const ts1 = new FunctionToolset([]);
+  const ts2 = new FunctionToolset([]);
+  const combined = new CombinedToolset(ts1, ts2);
+
+  const instructions = await combined.getInstructions(ctx);
+  assertEquals(instructions, null);
+});
+
+Deno.test("Toolset.getInstructions - custom toolset instructions injected into agent system", async () => {
+  let capturedSystem: string | undefined;
+
+  const model = new MockLanguageModelV3({
+    doGenerate: (opts) => {
+      capturedSystem = opts.prompt.find((m: { role: string }) => m.role === "system")?.content as string | undefined;
+      return Promise.resolve(textResponse("done"));
+    },
+  });
+
+  // Custom toolset implementing getInstructions
+  const customTs: Toolset = {
+    tools: () => [],
+    getInstructions: () =>
+      Promise.resolve("Custom toolset instructions here."),
+  };
+
+  const agent = new Agent({ model, toolsets: [customTs] });
+  await agent.run("test");
+
+  assertEquals(capturedSystem?.includes("Custom toolset instructions here."), true);
+});

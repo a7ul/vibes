@@ -23,6 +23,22 @@ export interface Toolset<TDeps = undefined> {
   ): ToolDefinition<TDeps>[] | Promise<ToolDefinition<TDeps>[]>;
 
   /**
+   * Return instructions for how to use this toolset's tools.
+   *
+   * Override this method to provide instructions that help the agent
+   * understand how to use the tools in this toolset effectively. The
+   * instructions are collected from all step-scoped toolsets each turn
+   * and appended to the system prompt (separated by blank lines).
+   *
+   * Equivalent to Pydantic AI's `AbstractToolset.get_instructions`.
+   *
+   * Default: returns `null` (no instructions).
+   */
+  getInstructions?(
+    ctx: RunContext<TDeps>,
+  ): string | string[] | null | Promise<string | string[] | null>;
+
+  /**
    * Return the toolset instance to use for an entire agent run.
    *
    * Called once per run, before the first model turn. The returned instance

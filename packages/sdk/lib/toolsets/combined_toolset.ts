@@ -30,4 +30,21 @@ export class CombinedToolset<TDeps = undefined> implements Toolset<TDeps> {
     }
     return [...byName.values()];
   }
+
+  async getInstructions(
+    ctx: RunContext<TDeps>,
+  ): Promise<string[] | null> {
+    const parts: string[] = [];
+    for (const ts of this._toolsets) {
+      if (!ts.getInstructions) continue;
+      const result = await ts.getInstructions(ctx);
+      if (!result) continue;
+      if (Array.isArray(result)) {
+        parts.push(...result.filter(Boolean));
+      } else {
+        parts.push(result);
+      }
+    }
+    return parts.length > 0 ? parts : null;
+  }
 }
