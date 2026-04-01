@@ -16,11 +16,36 @@ import type { ToolDefinition } from "../tool.ts";
  * Both default to returning `this` (the same shared instance) when not
  * implemented, preserving the existing zero-overhead behaviour for toolsets
  * that do not need isolation.
+ *
+ * Optionally implement `getInstructions` to provide per-turn instructions that
+ * are injected into the system prompt alongside the agent's own instructions.
+ * Equivalent to Pydantic AI's `AbstractToolset.get_instructions`.
  */
 export interface Toolset<TDeps = undefined> {
   tools(
     ctx: RunContext<TDeps>,
   ): ToolDefinition<TDeps>[] | Promise<ToolDefinition<TDeps>[]>;
+
+  /**
+   * Return instructions for how to use this toolset's tools.
+   *
+   * Called every model turn. The returned string(s) are appended to the
+   * agent's combined instructions and included in the `system` parameter of
+   * each model call, but are **not** stored in `result.messages`.
+   *
+   * Return `null`, `undefined`, or an empty array to provide no instructions.
+   * A returned string array is joined with `\n\n`.
+   *
+   * Equivalent to Pydantic AI's `AbstractToolset.get_instructions`.
+   */
+  getInstructions?(
+    ctx: RunContext<TDeps>,
+  ):
+    | string
+    | string[]
+    | null
+    | undefined
+    | Promise<string | string[] | null | undefined>;
 
   /**
    * Return the toolset instance to use for an entire agent run.

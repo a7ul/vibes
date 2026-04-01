@@ -164,6 +164,10 @@ export function resolveSystemPrompt<TDeps, TOutput>(
  * resolved system prompt. Instructions differ from systemPrompt in that they
  * are resolved per-turn (allowing dynamic per-turn values) and are NOT stored
  * in the message history (they only exist in the `system` field of each call).
+ *
+ * Also collects per-turn instructions from step-scoped toolsets via their
+ * optional `getInstructions` method. Equivalent to Pydantic AI's
+ * `_get_instructions` which combines agent instructions with toolset instructions.
  */
 export async function resolveSystemWithInstructions<TDeps, TOutput>(
   agent: Agent<TDeps, TOutput>,
@@ -172,9 +176,35 @@ export async function resolveSystemWithInstructions<TDeps, TOutput>(
   overrideInstructions?: Array<
     string | ((ctx: RunContext<TDeps>) => string | Promise<string>)
   >,
+  stepScopedToolsets?: ReadonlyArray<Toolset<TDeps>>,
 ): Promise<string | undefined> {
   const instructionParts = overrideInstructions ?? [...agent.instructions];
-  const instructions = await resolvePromptParts(instructionParts, ctx);
+  const agentInstructions = await resolvePromptParts(instructionParts, ctx);
+
+  // Collect per-turn instructions from each step-scoped toolset.
+  const toolsetParts: string[] = [];
+  if (stepScopedToolsets) {
+    for (const ts of stepScopedToolsets) {
+      if (ts.getInstructions) {
+        const tsInstr = await ts.getInstructions(ctx);
+        if (tsInstr) {
+          if (Array.isArray(tsInstr)) {
+            toolsetParts.push(...tsInstr.filter((s) => s && s.trim()));
+          } else if (tsInstr.trim()) {
+            toolsetParts.push(tsInstr);
+          }
+        }
+      }
+    }
+  }
+
+  const allInstructionParts = [
+    ...(agentInstructions ? [agentInstructions] : []),
+    ...toolsetParts,
+  ];
+  const instructions = allInstructionParts.length > 0
+    ? allInstructionParts.join("\n\n")
+    : undefined;
 
   if (systemPrompt && instructions) {
     return `${systemPrompt}\n\n${instructions}`;
@@ -509,6 +539,7 @@ export async function prepareTurn<TDeps, TOutput>(
     ctx,
     systemPrompt,
     opts._override?.instructions,
+    toolsets,
   );
 
   if (
