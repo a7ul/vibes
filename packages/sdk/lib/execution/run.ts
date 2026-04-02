@@ -46,6 +46,7 @@ export async function executeRun<TDeps, TOutput>(
   checkModelRequestsAllowed(opts._bypassModelRequestsCheck);
 
   const ctx: RunContext<TDeps> = createRunContext(
+    agent,
     opts.deps,
     opts.metadata ?? {},
   );

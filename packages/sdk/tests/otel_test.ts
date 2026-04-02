@@ -337,6 +337,7 @@ Deno.test("recordRunAttributes - sets model and agent name attributes", () => {
     agentName: "my-agent",
   });
 
+  assertEquals(span.attributes["gen_ai.operation.name"], "invoke_agent");
   assertEquals(
     span.attributes["gen_ai.request.model"],
     "claude-3-5-sonnet-20241022",
@@ -367,7 +368,9 @@ Deno.test("recordRunAttributes - undefined fields are not set on span", () => {
   const span = new MockSpan();
   recordRunAttributes(span as unknown as import("@opentelemetry/api").Span, {});
 
-  assertEquals(Object.keys(span.attributes).length, 0);
+  // gen_ai.operation.name is always set to "invoke_agent"
+  assertEquals(span.attributes["gen_ai.operation.name"], "invoke_agent");
+  assertEquals(Object.keys(span.attributes).length, 1);
 });
 
 Deno.test("recordRunAttributes - only defined fields are set", () => {
@@ -376,6 +379,7 @@ Deno.test("recordRunAttributes - only defined fields are set", () => {
     model: "gpt-4o",
   });
 
+  assertEquals(span.attributes["gen_ai.operation.name"], "invoke_agent");
   assertEquals(span.attributes["gen_ai.request.model"], "gpt-4o");
   assertEquals(span.attributes["vibes.agent.name"], undefined);
   assertEquals(span.attributes["gen_ai.request.prompt"], undefined);

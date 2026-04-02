@@ -99,6 +99,8 @@ export function recordRunAttributes(
     excludeContent?: boolean;
   },
 ): void {
+  span.setAttribute("gen_ai.operation.name", "invoke_agent");
+
   if (opts.model !== undefined) {
     span.setAttribute("gen_ai.request.model", opts.model);
   }

@@ -66,6 +66,7 @@ async function* runEventStreamLoop<TDeps, TOutput>(
   opts: InternalRunOpts<TDeps, TOutput>,
 ): AsyncGenerator<AgentStreamEvent<TOutput>> {
   const ctx: RunContext<TDeps> = createRunContext(
+    agent,
     opts.deps,
     opts.metadata ?? {},
   );

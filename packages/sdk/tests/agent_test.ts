@@ -168,6 +168,32 @@ Deno.test("Agent - dynamic system prompt receives RunContext deps", async () => 
   assertEquals(capturedSystem?.includes("Alice"), true);
 });
 
+Deno.test("Agent - RunContext.agent references the running agent", async () => {
+  let capturedAgent: Agent<undefined> | undefined;
+
+  const captureTool = tool({
+    name: "capture",
+    description: "Captures the agent from RunContext",
+    parameters: z.object({}),
+    execute: (ctx: RunContext<undefined>) => {
+      capturedAgent = ctx.agent as Agent<undefined>;
+      return Promise.resolve("captured");
+    },
+  });
+
+  const responses = mockValues<DoGenerateResult>(
+    toolCallResponse("capture", {}),
+    textResponse("done"),
+  );
+  const model = new MockLanguageModelV3({
+    doGenerate: () => Promise.resolve(responses()),
+  });
+  const agent = new Agent({ model, tools: [captureTool], name: "test-agent" });
+
+  await agent.run("Capture the agent.");
+  assertEquals(capturedAgent, agent);
+});
+
 Deno.test("Agent - tool maxRetries retries on failure", async () => {
   let callCount = 0;
 
