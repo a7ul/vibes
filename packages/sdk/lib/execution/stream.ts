@@ -142,6 +142,7 @@ async function runStreamLoop<TDeps, TOutput>(
   deferred: DeferredResult<TOutput>,
 ): Promise<void> {
   const ctx: RunContext<TDeps> = createRunContext(
+    agent,
     opts.deps,
     opts.metadata ?? {},
   );

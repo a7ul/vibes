@@ -138,6 +138,7 @@ Vibes is designed to stay current with Pydantic AI  -  an AI agent automatically
 | Deps in system prompts  | `@agent.system_prompt` with context   | ✅     | [Dependencies](/concepts/dependencies) | `agent.addSystemPrompt((ctx) => ...)` |
 | Deps in result validators | `@agent.result_validator` with context | ✅    | [Dependencies](/concepts/dependencies) | `agent.addResultValidator((ctx, result) => ...)` |
 | `RunContext` accessors  | `.deps`, `.usage`, `.metadata`         | ✅     | [Dependencies](/concepts/dependencies) | Full `RunContext<TDeps>` type with all accessors |
+| `RunContext.agent`      | `ctx.agent` — reference to the running agent (v1.76.0) | ✅ | [Dependencies](/concepts/dependencies) | `ctx.agent` is set by the framework on every agent run |
 | Override deps in tests  | Pass fake deps via `agent.override()`  | ✅     | [Testing](/concepts/testing) | `agent.override({ deps: fakeDeps }).run(prompt)` |
 
 ---
@@ -217,6 +218,7 @@ Vibes is designed to stay current with Pydantic AI  -  an AI agent automatically
 | ----------------------- | --------------------------------------- | ------ | ---- | ----- |
 | Logfire integration     | Auto-traces runs, turns, and tool calls | ❌     | - | Not applicable (Logfire is Python-only) |
 | OpenTelemetry support   | OTel Gen-AI semantic conventions        | ✅     | [OpenTelemetry](/concepts/debugging) | `instrumentAgent(agent, opts)` - uses AI SDK `experimental_telemetry` |
+| `gen_ai.operation.name` | `"invoke_agent"` on agent run spans (v1.76.0) | ✅ | [OpenTelemetry](/concepts/debugging) | Set via `recordRunAttributes(span, opts)` |
 | Run-level spans         | Structured spans per run with metadata  | ✅     | [OpenTelemetry](/concepts/debugging) | AI SDK auto-creates run spans when telemetry is enabled |
 | Tool-level spans        | Span per tool call with args and result | ✅     | [OpenTelemetry](/concepts/debugging) | AI SDK auto-creates tool spans when telemetry is enabled |
 | HTTPX instrumentation   | Capture raw HTTP request/response       | ❌     | - | Not applicable (no HTTPX in Deno/Node) |

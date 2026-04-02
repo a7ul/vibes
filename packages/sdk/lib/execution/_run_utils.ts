@@ -117,11 +117,14 @@ export interface InternalRunOpts<TDeps, TOutput> {
 // ---------------------------------------------------------------------------
 
 export function createRunContext<TDeps>(
+  // deno-lint-ignore no-explicit-any
+  agent: Agent<TDeps, any>,
   deps: TDeps,
   metadata: Record<string, unknown>,
 ): RunContext<TDeps> {
   const toolResultMetadata = new Map<string, Record<string, unknown>>();
   return {
+    agent,
     deps,
     usage: createUsage(),
     retryCount: 0,

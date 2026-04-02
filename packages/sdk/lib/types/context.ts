@@ -1,4 +1,5 @@
 import type { ModelMessage } from "ai";
+import type { Agent } from "../agent.ts";
 
 // ---------------------------------------------------------------------------
 // Usage
@@ -22,6 +23,14 @@ export function createUsage(): Usage {
 // ---------------------------------------------------------------------------
 
 export interface RunContext<TDeps = undefined> {
+  /**
+   * The agent running this context.
+   *
+   * Set by the framework on every agent run. May be `undefined` in manually
+   * constructed contexts used for isolated toolset/tool unit tests.
+   */
+  // deno-lint-ignore no-explicit-any
+  agent?: Agent<TDeps, any>;
   /** User-supplied dependencies, injected at run time. */
   deps: TDeps;
   /** Cumulative token usage for this run so far. */
