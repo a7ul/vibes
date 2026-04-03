@@ -97,6 +97,8 @@ export type { ToolCallNext } from "./lib/toolsets/wrapper_toolset.ts";
 export { ApprovalRequiredToolset } from "./lib/toolsets/approval_required_toolset.ts";
 export { ExternalToolset } from "./lib/toolsets/external_toolset.ts";
 export type { ExternalToolDefinition } from "./lib/toolsets/external_toolset.ts";
+export { DeferredLoadingToolset } from "./lib/toolsets/deferred_loading_toolset.ts";
+export { ToolSearchToolset } from "./lib/toolsets/tool_search_toolset.ts";
 
 // Binary / multi-modal content
 export type {
@@ -309,3 +311,10 @@ export type {
 	TodoStatus,
 	TodoStore,
 } from "./community/mod.ts";
+
+// Common tools
+export { webFetchTool } from "./lib/common_tools/web_fetch.ts";
+export type {
+	WebFetchResult,
+	WebFetchToolOptions,
+} from "./lib/common_tools/web_fetch.ts";

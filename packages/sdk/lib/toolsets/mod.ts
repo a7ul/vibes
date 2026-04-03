@@ -10,3 +10,5 @@ export type { ToolCallNext } from "./wrapper_toolset.ts";
 export { ApprovalRequiredToolset } from "./approval_required_toolset.ts";
 export { ExternalToolset } from "./external_toolset.ts";
 export type { ExternalToolDefinition } from "./external_toolset.ts";
+export { DeferredLoadingToolset } from "./deferred_loading_toolset.ts";
+export { ToolSearchToolset } from "./tool_search_toolset.ts";

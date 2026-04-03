@@ -71,6 +71,14 @@ export interface ToolDefinition<TDeps = undefined> {
       ctx: RunContext<TDeps>,
       args: Record<string, unknown>,
     ) => boolean | Promise<boolean>);
+  /**
+   * When true, this tool is hidden from the model until discovered via tool
+   * search. Use together with `ToolSearchToolset` to enable tool discovery in
+   * large toolsets.
+   *
+   * Equivalent to Pydantic AI's `defer_loading=True` on a tool.
+   */
+  deferLoading?: boolean;
 }
 
 /**
@@ -114,6 +122,7 @@ export function tool<
       ctx: RunContext<TDeps>,
       args: Record<string, unknown>,
     ) => boolean | Promise<boolean>);
+  deferLoading?: boolean;
 }): ToolDefinition<TDeps> {
   return opts as ToolDefinition<TDeps>;
 }
