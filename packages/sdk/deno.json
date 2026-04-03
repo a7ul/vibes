@@ -3,7 +3,8 @@
   "version": "1.0.12",
   "exports": {
     ".": "./mod.ts",
-    "./community": "./community/mod.ts"
+    "./community": "./community/mod.ts",
+    "./common-tools": "./lib/common_tools/mod.ts"
   },
   "description": "TypeScript agent framework for production-grade, type-safe AI applications — Pydantic AI patterns powered by Vercel AI SDK.",
   "runtimes": ["deno", "node"],

@@ -57,7 +57,16 @@ Vibes is designed to stay current with Pydantic AI  -  an AI agent automatically
 | Sequential execution   | `sequential=True` on tool                       | ✅     | [Tools](/concepts/tools) | `sequential: true` on `ToolDefinition` - acquires mutex before executing |
 | Deferred tools         | Tools requiring human approval before execution | ✅     | [Human-in-the-Loop](/concepts/human-in-the-loop) | `requiresApproval: true` on `ToolDefinition` - see Deferred Tools section |
 | MCP server tools       | Connect external MCP servers as tool providers  | ✅     | [MCP](/integrations/mcp-client) | `MCPToolset` wraps any `MCPClient` - see MCP section |
+| `defer_loading` on tool | Hide tool from model until discovered via search | ✅    | [Toolsets](/concepts/toolsets) | `deferLoading: true` on `ToolDefinition` - use with `ToolSearchToolset` |
 | Docstring extraction   | Auto-doc from Python docstrings                 | ❌     | - | No runtime equivalent in TypeScript - use `description` field explicitly |
+
+---
+
+## Common Tools
+
+| Feature          | Pydantic AI                             | Status | Docs | Notes |
+| ---------------- | --------------------------------------- | ------ | ---- | ----- |
+| `web_fetch` tool | Fetch URLs and convert to text/markdown | ✅     | -    | `webFetchTool()` — import from `@vibesjs/sdk` or `@vibesjs/sdk/common-tools` |
 
 ---
 
@@ -78,6 +87,8 @@ Vibes is designed to stay current with Pydantic AI  -  an AI agent automatically
 | `ExternalToolset`         | Deferred execution outside agent process    | ✅     | [Human-in-the-Loop](/concepts/human-in-the-loop) | `new ExternalToolset([{ name, description, jsonSchema }])` - schema-only |
 | `forRun` hook             | Per-run state isolation (`AbstractToolset.for_run`)      | ✅     | [Toolsets](/concepts/toolsets) | Optional `forRun(ctx)` method on `Toolset` interface - called once before first turn |
 | `forRunStep` hook         | Per-step state isolation (`AbstractToolset.for_run_step`)| ✅     | [Toolsets](/concepts/toolsets) | Optional `forRunStep(ctx)` method on `Toolset` interface - called at start of each turn |
+| `DeferredLoadingToolset`  | Mark tools for deferred loading (hidden until discovered) | ✅    | [Toolsets](/concepts/toolsets) | `new DeferredLoadingToolset(inner)` - all tools marked `deferLoading: true`; use with `ToolSearchToolset` |
+| `ToolSearchToolset`       | Tool discovery for large toolsets via search              | ✅    | [Toolsets](/concepts/toolsets) | `new ToolSearchToolset(inner)` - hides deferred tools, adds `search_tools` for keyword discovery |
 
 ---
 
