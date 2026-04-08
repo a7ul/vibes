@@ -11,11 +11,19 @@ export interface Usage {
   outputTokens: number;
   totalTokens: number;
   requests: number;
+  /** Input tokens served from cache (cache-read tokens). */
+  cachedInputTokens: number;
 }
 
 /** Creates a zeroed-out {@link Usage} object to accumulate token counts across turns. */
 export function createUsage(): Usage {
-  return { inputTokens: 0, outputTokens: 0, totalTokens: 0, requests: 0 };
+  return {
+    inputTokens: 0,
+    outputTokens: 0,
+    totalTokens: 0,
+    requests: 0,
+    cachedInputTokens: 0,
+  };
 }
 
 // ---------------------------------------------------------------------------

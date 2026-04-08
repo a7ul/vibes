@@ -419,6 +419,7 @@ export function applyUsage(usage: Usage, reported: LanguageModelUsage): void {
   usage.inputTokens += reported.inputTokens ?? 0;
   usage.outputTokens += reported.outputTokens ?? 0;
   usage.totalTokens += reported.totalTokens ?? 0;
+  usage.cachedInputTokens += reported.inputTokenDetails?.cacheReadTokens ?? 0;
   usage.requests += 1;
 }
 

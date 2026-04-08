@@ -305,6 +305,7 @@ Deno.test("recordUsageAttributes - sets all gen_ai usage attributes", () => {
     outputTokens: 50,
     totalTokens: 150,
     requests: 2,
+    cachedInputTokens: 0,
   });
 
   assertEquals(span.attributes["gen_ai.usage.input_tokens"], 100);
@@ -320,10 +321,40 @@ Deno.test("recordUsageAttributes - zero values are recorded", () => {
     outputTokens: 0,
     totalTokens: 0,
     requests: 0,
+    cachedInputTokens: 0,
   });
 
   assertEquals(span.attributes["gen_ai.usage.input_tokens"], 0);
   assertEquals(span.attributes["gen_ai.usage.requests"], 0);
+});
+
+Deno.test("recordUsageAttributes - records cache_read_input_tokens when cachedInputTokens > 0", () => {
+  const span = new MockSpan();
+  recordUsageAttributes(span as unknown as import("@opentelemetry/api").Span, {
+    inputTokens: 100,
+    outputTokens: 50,
+    totalTokens: 150,
+    requests: 1,
+    cachedInputTokens: 30,
+  });
+
+  assertEquals(span.attributes["gen_ai.usage.cache_read_input_tokens"], 30);
+});
+
+Deno.test("recordUsageAttributes - omits cache_read_input_tokens when cachedInputTokens is 0", () => {
+  const span = new MockSpan();
+  recordUsageAttributes(span as unknown as import("@opentelemetry/api").Span, {
+    inputTokens: 100,
+    outputTokens: 50,
+    totalTokens: 150,
+    requests: 1,
+    cachedInputTokens: 0,
+  });
+
+  assertEquals(
+    span.attributes["gen_ai.usage.cache_read_input_tokens"],
+    undefined,
+  );
 });
 
 // ---------------------------------------------------------------------------

@@ -79,6 +79,13 @@ export interface ToolDefinition<TDeps = undefined> {
    * Equivalent to Pydantic AI's `defer_loading=True` on a tool.
    */
   deferLoading?: boolean;
+  /**
+   * Arbitrary metadata for this tool. Not sent to the model — used for
+   * filtering (e.g. `SetMetadataToolset`) and tool behaviour customisation.
+   *
+   * Equivalent to Pydantic AI's `metadata=` on a tool / `ToolDefinition`.
+   */
+  metadata?: Record<string, unknown>;
 }
 
 /**
@@ -123,6 +130,7 @@ export function tool<
       args: Record<string, unknown>,
     ) => boolean | Promise<boolean>);
   deferLoading?: boolean;
+  metadata?: Record<string, unknown>;
 }): ToolDefinition<TDeps> {
   return opts as ToolDefinition<TDeps>;
 }

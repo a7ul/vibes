@@ -53,6 +53,7 @@ Vibes is designed to stay current with Pydantic AI  -  an AI agent automatically
 | Multi-modal returns    | Return images / audio / binary from tools       | ✅     | [Multi-Modal](/advanced/multimodal) | `BinaryContent` / `BinaryImage` - returned from `execute`, auto-converted |
 | `UploadedFile` support | `UploadedFile` for provider file uploads        | ✅     | [Multi-Modal](/advanced/multimodal) | `UploadedFile` type + `uploadedFileSchema` for tool parameters |
 | Tool result metadata   | Attach metadata keyed by `tool_call_id`         | ✅     | [Tools](/concepts/tools) | `ctx.attachMetadata(toolCallId, meta)` - exposed on `result.toolMetadata` |
+| `metadata` on tool     | Arbitrary tool metadata for filtering/routing   | ✅     | [Toolsets](/concepts/toolsets) | `metadata: { key: value }` on `ToolDefinition` - not sent to model |
 | Output functions       | Final-action tools (no model feedback loop)     | ✅     | [Structured Output](/concepts/results) | `outputTool({ ... })` - sets `isOutput: true`, ends run on call |
 | Sequential execution   | `sequential=True` on tool                       | ✅     | [Tools](/concepts/tools) | `sequential: true` on `ToolDefinition` - acquires mutex before executing |
 | Deferred tools         | Tools requiring human approval before execution | ✅     | [Human-in-the-Loop](/concepts/human-in-the-loop) | `requiresApproval: true` on `ToolDefinition` - see Deferred Tools section |
@@ -89,6 +90,8 @@ Vibes is designed to stay current with Pydantic AI  -  an AI agent automatically
 | `forRunStep` hook         | Per-step state isolation (`AbstractToolset.for_run_step`)| ✅     | [Toolsets](/concepts/toolsets) | Optional `forRunStep(ctx)` method on `Toolset` interface - called at start of each turn |
 | `DeferredLoadingToolset`  | Mark tools for deferred loading (hidden until discovered) | ✅    | [Toolsets](/concepts/toolsets) | `new DeferredLoadingToolset(inner)` - all tools marked `deferLoading: true`; use with `ToolSearchToolset` |
 | `ToolSearchToolset`       | Tool discovery for large toolsets via search              | ✅    | [Toolsets](/concepts/toolsets) | `new ToolSearchToolset(inner)` - hides deferred tools, adds `search_tools` for keyword discovery |
+| `SetMetadataToolset`      | Merge metadata onto tools (optionally filtered by `ToolSelector`) | ✅ | [Toolsets](/concepts/toolsets) | `new SetMetadataToolset(inner, { key: val }, selector?)` - equivalent to Pydantic AI's `SetMetadataToolset` / `SetToolMetadata` |
+| `ToolSelector`            | Flexible tool selection criterion for toolset wrappers    | ✅    | [Toolsets](/concepts/toolsets) | `'all'`, `string[]`, `Record<string,unknown>` (metadata match), or `(ctx, tool) => boolean` |
 
 ---
 
@@ -230,6 +233,7 @@ Vibes is designed to stay current with Pydantic AI  -  an AI agent automatically
 | Logfire integration     | Auto-traces runs, turns, and tool calls | ❌     | - | Not applicable (Logfire is Python-only) |
 | OpenTelemetry support   | OTel Gen-AI semantic conventions        | ✅     | [OpenTelemetry](/concepts/debugging) | `instrumentAgent(agent, opts)` - uses AI SDK `experimental_telemetry` |
 | `gen_ai.operation.name` | `"invoke_agent"` on agent run spans (v1.76.0) | ✅ | [OpenTelemetry](/concepts/debugging) | Set via `recordRunAttributes(span, opts)` |
+| Cached token spans      | `gen_ai.usage.cache_read_input_tokens` attribute (v1.78.0) | ✅ | [OpenTelemetry](/concepts/debugging) | `recordUsageAttributes` sets `gen_ai.usage.cache_read_input_tokens` when `cachedInputTokens > 0` |
 | Run-level spans         | Structured spans per run with metadata  | ✅     | [OpenTelemetry](/concepts/debugging) | AI SDK auto-creates run spans when telemetry is enabled |
 | Tool-level spans        | Span per tool call with args and result | ✅     | [OpenTelemetry](/concepts/debugging) | AI SDK auto-creates tool spans when telemetry is enabled |
 | HTTPX instrumentation   | Capture raw HTTP request/response       | ❌     | - | Not applicable (no HTTPX in Deno/Node) |
