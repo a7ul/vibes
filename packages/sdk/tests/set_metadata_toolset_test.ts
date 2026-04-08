@@ -23,7 +23,7 @@ const searchTool = tool({
   name: "search",
   description: "Search the web",
   parameters: z.object({ query: z.string() }),
-  execute: async () => "results",
+  execute: (_ctx, _args) => Promise.resolve("results"),
   metadata: { category: "retrieval" },
 });
 
@@ -31,7 +31,7 @@ const fetchTool = tool({
   name: "fetch",
   description: "Fetch a URL",
   parameters: z.object({ url: z.string() }),
-  execute: async () => "content",
+  execute: () => Promise.resolve("content"),
 });
 
 // ---------------------------------------------------------------------------
@@ -43,7 +43,7 @@ Deno.test("tool metadata - metadata is stored on ToolDefinition", () => {
     name: "tagged",
     description: "A tagged tool",
     parameters: z.object({}),
-    execute: async () => "ok",
+    execute: () => Promise.resolve("ok"),
     metadata: { tier: "premium", version: 2 },
   });
   assertEquals(t.metadata?.tier, "premium");
@@ -55,7 +55,7 @@ Deno.test("tool metadata - metadata defaults to undefined when not set", () => {
     name: "plain",
     description: "No metadata",
     parameters: z.object({}),
-    execute: async () => "ok",
+    execute: () => Promise.resolve("ok"),
   });
   assertEquals(t.metadata, undefined);
 });
