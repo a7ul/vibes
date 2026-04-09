@@ -75,6 +75,12 @@ export function recordUsageAttributes(span: Span, usage: Usage): void {
   span.setAttribute("gen_ai.usage.output_tokens", usage.outputTokens);
   span.setAttribute("gen_ai.usage.total_tokens", usage.totalTokens);
   span.setAttribute("gen_ai.usage.requests", usage.requests);
+  if (usage.cachedInputTokens > 0) {
+    span.setAttribute(
+      "gen_ai.usage.cache_read_input_tokens",
+      usage.cachedInputTokens,
+    );
+  }
 }
 
 // ---------------------------------------------------------------------------

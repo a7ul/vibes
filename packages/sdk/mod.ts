@@ -99,6 +99,12 @@ export { ExternalToolset } from "./lib/toolsets/external_toolset.ts";
 export type { ExternalToolDefinition } from "./lib/toolsets/external_toolset.ts";
 export { DeferredLoadingToolset } from "./lib/toolsets/deferred_loading_toolset.ts";
 export { ToolSearchToolset } from "./lib/toolsets/tool_search_toolset.ts";
+export { SetMetadataToolset } from "./lib/toolsets/set_metadata_toolset.ts";
+export type {
+  ToolSelector,
+  ToolSelectorFn,
+} from "./lib/toolsets/tool_selector.ts";
+export { matchesToolSelector } from "./lib/toolsets/tool_selector.ts";
 
 // Binary / multi-modal content
 export type {

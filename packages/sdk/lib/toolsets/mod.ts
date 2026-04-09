@@ -12,3 +12,6 @@ export { ExternalToolset } from "./external_toolset.ts";
 export type { ExternalToolDefinition } from "./external_toolset.ts";
 export { DeferredLoadingToolset } from "./deferred_loading_toolset.ts";
 export { ToolSearchToolset } from "./tool_search_toolset.ts";
+export { SetMetadataToolset } from "./set_metadata_toolset.ts";
+export type { ToolSelector, ToolSelectorFn } from "./tool_selector.ts";
+export { matchesToolSelector } from "./tool_selector.ts";

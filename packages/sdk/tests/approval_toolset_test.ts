@@ -103,7 +103,7 @@ Deno.test("ApprovalRequiredToolset - marks all inner tools as requiresApproval",
   // Resolve the tools and check requiresApproval flag
   const ctx = {
     deps: undefined as undefined,
-    usage: { inputTokens: 0, outputTokens: 0, totalTokens: 0, requests: 0 },
+    usage: { inputTokens: 0, outputTokens: 0, totalTokens: 0, requests: 0, cachedInputTokens: 0 },
     retryCount: 0,
     toolName: null,
     runId: "test-run",
@@ -134,7 +134,7 @@ Deno.test("ApprovalRequiredToolset - original tool execute is preserved", async 
 
   const ctx = {
     deps: undefined as undefined,
-    usage: { inputTokens: 0, outputTokens: 0, totalTokens: 0, requests: 0 },
+    usage: { inputTokens: 0, outputTokens: 0, totalTokens: 0, requests: 0, cachedInputTokens: 0 },
     retryCount: 0,
     toolName: null,
     runId: "test-run",

@@ -47,7 +47,7 @@ Deno.test("ExternalToolset - exposes tools to model with requiresApproval", () =
   const toolset = new ExternalToolset([readFileDef]);
   const ctx = {
     deps: undefined as undefined,
-    usage: { inputTokens: 0, outputTokens: 0, totalTokens: 0, requests: 0 },
+    usage: { inputTokens: 0, outputTokens: 0, totalTokens: 0, requests: 0, cachedInputTokens: 0 },
     retryCount: 0,
     toolName: null,
     runId: "test",

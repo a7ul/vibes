@@ -173,7 +173,7 @@ Deno.test("MCPToolset - caches tool list within TTL", async () => {
   // Create a minimal RunContext for testing
   const ctx: RunContext<undefined> = {
     deps: undefined,
-    usage: { inputTokens: 0, outputTokens: 0, totalTokens: 0, requests: 0 },
+    usage: { inputTokens: 0, outputTokens: 0, totalTokens: 0, requests: 0, cachedInputTokens: 0 },
     retryCount: 0,
     toolName: null,
     runId: "test",
@@ -213,7 +213,7 @@ Deno.test("MCPToolset - TTL expiry triggers re-fetch", async () => {
 
   const ctx: RunContext<undefined> = {
     deps: undefined,
-    usage: { inputTokens: 0, outputTokens: 0, totalTokens: 0, requests: 0 },
+    usage: { inputTokens: 0, outputTokens: 0, totalTokens: 0, requests: 0, cachedInputTokens: 0 },
     retryCount: 0,
     toolName: null,
     runId: "test",
@@ -253,7 +253,7 @@ Deno.test("MCPToolset - isError throws from tool execution", async () => {
 
   const ctx: RunContext<undefined> = {
     deps: undefined,
-    usage: { inputTokens: 0, outputTokens: 0, totalTokens: 0, requests: 0 },
+    usage: { inputTokens: 0, outputTokens: 0, totalTokens: 0, requests: 0, cachedInputTokens: 0 },
     retryCount: 0,
     toolName: null,
     runId: "test",
@@ -320,7 +320,7 @@ Deno.test("MCPToolset - tool with empty text returns placeholder", async () => {
 
   const ctx: RunContext<undefined> = {
     deps: undefined,
-    usage: { inputTokens: 0, outputTokens: 0, totalTokens: 0, requests: 0 },
+    usage: { inputTokens: 0, outputTokens: 0, totalTokens: 0, requests: 0, cachedInputTokens: 0 },
     retryCount: 0,
     toolName: null,
     runId: "test",
@@ -415,7 +415,7 @@ Deno.test("MCPManager - last server wins on name conflict", async () => {
 
   const ctx: RunContext<undefined> = {
     deps: undefined,
-    usage: { inputTokens: 0, outputTokens: 0, totalTokens: 0, requests: 0 },
+    usage: { inputTokens: 0, outputTokens: 0, totalTokens: 0, requests: 0, cachedInputTokens: 0 },
     retryCount: 0,
     toolName: null,
     runId: "test",
@@ -467,7 +467,7 @@ Deno.test("MCPManager - empty manager returns no tools", async () => {
   const manager = new MCPManager();
   const ctx: RunContext<undefined> = {
     deps: undefined,
-    usage: { inputTokens: 0, outputTokens: 0, totalTokens: 0, requests: 0 },
+    usage: { inputTokens: 0, outputTokens: 0, totalTokens: 0, requests: 0, cachedInputTokens: 0 },
     retryCount: 0,
     toolName: null,
     runId: "test",
