@@ -272,11 +272,13 @@ Vibes is designed to stay current with Pydantic AI  -  an AI agent automatically
 
 ## AG-UI Protocol
 
-| Feature                | Pydantic AI                                     | Status | Docs | Notes |
-| ---------------------- | ----------------------------------------------- | ------ | ---- | ----- |
-| AG-UI event streaming  | `AGUIAdapter.run_stream()` - agent-to-UI events | ✅     | [AG-UI](/integrations/ag-ui) | `AGUIAdapter.handleRequest(input)` returns SSE `Response` |
-| Follow-up messaging    | Continue conversation after tool call results   | ✅     | [AG-UI](/integrations/ag-ui) | `input.messages` history passed as `messageHistory` automatically |
-| Structured event types | Typed event payloads for all agent actions      | ✅     | [AG-UI](/integrations/ag-ui) | `AGUIEvent` discriminated union with 16 event variants |
+| Feature                       | Pydantic AI                                     | Status | Docs | Notes |
+| ----------------------------- | ----------------------------------------------- | ------ | ---- | ----- |
+| AG-UI event streaming         | `AGUIAdapter.run_stream()` - agent-to-UI events | ✅     | [AG-UI](/integrations/ag-ui) | `AGUIAdapter.handleRequest(input)` returns SSE `Response` |
+| Follow-up messaging           | Continue conversation after tool call results   | ✅     | [AG-UI](/integrations/ag-ui) | `input.messages` history passed as `messageHistory` automatically |
+| Structured event types        | Typed event payloads for all agent actions      | ✅     | [AG-UI](/integrations/ag-ui) | `AGUIEvent` discriminated union with 16 event variants |
+| Thinking / reasoning events   | AG-UI 0.1.13+ reasoning events for thinking models | ❌  | - | Pydantic AI emits `ThinkingStart`/`ThinkingEnd` events via `_thinking_0_13.py`; not yet ported |
+| AG-UI multi-modal tool output | Return images/files from tools via AG-UI        | ❌     | - | Pydantic AI v1.79.0 added file description in tool result content; not yet ported |
 
 ---
 
@@ -289,3 +291,21 @@ Vibes is designed to stay current with Pydantic AI  -  an AI agent automatically
 | Document input       | PDFs and documents as tool parameters    | ✅     | [Multi-Modal](/advanced/multimodal) | `BinaryContent` with `application/pdf` etc.; `isDocumentContent()` guard |
 | `UploadedFile`       | File reference for provider file uploads | ✅     | [Multi-Modal](/advanced/multimodal) | `UploadedFile` type + `uploadedFileSchema` + `uploadedFileToToolResult()` |
 | `BinaryImage` output | Agent returns a generated image          | ✅     | [Multi-Modal](/advanced/multimodal) | `outputSchema: BINARY_IMAGE_OUTPUT` - agent returns `BinaryContent` when a tool produces an `image/*` result |
+
+---
+
+## Capabilities
+
+Capabilities (`AbstractCapability`, `CombinedCapability`, `WrapperCapability`) are a composable, class-based system in Pydantic AI for providing reusable agent behaviour (instructions, toolsets, model settings, lifecycle hooks). Added `apply()` visitor method in v1.79.0.
+
+| Feature                           | Pydantic AI                                          | Status | Docs | Notes |
+| --------------------------------- | ---------------------------------------------------- | ------ | ---- | ----- |
+| `AbstractCapability` base class   | Composable unit of agent behaviour                   | ❌     | -    | Provides `get_instructions`, `get_toolset`, `get_model_settings`, `prepare_tools`, lifecycle hooks |
+| `CombinedCapability`              | Combine multiple capabilities into one               | ❌     | -    | Delegates all hooks to child capabilities in order |
+| `WrapperCapability`               | Wrap a single capability, override specific hooks    | ❌     | -    | Analogous to `WrapperToolset` for capabilities |
+| `apply()` visitor                 | Traverse all leaf capabilities in a tree             | ❌     | -    | Added in v1.79.0; calls a visitor function on each leaf |
+| Run lifecycle hooks               | `before_run`, `after_run`, `wrap_run`, `on_run_error` | ❌    | -    | Per-run lifecycle; `wrap_run` can short-circuit or recover from errors |
+| Node run lifecycle hooks          | `before_node_run`, `wrap_node_run`, `after_node_run` | ❌     | -    | Graph-node-level hooks; not applicable (vibes has no graph nodes) |
+| Model request hooks               | `before_model_request`, `after_model_request`, `wrap_model_request` | ❌ | - | Per-model-call hooks for inspecting/modifying requests and responses |
+| Tool lifecycle hooks              | `before_tool_execute`, `after_tool_execute`, `wrap_tool_execute` | ❌ | - | Per-tool-call hooks |
+| `has_wrap_run_event_stream`       | Property indicating event stream override is present | ❌     | -    | Added in v1.79.0; used to force streaming when a capability overrides `wrap_run_event_stream` |
