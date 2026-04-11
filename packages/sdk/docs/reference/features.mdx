@@ -289,3 +289,13 @@ Vibes is designed to stay current with Pydantic AI  -  an AI agent automatically
 | Document input       | PDFs and documents as tool parameters    | ✅     | [Multi-Modal](/advanced/multimodal) | `BinaryContent` with `application/pdf` etc.; `isDocumentContent()` guard |
 | `UploadedFile`       | File reference for provider file uploads | ✅     | [Multi-Modal](/advanced/multimodal) | `UploadedFile` type + `uploadedFileSchema` + `uploadedFileToToolResult()` |
 | `BinaryImage` output | Agent returns a generated image          | ✅     | [Multi-Modal](/advanced/multimodal) | `outputSchema: BINARY_IMAGE_OUTPUT` - agent returns `BinaryContent` when a tool produces an `image/*` result |
+
+---
+
+## Capabilities & Hooks (v1.80.0)
+
+| Feature                  | Pydantic AI                                                        | Status | Docs | Notes |
+| ------------------------ | ------------------------------------------------------------------ | ------ | ---- | ----- |
+| `CapabilityOrdering`     | `innermost`, `outermost`, `wraps`, `wrapped_by`, `requires`       | ❌     | -    | Python-only capability ordering system; vibes uses toolset composition |
+| Hooks ordering           | `Hooks` ordering parameter and instance refs in `wraps`/`wrapped_by` | ❌  | -    | Python-only hooks system |
+| Server-side compaction   | `OpenAICompaction` / `AnthropicCompaction` capabilities            | ❌     | -    | Provider-specific conversation compaction; use `historyProcessors` for similar results |
