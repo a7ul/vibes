@@ -10,6 +10,7 @@
  * - STATE_SNAPSHOT from getState callback and input.state
  * - RAW usage events
  * - RUN_ERROR on agent failure (MaxTurnsError)
+ * - Pending tool calls closed with TOOL_CALL_END before RUN_ERROR on stream error
  * - Multi-turn conversation via messageHistory
  * - handler() rejects non-POST and invalid JSON bodies
  */
@@ -552,6 +553,41 @@ Deno.test("AGUIAdapter - RUN_ERROR has non-empty message", async () => {
     | undefined;
   assertExists(runError);
   assertEquals(runError.message.length > 0, true);
+});
+
+Deno.test("AGUIAdapter - closes pending tool calls with TOOL_CALL_END before RUN_ERROR", async () => {
+  // The model always emits a tool call for an unregistered tool, so no tool
+  // result is ever produced.  After maxTurns the agent throws MaxTurnsError.
+  // The adapter must emit TOOL_CALL_END for every pending (started-but-not-ended)
+  // tool call before it emits RUN_ERROR so the UI doesn't show them as running.
+  const model = new MockLanguageModelV3({
+    doStream: () => Promise.resolve(toolCallStream("ghost_tool", {})),
+  });
+  const agent = new Agent({ model, maxTurns: 1 });
+  const adapter = new AGUIAdapter(agent);
+
+  const events = await collectEvents(adapter.handleRequest(makeInput()));
+
+  const toolCallStart = events.find((e) => e.type === "TOOL_CALL_START") as
+    | Extract<AGUIEvent, { type: "TOOL_CALL_START" }>
+    | undefined;
+  const toolCallEnd = events.find((e) => e.type === "TOOL_CALL_END") as
+    | Extract<AGUIEvent, { type: "TOOL_CALL_END" }>
+    | undefined;
+  const runError = events.find((e) => e.type === "RUN_ERROR");
+
+  // A tool call was started
+  assertExists(toolCallStart);
+  // It must be closed before the error
+  assertExists(toolCallEnd);
+  assertExists(runError);
+
+  const startIdx = events.indexOf(toolCallStart);
+  const endIdx = events.indexOf(toolCallEnd);
+  const errorIdx = events.indexOf(runError);
+
+  assertEquals(startIdx < endIdx, true, "TOOL_CALL_END must come after TOOL_CALL_START");
+  assertEquals(endIdx < errorIdx, true, "TOOL_CALL_END must come before RUN_ERROR");
 });
 
 // ---------------------------------------------------------------------------
