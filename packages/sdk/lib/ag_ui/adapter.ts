@@ -162,6 +162,9 @@ export class AGUIAdapter<TDeps, TOutput> {
           // Track active text message for TEXT_MESSAGE_* lifecycle
           let currentMessageId: string | null = null;
           let turnNumber = 0;
+          // Track pending tool calls (started but not yet ended) so they can
+          // be closed before emitting RUN_ERROR on stream failure.
+          const pendingToolCallIds = new Set<string>();
 
           const eventStream = agent.runStreamEvents(prompt, {
             deps: deps as TDeps,
@@ -206,6 +209,7 @@ export class AGUIAdapter<TDeps, TOutput> {
                   });
                   currentMessageId = null;
                 }
+                pendingToolCallIds.add(event.toolCallId);
                 enqueue({
                   type: "TOOL_CALL_START",
                   toolCallId: event.toolCallId,
@@ -222,6 +226,7 @@ export class AGUIAdapter<TDeps, TOutput> {
               }
 
               case "tool-call-result": {
+                pendingToolCallIds.delete(event.toolCallId);
                 enqueue({
                   type: "TOOL_CALL_END",
                   toolCallId: event.toolCallId,
@@ -265,6 +270,12 @@ export class AGUIAdapter<TDeps, TOutput> {
                 const message = errorObj instanceof Error
                   ? errorObj.message
                   : String(errorObj);
+                // Close any pending tool calls before emitting the error so the
+                // UI doesn't show them as still running.
+                for (const toolCallId of pendingToolCallIds) {
+                  enqueue({ type: "TOOL_CALL_END", toolCallId });
+                }
+                pendingToolCallIds.clear();
                 enqueue({ type: "RUN_ERROR", message });
                 controller.close();
                 return;
