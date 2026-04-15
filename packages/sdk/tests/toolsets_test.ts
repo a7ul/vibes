@@ -111,6 +111,78 @@ Deno.test("CombinedToolset - last toolset wins on name conflict", async () => {
   assertEquals(capturedDesc, "second");
 });
 
+Deno.test("CombinedToolset - propagates forRun to child toolsets", async () => {
+  const forRunCalled: string[] = [];
+
+  function makeLifecycleToolset(id: string): Toolset {
+    let runInstance: Toolset | null = null;
+    const ts: Toolset = {
+      tools: () => Promise.resolve([makeTool(`tool_${id}`)]),
+      forRun(_ctx) {
+        forRunCalled.push(id);
+        runInstance = {
+          tools: () => Promise.resolve([makeTool(`tool_${id}`)]),
+        };
+        return Promise.resolve(runInstance);
+      },
+    };
+    return ts;
+  }
+
+  const model = new MockLanguageModelV3({
+    doGenerate: () => Promise.resolve(textResponse("done")),
+  });
+
+  const ts1 = makeLifecycleToolset("a");
+  const ts2 = makeLifecycleToolset("b");
+  const combined = new CombinedToolset(ts1, ts2);
+  const agent = new Agent({ model, toolsets: [combined] });
+  await agent.run("go");
+
+  assertEquals(forRunCalled.includes("a"), true, "forRun should be called on child ts 'a'");
+  assertEquals(forRunCalled.includes("b"), true, "forRun should be called on child ts 'b'");
+});
+
+Deno.test("CombinedToolset - propagates forRunStep to child toolsets", async () => {
+  const forRunStepCalled: string[] = [];
+
+  function makeStepToolset(id: string): Toolset {
+    const ts: Toolset = {
+      tools: () => Promise.resolve([makeTool(`tool_${id}`)]),
+      forRunStep(_ctx) {
+        forRunStepCalled.push(id);
+        return Promise.resolve(this);
+      },
+    };
+    return ts;
+  }
+
+  const responses = mockValues<DoGenerateResult>(
+    toolCallResponse("tool_a", {}),
+    textResponse("done"),
+  );
+  const model = new MockLanguageModelV3({
+    doGenerate: () => Promise.resolve(responses()),
+  });
+
+  const ts1 = makeStepToolset("a");
+  const ts2 = makeStepToolset("b");
+  const combined = new CombinedToolset(ts1, ts2);
+  const agent = new Agent({ model, toolsets: [combined] });
+  await agent.run("go");
+
+  assertEquals(
+    forRunStepCalled.filter((id) => id === "a").length >= 1,
+    true,
+    "forRunStep should be called on child ts 'a' at least once",
+  );
+  assertEquals(
+    forRunStepCalled.filter((id) => id === "b").length >= 1,
+    true,
+    "forRunStep should be called on child ts 'b' at least once",
+  );
+});
+
 Deno.test("FilteredToolset - excludes tools when predicate returns false", async () => {
   type Deps = { admin: boolean };
   let capturedNames: string[] = [];
