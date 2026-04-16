@@ -30,4 +30,35 @@ export class CombinedToolset<TDeps = undefined> implements Toolset<TDeps> {
     }
     return [...byName.values()];
   }
+
+  /**
+   * Propagates `forRun` to all child toolsets in parallel and returns a new
+   * `CombinedToolset` wrapping the resulting run-scoped instances.
+   * Equivalent to Pydantic AI's `CombinedToolset.for_run`.
+   */
+  async forRun(ctx: RunContext<TDeps>): Promise<CombinedToolset<TDeps>> {
+    const newToolsets = await Promise.all(
+      this._toolsets.map((ts) =>
+        ts.forRun ? ts.forRun(ctx) : Promise.resolve(ts)
+      ),
+    );
+    return new CombinedToolset(...newToolsets);
+  }
+
+  /**
+   * Propagates `forRunStep` to all child toolsets in parallel. Returns `this`
+   * when no child returned a new instance, otherwise a new `CombinedToolset`.
+   * Equivalent to Pydantic AI's `CombinedToolset.for_run_step`.
+   */
+  async forRunStep(ctx: RunContext<TDeps>): Promise<CombinedToolset<TDeps>> {
+    const newToolsets = await Promise.all(
+      this._toolsets.map((ts) =>
+        ts.forRunStep ? ts.forRunStep(ctx) : Promise.resolve(ts)
+      ),
+    );
+    if (newToolsets.every((ts, i) => ts === this._toolsets[i])) {
+      return this;
+    }
+    return new CombinedToolset(...newToolsets);
+  }
 }
