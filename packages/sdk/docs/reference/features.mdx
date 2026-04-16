@@ -30,7 +30,7 @@ Vibes is designed to stay current with Pydantic AI  -  an AI agent automatically
 | Metadata tagging        | `metadata=` on run                           | ✅     | [Agents](/concepts/agents) | `{ metadata: {...} }` on `run()`/`stream()` - accessible via `ctx.metadata` |
 | `Agent.override()`      | Context manager swapping model/deps/toolsets | ✅     | [Testing](/concepts/testing) | `agent.override({ model, tools, ... }).run(prompt)` |
 | Event-stream run        | `agent.run_stream_events()`                  | ✅     | [Streaming](/concepts/streaming) | `agent.runStreamEvents(prompt)` - async iterable of typed `AgentStreamEvent` objects |
-| End strategy            | `end_strategy`                               | ✅     | [Agents](/concepts/agents) | `endStrategy: 'early' \| 'exhaustive'` on `AgentOptions`/`RunOptions` |
+| End strategy            | `end_strategy`                               | ✅     | [Agents](/concepts/agents) | `endStrategy: 'early' \| 'graceful' \| 'exhaustive'` on `AgentOptions`/`RunOptions` |
 | Max concurrency         | `max_concurrency`                            | ✅     | [Agents](/concepts/agents) | `maxConcurrency` on `AgentOptions` - semaphore-based cap on concurrent tool executions |
 | `instructions` field    | `@agent.instructions` decorator              | ✅     | [Agents](/concepts/agents) | `instructions` on `AgentOptions`/`RunOptions`; re-injected each turn, not stored in message history |
 | Model-specific settings | `model_settings=` on `run()`                 | ✅     | [Models](/concepts/models) | `modelSettings: { temperature, maxTokens, ... }` on `AgentOptions` or `RunOptions` |

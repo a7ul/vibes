@@ -32,14 +32,18 @@ export type SystemPromptFn<TDeps> = (
 export type InstructionsFn<TDeps> = SystemPromptFn<TDeps>;
 
 /**
- * Controls when the agent stops after receiving a `final_result` tool call.
+ * Controls when the agent stops after receiving a `final_result` tool call
+ * when the model returns multiple tool calls in the same response.
  *
  * - `'early'` (default): Stop as soon as `final_result` is found, even if other
  *   tool calls were returned in the same response.
- * - `'exhaustive'`: Execute all other tool calls in the same response before
- *   returning the final result.
+ * - `'graceful'`: Execute all function (non-output) tool calls in the same
+ *   response, but skip any additional output tool calls. Equivalent to
+ *   pydantic-ai's `'graceful'` strategy for parallel tool calls.
+ * - `'exhaustive'`: Execute all tool calls in the same response before
+ *   returning the final result, including any additional output tools.
  */
-export type EndStrategy = "early" | "exhaustive";
+export type EndStrategy = "early" | "graceful" | "exhaustive";
 
 export interface AgentOptions<TDeps, TOutput> {
   /** Human-readable name for this agent. */
@@ -91,8 +95,9 @@ export interface AgentOptions<TDeps, TOutput> {
   modelSettings?: ModelSettings;
   /**
    * When to stop after receiving a `final_result` tool call.
-   * `'early'` (default) stops immediately; `'exhaustive'` runs all other
-   * tool calls in the same response first.
+   * `'early'` (default) stops immediately; `'graceful'` runs other function
+   * tool calls but skips extra output tools; `'exhaustive'` runs all tool
+   * calls in the same response first.
    */
   endStrategy?: EndStrategy;
   /**

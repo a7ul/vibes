@@ -132,3 +132,47 @@ Deno.test("endStrategy - multi-turn with tool calls completes correctly", async 
   assertEquals(result.output.value, "final");
   assertEquals(toolCalled, true);
 });
+
+Deno.test("endStrategy - 'graceful' agent setting is stored", () => {
+  const model = new MockLanguageModelV3({
+    doGenerate: textResponse("ok"),
+  });
+  const agent = new Agent({ model, endStrategy: "graceful" });
+  assertEquals(agent.endStrategy, "graceful");
+});
+
+Deno.test("endStrategy - per-run override to 'graceful'", async () => {
+  // Agent defaults to 'early' but run overrides to 'graceful'
+  const responses = mockValues<DoGenerateResult>(
+    toolCallResponse("final_result", { value: "done" }),
+  );
+  const model = new MockLanguageModelV3({
+    doGenerate: () => Promise.resolve(responses()),
+  });
+
+  const agent = new Agent<undefined, z.infer<typeof OutputSchema>>({
+    model,
+    outputSchema: OutputSchema,
+    endStrategy: "early",
+  });
+
+  // 'graceful' should produce the same result
+  const result = await agent.run("go", { endStrategy: "graceful" });
+  assertEquals(result.output.value, "done");
+});
+
+Deno.test("endStrategy - override() can set endStrategy to 'graceful'", async () => {
+  const model = new MockLanguageModelV3({
+    doGenerate: toolCallResponse("final_result", { value: "overridden" }),
+  });
+
+  const agent = new Agent<undefined, z.infer<typeof OutputSchema>>({
+    model,
+    outputSchema: OutputSchema,
+  });
+
+  const result = await agent
+    .override({ endStrategy: "graceful" })
+    .run("go");
+  assertEquals(result.output.value, "overridden");
+});
