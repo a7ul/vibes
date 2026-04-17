@@ -225,3 +225,111 @@ Deno.test("ToolSearchToolset - no-op when no tools have deferLoading", async () 
   assertEquals(capturedToolLists[0].includes("beta"), true);
   assertEquals(capturedToolLists[0].includes("search_tools"), false);
 });
+
+// ---------------------------------------------------------------------------
+// Token-based keyword matching tests (pydantic-ai v1.84.0 bug fix)
+// ---------------------------------------------------------------------------
+
+Deno.test("ToolSearchToolset - token matching: finds tool by exact token, not substring", async () => {
+  // Bug fix (pydantic-ai v1.84.0): searching "me" should NOT match "comment_tool"
+  // (which contains "me" as a substring of "comment"), but SHOULD match "get_me"
+  // (which contains "me" as an exact alphanumeric token).
+  const responses = mockValues<DoGenerateResult>(
+    toolCallResponse("search_tools", { keywords: "me" }, "tc1"),
+    textResponse("done"),
+  );
+
+  let capturedSearchResult = "";
+  const model = new MockLanguageModelV3({
+    doGenerate: (opts) => {
+      // Inspect the tool result in the second turn's prompt.
+      for (const msg of opts.prompt ?? []) {
+        if (msg.role === "tool") {
+          for (const part of msg.content) {
+            if (
+              part.type === "tool-result" &&
+              part.toolName === "search_tools"
+            ) {
+              const output = part.output as { type: string; value: string };
+              capturedSearchResult = output.value ?? "";
+            }
+          }
+        }
+      }
+      return Promise.resolve(responses());
+    },
+  });
+
+  const commentTool = tool({
+    name: "comment_tool",
+    description: "Post a comment",
+    parameters: z.object({}),
+    execute: () => Promise.resolve("commented"),
+  });
+  const getMeTool = tool({
+    name: "get_me",
+    description: "Get the current user profile",
+    parameters: z.object({}),
+    execute: () => Promise.resolve("profile"),
+  });
+
+  const ts = new ToolSearchToolset(
+    new DeferredLoadingToolset(new FunctionToolset([commentTool, getMeTool])),
+  );
+
+  const agent = new Agent({ model, toolsets: [ts], maxTurns: 5 });
+  await agent.run("find me tool");
+
+  // "me" should match "get_me" (exact token) but NOT "comment_tool"
+  // (where "me" only appears as substring inside "comment").
+  assertEquals(capturedSearchResult.includes("get_me"), true);
+  assertEquals(capturedSearchResult.includes("comment_tool"), false);
+});
+
+Deno.test("ToolSearchToolset - token matching: higher-scoring tool appears first", async () => {
+  // "github profile" has two tokens: "github" and "profile".
+  // "github_get_profile" matches both (score 2).
+  // "profile_viewer" matches one: "profile" (score 1).
+  // "github_issues" matches one: "github" (score 1).
+  // Result order: github_get_profile must appear before the single-match tools.
+  const responses = mockValues<DoGenerateResult>(
+    toolCallResponse("search_tools", { keywords: "github profile" }, "tc1"),
+    textResponse("done"),
+  );
+
+  let capturedSearchResult = "";
+  const model = new MockLanguageModelV3({
+    doGenerate: (opts) => {
+      for (const msg of opts.prompt ?? []) {
+        if (msg.role === "tool") {
+          for (const part of msg.content) {
+            if (
+              part.type === "tool-result" &&
+              part.toolName === "search_tools"
+            ) {
+              const output = part.output as { type: string; value: string };
+              capturedSearchResult = output.value ?? "";
+            }
+          }
+        }
+      }
+      return Promise.resolve(responses());
+    },
+  });
+
+  const ts = new ToolSearchToolset(
+    new DeferredLoadingToolset(
+      new FunctionToolset([
+        makeTool("github_get_profile", "Get a GitHub user profile"),
+        makeTool("profile_viewer", "View any user profile"),
+        makeTool("github_issues", "List GitHub issues"),
+      ]),
+    ),
+  );
+
+  const agent = new Agent({ model, toolsets: [ts], maxTurns: 5 });
+  await agent.run("search");
+
+  const parsed: Array<{ name: string }> = JSON.parse(capturedSearchResult);
+  assertEquals(parsed[0].name, "github_get_profile");
+});

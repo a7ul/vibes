@@ -6,11 +6,29 @@ import type { Toolset } from "./toolset.ts";
 const SEARCH_TOOLS_NAME = "search_tools";
 const MAX_SEARCH_RESULTS = 10;
 
+// Matches alphanumeric runs (same regex as pydantic-ai's _SEARCH_TOKEN_RE).
+// Tokenizing on word boundaries avoids substring false-positives such as
+// matching "me" inside "comment".
+const SEARCH_TOKEN_RE = /[a-z0-9]+/g;
+
 interface SearchIndexEntry {
   name: string;
-  nameLower: string;
   description: string;
-  descriptionLower: string;
+  searchTerms: Set<string>;
+}
+
+/** Extract the set of lowercase alphanumeric tokens from a string. */
+function searchTerms(text: string): Set<string> {
+  return new Set(text.toLowerCase().match(SEARCH_TOKEN_RE) ?? []);
+}
+
+/** Merge token sets from name and (optional) description. */
+function toolSearchTerms(name: string, description: string): Set<string> {
+  const terms = searchTerms(name);
+  for (const t of searchTerms(description)) {
+    terms.add(t);
+  }
+  return terms;
 }
 
 const searchToolParameters = z.object({
@@ -103,9 +121,8 @@ export class ToolSearchToolset<TDeps = undefined> implements Toolset<TDeps> {
 
     const searchIndex: SearchIndexEntry[] = undiscovered.map((t) => ({
       name: t.name,
-      nameLower: t.name.toLowerCase(),
       description: t.description,
-      descriptionLower: t.description.toLowerCase(),
+      searchTerms: toolSearchTerms(t.name, t.description),
     }));
 
     // Capture reference to `_discovered` for use inside execute.
@@ -127,18 +144,29 @@ export class ToolSearchToolset<TDeps = undefined> implements Toolset<TDeps> {
           return Promise.resolve("Please provide search keywords.");
         }
 
-        const terms = keywords.toLowerCase().split(/\s+/).filter(Boolean);
-        const matches: Array<{ name: string; description: string }> = [];
+        const queryTerms = searchTerms(keywords);
+        if (queryTerms.size === 0) {
+          return Promise.resolve("Please provide search keywords.");
+        }
 
+        // Score each tool by the number of query tokens that appear in its
+        // search terms (set intersection). Sorts highest score first.
+        const scored: Array<{ score: number; name: string; description: string }> = [];
         for (const entry of searchIndex) {
-          const searchable =
-            entry.nameLower +
-            (entry.descriptionLower ? " " + entry.descriptionLower : "");
-          if (terms.some((term) => searchable.includes(term))) {
-            matches.push({ name: entry.name, description: entry.description });
-            if (matches.length >= MAX_SEARCH_RESULTS) break;
+          let score = 0;
+          for (const term of queryTerms) {
+            if (entry.searchTerms.has(term)) score++;
+          }
+          if (score > 0) {
+            scored.push({ score, name: entry.name, description: entry.description });
           }
         }
+
+        scored.sort((a, b) => b.score - a.score);
+        const matches = scored.slice(0, MAX_SEARCH_RESULTS).map(({ name, description }) => ({
+          name,
+          description,
+        }));
 
         // Mark discovered tools so they appear on the next turn.
         for (const m of matches) {
