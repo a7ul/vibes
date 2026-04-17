@@ -29,6 +29,25 @@ function toolNames(opts: { tools?: ToolEntry[] }): string[] {
   return (opts.tools ?? []).map((t) => t.name);
 }
 
+/** Extract the search_tools result value from the second-turn prompt. */
+function extractSearchResult(opts: { prompt?: unknown[] }): string {
+  for (const msg of opts.prompt ?? []) {
+    const m = msg as { role?: string; content?: unknown[] };
+    if (m.role === "tool") {
+      for (const part of m.content ?? []) {
+        const p = part as { type?: string; toolName?: string; output?: unknown };
+        if (p.type === "tool-result" && p.toolName === "search_tools") {
+          const output = p.output as { type?: string; value?: string } | undefined;
+          if (output?.type === "text" && typeof output.value === "string") {
+            return output.value;
+          }
+        }
+      }
+    }
+  }
+  return "";
+}
+
 // ---------------------------------------------------------------------------
 // DeferredLoadingToolset tests
 // ---------------------------------------------------------------------------
@@ -242,20 +261,7 @@ Deno.test("ToolSearchToolset - token matching: finds tool by exact token, not su
   let capturedSearchResult = "";
   const model = new MockLanguageModelV3({
     doGenerate: (opts) => {
-      // Inspect the tool result in the second turn's prompt.
-      for (const msg of opts.prompt ?? []) {
-        if (msg.role === "tool") {
-          for (const part of msg.content) {
-            if (
-              part.type === "tool-result" &&
-              part.toolName === "search_tools"
-            ) {
-              const output = part.output as { type: string; value: string };
-              capturedSearchResult = output.value ?? "";
-            }
-          }
-        }
-      }
+      capturedSearchResult = extractSearchResult(opts) || capturedSearchResult;
       return Promise.resolve(responses());
     },
   });
@@ -300,19 +306,7 @@ Deno.test("ToolSearchToolset - token matching: higher-scoring tool appears first
   let capturedSearchResult = "";
   const model = new MockLanguageModelV3({
     doGenerate: (opts) => {
-      for (const msg of opts.prompt ?? []) {
-        if (msg.role === "tool") {
-          for (const part of msg.content) {
-            if (
-              part.type === "tool-result" &&
-              part.toolName === "search_tools"
-            ) {
-              const output = part.output as { type: string; value: string };
-              capturedSearchResult = output.value ?? "";
-            }
-          }
-        }
-      }
+      capturedSearchResult = extractSearchResult(opts) || capturedSearchResult;
       return Promise.resolve(responses());
     },
   });

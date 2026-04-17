@@ -25,8 +25,10 @@ function searchTerms(text: string): Set<string> {
 /** Merge token sets from name and (optional) description. */
 function toolSearchTerms(name: string, description: string): Set<string> {
   const terms = searchTerms(name);
-  for (const t of searchTerms(description)) {
-    terms.add(t);
+  if (description) {
+    for (const t of searchTerms(description)) {
+      terms.add(t);
+    }
   }
   return terms;
 }
