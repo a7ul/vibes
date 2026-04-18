@@ -225,3 +225,64 @@ Deno.test("ToolSearchToolset - no-op when no tools have deferLoading", async () 
   assertEquals(capturedToolLists[0].includes("beta"), true);
   assertEquals(capturedToolLists[0].includes("search_tools"), false);
 });
+
+// ---------------------------------------------------------------------------
+// Token-based search algorithm tests (v1.84.0 change)
+// ---------------------------------------------------------------------------
+
+async function getSearchExecute(toolDefs: ReturnType<typeof makeTool>[]) {
+  const inner = new FunctionToolset(toolDefs);
+  const ts = new ToolSearchToolset(new DeferredLoadingToolset(inner));
+  const allTools = await ts.tools({} as never);
+  const searchToolDef = allTools.find((t) => t.name === "search_tools");
+  if (!searchToolDef) throw new Error("search_tools not found");
+  return (keywords: string) =>
+    searchToolDef.execute({} as never, { keywords });
+}
+
+Deno.test("ToolSearchToolset - token matching: exact word 'me' does not match 'comment'", async () => {
+  const exec = await getSearchExecute([
+    makeTool("get_me", "returns the current user"),
+    makeTool("comment_tool", "post a comment"),
+  ]);
+
+  const result = JSON.parse((await exec("me")) as string) as Array<
+    { name: string }
+  >;
+  const names = result.map((r) => r.name);
+  // "me" as a token matches "get_me" (token: "me") but NOT "comment_tool"
+  // (tokens: "comment", "tool" - no "me" token)
+  assertEquals(names.includes("get_me"), true);
+  assertEquals(names.includes("comment_tool"), false);
+});
+
+Deno.test("ToolSearchToolset - token scoring: results ordered by number of matching tokens", async () => {
+  // "get user profile" => query tokens: {get, user, profile}
+  // "get_user_profile" tokens: {get, user, profile} => score 3
+  // "get_user" tokens: {get, user} => score 2
+  // "user_data" tokens: {user, data} => score 1
+  const exec = await getSearchExecute([
+    makeTool("user_data", "retrieve raw user data"),
+    makeTool("get_user", "get a user by id"),
+    makeTool("get_user_profile", "get user profile details"),
+  ]);
+
+  const result = JSON.parse(
+    (await exec("get user profile")) as string,
+  ) as Array<{ name: string }>;
+  assertEquals(result[0].name, "get_user_profile");
+  assertEquals(result[1].name, "get_user");
+  assertEquals(result[2].name, "user_data");
+});
+
+Deno.test("ToolSearchToolset - token matching: no match returns not-found message", async () => {
+  const exec = await getSearchExecute([
+    makeTool("fetch_weather", "get current weather"),
+  ]);
+
+  const result = await exec("payment invoice billing");
+  assertEquals(
+    result,
+    "No matching tools found. The tools you need may not be available.",
+  );
+});
