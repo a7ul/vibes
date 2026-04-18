@@ -5,12 +5,17 @@ import type { Toolset } from "./toolset.ts";
 
 const SEARCH_TOOLS_NAME = "search_tools";
 const MAX_SEARCH_RESULTS = 10;
+const SEARCH_TOKEN_RE = /[a-z0-9]+/g;
 
 interface SearchIndexEntry {
   name: string;
-  nameLower: string;
   description: string;
-  descriptionLower: string;
+  searchTerms: Set<string>;
+}
+
+function extractSearchTerms(name: string, description: string): Set<string> {
+  const combined = (name + " " + description).toLowerCase();
+  return new Set(combined.match(SEARCH_TOKEN_RE) ?? []);
 }
 
 const searchToolParameters = z.object({
@@ -103,9 +108,8 @@ export class ToolSearchToolset<TDeps = undefined> implements Toolset<TDeps> {
 
     const searchIndex: SearchIndexEntry[] = undiscovered.map((t) => ({
       name: t.name,
-      nameLower: t.name.toLowerCase(),
       description: t.description,
-      descriptionLower: t.description.toLowerCase(),
+      searchTerms: extractSearchTerms(t.name, t.description),
     }));
 
     // Capture reference to `_discovered` for use inside execute.
@@ -127,28 +131,44 @@ export class ToolSearchToolset<TDeps = undefined> implements Toolset<TDeps> {
           return Promise.resolve("Please provide search keywords.");
         }
 
-        const terms = keywords.toLowerCase().split(/\s+/).filter(Boolean);
-        const matches: Array<{ name: string; description: string }> = [];
+        const queryTerms = new Set<string>(
+          keywords.toLowerCase().match(SEARCH_TOKEN_RE) ?? [],
+        );
+        if (queryTerms.size === 0) {
+          return Promise.resolve("Please provide search keywords.");
+        }
+
+        const scoredMatches: Array<
+          [score: number, entry: { name: string; description: string }]
+        > = [];
 
         for (const entry of searchIndex) {
-          const searchable =
-            entry.nameLower +
-            (entry.descriptionLower ? " " + entry.descriptionLower : "");
-          if (terms.some((term) => searchable.includes(term))) {
-            matches.push({ name: entry.name, description: entry.description });
-            if (matches.length >= MAX_SEARCH_RESULTS) break;
+          let score = 0;
+          for (const t of queryTerms) {
+            if (entry.searchTerms.has(t)) score++;
+          }
+          if (score > 0) {
+            scoredMatches.push([
+              score,
+              { name: entry.name, description: entry.description },
+            ]);
           }
         }
+
+        if (scoredMatches.length === 0) {
+          return Promise.resolve(
+            "No matching tools found. The tools you need may not be available.",
+          );
+        }
+
+        scoredMatches.sort((a, b) => b[0] - a[0]);
+        const matches = scoredMatches.slice(0, MAX_SEARCH_RESULTS).map((
+          [, entry],
+        ) => entry);
 
         // Mark discovered tools so they appear on the next turn.
         for (const m of matches) {
           discovered.add(m.name);
-        }
-
-        if (matches.length === 0) {
-          return Promise.resolve(
-            "No matching tools found. The tools you need may not be available.",
-          );
         }
 
         return Promise.resolve(JSON.stringify(matches));
