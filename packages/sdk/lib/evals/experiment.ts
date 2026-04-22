@@ -25,10 +25,14 @@ export interface RunExperimentOptions<TInput, TExpected, TOutput> {
   /**
    * Additional evaluators to run alongside the dataset's own evaluators.
    * These are merged with the dataset's evaluators.
+   *
+   * `NoInfer<TExpected>` prevents TypeScript from widening `TExpected` to
+   * `unknown` when untyped evaluators (e.g. `equalsExpected()`) are passed here.
+   * Type parameters are inferred from `dataset` and `task` instead.
    */
-  evaluators?: Evaluator<TOutput, TExpected>[];
+  evaluators?: Evaluator<TOutput, NoInfer<TExpected>>[];
   /** Report-level evaluators run after all cases. */
-  reportEvaluators?: ReportEvaluator<TInput, TExpected, TOutput>[];
+  reportEvaluators?: ReportEvaluator<TInput, NoInfer<TExpected>, TOutput>[];
   /** Maximum number of concurrent case evaluations. Default: 5. */
   maxConcurrency?: number;
   /** Maximum retry attempts per case. Default: 1. */
