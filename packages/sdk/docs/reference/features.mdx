@@ -299,3 +299,5 @@ Vibes is designed to stay current with Pydantic AI  -  an AI agent automatically
 | `CapabilityOrdering`     | `innermost`, `outermost`, `wraps`, `wrapped_by`, `requires`       | ❌     | -    | Python-only capability ordering system; vibes uses toolset composition |
 | Hooks ordering           | `Hooks` ordering parameter and instance refs in `wraps`/`wrapped_by` | ❌  | -    | Python-only hooks system |
 | Server-side compaction   | `OpenAICompaction` / `AnthropicCompaction` capabilities            | ❌     | -    | Provider-specific conversation compaction; use `historyProcessors` for similar results |
+| `ReinjectSystemPrompt`   | Capability that prepends agent's system prompt when missing from history (v1.86.0) | ❌ | - | Not applicable — vibes never stores system prompts in message history; they are always passed as the `system` field to every `generateText`/`streamText` call, so re-injection is implicit |
+| `UIAdapter.manage_system_prompt` | `'server'` (default) strips frontend system prompts and reinjects agent's own (v1.86.0) | ❌ | - | Not applicable — vibes AG-UI adapter does not store or forward system prompts via message history |
