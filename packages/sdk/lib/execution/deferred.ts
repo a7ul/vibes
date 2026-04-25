@@ -1,4 +1,5 @@
 import type { ModelMessage } from "ai";
+import type { RunContext } from "../types/context.ts";
 
 // ---------------------------------------------------------------------------
 // Deferred tool request / result types
@@ -86,3 +87,39 @@ export class DeferredToolRequests {
     this._resumeState = resumeState;
   }
 }
+
+// ---------------------------------------------------------------------------
+// DeferredToolHandler - inline handler for automatic approval
+// ---------------------------------------------------------------------------
+
+/**
+ * A handler function that resolves deferred tool calls automatically during
+ * an agent run, instead of pausing and throwing `ApprovalRequiredError`.
+ *
+ * When set on `AgentOptions.deferredToolHandler` (or `RunOptions.deferredToolHandler`),
+ * the handler is called whenever one or more tool calls require approval. It
+ * receives the current `RunContext` and the `DeferredToolRequests` object, and
+ * should return `DeferredToolResults` with results for each pending call, or
+ * `null` to decline (which causes `ApprovalRequiredError` to be thrown as usual).
+ *
+ * Equivalent to pydantic-ai's `HandleDeferredToolCalls` capability.
+ *
+ * @example
+ * ```ts
+ * // Auto-approve all tool calls during a run
+ * const agent = new Agent({
+ *   model,
+ *   tools: [sensitiveOp],
+ *   deferredToolHandler: async (_ctx, requests) => ({
+ *     results: requests.requests.map((r) => ({
+ *       toolCallId: r.toolCallId,
+ *       result: "approved",
+ *     })),
+ *   }),
+ * });
+ * ```
+ */
+export type DeferredToolHandler<TDeps> = (
+  ctx: RunContext<TDeps>,
+  requests: DeferredToolRequests,
+) => DeferredToolResults | null | Promise<DeferredToolResults | null>;

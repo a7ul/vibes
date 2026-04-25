@@ -17,6 +17,7 @@ import type { Toolset } from "../toolsets/toolset.ts";
 import type { UsageLimits } from "../types/usage_limits.ts";
 import type { ModelSettings } from "../types/model_settings.ts";
 import type { TelemetrySettings } from "../otel/otel_types.ts";
+import type { EventStreamHandler } from "../types/events.ts";
 import { createUsage } from "../types/context.ts";
 import { toAISDKTools } from "../tool.ts";
 import { Semaphore } from "../concurrency.ts";
@@ -43,6 +44,7 @@ import {
   unionToolIndex,
 } from "./output_schema.ts";
 import {
+  type DeferredToolHandler,
   type DeferredToolRequest,
   DeferredToolRequests,
   type DeferredToolResults,
@@ -88,6 +90,16 @@ export interface InternalRunOpts<TDeps, TOutput> {
    * @internal
    */
   _deferredPendingRequests?: ReadonlyArray<DeferredToolRequest>;
+  /**
+   * Handler for automatically resolving deferred tool calls instead of
+   * throwing `ApprovalRequiredError`. Per-run value overrides agent-level.
+   */
+  deferredToolHandler?: DeferredToolHandler<TDeps>;
+  /**
+   * Observer or processor for the event stream (used by `runStreamEvents()`).
+   * Per-run value overrides agent-level.
+   */
+  eventStreamHandler?: EventStreamHandler<TDeps, TOutput>;
   /** Populated by Agent.override(); replaces corresponding agent fields for this run. */
   _override?: {
     model?: LanguageModel;
@@ -107,6 +119,8 @@ export interface InternalRunOpts<TDeps, TOutput> {
     modelSettings?: ModelSettings;
     endStrategy?: EndStrategy;
     telemetry?: TelemetrySettings;
+    deferredToolHandler?: DeferredToolHandler<TDeps>;
+    eventStreamHandler?: EventStreamHandler<TDeps, TOutput>;
   };
   /** When true, bypasses the ALLOW_MODEL_REQUESTS guard (set by agent.override()). */
   _bypassModelRequestsCheck?: boolean;
@@ -899,6 +913,37 @@ export function stripDeferredToolResults(
     return nonDeferred.length > 0;
   });
 }
+
+// ---------------------------------------------------------------------------
+// Resolver helpers for new per-run / override options
+// ---------------------------------------------------------------------------
+
+/**
+ * Resolve the effective deferred tool handler: override-level > per-run > agent-level.
+ */
+export function resolveDeferredToolHandler<TDeps, TOutput>(
+  agent: Agent<TDeps, TOutput>,
+  opts: InternalRunOpts<TDeps, TOutput>,
+): DeferredToolHandler<TDeps> | undefined {
+  return opts._override?.deferredToolHandler ??
+    opts.deferredToolHandler ??
+    agent.deferredToolHandler;
+}
+
+/**
+ * Resolve the effective event stream handler: override-level > per-run > agent-level.
+ */
+export function resolveEventStreamHandler<TDeps, TOutput>(
+  agent: Agent<TDeps, TOutput>,
+  opts: InternalRunOpts<TDeps, TOutput>,
+): EventStreamHandler<TDeps, TOutput> | undefined {
+  return (opts._override?.eventStreamHandler ??
+    opts.eventStreamHandler ??
+    agent.eventStreamHandler) as EventStreamHandler<TDeps, TOutput> | undefined;
+}
+
+// Re-export DeferredToolHandler for convenience in run.ts
+export type { DeferredToolHandler };
 
 // Re-export deferred types for run.ts
 export { DeferredToolRequests };

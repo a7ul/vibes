@@ -362,3 +362,126 @@ Deno.test("runStreamEvents - AsyncIterable can be consumed multiple times indepe
   assertEquals(fr1.output, "fresh");
   assertEquals(fr2.output, "fresh");
 });
+
+// ---------------------------------------------------------------------------
+// ProcessEventStream - eventStreamHandler observer and processor forms
+// ---------------------------------------------------------------------------
+
+Deno.test("eventStreamHandler - observer form: side-channel receives all events", async () => {
+  const model = new MockLanguageModelV3({
+    doStream: () => Promise.resolve(textStream("hello")),
+  });
+
+  const observedEvents: string[] = [];
+
+  const agent = new Agent({
+    model,
+    eventStreamHandler: async (_ctx, stream) => {
+      for await (const event of stream) {
+        observedEvents.push(event.kind);
+      }
+    },
+  });
+
+  const downstreamEvents = await collectEvents(agent.runStreamEvents("hi"));
+
+  // Observer should have seen all the same event kinds as downstream
+  const downstreamKinds = downstreamEvents.map((e) => e.kind);
+  // Observer sees same events (may be slightly delayed but same set)
+  assertEquals(observedEvents.length, downstreamKinds.length);
+  // Both observer and downstream should have the final-result event
+  assertEquals(observedEvents.includes("final-result"), true);
+  assertEquals(downstreamKinds.includes("final-result"), true);
+});
+
+Deno.test("eventStreamHandler - processor form: can filter events", async () => {
+  const model = new MockLanguageModelV3({
+    doStream: () => Promise.resolve(textStream("hello world")),
+  });
+
+  const agent = new Agent({
+    model,
+    // Processor that removes text-delta events
+    eventStreamHandler: async function* (_ctx, stream) {
+      for await (const event of stream) {
+        if (event.kind !== "text-delta") {
+          yield event;
+        }
+      }
+    },
+  });
+
+  const events = await collectEvents(agent.runStreamEvents("hi"));
+
+  // No text-delta events should be in downstream
+  const textDeltas = events.filter((e) => e.kind === "text-delta");
+  assertEquals(textDeltas.length, 0);
+
+  // But final-result should still be there
+  const finalResult = events.find((e) => e.kind === "final-result");
+  assertExists(finalResult);
+});
+
+Deno.test("eventStreamHandler - processor form: can add events", async () => {
+  const model = new MockLanguageModelV3({
+    doStream: () => Promise.resolve(textStream("hi")),
+  });
+
+  const agent = new Agent({
+    model,
+    // Processor that prepends a custom event before each text-delta
+    eventStreamHandler: async function* (_ctx, stream) {
+      for await (const event of stream) {
+        if (event.kind === "turn-start") {
+          // Inject a custom event as a text-delta before the turn starts
+          yield { kind: "text-delta" as const, delta: "[start] " };
+        }
+        yield event;
+      }
+    },
+  });
+
+  const events = await collectEvents(agent.runStreamEvents("hi"));
+
+  // Should have the injected text-delta at the beginning
+  const firstTextDelta = events.find((e) => e.kind === "text-delta") as
+    | { kind: "text-delta"; delta: string }
+    | undefined;
+  assertExists(firstTextDelta);
+  assertEquals(firstTextDelta.delta, "[start] ");
+});
+
+Deno.test("eventStreamHandler - per-run option overrides agent-level handler", async () => {
+  const model = new MockLanguageModelV3({
+    doStream: () => Promise.resolve(textStream("hello")),
+  });
+
+  const agentObserved: string[] = [];
+  const runObserved: string[] = [];
+
+  const agent = new Agent({
+    model,
+    eventStreamHandler: async (_ctx, stream) => {
+      for await (const event of stream) {
+        agentObserved.push(event.kind);
+      }
+    },
+  });
+
+  // Per-run handler should override the agent-level handler
+  const events = await collectEvents(
+    agent.runStreamEvents("hi", {
+      eventStreamHandler: async (_ctx, stream) => {
+        for await (const event of stream) {
+          runObserved.push(event.kind);
+        }
+      },
+    }),
+  );
+
+  // Run-level observer saw events; agent-level observer did not
+  assertEquals(runObserved.includes("final-result"), true);
+  assertEquals(agentObserved.length, 0);
+  // Downstream still got all events
+  assertEquals(events.find((e) => e.kind === "final-result") !== undefined, true);
+});

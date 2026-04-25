@@ -32,7 +32,7 @@ export {
 	MaxTurnsError,
 } from "./lib/types/errors.ts";
 
-export type { AgentStreamEvent } from "./lib/types/events.ts";
+export type { AgentStreamEvent, EventStreamHandler } from "./lib/types/events.ts";
 
 export type { UsageLimits } from "./lib/types/usage_limits.ts";
 
@@ -72,6 +72,7 @@ export type {
 // Deferred tools (human-in-the-loop)
 export { DeferredToolRequests } from "./lib/execution/deferred.ts";
 export type {
+	DeferredToolHandler,
 	DeferredToolRequest,
 	DeferredToolResult,
 	DeferredToolResults,

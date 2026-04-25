@@ -20,6 +20,7 @@ import {
   parseTextOutput,
   prepareTurn,
   resolveEndStrategy,
+  resolveEventStreamHandler,
   resolveModelSettings,
   resolveSystemPrompt,
   resolveTelemetry,
@@ -49,9 +50,23 @@ export function executeStreamEvents<TDeps, TOutput>(
 ): AsyncIterable<AgentStreamEvent<TOutput>> {
   checkModelRequestsAllowed(opts._bypassModelRequestsCheck);
 
+  const handler = resolveEventStreamHandler(agent, opts);
+
   return {
     [Symbol.asyncIterator](): AsyncIterator<AgentStreamEvent<TOutput>> {
-      return runEventStreamLoop<TDeps, TOutput>(agent, prompt, opts);
+      if (!handler) {
+        return runEventStreamLoop<TDeps, TOutput>(agent, prompt, opts);
+      }
+      // Create a shared context for the handler. We create it here so the
+      // same ctx is available to both the inner loop and the handler.
+      const ctx = createRunContext(agent, opts.deps, opts.metadata ?? {});
+      const inner = runEventStreamLoopWithCtx<TDeps, TOutput>(
+        agent,
+        prompt,
+        opts,
+        ctx,
+      );
+      return applyEventStreamHandler(ctx, inner, handler);
     },
   };
 }
@@ -70,6 +85,19 @@ async function* runEventStreamLoop<TDeps, TOutput>(
     opts.deps,
     opts.metadata ?? {},
   );
+  yield* runEventStreamLoopWithCtx(agent, prompt, opts, ctx);
+}
+
+/**
+ * Like `runEventStreamLoop` but accepts an externally-created `ctx` so the
+ * same context can be shared with an `eventStreamHandler`.
+ */
+async function* runEventStreamLoopWithCtx<TDeps, TOutput>(
+  agent: Agent<TDeps, TOutput>,
+  prompt: string,
+  opts: InternalRunOpts<TDeps, TOutput>,
+  ctx: RunContext<TDeps>,
+): AsyncGenerator<AgentStreamEvent<TOutput>> {
   const { usage } = ctx;
 
   const model = opts._override?.model ?? agent.model;
@@ -357,4 +385,146 @@ async function* runEventStreamLoop<TDeps, TOutput>(
 
 function snapshotUsage(usage: Usage): Usage {
   return { ...usage };
+}
+
+// ---------------------------------------------------------------------------
+// Event stream handler: observer and processor support
+// ---------------------------------------------------------------------------
+
+/** Empty async iterable for probing handler types. */
+const EMPTY_STREAM: AsyncIterable<never> = {
+  [Symbol.asyncIterator]() {
+    return {
+      next(): Promise<IteratorResult<never>> {
+        return Promise.resolve({ value: undefined as never, done: true });
+      },
+      [Symbol.asyncIterator]() {
+        return this;
+      },
+    };
+  },
+};
+
+/**
+ * Wrap an event generator with a user-supplied `EventStreamHandler`.
+ *
+ * Two calling conventions (detected at runtime):
+ * - **Processor** (return has `[Symbol.asyncIterator]`): replaces the inner
+ *   stream. Events yielded by the processor are what downstream consumers see.
+ * - **Observer** (return is `Promise<void>` or `void`): receives a teed copy
+ *   of the stream for side effects. Events pass through unchanged.
+ *
+ * Detection is done by probing with an empty stream first, which lets us
+ * classify the handler without consuming any real events.
+ */
+function applyEventStreamHandler<TDeps, TOutput>(
+  ctx: RunContext<TDeps>,
+  inner: AsyncGenerator<AgentStreamEvent<TOutput>>,
+  // deno-lint-ignore no-explicit-any
+  handler: (ctx: RunContext<TDeps>, stream: AsyncIterable<any>) => any,
+): AsyncGenerator<AgentStreamEvent<TOutput>> {
+  // Probe with an empty stream to detect the handler form without consuming events.
+  // - Async generator functions return an AsyncGenerator immediately (no code runs).
+  // - Regular async functions run until first await, exhaust the empty stream, return void.
+  const probe = handler(ctx, EMPTY_STREAM);
+
+  if (
+    probe !== null &&
+    probe !== undefined &&
+    typeof probe[Symbol.asyncIterator] === "function"
+  ) {
+    // Processor form: call handler with the real inner stream and yield its output.
+    // We discard the probe (it wraps the empty stream, produces nothing).
+    const processed = handler(
+      ctx,
+      inner,
+    ) as AsyncIterable<AgentStreamEvent<TOutput>>;
+    return processed[Symbol.asyncIterator]() as AsyncGenerator<
+      AgentStreamEvent<TOutput>
+    >;
+  }
+
+  // Observer form: `probe` is a Promise<void> (or void).
+  // The handler has already drained the empty stream (quick resolve).
+  // Now call the handler again with a queue-backed stream that we drive
+  // from `inner` while also yielding events to downstream.
+  return broadcastToObserver(ctx, inner, handler);
+}
+
+/**
+ * Drive `inner`, broadcasting each event to both:
+ * 1. A queue-backed stream consumed by the observer (handler), and
+ * 2. The downstream consumer (via `yield`).
+ *
+ * The observer runs "concurrently" in JavaScript's single-threaded sense:
+ * it processes events from its queue while the downstream generator yields.
+ */
+async function* broadcastToObserver<TDeps, TOutput>(
+  ctx: RunContext<TDeps>,
+  inner: AsyncGenerator<AgentStreamEvent<TOutput>>,
+  // deno-lint-ignore no-explicit-any
+  handler: (ctx: RunContext<TDeps>, stream: AsyncIterable<any>) => any,
+): AsyncGenerator<AgentStreamEvent<TOutput>> {
+  const buffer: AgentStreamEvent<TOutput>[] = [];
+  let streamDone = false;
+  // deno-lint-ignore no-explicit-any
+  let notify: ((...args: any[]) => void) | null = null;
+
+  // Create the observer's view of the event stream (queue-backed).
+  const observerStream: AsyncIterable<AgentStreamEvent<TOutput>> = {
+    [Symbol.asyncIterator]() {
+      let idx = 0;
+      return {
+        async next(): Promise<IteratorResult<AgentStreamEvent<TOutput>>> {
+          while (true) {
+            if (idx < buffer.length) {
+              return { value: buffer[idx++], done: false };
+            }
+            if (streamDone) {
+              return {
+                // deno-lint-ignore no-explicit-any
+                value: undefined as any,
+                done: true,
+              };
+            }
+            // Wait for the broadcaster to push a new event.
+            await new Promise<void>((resolve) => {
+              notify = resolve;
+            });
+          }
+        },
+        [Symbol.asyncIterator]() {
+          return this;
+        },
+      };
+    },
+  };
+
+  // Start the observer (non-blocking; it will await events from observerStream).
+  const observerPromise = Promise.resolve(handler(ctx, observerStream)).catch(
+    () => {},
+  );
+
+  try {
+    // Drive `inner` and broadcast to both observer buffer and downstream.
+    for await (const event of inner) {
+      buffer.push(event);
+      // Notify observer that a new event is available.
+      const n = notify;
+      notify = null;
+      if (n) (n as () => void)();
+      // Yield to downstream consumer.
+      yield event;
+      // After the downstream consumer awaits next(), the observer's microtask
+      // may run and read from the buffer.
+    }
+  } finally {
+    streamDone = true;
+    // Signal end-of-stream to observer.
+    const n = notify;
+    notify = null;
+    if (n) (n as () => void)();
+    // Wait for observer to finish processing all events.
+    await observerPromise;
+  }
 }
