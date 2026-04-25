@@ -396,7 +396,7 @@ const EMPTY_STREAM: AsyncIterable<never> = {
   [Symbol.asyncIterator]() {
     return {
       next(): Promise<IteratorResult<never>> {
-        return Promise.resolve({ value: undefined as never, done: true });
+        return Promise.resolve({ value: undefined!, done: true });
       },
       [Symbol.asyncIterator]() {
         return this;
@@ -481,11 +481,7 @@ async function* broadcastToObserver<TDeps, TOutput>(
               return { value: buffer[idx++], done: false };
             }
             if (streamDone) {
-              return {
-                // deno-lint-ignore no-explicit-any
-                value: undefined as any,
-                done: true,
-              };
+              return { value: undefined!, done: true };
             }
             // Wait for the broadcaster to push a new event.
             await new Promise<void>((resolve) => {
