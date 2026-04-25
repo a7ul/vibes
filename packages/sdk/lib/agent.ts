@@ -15,8 +15,9 @@ import type { HistoryProcessor } from "./history/processor.ts";
 import type { ModelSettings } from "./types/model_settings.ts";
 import type { TelemetrySettings } from "./otel/otel_types.ts";
 import type { InternalRunOpts } from "./execution/_run_utils.ts";
-import type { AgentStreamEvent } from "./types/events.ts";
+import type { AgentStreamEvent, EventStreamHandler } from "./types/events.ts";
 import type {
+  DeferredToolHandler,
   DeferredToolRequests,
   DeferredToolResults,
 } from "./execution/deferred.ts";
@@ -109,6 +110,57 @@ export interface AgentOptions<TDeps, TOutput> {
    * wrapper that sets this up automatically.
    */
   telemetry?: TelemetrySettings;
+  /**
+   * Handler called automatically when one or more tool calls require approval,
+   * instead of pausing the run and throwing `ApprovalRequiredError`.
+   *
+   * Receives the `RunContext` and `DeferredToolRequests`. Return
+   * `DeferredToolResults` to resolve the calls and continue the run
+   * automatically, or `null` to decline (which causes `ApprovalRequiredError`
+   * to be thrown as usual, allowing manual `agent.resume()` handling).
+   *
+   * Equivalent to pydantic-ai's `HandleDeferredToolCalls` capability.
+   *
+   * @example
+   * ```ts
+   * const agent = new Agent({
+   *   model,
+   *   tools: [sensitiveOp],
+   *   deferredToolHandler: async (_ctx, requests) => ({
+   *     results: requests.requests.map((r) => ({
+   *       toolCallId: r.toolCallId,
+   *       result: "approved",
+   *     })),
+   *   }),
+   * });
+   * ```
+   */
+  deferredToolHandler?: DeferredToolHandler<TDeps>;
+  /**
+   * Observer or processor for the event stream emitted by `runStreamEvents()`.
+   *
+   * Two calling conventions:
+   * - **Observer** (`async (ctx, stream) => void`): Receives all events for
+   *   side effects while events pass through unchanged to downstream.
+   * - **Processor** (`async function*(ctx, stream) { yield ... }`): Async
+   *   generator that can add, remove, or transform events.
+   *
+   * The form is detected at runtime via `[Symbol.asyncIterator]`.
+   *
+   * Equivalent to pydantic-ai's `ProcessEventStream` capability.
+   *
+   * @example
+   * ```ts
+   * // Observer: log every event
+   * const agent = new Agent({
+   *   model,
+   *   eventStreamHandler: async (_ctx, stream) => {
+   *     for await (const event of stream) console.log(event.kind);
+   *   },
+   * });
+   * ```
+   */
+  eventStreamHandler?: EventStreamHandler<TDeps, TOutput>;
 }
 
 /** Options accepted by `agent.run()` and `agent.stream()`. */
@@ -133,6 +185,17 @@ export interface RunOptions<TDeps> {
    * Passed to `generateText` / `streamText` as `experimental_telemetry`.
    */
   telemetry?: TelemetrySettings;
+  /**
+   * Per-run deferred tool handler. Overrides the agent-level `deferredToolHandler`.
+   * See `AgentOptions.deferredToolHandler` for full documentation.
+   */
+  deferredToolHandler?: DeferredToolHandler<TDeps>;
+  /**
+   * Per-run event stream handler. Overrides the agent-level `eventStreamHandler`.
+   * Only applies when using `runStreamEvents()`.
+   * See `AgentOptions.eventStreamHandler` for full documentation.
+   */
+  eventStreamHandler?: EventStreamHandler<TDeps, unknown>;
 }
 
 /** Options accepted by `agent.override()`. */
@@ -151,6 +214,10 @@ export interface AgentOverrideOptions<TDeps, TOutput> {
   endStrategy?: EndStrategy;
   /** Override telemetry settings for this run. */
   telemetry?: TelemetrySettings;
+  /** Override deferred tool handler for this run. */
+  deferredToolHandler?: DeferredToolHandler<TDeps>;
+  /** Override event stream handler for this run. */
+  eventStreamHandler?: EventStreamHandler<TDeps, TOutput>;
 }
 
 export class Agent<TDeps = undefined, TOutput = string> {
@@ -166,6 +233,8 @@ export class Agent<TDeps = undefined, TOutput = string> {
   readonly endStrategy: EndStrategy;
   readonly maxConcurrency: number | undefined;
   readonly telemetry: TelemetrySettings | undefined;
+  readonly deferredToolHandler: DeferredToolHandler<TDeps> | undefined;
+  readonly eventStreamHandler: EventStreamHandler<TDeps, TOutput> | undefined;
 
   private _systemPrompts: (string | SystemPromptFn<TDeps>)[];
   private _instructions: (string | InstructionsFn<TDeps>)[];
@@ -187,6 +256,8 @@ export class Agent<TDeps = undefined, TOutput = string> {
     this.endStrategy = opts.endStrategy ?? "early";
     this.maxConcurrency = opts.maxConcurrency;
     this.telemetry = opts.telemetry;
+    this.deferredToolHandler = opts.deferredToolHandler;
+    this.eventStreamHandler = opts.eventStreamHandler;
 
     this._systemPrompts = opts.systemPrompt ? [opts.systemPrompt] : [];
     this._instructions = opts.instructions ? [opts.instructions] : [];
@@ -262,6 +333,7 @@ export class Agent<TDeps = undefined, TOutput = string> {
       endStrategy: opts?.endStrategy,
       deferredResults: opts?.deferredResults,
       telemetry: opts?.telemetry,
+      deferredToolHandler: opts?.deferredToolHandler,
     });
   }
 
@@ -306,6 +378,7 @@ export class Agent<TDeps = undefined, TOutput = string> {
       modelSettings: opts?.modelSettings,
       endStrategy: opts?.endStrategy,
       deferredResults: results,
+      deferredToolHandler: opts?.deferredToolHandler,
       _resumeFromDeferred: true,
       _deferredPendingRequests: deferred.requests,
     });
@@ -351,6 +424,7 @@ export class Agent<TDeps = undefined, TOutput = string> {
       modelSettings: opts?.modelSettings,
       endStrategy: opts?.endStrategy,
       telemetry: opts?.telemetry,
+      eventStreamHandler: opts?.eventStreamHandler as EventStreamHandler<TDeps, TOutput> | undefined,
     });
   }
 
@@ -390,6 +464,8 @@ export class Agent<TDeps = undefined, TOutput = string> {
       endStrategy: runOpts?.endStrategy,
       deferredResults: runOpts?.deferredResults,
       telemetry: runOpts?.telemetry,
+      deferredToolHandler: runOpts?.deferredToolHandler,
+      eventStreamHandler: runOpts?.eventStreamHandler as EventStreamHandler<TDeps, TOutput> | undefined,
       _bypassModelRequestsCheck: true,
       _override: {
         model: overrides.model,
@@ -405,6 +481,8 @@ export class Agent<TDeps = undefined, TOutput = string> {
         modelSettings: overrides.modelSettings,
         endStrategy: overrides.endStrategy,
         telemetry: overrides.telemetry,
+        deferredToolHandler: overrides.deferredToolHandler,
+        eventStreamHandler: overrides.eventStreamHandler,
       },
     });
 

@@ -358,3 +358,135 @@ Deno.test("DeferredToolResult.argsOverride - re-executes tool with modified args
   assertEquals(executedArgs.length, 1);
   assertEquals(executedArgs[0].amount, 50);
 });
+
+// ---------------------------------------------------------------------------
+// HandleDeferredToolCalls - deferredToolHandler on agent / run options
+// ---------------------------------------------------------------------------
+
+Deno.test("deferredToolHandler: auto-approves deferred tool calls", async () => {
+  const sensitiveOp = tool({
+    name: "transfer_funds",
+    description: "Transfer funds",
+    parameters: z.object({ amount: z.number() }),
+    execute: (_ctx, args) =>
+      Promise.resolve(`Transferred $${args.amount}`),
+    requiresApproval: true,
+  });
+
+  const firstCall = mockValues<DoGenerateResult>(
+    toolCallResponse("transfer_funds", { amount: 100 }, "tc-tf"),
+  );
+  const secondCall = mockValues<DoGenerateResult>(
+    textResponse("Transfer complete"),
+  );
+  let callCount = 0;
+  const model = new MockLanguageModelV3({
+    doGenerate: () => {
+      callCount++;
+      return Promise.resolve(callCount === 1 ? firstCall() : secondCall());
+    },
+  });
+
+  const agent = new Agent({
+    model,
+    tools: [sensitiveOp],
+    deferredToolHandler: (_ctx, requests) =>
+      Promise.resolve({
+        results: requests.requests.map((r) => ({
+          toolCallId: r.toolCallId,
+          result: `Auto-approved: ${r.toolName}`,
+        })),
+      }),
+  });
+
+  // Should NOT throw ApprovalRequiredError; handler resolves automatically
+  const result = await agent.run("Transfer $100");
+  assertEquals(result.output, "Transfer complete");
+  assertEquals(callCount, 2);
+});
+
+Deno.test("deferredToolHandler returning null falls back to ApprovalRequiredError", async () => {
+  const sensitiveOp = tool({
+    name: "delete_all",
+    description: "Delete everything",
+    parameters: z.object({}),
+    execute: () => Promise.resolve("Deleted"),
+    requiresApproval: true,
+  });
+
+  const model = new MockLanguageModelV3({
+    doGenerate: () =>
+      Promise.resolve(toolCallResponse("delete_all", {}, "tc-del")),
+  });
+
+  const agent = new Agent({
+    model,
+    tools: [sensitiveOp],
+    deferredToolHandler: () => null, // Decline to handle
+  });
+
+  // Should still throw since handler returned null
+  await assertRejects(
+    () => agent.run("Delete everything"),
+    ApprovalRequiredError,
+  );
+});
+
+Deno.test("deferredToolHandler: per-run option overrides agent-level handler", async () => {
+  const handlerCallLog: string[] = [];
+
+  const sensitiveOp = tool({
+    name: "risky_op",
+    description: "Risky operation",
+    parameters: z.object({ value: z.string() }),
+    execute: (_ctx, args) => Promise.resolve(`Executed: ${args.value}`),
+    requiresApproval: true,
+  });
+
+  const firstCall = mockValues<DoGenerateResult>(
+    toolCallResponse("risky_op", { value: "test" }, "tc-risky"),
+  );
+  const secondCall = mockValues<DoGenerateResult>(
+    textResponse("Done"),
+  );
+  let callCount = 0;
+  const model = new MockLanguageModelV3({
+    doGenerate: () => {
+      callCount++;
+      return Promise.resolve(callCount === 1 ? firstCall() : secondCall());
+    },
+  });
+
+  const agentHandler = (_ctx: unknown, requests: import("../mod.ts").DeferredToolRequests) => {
+    handlerCallLog.push("agent-handler");
+    return {
+      results: requests.requests.map((r) => ({
+        toolCallId: r.toolCallId,
+        result: "agent approved",
+      })),
+    };
+  };
+  const runHandler = (_ctx: unknown, requests: import("../mod.ts").DeferredToolRequests) => {
+    handlerCallLog.push("run-handler");
+    return {
+      results: requests.requests.map((r) => ({
+        toolCallId: r.toolCallId,
+        result: "run approved",
+      })),
+    };
+  };
+
+  const agent = new Agent({
+    model,
+    tools: [sensitiveOp],
+    deferredToolHandler: agentHandler as import("../mod.ts").DeferredToolHandler<undefined>,
+  });
+
+  // Per-run handler should override the agent-level handler
+  const result = await agent.run("Do risky op", {
+    deferredToolHandler: runHandler as import("../mod.ts").DeferredToolHandler<undefined>,
+  });
+  assertEquals(result.output, "Done");
+  assertEquals(handlerCallLog, ["run-handler"]);
+  assertEquals(callCount, 2);
+});

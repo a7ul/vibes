@@ -26,6 +26,7 @@ import {
   nudgeWithValidationError,
   parseTextOutput,
   prepareTurn,
+  resolveDeferredToolHandler,
   resolveEndStrategy,
   resolveModelSettings,
   resolveSystemPrompt,
@@ -64,6 +65,7 @@ export async function executeRun<TDeps, TOutput>(
   const outputMode = agent.outputMode;
   const outputSchema = agent.outputSchema;
   const schemas = isBinaryImageOutput(outputSchema) ? [] : normaliseSchemas(outputSchema);
+  const deferredToolHandler = resolveDeferredToolHandler(agent, opts);
 
   // systemPrompt is resolved once; instructions are resolved per-turn inside prepareTurn
   const systemPrompt = await resolveSystemPrompt(
@@ -188,12 +190,21 @@ export async function executeRun<TDeps, TOutput>(
           pendingCallIds,
         );
         const allMessages = [...messages, ...cleanNewMessages];
-        throw new ApprovalRequiredError(
-          new DeferredToolRequests(pendingApprovals, {
-            messages: allMessages,
-            turnCount: turn + 1,
-          }),
-        );
+        const deferredObj = new DeferredToolRequests(pendingApprovals, {
+          messages: allMessages,
+          turnCount: turn + 1,
+        });
+        if (deferredToolHandler) {
+          const handlerResult = await deferredToolHandler(ctx, deferredObj);
+          if (handlerResult !== null && handlerResult !== undefined) {
+            const toolDefs = opts._override?.tools ?? agent.tools;
+            const resolvedForResume = await resolveTools(toolDefs, runScopedToolsets, ctx);
+            const resumeMsg = await buildResumeToolMessage(handlerResult, pendingApprovals, resolvedForResume, ctx);
+            messages = [...allMessages, resumeMsg];
+            continue;
+          }
+        }
+        throw new ApprovalRequiredError(deferredObj);
       }
 
       applyUsage(
@@ -306,12 +317,21 @@ export async function executeRun<TDeps, TOutput>(
           pendingCallIds,
         );
         const allMessages = [...messages, ...cleanNewMessages];
-        throw new ApprovalRequiredError(
-          new DeferredToolRequests(pendingApprovals, {
-            messages: allMessages,
-            turnCount: turn + 1,
-          }),
-        );
+        const deferredObj = new DeferredToolRequests(pendingApprovals, {
+          messages: allMessages,
+          turnCount: turn + 1,
+        });
+        if (deferredToolHandler) {
+          const handlerResult = await deferredToolHandler(ctx, deferredObj);
+          if (handlerResult !== null && handlerResult !== undefined) {
+            const toolDefs = opts._override?.tools ?? agent.tools;
+            const resolvedForResume = await resolveTools(toolDefs, runScopedToolsets, ctx);
+            const resumeMsg = await buildResumeToolMessage(handlerResult, pendingApprovals, resolvedForResume, ctx);
+            messages = [...allMessages, resumeMsg];
+            continue;
+          }
+        }
+        throw new ApprovalRequiredError(deferredObj);
       }
 
       applyUsage(usage, response.usage);
@@ -419,12 +439,21 @@ export async function executeRun<TDeps, TOutput>(
         pendingCallIds,
       );
       const allMessages = [...messages, ...cleanNewMessages];
-      throw new ApprovalRequiredError(
-        new DeferredToolRequests(pendingApprovals, {
-          messages: allMessages,
-          turnCount: turn + 1,
-        }),
-      );
+      const deferredObj = new DeferredToolRequests(pendingApprovals, {
+        messages: allMessages,
+        turnCount: turn + 1,
+      });
+      if (deferredToolHandler) {
+        const handlerResult = await deferredToolHandler(ctx, deferredObj);
+        if (handlerResult !== null && handlerResult !== undefined) {
+          const toolDefs = opts._override?.tools ?? agent.tools;
+          const resolvedForResume = await resolveTools(toolDefs, runScopedToolsets, ctx);
+          const resumeMsg = await buildResumeToolMessage(handlerResult, pendingApprovals, resolvedForResume, ctx);
+          messages = [...allMessages, resumeMsg];
+          continue;
+        }
+      }
+      throw new ApprovalRequiredError(deferredObj);
     }
 
     applyUsage(usage, response.usage);
