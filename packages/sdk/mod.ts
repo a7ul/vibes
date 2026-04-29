@@ -10,7 +10,7 @@ export type {
 
 export type { OutputMode } from "./lib/types/output_mode.ts";
 
-export type { ModelSettings } from "./lib/types/model_settings.ts";
+export type { ModelSettings, ServiceTier } from "./lib/types/model_settings.ts";
 
 export { fromSchema, outputTool, plainTool, tool } from "./lib/tool.ts";
 export type { ToolDefinition, ToolExecuteReturn } from "./lib/tool.ts";

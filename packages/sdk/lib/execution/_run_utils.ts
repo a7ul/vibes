@@ -601,6 +601,8 @@ export function resolveModelSettings<TDeps, TOutput>(
 /**
  * Convert a `ModelSettings` object to the options expected by AI SDK v6's
  * `generateText` / `streamText`. Notably, `maxTokens` maps to `maxOutputTokens`.
+ * `providerOptions` is passed through as-is.
+ * `serviceTier` is not mapped automatically — use `providerOptions` for that.
  */
 export function modelSettingsToAISDKOptions(
   settings: ModelSettings,
@@ -614,6 +616,7 @@ export function modelSettingsToAISDKOptions(
     presencePenalty,
     stopSequences,
     seed,
+    providerOptions,
   } = settings;
   const result: Record<string, unknown> = {};
   if (temperature !== undefined) result.temperature = temperature;
@@ -626,6 +629,7 @@ export function modelSettingsToAISDKOptions(
   if (presencePenalty !== undefined) result.presencePenalty = presencePenalty;
   if (stopSequences !== undefined) result.stopSequences = stopSequences;
   if (seed !== undefined) result.seed = seed;
+  if (providerOptions !== undefined) result.providerOptions = providerOptions;
   return result;
 }
 

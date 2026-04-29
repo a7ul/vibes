@@ -200,3 +200,35 @@ Deno.test("modelSettings - type check: ModelSettings interface is exported", () 
   // Just verify the type compiles correctly
   assertEquals(typeof settings.temperature, "number");
 });
+
+Deno.test("modelSettings - serviceTier field is accepted by ModelSettings type", () => {
+  // serviceTier is a documented type field for cross-provider service tier config.
+  // It is not automatically mapped to the AI SDK call; use providerOptions for that.
+  const settings: ModelSettings = {
+    temperature: 0.5,
+    serviceTier: "flex",
+  };
+  assertEquals(settings.serviceTier, "flex");
+});
+
+Deno.test("modelSettings - providerOptions is passed to generateText", async () => {
+  let capturedProviderOptions: Record<string, unknown> | undefined;
+
+  const model = new MockLanguageModelV3({
+    doGenerate: (opts) => {
+      capturedProviderOptions = (opts as Record<string, unknown>)
+        .providerOptions as Record<string, unknown> | undefined;
+      return Promise.resolve(textResponse("ok"));
+    },
+  });
+
+  const agent = new Agent({
+    model,
+    modelSettings: {
+      providerOptions: { openai: { serviceTier: "flex" } },
+    },
+  });
+
+  await agent.run("prompt");
+  assertEquals(capturedProviderOptions, { openai: { serviceTier: "flex" } });
+});
