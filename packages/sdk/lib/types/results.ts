@@ -27,6 +27,13 @@ export interface RunResult<TOutput> {
   retryCount: number;
   /** Unique identifier for this run. */
   runId: string;
+  /**
+   * Unique identifier for the conversation this run belongs to.
+   *
+   * Pass this value as `conversationId` on the next `run()` call to correlate
+   * multiple runs as part of the same conversation.
+   */
+  conversationId: string;
   /** Metadata attached by tools during the run, keyed by tool call ID. */
   toolMetadata: Map<string, Record<string, unknown>>;
 }
@@ -42,6 +49,13 @@ export interface StreamResult<TOutput> {
   newMessages: Promise<ModelMessage[]>;
   /** Resolves to cumulative token usage once the run completes. */
   usage: Promise<Usage>;
+  /**
+   * Resolves to the unique identifier for the conversation this run belongs to.
+   *
+   * Pass this value as `conversationId` on the next `run()` / `stream()` call to
+   * correlate multiple runs as part of the same conversation.
+   */
+  conversationId: Promise<string>;
   /**
    * Async iterable of partial output objects emitted progressively as the
    * `final_result` tool args stream in. Emits only when Zod parse succeeds

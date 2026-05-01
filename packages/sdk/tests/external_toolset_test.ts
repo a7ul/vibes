@@ -51,6 +51,7 @@ Deno.test("ExternalToolset - exposes tools to model with requiresApproval", () =
     retryCount: 0,
     toolName: null,
     runId: "test",
+    conversationId: "test-conversation",
     metadata: {},
     toolResultMetadata: new Map(),
     attachMetadata: () => {},

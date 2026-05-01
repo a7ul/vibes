@@ -35,6 +35,7 @@ Vibes is designed to stay current with Pydantic AI  -  an AI agent automatically
 | `instructions` field    | `@agent.instructions` decorator              | ✅     | [Agents](/concepts/agents) | `instructions` on `AgentOptions`/`RunOptions`; re-injected each turn, not stored in message history |
 | Model-specific settings | `model_settings=` on `run()`                 | ✅     | [Models](/concepts/models) | `modelSettings: { temperature, maxTokens, ... }` on `AgentOptions` or `RunOptions` |
 | `ProcessEventStream`    | Observer/processor capability for event stream (v1.87.0) | ✅ | | `eventStreamHandler` on `AgentOptions`/`RunOptions` - observer form (async fn → `void`) or processor form (async generator → `AsyncIterable`). Applies to `runStreamEvents()`. |
+| `conversation_id`       | Cross-run conversation correlation (v1.89.0)             | ✅ | | `conversationId` on `RunOptions` and `RunContext`/`RunResult`/`StreamResult`; pass `result.conversationId` to next run to group runs under the same conversation |
 | Sync run                | `agent.run_sync()`                           | ❌     | - | Deno is async-native - not applicable |
 | Node-level iteration    | `agent.iter()` / `AgentRun`                  | ❌     | - | Not applicable - use `runStreamEvents()` for step-by-step observation in async TypeScript |
 | Last run messages       | `agent.last_run_messages`                    | ❌     | - | Removed from Pydantic AI; superseded by `result.newMessages` |

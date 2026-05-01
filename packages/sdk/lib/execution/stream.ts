@@ -19,6 +19,7 @@ import {
   nudgeWithValidationError,
   parseTextOutput,
   prepareTurn,
+  resolveConversationId,
   resolveEndStrategy,
   resolveModelSettings,
   resolveSystemPrompt,
@@ -39,12 +40,14 @@ interface DeferredResult<TOutput> {
     messages: ModelMessage[];
     newMessages: ModelMessage[];
     usage: Usage;
+    conversationId: string;
   }>;
   resolve: (v: {
     output: TOutput;
     messages: ModelMessage[];
     newMessages: ModelMessage[];
     usage: Usage;
+    conversationId: string;
   }) => void;
   reject: (e: unknown) => void;
 }
@@ -57,6 +60,7 @@ function createDeferred<TOutput>(): DeferredResult<TOutput> {
     messages: ModelMessage[];
     newMessages: ModelMessage[];
     usage: Usage;
+    conversationId: string;
   }>((res, rej) => {
     resolve = res;
     reject = rej;
@@ -126,6 +130,7 @@ export function executeStream<TDeps, TOutput>(
     messages: deferred.promise.then((r) => r.messages),
     newMessages: deferred.promise.then((r) => r.newMessages),
     usage: deferred.promise.then((r) => r.usage),
+    conversationId: deferred.promise.then((r) => r.conversationId),
   };
 }
 
@@ -145,6 +150,7 @@ async function runStreamLoop<TDeps, TOutput>(
     agent,
     opts.deps,
     opts.metadata ?? {},
+    resolveConversationId(opts.conversationId),
   );
   const { usage } = ctx;
   let streamClosed = false;
@@ -299,6 +305,7 @@ async function runStreamLoop<TDeps, TOutput>(
             messages: allMessages,
             newMessages: allMessages.slice(inputOffset),
             usage: { ...usage },
+            conversationId: ctx.conversationId,
           });
           return;
         } catch (err) {
@@ -342,6 +349,7 @@ async function runStreamLoop<TDeps, TOutput>(
               messages: allMessages,
               newMessages: allMessages.slice(inputOffset),
               usage: { ...usage },
+              conversationId: ctx.conversationId,
             });
             return;
           } catch (err) {
@@ -397,6 +405,7 @@ async function runStreamLoop<TDeps, TOutput>(
             messages: allMessages,
             newMessages: allMessages.slice(inputOffset),
             usage: { ...usage },
+            conversationId: ctx.conversationId,
           });
           return;
         } catch (err) {
@@ -421,6 +430,7 @@ async function runStreamLoop<TDeps, TOutput>(
           messages: allMessages,
           newMessages: allMessages.slice(inputOffset),
           usage: { ...usage },
+          conversationId: ctx.conversationId,
         });
         return;
       }

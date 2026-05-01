@@ -196,6 +196,16 @@ export interface RunOptions<TDeps> {
    * See `AgentOptions.eventStreamHandler` for full documentation.
    */
   eventStreamHandler?: EventStreamHandler<TDeps, unknown>;
+  /**
+   * Conversation identifier for cross-run correlation.
+   *
+   * A conversation spans multiple agent runs that share message history.
+   * If omitted, a fresh UUID is generated for each run. Pass
+   * `result.conversationId` from a previous run to group runs together.
+   *
+   * Equivalent to Pydantic AI's `conversation_id` on `agent.run()`.
+   */
+  conversationId?: string;
 }
 
 /** Options accepted by `agent.override()`. */
@@ -334,6 +344,7 @@ export class Agent<TDeps = undefined, TOutput = string> {
       deferredResults: opts?.deferredResults,
       telemetry: opts?.telemetry,
       deferredToolHandler: opts?.deferredToolHandler,
+      conversationId: opts?.conversationId,
     });
   }
 
@@ -396,6 +407,7 @@ export class Agent<TDeps = undefined, TOutput = string> {
       modelSettings: opts?.modelSettings,
       endStrategy: opts?.endStrategy,
       telemetry: opts?.telemetry,
+      conversationId: opts?.conversationId,
     });
   }
 
@@ -425,6 +437,7 @@ export class Agent<TDeps = undefined, TOutput = string> {
       endStrategy: opts?.endStrategy,
       telemetry: opts?.telemetry,
       eventStreamHandler: opts?.eventStreamHandler as EventStreamHandler<TDeps, TOutput> | undefined,
+      conversationId: opts?.conversationId,
     });
   }
 
@@ -466,6 +479,7 @@ export class Agent<TDeps = undefined, TOutput = string> {
       telemetry: runOpts?.telemetry,
       deferredToolHandler: runOpts?.deferredToolHandler,
       eventStreamHandler: runOpts?.eventStreamHandler as EventStreamHandler<TDeps, TOutput> | undefined,
+      conversationId: runOpts?.conversationId,
       _bypassModelRequestsCheck: true,
       _override: {
         model: overrides.model,

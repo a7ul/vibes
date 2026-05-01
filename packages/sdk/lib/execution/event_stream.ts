@@ -19,6 +19,7 @@ import {
   nudgeWithValidationError,
   parseTextOutput,
   prepareTurn,
+  resolveConversationId,
   resolveEndStrategy,
   resolveEventStreamHandler,
   resolveModelSettings,
@@ -59,7 +60,7 @@ export function executeStreamEvents<TDeps, TOutput>(
       }
       // Create a shared context for the handler. We create it here so the
       // same ctx is available to both the inner loop and the handler.
-      const ctx = createRunContext(agent, opts.deps, opts.metadata ?? {});
+      const ctx = createRunContext(agent, opts.deps, opts.metadata ?? {}, resolveConversationId(opts.conversationId));
       const inner = runEventStreamLoopWithCtx<TDeps, TOutput>(
         agent,
         prompt,
@@ -84,6 +85,7 @@ async function* runEventStreamLoop<TDeps, TOutput>(
     agent,
     opts.deps,
     opts.metadata ?? {},
+    resolveConversationId(opts.conversationId),
   );
   yield* runEventStreamLoopWithCtx(agent, prompt, opts, ctx);
 }

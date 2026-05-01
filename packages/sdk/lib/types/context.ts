@@ -49,6 +49,17 @@ export interface RunContext<TDeps = undefined> {
   toolName: string | null;
   /** Unique identifier for this run. */
   runId: string;
+  /**
+   * Unique identifier for the conversation this run belongs to.
+   *
+   * A conversation spans multiple agent runs that share message history.
+   * Resolved at run start from the explicit `conversationId` option on `run()`,
+   * or a freshly generated UUID if not provided.
+   *
+   * Pass `result.conversationId` as `conversationId` on the next `run()` call
+   * to correlate multiple runs as part of the same conversation.
+   */
+  conversationId: string;
   /** Per-run metadata supplied by the caller. */
   metadata: Record<string, unknown>;
   /**

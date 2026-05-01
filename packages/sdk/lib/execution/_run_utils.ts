@@ -100,6 +100,11 @@ export interface InternalRunOpts<TDeps, TOutput> {
    * Per-run value overrides agent-level.
    */
   eventStreamHandler?: EventStreamHandler<TDeps, TOutput>;
+  /**
+   * Conversation identifier for cross-run correlation. If not provided, a
+   * fresh UUID is generated for this run.
+   */
+  conversationId?: string;
   /** Populated by Agent.override(); replaces corresponding agent fields for this run. */
   _override?: {
     model?: LanguageModel;
@@ -130,11 +135,25 @@ export interface InternalRunOpts<TDeps, TOutput> {
 // Context / message helpers
 // ---------------------------------------------------------------------------
 
+/**
+ * Resolves the `conversationId` to use for an agent run.
+ *
+ * - If an explicit `conversationId` is provided, it is used as-is.
+ * - Otherwise a fresh UUID is generated for this run.
+ *
+ * Pass `result.conversationId` from a previous run to group related runs
+ * together under the same conversation.
+ */
+export function resolveConversationId(conversationId?: string): string {
+  return conversationId ?? globalThis.crypto.randomUUID();
+}
+
 export function createRunContext<TDeps>(
   // deno-lint-ignore no-explicit-any
   agent: Agent<TDeps, any>,
   deps: TDeps,
   metadata: Record<string, unknown>,
+  conversationId: string,
 ): RunContext<TDeps> {
   const toolResultMetadata = new Map<string, Record<string, unknown>>();
   return {
@@ -144,6 +163,7 @@ export function createRunContext<TDeps>(
     retryCount: 0,
     toolName: null,
     runId: globalThis.crypto.randomUUID(),
+    conversationId,
     metadata,
     toolResultMetadata,
     attachMetadata(toolCallId: string, meta: Record<string, unknown>): void {
