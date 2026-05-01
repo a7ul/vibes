@@ -27,6 +27,7 @@ import {
   parseTextOutput,
   prepareTurn,
   resolveDeferredToolHandler,
+  resolveConversationId,
   resolveEndStrategy,
   resolveModelSettings,
   resolveSystemPrompt,
@@ -46,10 +47,12 @@ export async function executeRun<TDeps, TOutput>(
 ): Promise<RunResult<TOutput>> {
   checkModelRequestsAllowed(opts._bypassModelRequestsCheck);
 
+  const conversationId = resolveConversationId(opts.conversationId);
   const ctx: RunContext<TDeps> = createRunContext(
     agent,
     opts.deps,
     opts.metadata ?? {},
+    conversationId,
   );
   const { usage, runId } = ctx;
 
@@ -241,6 +244,7 @@ export async function executeRun<TDeps, TOutput>(
             usage: { ...usage },
             retryCount: ctx.retryCount,
             runId,
+            conversationId,
             toolMetadata: new Map(ctx.toolResultMetadata),
           };
         } catch (err) {
@@ -275,6 +279,7 @@ export async function executeRun<TDeps, TOutput>(
             usage: { ...usage },
             retryCount: ctx.retryCount,
             runId,
+            conversationId,
             toolMetadata: new Map(ctx.toolResultMetadata),
           };
         } catch (err) {
@@ -359,6 +364,7 @@ export async function executeRun<TDeps, TOutput>(
             usage: { ...usage },
             retryCount: ctx.retryCount,
             runId,
+            conversationId,
             toolMetadata: new Map(ctx.toolResultMetadata),
           };
         } catch (err) {
@@ -400,6 +406,7 @@ export async function executeRun<TDeps, TOutput>(
             usage: { ...usage },
             retryCount: ctx.retryCount,
             runId,
+            conversationId,
             toolMetadata: new Map(ctx.toolResultMetadata),
           };
         } catch (err) {
@@ -476,6 +483,7 @@ export async function executeRun<TDeps, TOutput>(
           usage: { ...usage },
           retryCount: ctx.retryCount,
           runId,
+          conversationId,
           toolMetadata: new Map(ctx.toolResultMetadata),
         };
       }
@@ -506,6 +514,7 @@ export async function executeRun<TDeps, TOutput>(
           usage: { ...usage },
           retryCount: ctx.retryCount,
           runId,
+          conversationId,
           toolMetadata: new Map(ctx.toolResultMetadata),
         };
       } catch (err) {
@@ -550,6 +559,7 @@ export async function executeRun<TDeps, TOutput>(
           usage: { ...usage },
           retryCount: ctx.retryCount,
           runId,
+          conversationId,
           toolMetadata: new Map(ctx.toolResultMetadata),
         };
       } catch (err) {
@@ -575,6 +585,7 @@ export async function executeRun<TDeps, TOutput>(
         usage: { ...usage },
         retryCount: ctx.retryCount,
         runId,
+        conversationId,
         toolMetadata: new Map(ctx.toolResultMetadata),
       };
     }

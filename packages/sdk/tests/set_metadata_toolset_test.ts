@@ -13,6 +13,7 @@ function makeCtx(): RunContext<undefined> {
     retryCount: 0,
     toolName: null,
     runId: "test",
+    conversationId: "test-conversation",
     metadata: {},
     toolResultMetadata: new Map(),
     attachMetadata: () => {},
