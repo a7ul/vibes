@@ -95,7 +95,7 @@ Observer form (gets events but doesn't transform them):
 
 ```typescript
 import { Agent, AgentStreamEvent, RunContext } from "@vibesjs/sdk";
-import { AsyncIterable } from "...";
+import { anthropic } from "@ai-sdk/anthropic";
 
 const agent = new Agent({
   model: anthropic("claude-sonnet-4-6"),

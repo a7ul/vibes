@@ -21,6 +21,7 @@ setAllowModelRequests(false);
 
 ```typescript
 import { Agent, setAllowModelRequests, TestModel, createTestModel } from "@vibesjs/sdk";
+import { openai } from "@ai-sdk/openai";
 import { z } from "zod";
 
 setAllowModelRequests(false);
@@ -142,7 +143,8 @@ const result = await run("Hello");
 ## Testing Structured Output
 
 ```typescript
-import { createTestModel, setAllowModelRequests } from "@vibesjs/sdk";
+import { Agent, createTestModel, setAllowModelRequests } from "@vibesjs/sdk";
+import { openai } from "@ai-sdk/openai";
 import { z } from "zod";
 
 setAllowModelRequests(false);

@@ -137,6 +137,7 @@ const result = await agent.run("What is user 123's name?", {
 
 ```typescript
 import { Agent, setAllowModelRequests, TestModel } from "@vibesjs/sdk";
+import { openai } from "@ai-sdk/openai";
 import { z } from "zod";
 
 setAllowModelRequests(false);
