@@ -12,6 +12,7 @@ import {
   isUploadedFile,
   uploadedFileToToolResult,
 } from "./multimodal/binary_content.ts";
+import type { ToolCallOtelMetadata } from "./otel/otel_types.ts";
 
 /** All possible return types from a tool's execute function. */
 export type ToolExecuteReturn = string | object | BinaryContent | UploadedFile;
@@ -86,6 +87,16 @@ export interface ToolDefinition<TDeps = undefined> {
    * Equivalent to Pydantic AI's `metadata=` on a tool / `ToolDefinition`.
    */
   metadata?: Record<string, unknown>;
+  /**
+   * OpenTelemetry rendering hints for this tool's call spans.
+   *
+   * When set, observability tools (e.g. Logfire) can use `codeArgName` and
+   * `codeArgLanguage` to apply syntax highlighting to the specified argument
+   * in tool call events.
+   *
+   * Equivalent to Pydantic AI's `ToolCallPartOtelMetadata` (v1.90.0).
+   */
+  otelMetadata?: ToolCallOtelMetadata;
 }
 
 /**
@@ -131,6 +142,7 @@ export function tool<
     ) => boolean | Promise<boolean>);
   deferLoading?: boolean;
   metadata?: Record<string, unknown>;
+  otelMetadata?: ToolCallOtelMetadata;
 }): ToolDefinition<TDeps> {
   return opts as ToolDefinition<TDeps>;
 }
