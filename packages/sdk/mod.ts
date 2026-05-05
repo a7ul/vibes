@@ -194,6 +194,7 @@ export type { AGUIEvent } from "./lib/ag_ui/types.ts";
 export type {
 	InstrumentationOptions,
 	TelemetrySettings,
+	ToolCallOtelMetadata,
 } from "./lib/otel/otel_types.ts";
 export {
 	createTelemetrySettings,

@@ -23,6 +23,43 @@ import type { Tracer } from "@opentelemetry/api";
 export type { TelemetrySettings } from "ai";
 
 // ---------------------------------------------------------------------------
+// ToolCallOtelMetadata - typed hints for OTel tool call rendering
+// ---------------------------------------------------------------------------
+
+/**
+ * Typed metadata that can be attached to a `ToolDefinition` via the
+ * `otelMetadata` field to inform OpenTelemetry event rendering.
+ *
+ * Used by observability tools (e.g. Logfire) for rendering hints such as
+ * syntax highlighting of code arguments in tool call spans.
+ *
+ * Equivalent to Pydantic AI's `ToolCallPartOtelMetadata` (v1.90.0).
+ *
+ * @example
+ * ```ts
+ * const runCode = tool({
+ *   name: "run_python",
+ *   description: "Execute Python code",
+ *   parameters: z.object({ code: z.string() }),
+ *   otelMetadata: { codeArgName: "code", codeArgLanguage: "python" },
+ *   execute: async (ctx, { code }) => execPython(code),
+ * });
+ * ```
+ */
+export interface ToolCallOtelMetadata {
+  /**
+   * The name of the tool argument that contains code.
+   * When set, observability UIs can apply syntax highlighting to this argument.
+   */
+  codeArgName?: string;
+  /**
+   * The programming language of the code in `codeArgName`.
+   * Examples: `"python"`, `"javascript"`, `"sql"`, `"bash"`.
+   */
+  codeArgLanguage?: string;
+}
+
+// ---------------------------------------------------------------------------
 // InstrumentationOptions - passed to instrumentAgent()
 // ---------------------------------------------------------------------------
 
