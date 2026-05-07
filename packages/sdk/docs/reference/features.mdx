@@ -305,3 +305,10 @@ Vibes is designed to stay current with Pydantic AI  -  an AI agent automatically
 | `UIAdapter.manage_system_prompt` | `'server'` (default) strips frontend system prompts and reinjects agent's own (v1.86.0) | ❌ | - | Not applicable — vibes AG-UI adapter does not store or forward system prompts via message history |
 | `HandleDeferredToolCalls` | Auto-resolve deferred tool calls inline (v1.87.0)                | ✅     | -    | `deferredToolHandler` on `AgentOptions`/`RunOptions`; return `DeferredToolResults` to auto-approve or `null` to fall back to `ApprovalRequiredError` |
 | `ProcessEventStream`     | Observe or transform the agent event stream (v1.87.0)             | ✅     | -    | `eventStreamHandler` on `AgentOptions`/`RunOptions`; observer form (async fn → void) or processor form (async generator → iterable); applies to `runStreamEvents()` |
+| Output validate/process hooks | `OutputValidateCapability` / `OutputProcessCapability` hooks on output tools (v1.88.0) | ❌ | - | Capabilities system is Python-only; vibes uses result validators instead |
+| Cross-provider `service_tier` | `service_tier` model setting for Anthropic/Gemini/Vertex (v1.88.0) | ❌ | - | Provider-specific; pass directly to Vercel AI SDK provider constructor |
+| `UIAdapter.sanitize_messages` | Strip disallowed file URL schemes from messages (v1.88.0)     | ❌     | -    | Not implemented in vibes AG-UI adapter |
+| `conversation_id`        | Cross-run conversation identifier (v1.89.0)                       | ❌     | -    | OpenAI Responses-specific; not implemented |
+| OpenAI Conversations API | Stateful `openai_conversation_id` setting (v1.90.0)               | ❌     | -    | OpenAI Responses-specific; not implemented |
+| `deepseek-v4-flash` / `deepseek-v4-pro` | Thinking support for DeepSeek V4 models (v1.91.0) | ❌ | - | pydantic-ai model profiles; use DeepSeek provider from Vercel AI SDK directly |
+| `gpt-image-2` options    | `ImageGenerationTool` options for GPT-image-2 (v1.91.0)           | ❌     | -    | Image generation builtin tool not yet ported to vibes |
