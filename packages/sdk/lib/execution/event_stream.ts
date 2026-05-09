@@ -131,7 +131,7 @@ async function* runEventStreamLoopWithCtx<TDeps, TOutput>(
     for (let turn = 0; turn < maxTurns; turn++) {
       yield { kind: "turn-start", turn };
 
-      const { tools, msgsForModel, system, outputToolNames } =
+      const { tools, msgsForModel, system, outputToolNames, aiToolChoice } =
         await prepareTurn(
           agent,
           opts,
@@ -142,6 +142,10 @@ async function* runEventStreamLoopWithCtx<TDeps, TOutput>(
           runScopedToolsets,
         );
 
+      const toolChoiceOpt = aiToolChoice !== undefined
+        ? { toolChoice: aiToolChoice as "auto" | "none" | "required" }
+        : {};
+
       const stream = streamText({
         model,
         system,
@@ -151,6 +155,7 @@ async function* runEventStreamLoopWithCtx<TDeps, TOutput>(
         ...(telemetry !== undefined
           ? { experimental_telemetry: telemetry }
           : {}),
+        ...toolChoiceOpt,
         ...modelSettings,
       });
 
@@ -210,12 +215,24 @@ async function* runEventStreamLoopWithCtx<TDeps, TOutput>(
             ) {
               parsedArgs = raw as Record<string, unknown>;
             }
-            yield {
-              kind: "tool-call-start",
-              toolName: chunk.toolName,
-              toolCallId: chunk.toolCallId,
-              args: parsedArgs,
-            };
+            // Emit different event kinds for output tools vs function tools.
+            const isOutputTool = outputToolNames.has(chunk.toolName) ||
+              isFinalResultTool(chunk.toolName);
+            if (isOutputTool) {
+              yield {
+                kind: "output-tool-call-start",
+                toolName: chunk.toolName,
+                toolCallId: chunk.toolCallId,
+                args: parsedArgs,
+              };
+            } else {
+              yield {
+                kind: "tool-call-start",
+                toolName: chunk.toolName,
+                toolCallId: chunk.toolCallId,
+                args: parsedArgs,
+              };
+            }
           }
         }
         // tool-result chunks from fullStream have a DynamicToolResult shape that
@@ -234,7 +251,7 @@ async function* runEventStreamLoopWithCtx<TDeps, TOutput>(
 
       applyUsage(usage, streamUsage);
 
-      // Emit tool-call-result events for every resolved tool result.
+      // Emit tool-call-result / output-tool-call-result events for every resolved tool.
       // We use stream.toolResults (the resolved array) rather than raw fullStream
       // chunks because it provides the typed output from tool execute functions.
       for (const tr of toolResults) {
@@ -243,12 +260,23 @@ async function* runEventStreamLoopWithCtx<TDeps, TOutput>(
           toolName: string;
           output: unknown;
         };
-        yield {
-          kind: "tool-call-result",
-          toolCallId: resolved.toolCallId,
-          toolName: resolved.toolName,
-          result: resolved.output,
-        };
+        const isOutputTool = outputToolNames.has(resolved.toolName) ||
+          isFinalResultTool(resolved.toolName);
+        if (isOutputTool) {
+          yield {
+            kind: "output-tool-call-result",
+            toolCallId: resolved.toolCallId,
+            toolName: resolved.toolName,
+            result: resolved.output,
+          };
+        } else {
+          yield {
+            kind: "tool-call-result",
+            toolCallId: resolved.toolCallId,
+            toolName: resolved.toolName,
+            result: resolved.output,
+          };
+        }
       }
 
       yield { kind: "usage-update", usage: snapshotUsage(usage) };

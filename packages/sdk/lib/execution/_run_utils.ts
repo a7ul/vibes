@@ -501,6 +501,69 @@ export interface TurnSetup<TDeps> {
   outputToolNames: Set<string>;
   /** Resolved tool definitions (used for output tool detection). */
   resolvedTools: ToolDefinition<TDeps>[];
+  /**
+   * Effective toolChoice to pass to generateText/streamText.
+   * Derived from the user's `toolChoice` setting in `ModelSettings`, adjusted
+   * to preserve output/final_result tools regardless of the setting.
+   */
+  aiToolChoice: "auto" | "none" | "required" | undefined;
+}
+
+/**
+ * Apply `toolChoice` filtering to a built ToolSet.
+ *
+ * - `'auto'` / `undefined`: No filtering; pass `'auto'` to AI SDK (or omit).
+ * - `'none'`: Remove function tools; keep output and final_result tools.
+ *   AI SDK receives `'auto'` so the model can still call output tools.
+ * - `'required'`: Keep all tools; AI SDK receives `'required'`.
+ * - `string[]`: Keep only listed function tools + output and final_result tools.
+ *   AI SDK receives `'required'` if any function tools remain, otherwise `'auto'`.
+ */
+function applyToolChoice(
+  toolMap: ToolSet,
+  outputToolNames: Set<string>,
+  toolChoice: import("../types/model_settings.ts").ToolChoice | undefined,
+): { filteredMap: ToolSet; aiToolChoice: "auto" | "none" | "required" | undefined } {
+  if (!toolChoice || toolChoice === "auto") {
+    return { filteredMap: toolMap, aiToolChoice: undefined };
+  }
+
+  if (toolChoice === "required") {
+    return { filteredMap: toolMap, aiToolChoice: "required" };
+  }
+
+  // Helper: is a tool name an "output" tool (final_result or user isOutput)?
+  const isOutputToolName = (name: string): boolean =>
+    outputToolNames.has(name) || isFinalResultTool(name);
+
+  if (toolChoice === "none") {
+    // Keep only output and final_result tools; remove all function tools.
+    const filteredMap: ToolSet = {};
+    for (const [name, t] of Object.entries(toolMap)) {
+      if (isOutputToolName(name)) filteredMap[name] = t;
+    }
+    // AI SDK receives 'auto' so model can call output tools (or produce text).
+    return { filteredMap, aiToolChoice: undefined };
+  }
+
+  // string[] - restrict to listed function tools + all output tools
+  const allowed = new Set(toolChoice as string[]);
+  const filteredMap: ToolSet = {};
+  let functionToolCount = 0;
+  for (const [name, t] of Object.entries(toolMap)) {
+    if (isOutputToolName(name)) {
+      filteredMap[name] = t;
+    } else if (allowed.has(name)) {
+      filteredMap[name] = t;
+      functionToolCount++;
+    }
+  }
+  // Use 'required' only if there are matching function tools (list mode forces a call).
+  // When no listed function tools are in the map (only output tools remain), pass
+  // undefined so the AI SDK uses its default 'auto' behavior — the model can freely
+  // call output tools or generate text without being forced into a tool call.
+  const aiToolChoice = functionToolCount > 0 ? "required" : undefined;
+  return { filteredMap, aiToolChoice };
 }
 
 export async function prepareTurn<TDeps, TOutput>(
@@ -533,13 +596,21 @@ export async function prepareTurn<TDeps, TOutput>(
     : (opts._override?.toolsets ?? agent.toolsets);
   const resolvedTools = await resolveTools(tools, toolsets, ctx);
   const outputToolNames = findOutputToolNames(resolvedTools);
-  const toolMap = buildToolMap(
+  const rawToolMap = buildToolMap(
     resolvedTools,
     agent.outputSchema,
     agent.outputMode,
     ctx,
     agent.maxConcurrency,
     sequentialMutex,
+  );
+
+  // Apply toolChoice filtering
+  const modelSettingsRaw = resolveModelSettings(agent, opts);
+  const { filteredMap, aiToolChoice } = applyToolChoice(
+    rawToolMap,
+    outputToolNames,
+    modelSettingsRaw.toolChoice,
   );
 
   const historyProcessors = opts._override?.historyProcessors ??
@@ -576,12 +647,13 @@ export async function prepareTurn<TDeps, TOutput>(
   _notifyModelRequest(msgsForModel);
 
   return {
-    toolMap,
-    tools: toolsOrUndefined(toolMap),
+    toolMap: filteredMap,
+    tools: toolsOrUndefined(filteredMap),
     msgsForModel,
     system,
     outputToolNames,
     resolvedTools,
+    aiToolChoice,
   };
 }
 
