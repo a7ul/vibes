@@ -559,6 +559,9 @@ function applyToolChoice(
     }
   }
   // Use 'required' only if there are matching function tools (list mode forces a call).
+  // When no listed function tools are in the map (only output tools remain), pass
+  // undefined so the AI SDK uses its default 'auto' behavior — the model can freely
+  // call output tools or generate text without being forced into a tool call.
   const aiToolChoice = functionToolCount > 0 ? "required" : undefined;
   return { filteredMap, aiToolChoice };
 }
