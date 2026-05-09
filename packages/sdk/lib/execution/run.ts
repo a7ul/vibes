@@ -130,7 +130,12 @@ export async function executeRun<TDeps, TOutput>(
       sequentialMutex,
       runScopedToolsets,
     );
-    const { msgsForModel, system, outputToolNames, resolvedTools } = turnSetup;
+    const { msgsForModel, system, outputToolNames, resolvedTools, aiToolChoice } = turnSetup;
+
+    // Build toolChoice option for AI SDK (undefined means omit the option entirely).
+    const toolChoiceOpt = aiToolChoice !== undefined
+      ? { toolChoice: aiToolChoice as "auto" | "none" | "required" }
+      : {};
 
     // Check if any resolved tools require approval - if so, build a deferred-aware map
     const pendingApprovals: import("./deferred.ts").DeferredToolRequest[] = [];
@@ -171,6 +176,7 @@ export async function executeRun<TDeps, TOutput>(
         ...(telemetry !== undefined
           ? { experimental_telemetry: telemetry }
           : {}),
+        ...toolChoiceOpt,
         ...modelSettings,
       });
 
@@ -304,6 +310,7 @@ export async function executeRun<TDeps, TOutput>(
         ...(telemetry !== undefined
           ? { experimental_telemetry: telemetry }
           : {}),
+        ...toolChoiceOpt,
         ...modelSettings,
       });
 
@@ -426,6 +433,7 @@ export async function executeRun<TDeps, TOutput>(
       tools: effectiveTools,
       stopWhen: stepCountIs(1),
       ...(telemetry !== undefined ? { experimental_telemetry: telemetry } : {}),
+      ...toolChoiceOpt,
       ...modelSettings,
     });
 

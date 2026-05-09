@@ -115,12 +115,21 @@ The event discriminant is `event.kind`, not `event.type`. Always use `event.kind
 |-------------|-------------|--------------|
 | `"turn-start"` | `turn: number` | Beginning of each model turn |
 | `"text-delta"` | `delta: string` | Each text token from the model |
-| `"tool-call-start"` | `toolName, toolCallId, args` | Model requests a tool call |
-| `"tool-call-result"` | `toolCallId, toolName, result` | Tool finished executing |
+| `"tool-call-start"` | `toolName, toolCallId, args` | Model requests a **function** tool call |
+| `"tool-call-result"` | `toolCallId, toolName, result` | **Function** tool finished executing |
+| `"output-tool-call-start"` | `toolName, toolCallId, args` | Model requests an **output** tool call (`final_result` or `outputTool()`) |
+| `"output-tool-call-result"` | `toolCallId, toolName, result` | **Output** tool finished executing |
 | `"partial-output"` | `partial: unknown` | Progressive structured output (tool mode only) |
 | `"usage-update"` | `usage: Usage` | After each turn completes |
 | `"final-result"` | `output: TOutput` | Run completed successfully |
 | `"error"` | `error: unknown` | Unrecoverable error - stream ends |
+
+<Note>
+Function tools (defined with `tool()`) emit `tool-call-start` / `tool-call-result`.
+Output tools (`final_result` and tools defined with `outputTool()`) emit
+`output-tool-call-start` / `output-tool-call-result`. This mirrors the
+`OutputToolCallEvent` / `OutputToolResultEvent` distinction introduced in Pydantic AI v1.93.0.
+</Note>
 
 ## When to use which
 

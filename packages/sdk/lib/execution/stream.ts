@@ -193,7 +193,7 @@ async function runStreamLoop<TDeps, TOutput>(
 
   try {
     for (let turn = 0; turn < maxTurns; turn++) {
-      const { tools, msgsForModel, system, outputToolNames } =
+      const { tools, msgsForModel, system, outputToolNames, aiToolChoice } =
         await prepareTurn(
           agent,
           opts,
@@ -204,6 +204,10 @@ async function runStreamLoop<TDeps, TOutput>(
           runScopedToolsets,
         );
 
+      const toolChoiceOpt = aiToolChoice !== undefined
+        ? { toolChoice: aiToolChoice as "auto" | "none" | "required" }
+        : {};
+
       const stream = streamText({
         model,
         system,
@@ -213,6 +217,7 @@ async function runStreamLoop<TDeps, TOutput>(
         ...(telemetry !== undefined
           ? { experimental_telemetry: telemetry }
           : {}),
+        ...toolChoiceOpt,
         ...modelSettings,
       });
 

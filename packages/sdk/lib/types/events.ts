@@ -17,16 +17,39 @@ export type AgentStreamEvent<TOutput = string> =
   | { kind: "turn-start"; turn: number }
   /** A text token delta arrived from the model. */
   | { kind: "text-delta"; delta: string }
-  /** The model requested a tool call (args may still be streaming). */
+  /** The model requested a function tool call (args may still be streaming). */
   | {
     kind: "tool-call-start";
     toolName: string;
     toolCallId: string;
     args: Record<string, unknown>;
   }
-  /** A tool call finished and returned its result. */
+  /** A function tool call finished and returned its result. */
   | {
     kind: "tool-call-result";
+    toolCallId: string;
+    toolName: string;
+    result: unknown;
+  }
+  /**
+   * The model requested an output tool call (e.g. `final_result` or a user-defined
+   * output tool created with `outputTool()`).
+   *
+   * Equivalent to Pydantic AI's `OutputToolCallEvent` (added in v1.93.0).
+   */
+  | {
+    kind: "output-tool-call-start";
+    toolName: string;
+    toolCallId: string;
+    args: Record<string, unknown>;
+  }
+  /**
+   * An output tool call finished (e.g. `final_result` returned the parsed result).
+   *
+   * Equivalent to Pydantic AI's `OutputToolResultEvent` (added in v1.93.0).
+   */
+  | {
+    kind: "output-tool-call-result";
     toolCallId: string;
     toolName: string;
     result: unknown;
