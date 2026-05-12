@@ -5,6 +5,7 @@ import type { RunContext, Usage } from "../types/context.ts";
 import type { StreamResult } from "../types/results.ts";
 import {
   applyUsage,
+  buildModelRequestMessages,
   buildInitialMessages,
   buildResponseMessages,
   checkModelRequestsAllowed,
@@ -204,10 +205,10 @@ async function runStreamLoop<TDeps, TOutput>(
           runScopedToolsets,
         );
 
+      const requestMessages = buildModelRequestMessages(system, msgsForModel);
       const stream = streamText({
         model,
-        system,
-        messages: msgsForModel,
+        messages: requestMessages,
         tools,
         stopWhen: stepCountIs(1),
         ...(telemetry !== undefined

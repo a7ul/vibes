@@ -229,6 +229,35 @@ export async function resolveSystemWithInstructions<TDeps, TOutput>(
   return systemPrompt ?? instructions;
 }
 
+export function buildModelRequestMessages(
+  system: string | undefined,
+  messages: ModelMessage[],
+): ModelMessage[] {
+  const requestMessages = system
+    ? [{ role: "system", content: system } as ModelMessage, ...messages]
+    : [...messages];
+
+  let leadingSystemCount = 0;
+  const leadingSystemParts: string[] = [];
+  for (const message of requestMessages) {
+    if (message.role !== "system") break;
+    if (typeof message.content !== "string") {
+      return requestMessages;
+    }
+    leadingSystemParts.push(message.content);
+    leadingSystemCount++;
+  }
+
+  if (leadingSystemCount <= 1) {
+    return requestMessages;
+  }
+
+  return [
+    { role: "system", content: leadingSystemParts.join("\n\n") },
+    ...requestMessages.slice(leadingSystemCount),
+  ];
+}
+
 export function buildInitialMessages(
   messageHistory: ModelMessage[] | undefined,
   prompt: string,

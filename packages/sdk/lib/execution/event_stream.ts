@@ -5,6 +5,7 @@ import type { RunContext, Usage } from "../types/context.ts";
 import type { AgentStreamEvent } from "../types/events.ts";
 import {
   applyUsage,
+  buildModelRequestMessages,
   buildInitialMessages,
   buildResponseMessages,
   checkModelRequestsAllowed,
@@ -142,10 +143,10 @@ async function* runEventStreamLoopWithCtx<TDeps, TOutput>(
           runScopedToolsets,
         );
 
+      const requestMessages = buildModelRequestMessages(system, msgsForModel);
       const stream = streamText({
         model,
-        system,
-        messages: msgsForModel,
+        messages: requestMessages,
         tools,
         stopWhen: stepCountIs(1),
         ...(telemetry !== undefined

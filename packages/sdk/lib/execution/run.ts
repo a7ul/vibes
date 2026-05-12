@@ -9,6 +9,7 @@ import {
 } from "../multimodal/binary_content.ts";
 import {
   applyUsage,
+  buildModelRequestMessages,
   buildDeferredAwareToolMap,
   buildInitialMessages,
   buildResumeToolMessage,
@@ -158,13 +159,13 @@ export async function executeRun<TDeps, TOutput>(
     // Native structured output mode - use AI SDK's output.object()
     // ---------------------------------------------------------------------------
     if (outputMode === "native" && schemas.length > 0) {
+      const requestMessages = buildModelRequestMessages(system, msgsForModel);
       const primarySchema = schemas[0];
       const rawResponse = await (generateText as unknown as (
         opts: Record<string, unknown>,
       ) => Promise<Record<string, unknown>>)({
         model,
-        system,
-        messages: msgsForModel,
+        messages: requestMessages,
         tools: effectiveTools,
         stopWhen: stepCountIs(1),
         output: aiOutput.object({ schema: primarySchema }),
@@ -295,10 +296,10 @@ export async function executeRun<TDeps, TOutput>(
     // Prompted output mode - schema injected into system prompt, parse text
     // ---------------------------------------------------------------------------
     if (outputMode === "prompted" && schemas.length > 0) {
+      const requestMessages = buildModelRequestMessages(system, msgsForModel);
       const response = await generateText({
         model,
-        system,
-        messages: msgsForModel,
+        messages: requestMessages,
         tools: effectiveTools,
         stopWhen: stepCountIs(1),
         ...(telemetry !== undefined
@@ -419,10 +420,10 @@ export async function executeRun<TDeps, TOutput>(
     // ---------------------------------------------------------------------------
     // Tool output mode (default)
     // ---------------------------------------------------------------------------
+    const requestMessages = buildModelRequestMessages(system, msgsForModel);
     const response = await generateText({
       model,
-      system,
-      messages: msgsForModel,
+      messages: requestMessages,
       tools: effectiveTools,
       stopWhen: stepCountIs(1),
       ...(telemetry !== undefined ? { experimental_telemetry: telemetry } : {}),
