@@ -151,6 +151,10 @@ const agent = new Agent({
 });
 ```
 
+Vibes normalizes consecutive leading `system` messages into a single request
+message before each model call. This keeps custom OpenAI-compatible backends
+happy even when they only accept one initial system message.
+
 ## ModelSettings
 
 `ModelSettings` lets you tune the model's sampling behavior. Pass it at agent construction to apply to every run, or override it per run via `RunOptions`.

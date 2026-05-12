@@ -139,6 +139,7 @@ Vibes is designed to stay current with Pydantic AI  -  an AI agent automatically
 | Cross-model compatibility | Messages work across providers                | ✅     | [Message History](/concepts/messages) | AI SDK `CoreMessage` is provider-agnostic |
 | History processors        | `history_processors=[...]`                    | ✅     | [Message History](/concepts/messages) | `historyProcessors: [trimHistoryProcessor(n), ...]` on `AgentOptions` |
 | Message serialization     | JSON roundtrip via `ModelMessagesTypeAdapter` | ✅     | [Message History](/concepts/messages) | `serializeMessages()` / `deserializeMessages()` |
+| Leading system message normalization | `openai_chat_supports_multiple_system_messages` (v1.94.0) | ✅ | [Models](/concepts/models) | Outgoing requests collapse consecutive leading `system` messages into one message joined with blank lines for broad OpenAI-compatible API compatibility |
 | Token-aware trimming      | Keep last N messages by token count           | ✅     | [Message History](/concepts/messages) | `tokenTrimHistoryProcessor(maxTokens, tokenCounter?)` |
 | LLM-based summarization   | Summarize old turns via a model call          | ✅     | [Message History](/concepts/messages) | `summarizeHistoryProcessor(model, { maxMessages?, summarizePrompt? })` |
 | Privacy filtering         | Strip sensitive fields before model call      | ✅     | [Message History](/concepts/messages) | `privacyFilterProcessor(rules)` - regex + field-path redaction |
