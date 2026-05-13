@@ -100,6 +100,10 @@ export { ExternalToolset } from "./lib/toolsets/external_toolset.ts";
 export type { ExternalToolDefinition } from "./lib/toolsets/external_toolset.ts";
 export { DeferredLoadingToolset } from "./lib/toolsets/deferred_loading_toolset.ts";
 export { ToolSearchToolset } from "./lib/toolsets/tool_search_toolset.ts";
+export type {
+  ToolSearchFn,
+  ToolSearchToolsetOptions,
+} from "./lib/toolsets/tool_search_toolset.ts";
 export { SetMetadataToolset } from "./lib/toolsets/set_metadata_toolset.ts";
 export type {
   ToolSelector,
