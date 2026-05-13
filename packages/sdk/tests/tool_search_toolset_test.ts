@@ -6,6 +6,7 @@ import {
   tool,
   ToolSearchToolset,
 } from "../mod.ts";
+import type { ToolSearchFn, ToolSearchToolsetOptions } from "../mod.ts";
 import { z } from "zod";
 import {
   type DoGenerateResult,
@@ -110,8 +111,8 @@ Deno.test("ToolSearchToolset - hides deferred tools, shows search_tools", async 
 Deno.test("ToolSearchToolset - discovered tools appear in subsequent turns", async () => {
   const capturedToolLists: string[][] = [];
   const responses = mockValues<DoGenerateResult>(
-    // Turn 1: call search_tools
-    toolCallResponse("search_tools", { keywords: "alpha" }, "tc1"),
+    // Turn 1: call search_tools with queries array
+    toolCallResponse("search_tools", { queries: ["alpha"] }, "tc1"),
     // Turn 2: use the discovered tool
     toolCallResponse("alpha", {}, "tc2"),
     // Turn 3: done
@@ -176,7 +177,7 @@ Deno.test("ToolSearchToolset - per-run isolation: discoveries reset between runs
   // Run 1: turn1 searches, turn2 sees alpha, turn3 done
   // Run 2: turn1 should NOT see alpha (fresh run)
   const responses = mockValues<DoGenerateResult>(
-    toolCallResponse("search_tools", { keywords: "alpha" }, "tc1"), // run1, turn1
+    toolCallResponse("search_tools", { queries: ["alpha"] }, "tc1"), // run1, turn1
     textResponse("done run1"), // run1, turn2
     textResponse("done run2"), // run2, turn1
   );
@@ -227,17 +228,20 @@ Deno.test("ToolSearchToolset - no-op when no tools have deferLoading", async () 
 });
 
 // ---------------------------------------------------------------------------
-// Token-based search algorithm tests (v1.84.0 change)
+// Token-based search algorithm tests
 // ---------------------------------------------------------------------------
 
-async function getSearchExecute(toolDefs: ReturnType<typeof makeTool>[]) {
+async function getSearchExecute(
+  toolDefs: ReturnType<typeof makeTool>[],
+  options?: ToolSearchToolsetOptions,
+) {
   const inner = new FunctionToolset(toolDefs);
-  const ts = new ToolSearchToolset(new DeferredLoadingToolset(inner));
+  const ts = new ToolSearchToolset(new DeferredLoadingToolset(inner), options);
   const allTools = await ts.tools({} as never);
   const searchToolDef = allTools.find((t) => t.name === "search_tools");
   if (!searchToolDef) throw new Error("search_tools not found");
-  return (keywords: string) =>
-    searchToolDef.execute({} as never, { keywords });
+  return (queries: string[]) =>
+    searchToolDef.execute({} as never, { queries });
 }
 
 Deno.test("ToolSearchToolset - token matching: exact word 'me' does not match 'comment'", async () => {
@@ -246,7 +250,7 @@ Deno.test("ToolSearchToolset - token matching: exact word 'me' does not match 'c
     makeTool("comment_tool", "post a comment"),
   ]);
 
-  const result = JSON.parse((await exec("me")) as string) as Array<
+  const result = JSON.parse((await exec(["me"])) as string) as Array<
     { name: string }
   >;
   const names = result.map((r) => r.name);
@@ -268,7 +272,7 @@ Deno.test("ToolSearchToolset - token scoring: results ordered by number of match
   ]);
 
   const result = JSON.parse(
-    (await exec("get user profile")) as string,
+    (await exec(["get user profile"])) as string,
   ) as Array<{ name: string }>;
   assertEquals(result[0].name, "get_user_profile");
   assertEquals(result[1].name, "get_user");
@@ -280,9 +284,122 @@ Deno.test("ToolSearchToolset - token matching: no match returns not-found messag
     makeTool("fetch_weather", "get current weather"),
   ]);
 
-  const result = await exec("payment invoice billing");
+  const result = await exec(["payment invoice billing"]);
   assertEquals(
     result,
     "No matching tools found. The tools you need may not be available.",
   );
 });
+
+Deno.test("ToolSearchToolset - multiple queries are unioned", async () => {
+  // Query 1: "alpha" matches alpha_tool
+  // Query 2: "beta" matches beta_tool
+  // Both should appear in results
+  const exec = await getSearchExecute([
+    makeTool("alpha_tool", "alpha capability"),
+    makeTool("beta_tool", "beta capability"),
+    makeTool("gamma_tool", "gamma capability"),
+  ]);
+
+  const result = JSON.parse(
+    (await exec(["alpha", "beta"])) as string,
+  ) as Array<{ name: string }>;
+  const names = result.map((r) => r.name);
+  assertEquals(names.includes("alpha_tool"), true);
+  assertEquals(names.includes("beta_tool"), true);
+  assertEquals(names.includes("gamma_tool"), false);
+});
+
+Deno.test("ToolSearchToolset - empty queries array returns prompt message", async () => {
+  const exec = await getSearchExecute([makeTool("some_tool", "some tool")]);
+  const result = await exec([]);
+  assertEquals(result, "Please provide search queries.");
+});
+
+Deno.test("ToolSearchToolset - maxResults limits the number of results", async () => {
+  const manyTools = Array.from({ length: 15 }, (_, i) =>
+    makeTool(`tool_${i}`, `tool ${i} matching description`)
+  );
+  const exec = await getSearchExecute(manyTools, { maxResults: 3 });
+
+  const result = JSON.parse(
+    (await exec(["tool matching description"])) as string,
+  ) as Array<{ name: string }>;
+  assertEquals(result.length <= 3, true);
+});
+
+Deno.test("ToolSearchToolset - custom searchFn is called with queries and tool defs", async () => {
+  const capturedArgs: { queries: string[]; toolNames: string[] }[] = [];
+
+  const searchFn: ToolSearchFn = (
+    _ctx,
+    queries,
+    tools,
+  ) => {
+    capturedArgs.push({ queries, toolNames: tools.map((t) => t.name) });
+    // Return the first matching tool name by simple substring
+    return tools
+      .filter((t) => queries.some((q) => t.name.includes(q)))
+      .map((t) => t.name);
+  };
+
+  const exec = await getSearchExecute(
+    [
+      makeTool("alpha_tool", "alpha capability"),
+      makeTool("beta_tool", "beta capability"),
+    ],
+    { searchFn },
+  );
+
+  const result = JSON.parse(
+    (await exec(["alpha"])) as string,
+  ) as Array<{ name: string }>;
+  const names = result.map((r) => r.name);
+
+  // Custom fn was called
+  assertEquals(capturedArgs.length, 1);
+  assertEquals(capturedArgs[0].queries, ["alpha"]);
+  assertEquals(capturedArgs[0].toolNames.includes("alpha_tool"), true);
+  assertEquals(capturedArgs[0].toolNames.includes("beta_tool"), true);
+
+  // Only alpha_tool matched
+  assertEquals(names.includes("alpha_tool"), true);
+  assertEquals(names.includes("beta_tool"), false);
+});
+
+Deno.test("ToolSearchToolset - async custom searchFn works correctly", async () => {
+  const searchFn: ToolSearchFn = async (
+    _ctx,
+    queries,
+    tools,
+  ) => {
+    await Promise.resolve(); // simulate async work
+    return tools
+      .filter((t) => queries.some((q) => t.name.includes(q)))
+      .map((t) => t.name);
+  };
+
+  const exec = await getSearchExecute(
+    [makeTool("async_tool", "async capability"), makeTool("sync_tool", "sync capability")],
+    { searchFn },
+  );
+
+  const result = JSON.parse(
+    (await exec(["async"])) as string,
+  ) as Array<{ name: string }>;
+  assertEquals(result[0].name, "async_tool");
+});
+
+Deno.test("ToolSearchToolset - custom searchFn returns empty array gives not-found message", async () => {
+  const searchFn: ToolSearchFn = () => [];
+  const exec = await getSearchExecute(
+    [makeTool("some_tool", "some tool")],
+    { searchFn },
+  );
+  const result = await exec(["anything"]);
+  assertEquals(
+    result,
+    "No matching tools found. The tools you need may not be available.",
+  );
+});
+
