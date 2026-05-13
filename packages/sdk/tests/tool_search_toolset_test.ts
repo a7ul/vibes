@@ -380,7 +380,10 @@ Deno.test("ToolSearchToolset - async custom searchFn works correctly", async () 
   };
 
   const exec = await getSearchExecute(
-    [makeTool("async_tool", "async capability"), makeTool("sync_tool", "sync capability")],
+    [
+      makeTool("async_tool", "async capability"),
+      makeTool("sync_tool", "sync capability"),
+    ],
     { searchFn },
   );
 
