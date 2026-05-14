@@ -137,7 +137,7 @@ Vibes is designed to stay current with Pydantic AI  -  an AI agent automatically
 | Pass history to next run  | `message_history=result.all_messages()`       | ✅     | [Message History](/concepts/messages) | `{ messageHistory: result.messages }` |
 | `new_messages()`          | Slice of messages from current run only       | ✅     | [Message History](/concepts/messages) | `result.newMessages` on `RunResult` and `StreamResult` |
 | Cross-model compatibility | Messages work across providers                | ✅     | [Message History](/concepts/messages) | AI SDK `CoreMessage` is provider-agnostic |
-| History processors        | `history_processors=[...]`                    | ✅     | [Message History](/concepts/messages) | `historyProcessors: [trimHistoryProcessor(n), ...]` on `AgentOptions` |
+| History processors        | `capabilities=[ProcessHistory(...)]` (v1.96.0; deprecated `history_processors=[...]`) | ✅     | [Message History](/concepts/messages) | `historyProcessors: [trimHistoryProcessor(n), ...]` on `AgentOptions` — vibes keeps explicit constructor options rather than a capabilities list |
 | Message serialization     | JSON roundtrip via `ModelMessagesTypeAdapter` | ✅     | [Message History](/concepts/messages) | `serializeMessages()` / `deserializeMessages()` |
 | Token-aware trimming      | Keep last N messages by token count           | ✅     | [Message History](/concepts/messages) | `tokenTrimHistoryProcessor(maxTokens, tokenCounter?)` |
 | LLM-based summarization   | Summarize old turns via a model call          | ✅     | [Message History](/concepts/messages) | `summarizeHistoryProcessor(model, { maxMessages?, summarizePrompt? })` |
@@ -163,7 +163,7 @@ Vibes is designed to stay current with Pydantic AI  -  an AI agent automatically
 
 | Feature        | Pydantic AI                                                | Status | Docs | Notes |
 | -------------- | ---------------------------------------------------------- | ------ | ---- | ----- |
-| Usage tracking | `result.usage()`                                           | ✅     | [Results](/concepts/results) | `result.usage` - prompt/completion tokens + requests |
+| Usage tracking | `result.usage` property (v1.96.0; `result.usage()` method-style deprecated)       | ✅     | [Results](/concepts/results) | `result.usage` - prompt/completion tokens + requests |
 | `UsageLimits`  | Cap request count, input tokens, output tokens, tool calls | ✅     | [Results](/concepts/results) | `usageLimits: { maxRequests, maxInputTokens, ... }` on `AgentOptions` or `run()` |
 
 ---
@@ -276,7 +276,7 @@ Vibes is designed to stay current with Pydantic AI  -  an AI agent automatically
 
 | Feature                | Pydantic AI                                     | Status | Docs | Notes |
 | ---------------------- | ----------------------------------------------- | ------ | ---- | ----- |
-| AG-UI event streaming  | `AGUIAdapter.run_stream()` - agent-to-UI events | ✅     | [AG-UI](/integrations/ag-ui) | `AGUIAdapter.handleRequest(input)` returns SSE `Response` |
+| AG-UI event streaming  | `AGUIAdapter` (v1.96.0; deprecated `AGUIApp` / `Agent.to_ag_ui()` / `pydantic_ai.ag_ui` shim) | ✅     | [AG-UI](/integrations/ag-ui) | `AGUIAdapter.handleRequest(input)` returns SSE `Response` — vibes adopted `AGUIAdapter` naming from the start |
 | Follow-up messaging    | Continue conversation after tool call results   | ✅     | [AG-UI](/integrations/ag-ui) | `input.messages` history passed as `messageHistory` automatically |
 | Structured event types | Typed event payloads for all agent actions      | ✅     | [AG-UI](/integrations/ag-ui) | `AGUIEvent` discriminated union with 16 event variants |
 
@@ -294,7 +294,7 @@ Vibes is designed to stay current with Pydantic AI  -  an AI agent automatically
 
 ---
 
-## Capabilities & Hooks (v1.80.0)
+## Capabilities & Hooks (v1.80.0+)
 
 | Feature                  | Pydantic AI                                                        | Status | Docs | Notes |
 | ------------------------ | ------------------------------------------------------------------ | ------ | ---- | ----- |
@@ -305,3 +305,7 @@ Vibes is designed to stay current with Pydantic AI  -  an AI agent automatically
 | `UIAdapter.manage_system_prompt` | `'server'` (default) strips frontend system prompts and reinjects agent's own (v1.86.0) | ❌ | - | Not applicable — vibes AG-UI adapter does not store or forward system prompts via message history |
 | `HandleDeferredToolCalls` | Auto-resolve deferred tool calls inline (v1.87.0)                | ✅     | -    | `deferredToolHandler` on `AgentOptions`/`RunOptions`; return `DeferredToolResults` to auto-approve or `null` to fall back to `ApprovalRequiredError` |
 | `ProcessEventStream`     | Observe or transform the agent event stream (v1.87.0)             | ✅     | -    | `eventStreamHandler` on `AgentOptions`/`RunOptions`; observer form (async fn → void) or processor form (async generator → iterable); applies to `runStreamEvents()` |
+| `ProcessHistory`         | `capabilities=[ProcessHistory(fn)]` replaces `history_processors=` (v1.96.0) | ✅ | - | Vibes exposes this directly as `historyProcessors: [fn]` on `AgentOptions` — the capabilities wrapper is a Python-specific pattern not replicated in TypeScript |
+| `result.usage` / `result.timestamp` / `stream.response` | Property-style access; method forms deprecated (v1.96.0) | ✅ | - | Vibes has always used property-style: `result.usage`, `result.messages`, `stream.output` |
+| `OutlinesModel` / `OutlinesProvider` | Deprecated in v1.96.0                                 | ❌     | -    | Not applicable — vibes uses Vercel AI SDK model providers |
+| `openai-chat:` prefix    | `openai-chat:gpt-4o` for Chat Completions; bare `openai:` warns and will switch to Responses API in v2 (v1.96.0) | ✅ | [Models](/concepts/models) | Vibes uses `@ai-sdk/openai`: `openai("gpt-4o")` is Chat Completions by default; no model-string prefix needed |
