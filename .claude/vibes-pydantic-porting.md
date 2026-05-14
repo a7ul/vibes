@@ -45,7 +45,7 @@ packages/sdk/
 | `agent.run(prompt, deps=x)`                       | `agent.run(prompt, { deps: x })`                          |                                               |
 | `agent.run_stream(prompt)`                        | `agent.stream(prompt)`                                    |                                               |
 | `result.data`                                     | `result.output`                                           |                                               |
-| `result.usage()`                                  | `result.usage`                                            | Eager, not lazy                               |
+| `result.usage` (property since v1.96.0; `result.usage()` deprecated) | `result.usage`             | Eager, not lazy                               |
 | `AgentRunResult.all_messages()`                   | `result.messages`                                         |                                               |
 | `ModelRetry` exception in tool                    | `throw` in tool execute                                   | Caught by maxRetries loop                     |
 | `max_retries` on tool                             | `maxRetries` on `ToolDefinition`                          |                                               |
@@ -54,6 +54,10 @@ packages/sdk/
 | `@agent.system_prompt` decorator                  | `agent.addSystemPrompt((ctx) => ...)`                     | See decorator pattern below                   |
 | `agent.name`                                      | `name` on `AgentOptions`                                  | Optional string                               |
 | `ModelSettings`                                   | Pass options to AI SDK model constructor                  | e.g. `anthropic("claude-...", { maxTokens })` |
+| `capabilities=[ProcessHistory(fn)]` (v1.96.0; deprecated `history_processors=[fn]`) | `historyProcessors: [fn]` on `AgentOptions` | Vibes uses explicit constructor param — no capabilities wrapper needed |
+| `AGUIAdapter` (v1.96.0; deprecated `AGUIApp` / `Agent.to_ag_ui()`) | `AGUIAdapter`           | Vibes adopted `AGUIAdapter` naming from the start |
+| `stream.response` (property; `stream.get()` deprecated in v1.96.0) | `stream.output` (Promise) | Property-style access for typed output |
+| `openai-chat:gpt-4o` (v1.96.0; bare `openai:` warns) | `openai("gpt-4o")` from `@ai-sdk/openai` | Chat Completions by default; no prefix needed |
 
 ## Key Implementation Patterns
 
