@@ -305,3 +305,15 @@ Vibes is designed to stay current with Pydantic AI  -  an AI agent automatically
 | `UIAdapter.manage_system_prompt` | `'server'` (default) strips frontend system prompts and reinjects agent's own (v1.86.0) | ❌ | - | Not applicable — vibes AG-UI adapter does not store or forward system prompts via message history |
 | `HandleDeferredToolCalls` | Auto-resolve deferred tool calls inline (v1.87.0)                | ✅     | -    | `deferredToolHandler` on `AgentOptions`/`RunOptions`; return `DeferredToolResults` to auto-approve or `null` to fall back to `ApprovalRequiredError` |
 | `ProcessEventStream`     | Observe or transform the agent event stream (v1.87.0)             | ✅     | -    | `eventStreamHandler` on `AgentOptions`/`RunOptions`; observer form (async fn → void) or processor form (async generator → iterable); applies to `runStreamEvents()` |
+
+---
+
+## Release Delta (v1.97.0)
+
+| Feature | Pydantic AI | Status | Docs | Notes |
+| ------- | ----------- | ------ | ---- | ----- |
+| `MCPToolset` migration | `MCPToolset` added; `MCPServer*` / `FastMCPToolset` deprecated | ✅ | [MCP](/integrations/mcp-client) | Vibes already exposes MCP through `MCPToolset`, `MCPStdioClient`, `MCPHttpClient`, and `MCPManager`. |
+| Graph beta API graduation | `pydantic_graph.beta` moved out of beta | ✅ | [Graph](/concepts/graph) | Vibes graph APIs are already shipped as stable `Graph` / `BaseNode` APIs (no beta namespace). |
+| Online eval on failures | `OnlineEvaluator.run_on_errors` | ❌ | - | Not yet implemented; current eval APIs do not expose an online evaluator interface. |
+| Stream response API rename | `stream_responses()` deprecated in favor of `stream_response()` | ❌ | - | Not applicable directly; Vibes uses `agent.stream()` and `agent.runStreamEvents()` instead of Python model response streaming helpers. |
+| Google provider split/rename | `GoogleProvider` vs `GoogleCloudProvider`, provider ID rename | ❌ | - | Not directly applicable with current Vibes model/provider abstraction; no equivalent provider-ID API is exposed. |
