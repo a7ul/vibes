@@ -24,7 +24,7 @@ Vibes is designed to stay current with Pydantic AI  -  an AI agent automatically
 | Tools                   | `@agent.tool` / `tools=[...]`                | ✅     | [Tools](/concepts/tools) | `agent.addTool(tool({...}))` |
 | Structured output       | `result_type: BaseModel`                     | ✅     | [Structured Output](/concepts/results) | `outputSchema: z.object({...})` |
 | Result validators       | `@agent.result_validator`                    | ✅     | [Result Validators](/concepts/results) | `agent.addResultValidator(fn)` |
-| Max retries             | `max_retries` / `max_result_retries`         | ✅     | [Agents](/concepts/agents) | `maxRetries` on `AgentOptions` |
+| Max retries             | `retries` / `AgentRetries` (formerly `max_retries` / `max_result_retries`) | ✅     | [Agents](/concepts/agents) | `maxRetries` on `AgentOptions` |
 | Max turns               | `max_turns`                                  | ✅     | [Agents](/concepts/agents) | `maxTurns` on `AgentOptions` |
 | Message history         | `message_history=`                           | ✅     | [Message History](/concepts/messages) | `{ messageHistory: [...] }` on `run()` |
 | Metadata tagging        | `metadata=` on run                           | ✅     | [Agents](/concepts/agents) | `{ metadata: {...} }` on `run()`/`stream()` - accessible via `ctx.metadata` |
