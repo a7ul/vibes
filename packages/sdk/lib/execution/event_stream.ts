@@ -10,6 +10,7 @@ import {
   checkModelRequestsAllowed,
   createRunContext,
   createSequentialMutex,
+  drainPendingMessages,
   initToolsetsForRun,
   type InternalRunOpts,
   isFinalResultTool,
@@ -129,6 +130,7 @@ async function* runEventStreamLoopWithCtx<TDeps, TOutput>(
 
   try {
     for (let turn = 0; turn < maxTurns; turn++) {
+      drainPendingMessages(ctx, messages);
       yield { kind: "turn-start", turn };
 
       const { tools, msgsForModel, system, outputToolNames } =

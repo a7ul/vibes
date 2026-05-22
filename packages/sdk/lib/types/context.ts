@@ -61,6 +61,13 @@ export interface RunContext<TDeps = undefined> {
    * inside their `execute` function to expose extra data to callers.
    */
   attachMetadata(toolCallId: string, meta: Record<string, unknown>): void;
+  /**
+   * Queue one or more messages to be appended before the next model turn.
+   * Useful for injecting synthetic context during a run.
+   */
+  enqueue(message: ModelMessage | ModelMessage[]): void;
+  /** Pending messages queued via `enqueue()` for the next turn. */
+  pendingMessages: ModelMessage[];
 }
 
 // Re-export ModelMessage for convenience (used by results.ts)

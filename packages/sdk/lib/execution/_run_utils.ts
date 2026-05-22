@@ -137,6 +137,7 @@ export function createRunContext<TDeps>(
   metadata: Record<string, unknown>,
 ): RunContext<TDeps> {
   const toolResultMetadata = new Map<string, Record<string, unknown>>();
+  const pendingMessages: ModelMessage[] = [];
   return {
     agent,
     deps,
@@ -149,7 +150,25 @@ export function createRunContext<TDeps>(
     attachMetadata(toolCallId: string, meta: Record<string, unknown>): void {
       toolResultMetadata.set(toolCallId, { ...meta });
     },
+    enqueue(message: ModelMessage | ModelMessage[]): void {
+      if (Array.isArray(message)) {
+        pendingMessages.push(...message);
+        return;
+      }
+      pendingMessages.push(message);
+    },
+    pendingMessages,
   };
+}
+
+/** Append and clear any messages queued via `ctx.enqueue(...)`. */
+export function drainPendingMessages<TDeps>(
+  ctx: RunContext<TDeps>,
+  messages: ModelMessage[],
+): void {
+  if (ctx.pendingMessages.length === 0) return;
+  messages.push(...ctx.pendingMessages);
+  ctx.pendingMessages.length = 0;
 }
 
 async function resolvePromptParts<TDeps>(

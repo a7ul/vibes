@@ -10,6 +10,7 @@ import {
   checkModelRequestsAllowed,
   createRunContext,
   createSequentialMutex,
+  drainPendingMessages,
   initToolsetsForRun,
   type InternalRunOpts,
   isFinalResultTool,
@@ -193,6 +194,7 @@ async function runStreamLoop<TDeps, TOutput>(
 
   try {
     for (let turn = 0; turn < maxTurns; turn++) {
+      drainPendingMessages(ctx, messages);
       const { tools, msgsForModel, system, outputToolNames } =
         await prepareTurn(
           agent,

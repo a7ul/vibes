@@ -155,6 +155,7 @@ Vibes is designed to stay current with Pydantic AI  -  an AI agent automatically
 | Deps in result validators | `@agent.result_validator` with context | ✅    | [Dependencies](/concepts/dependencies) | `agent.addResultValidator((ctx, result) => ...)` |
 | `RunContext` accessors  | `.deps`, `.usage`, `.metadata`         | ✅     | [Dependencies](/concepts/dependencies) | Full `RunContext<TDeps>` type with all accessors |
 | `RunContext.agent`      | `ctx.agent` — reference to the running agent (v1.76.0) | ✅ | [Dependencies](/concepts/dependencies) | `ctx.agent` is set by the framework on every agent run |
+| Pending message queue   | `ctx.enqueue(...)` / `agent_run.enqueue(...)` (v1.101.0) | 🚧 | [Dependencies](/concepts/dependencies) | `ctx.enqueue(message | message[])` is supported to append messages before the next turn; `agent_run.enqueue(...)` is not applicable because vibes has no `AgentRun` iteration API |
 | Override deps in tests  | Pass fake deps via `agent.override()`  | ✅     | [Testing](/concepts/testing) | `agent.override({ deps: fakeDeps }).run(prompt)` |
 
 ---

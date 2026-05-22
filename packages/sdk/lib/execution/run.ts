@@ -16,6 +16,7 @@ import {
   correlateApprovalIds,
   createRunContext,
   createSequentialMutex,
+  drainPendingMessages,
   DeferredToolRequests,
   initToolsetsForRun,
   type InternalRunOpts,
@@ -118,6 +119,7 @@ export async function executeRun<TDeps, TOutput>(
   }
 
   for (let turn = 0; turn < maxTurns; turn++) {
+    drainPendingMessages(ctx, messages);
     // ---------------------------------------------------------------------------
     // Pre-turn setup: resolve tools, apply history processors, build system prompt
     // ---------------------------------------------------------------------------

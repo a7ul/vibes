@@ -54,6 +54,8 @@ Deno.test("ExternalToolset - exposes tools to model with requiresApproval", () =
     metadata: {},
     toolResultMetadata: new Map(),
     attachMetadata: () => {},
+    enqueue: () => {},
+    pendingMessages: [],
   };
 
   const tools = toolset.tools(ctx);

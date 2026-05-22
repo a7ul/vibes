@@ -16,6 +16,8 @@ function makeCtx(): RunContext<undefined> {
     metadata: {},
     toolResultMetadata: new Map(),
     attachMetadata: () => {},
+    enqueue: () => {},
+    pendingMessages: [],
   };
 }
 

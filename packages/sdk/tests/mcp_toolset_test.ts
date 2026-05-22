@@ -180,6 +180,8 @@ Deno.test("MCPToolset - caches tool list within TTL", async () => {
     metadata: {},
     toolResultMetadata: new Map(),
     attachMetadata: () => {},
+    enqueue: () => {},
+    pendingMessages: [],
   };
 
   // First call should hit listTools
@@ -220,6 +222,8 @@ Deno.test("MCPToolset - TTL expiry triggers re-fetch", async () => {
     metadata: {},
     toolResultMetadata: new Map(),
     attachMetadata: () => {},
+    enqueue: () => {},
+    pendingMessages: [],
   };
 
   await toolset.tools(ctx);
@@ -260,6 +264,8 @@ Deno.test("MCPToolset - isError throws from tool execution", async () => {
     metadata: {},
     toolResultMetadata: new Map(),
     attachMetadata: () => {},
+    enqueue: () => {},
+    pendingMessages: [],
   };
 
   const toolset = new MCPToolset(client);
@@ -327,6 +333,8 @@ Deno.test("MCPToolset - tool with empty text returns placeholder", async () => {
     metadata: {},
     toolResultMetadata: new Map(),
     attachMetadata: () => {},
+    enqueue: () => {},
+    pendingMessages: [],
   };
 
   const toolset = new MCPToolset(client);
@@ -422,6 +430,8 @@ Deno.test("MCPManager - last server wins on name conflict", async () => {
     metadata: {},
     toolResultMetadata: new Map(),
     attachMetadata: () => {},
+    enqueue: () => {},
+    pendingMessages: [],
   };
 
   const tools = await manager.tools(ctx);
@@ -474,6 +484,8 @@ Deno.test("MCPManager - empty manager returns no tools", async () => {
     metadata: {},
     toolResultMetadata: new Map(),
     attachMetadata: () => {},
+    enqueue: () => {},
+    pendingMessages: [],
   };
 
   const tools = await manager.tools(ctx);

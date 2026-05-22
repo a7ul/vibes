@@ -110,6 +110,8 @@ Deno.test("ApprovalRequiredToolset - marks all inner tools as requiresApproval",
     metadata: {},
     toolResultMetadata: new Map(),
     attachMetadata: () => {},
+    enqueue: () => {},
+    pendingMessages: [],
   };
 
   const tools = await wrapped.tools(ctx);
@@ -141,6 +143,8 @@ Deno.test("ApprovalRequiredToolset - original tool execute is preserved", async 
     metadata: {},
     toolResultMetadata: new Map(),
     attachMetadata: () => {},
+    enqueue: () => {},
+    pendingMessages: [],
   };
 
   const tools = await wrapped.tools(ctx);
