@@ -177,15 +177,18 @@ export function webFetchTool(
       // Domain allow/block validation
       let hostname: string;
       try {
-        hostname = new URL(url).hostname;
+        // new URL() already lowercases the hostname; we additionally strip any
+        // trailing dot (FQDN root label) so that `example.com.` and `example.com`
+        // are treated identically, preventing allow/blocklist bypass via trailing dot.
+        hostname = new URL(url).hostname.toLowerCase().replace(/\.+$/, "");
       } catch {
         return `Failed to fetch ${url}: invalid URL`;
       }
 
-      if (allowedDomains && !allowedDomains.includes(hostname)) {
+      if (allowedDomains && !allowedDomains.map((d) => d.toLowerCase().replace(/\.+$/, "")).includes(hostname)) {
         return `Fetching from '${hostname}' is not allowed (not in allowedDomains).`;
       }
-      if (blockedDomains?.includes(hostname)) {
+      if (blockedDomains?.map((d) => d.toLowerCase().replace(/\.+$/, "")).includes(hostname)) {
         return `Fetching from '${hostname}' is blocked.`;
       }
 

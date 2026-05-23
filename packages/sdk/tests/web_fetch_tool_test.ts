@@ -148,3 +148,58 @@ Deno.test("webFetchTool - tool has correct name and description", () => {
   assertEquals(t.name, "web_fetch");
   assertStringIncludes(t.description, "URL");
 });
+
+// ---------------------------------------------------------------------------
+// Domain normalization tests (trailing dot + case, ported from pydantic-ai #5592)
+// ---------------------------------------------------------------------------
+
+Deno.test("webFetchTool - trailing dot on URL host is normalized against blockedDomains", async () => {
+  // `https://evil.com./page` has hostname `evil.com.` — should still be blocked
+  // when blockedDomains contains `evil.com` (without trailing dot).
+  const result = await runFetch(
+    "https://evil.com./page",
+    mockFetch("<html><body>evil</body></html>"),
+    { blockedDomains: ["evil.com"] },
+  );
+
+  assertEquals(typeof result, "string");
+  assertStringIncludes(result as string, "blocked");
+});
+
+Deno.test("webFetchTool - trailing dot in blockedDomains entry matches plain hostname", async () => {
+  // blockedDomains entry `evil.com.` (with trailing dot) should still block
+  // a request to `https://evil.com/page`.
+  const result = await runFetch(
+    "https://evil.com/page",
+    mockFetch("<html><body>evil</body></html>"),
+    { blockedDomains: ["evil.com."] },
+  );
+
+  assertEquals(typeof result, "string");
+  assertStringIncludes(result as string, "blocked");
+});
+
+Deno.test("webFetchTool - uppercase allowedDomains entry matches lowercase URL host", async () => {
+  // allowedDomains: ["TRUSTED.COM"] should allow `https://trusted.com/page`.
+  const html = "<html><head><title>T</title></head><body>ok</body></html>";
+  const result = await runFetch(
+    "https://trusted.com/page",
+    mockFetch(html),
+    { allowedDomains: ["TRUSTED.COM"] },
+  );
+
+  assertEquals(typeof result, "object");
+});
+
+Deno.test("webFetchTool - trailing dot on URL host is normalized against allowedDomains", async () => {
+  // `https://trusted.com./page` has hostname `trusted.com.` — should still be
+  // allowed when allowedDomains contains `trusted.com` (without trailing dot).
+  const html = "<html><head><title>T</title></head><body>ok</body></html>";
+  const result = await runFetch(
+    "https://trusted.com./page",
+    mockFetch(html),
+    { allowedDomains: ["trusted.com"] },
+  );
+
+  assertEquals(typeof result, "object");
+});
