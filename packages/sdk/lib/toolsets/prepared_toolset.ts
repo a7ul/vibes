@@ -42,6 +42,13 @@ export class PreparedToolset<TDeps = undefined> implements Toolset<TDeps> {
 
   async tools(ctx: RunContext<TDeps>): Promise<ToolDefinition<TDeps>[]> {
     const innerTools = await this._inner.tools(ctx);
-    return this._prepare(ctx, innerTools);
+    const preparedTools = await this._prepare(ctx, innerTools);
+    if (preparedTools === null || preparedTools === undefined) {
+      console.warn(
+        "PreparedToolset.prepare returned null/undefined; falling back to inner tools.",
+      );
+      return innerTools;
+    }
+    return preparedTools;
   }
 }

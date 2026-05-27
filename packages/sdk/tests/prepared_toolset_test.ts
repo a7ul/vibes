@@ -179,3 +179,33 @@ Deno.test("PreparedToolset - prepare called on every turn", async () => {
   // called at least twice.
   assertEquals(prepareCallCount >= 2, true);
 });
+
+Deno.test("PreparedToolset - warns and falls back when prepare returns nullish", async () => {
+  let capturedNames: string[] = [];
+  let warning: string | undefined;
+  const originalWarn = console.warn;
+  console.warn = (...args: unknown[]) => {
+    warning = args.map(String).join(" ");
+  };
+  try {
+    const model = new MockLanguageModelV3({
+      doGenerate: (opts) => {
+        capturedNames = toolNames(opts);
+        return Promise.resolve(textResponse("done"));
+      },
+    });
+
+    const inner = new FunctionToolset([makeTool("fallback_tool")]);
+    const prepared = new PreparedToolset(
+      inner,
+      () => undefined as unknown as import("../mod.ts").ToolDefinition[],
+    );
+    const agent = new Agent({ model, toolsets: [prepared] });
+    await agent.run("go");
+
+    assertEquals(capturedNames.includes("fallback_tool"), true);
+    assertEquals(warning?.includes("PreparedToolset.prepare returned null/undefined"), true);
+  } finally {
+    console.warn = originalWarn;
+  }
+});

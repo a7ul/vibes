@@ -84,6 +84,7 @@ Vibes is designed to stay current with Pydantic AI  -  an AI agent automatically
 | Toolset reuse             | Share toolsets across agents                | ✅     | [Toolsets](/concepts/toolsets) | `Toolset` is a plain interface - pass the same instance to multiple agents |
 | Runtime swap              | Replace toolsets during testing             | ✅     | [Testing](/concepts/testing) | `agent.override({ toolsets: [...] }).run(prompt)` |
 | `PreparedToolset`         | Modify entire tool list before each step    | ✅     | [Toolsets](/concepts/toolsets) | `new PreparedToolset(inner, (ctx, tools) => tools)` - dynamic per-turn |
+| Prepare callback warning  | Warn when `prepare` callback returns `None` (v1.103.0) | ✅ | [Toolsets](/concepts/toolsets) | `PreparedToolset` logs a warning and falls back to inner tools on `null`/`undefined` |
 | `ApprovalRequiredToolset` | Enforce human approval on a toolset         | ✅     | [Human-in-the-Loop](/concepts/human-in-the-loop) | `new ApprovalRequiredToolset(inner)` - all tools get `requiresApproval` |
 | `WrapperToolset`          | Custom execution behaviour around a toolset | ✅     | [Toolsets](/concepts/toolsets) | `class MyWrapper extends WrapperToolset { callTool(...) { ... } }` |
 | `ExternalToolset`         | Deferred execution outside agent process    | ✅     | [Human-in-the-Loop](/concepts/human-in-the-loop) | `new ExternalToolset([{ name, description, jsonSchema }])` - schema-only |
