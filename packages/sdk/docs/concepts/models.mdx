@@ -165,6 +165,7 @@ const agent = new Agent({
 | `frequencyPenalty` | `number?` | Penalises tokens that have already appeared (frequency) |
 | `stopSequences` | `string[]?` | Stop generation when any of these sequences appear |
 | `seed` | `number?` | Seed for deterministic generation (model-dependent) |
+| `reasoningEffort` | `'low' \| 'medium' \| 'high'?` | Provider-specific reasoning effort hint (for example xAI Grok 4.3) |
 
 ```typescript
 const agent = new Agent({

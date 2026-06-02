@@ -614,6 +614,7 @@ export function modelSettingsToAISDKOptions(
     presencePenalty,
     stopSequences,
     seed,
+    reasoningEffort,
   } = settings;
   const result: Record<string, unknown> = {};
   if (temperature !== undefined) result.temperature = temperature;
@@ -626,6 +627,9 @@ export function modelSettingsToAISDKOptions(
   if (presencePenalty !== undefined) result.presencePenalty = presencePenalty;
   if (stopSequences !== undefined) result.stopSequences = stopSequences;
   if (seed !== undefined) result.seed = seed;
+  if (reasoningEffort !== undefined) {
+    result.providerOptions = { xai: { reasoningEffort } };
+  }
   return result;
 }
 

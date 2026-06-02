@@ -74,6 +74,29 @@ Deno.test("modelSettings - seed is passed to generateText", async () => {
   assertEquals(capturedSeed, 42);
 });
 
+Deno.test("modelSettings - reasoningEffort is passed to generateText", async () => {
+  let capturedReasoningEffort: string | undefined;
+
+  const model = new MockLanguageModelV3({
+    doGenerate: (opts) => {
+      const providerOptions = (opts as Record<string, unknown>)
+        .providerOptions as
+        | { xai?: { reasoningEffort?: string } }
+        | undefined;
+      capturedReasoningEffort = providerOptions?.xai?.reasoningEffort;
+      return Promise.resolve(textResponse("ok"));
+    },
+  });
+
+  const agent = new Agent({
+    model,
+    modelSettings: { reasoningEffort: "high" },
+  });
+
+  await agent.run("prompt");
+  assertEquals(capturedReasoningEffort, "high");
+});
+
 Deno.test("modelSettings - multiple fields passed together", async () => {
   let capturedTemperature: number | undefined;
   let capturedTopP: number | undefined;
@@ -196,6 +219,7 @@ Deno.test("modelSettings - type check: ModelSettings interface is exported", () 
     presencePenalty: 0.2,
     stopSequences: ["STOP"],
     seed: 99,
+    reasoningEffort: "medium",
   };
   // Just verify the type compiles correctly
   assertEquals(typeof settings.temperature, "number");

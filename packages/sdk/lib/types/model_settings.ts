@@ -19,4 +19,6 @@ export interface ModelSettings {
   stopSequences?: string[];
   /** Seed for deterministic generation (model-dependent). */
   seed?: number;
+  /** Provider-specific reasoning effort (e.g. xAI Grok 4.3). */
+  reasoningEffort?: "low" | "medium" | "high";
 }
