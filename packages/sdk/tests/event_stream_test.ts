@@ -394,6 +394,28 @@ Deno.test("eventStreamHandler - observer form: side-channel receives all events"
   assertEquals(downstreamKinds.includes("final-result"), true);
 });
 
+Deno.test("eventStreamHandler - observer form: downstream completes even if handler does not consume", async () => {
+  const model = new MockLanguageModelV3({
+    doStream: () => Promise.resolve(textStream("hello")),
+  });
+
+  let handlerCalls = 0;
+
+  const agent = new Agent({
+    model,
+    eventStreamHandler: () => {
+      handlerCalls += 1;
+      // Intentionally do not iterate the stream.
+    },
+  });
+
+  const downstreamEvents = await collectEvents(agent.runStreamEvents("hi"));
+  const finalResult = downstreamEvents.find((e) => e.kind === "final-result");
+
+  assertExists(finalResult);
+  assertEquals(handlerCalls, 2); // Probe + real observer invocation
+});
+
 Deno.test("eventStreamHandler - processor form: can filter events", async () => {
   const model = new MockLanguageModelV3({
     doStream: () => Promise.resolve(textStream("hello world")),

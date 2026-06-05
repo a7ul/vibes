@@ -73,6 +73,31 @@ Deno.test("extractBinaryImageFromToolOutput - returns null when image field miss
   );
 });
 
+Deno.test("extractBinaryImageFromToolOutput - supports valid non-base64 data URI", () => {
+  const extracted = extractBinaryImageFromToolOutput({
+    type: "image",
+    image: "data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%3E%3C/svg%3E",
+    mimeType: "image/svg+xml",
+  });
+  assertEquals(extracted !== null, true);
+  assertEquals(extracted?.mimeType, "image/svg+xml");
+  assertEquals(
+    extracted?.data,
+    new TextEncoder().encode('<svg xmlns="http://www.w3.org/2000/svg"></svg>'),
+  );
+});
+
+Deno.test("extractBinaryImageFromToolOutput - returns null for invalid base64 data URI", () => {
+  assertEquals(
+    extractBinaryImageFromToolOutput({
+      type: "image",
+      image: "data:image/png;base64,***not-base64***",
+      mimeType: "image/png",
+    }),
+    null,
+  );
+});
+
 // ---------------------------------------------------------------------------
 // Integration tests: Agent with BINARY_IMAGE_OUTPUT sentinel
 // ---------------------------------------------------------------------------

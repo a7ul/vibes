@@ -290,7 +290,7 @@ Vibes is designed to stay current with Pydantic AI  -  an AI agent automatically
 | Audio / video input  | Audio and video as tool parameters       | ✅     | [Multi-Modal](/advanced/multimodal) | `BinaryContent` with audio/video MIME types; `isAudioContent()` type guard |
 | Document input       | PDFs and documents as tool parameters    | ✅     | [Multi-Modal](/advanced/multimodal) | `BinaryContent` with `application/pdf` etc.; `isDocumentContent()` guard |
 | `UploadedFile`       | File reference for provider file uploads | ✅     | [Multi-Modal](/advanced/multimodal) | `UploadedFile` type + `uploadedFileSchema` + `uploadedFileToToolResult()` |
-| `BinaryImage` output | Agent returns a generated image          | ✅     | [Multi-Modal](/advanced/multimodal) | `outputSchema: BINARY_IMAGE_OUTPUT` - agent returns `BinaryContent` when a tool produces an `image/*` result |
+| `BinaryImage` output | Agent returns a generated image          | ✅     | [Multi-Modal](/advanced/multimodal) | `outputSchema: BINARY_IMAGE_OUTPUT` - agent returns `BinaryContent` when a tool produces an `image/*` result (supports base64 and non-base64 data URIs) |
 
 ---
 
@@ -304,4 +304,4 @@ Vibes is designed to stay current with Pydantic AI  -  an AI agent automatically
 | `ReinjectSystemPrompt`   | Capability that prepends agent's system prompt when missing from history (v1.86.0) | ❌ | - | Not applicable — vibes never stores system prompts in message history; they are always passed as the `system` field to every `generateText`/`streamText` call, so re-injection is implicit |
 | `UIAdapter.manage_system_prompt` | `'server'` (default) strips frontend system prompts and reinjects agent's own (v1.86.0) | ❌ | - | Not applicable — vibes AG-UI adapter does not store or forward system prompts via message history |
 | `HandleDeferredToolCalls` | Auto-resolve deferred tool calls inline (v1.87.0)                | ✅     | -    | `deferredToolHandler` on `AgentOptions`/`RunOptions`; return `DeferredToolResults` to auto-approve or `null` to fall back to `ApprovalRequiredError` |
-| `ProcessEventStream`     | Observe or transform the agent event stream (v1.87.0)             | ✅     | -    | `eventStreamHandler` on `AgentOptions`/`RunOptions`; observer form (async fn → void) or processor form (async generator → iterable); applies to `runStreamEvents()` |
+| `ProcessEventStream`     | Observe or transform the agent event stream (v1.87.0)             | ✅     | -    | `eventStreamHandler` on `AgentOptions`/`RunOptions`; observer form (async fn → void) or processor form (async generator → iterable); applies to `runStreamEvents()` and preserves downstream completion even when observer handlers do not consume events |

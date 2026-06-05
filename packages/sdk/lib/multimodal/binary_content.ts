@@ -239,11 +239,23 @@ export function extractBinaryImageFromToolOutput(
   }
   const commaIdx = image.indexOf(",");
   if (commaIdx === -1) return null;
-  const base64 = image.slice(commaIdx + 1);
-  const binaryString = atob(base64);
-  const data = new Uint8Array(binaryString.length);
-  for (let i = 0; i < binaryString.length; i++) {
-    data[i] = binaryString.charCodeAt(i);
+  const metadata = image.slice(0, commaIdx).toLowerCase();
+  const encodedData = image.slice(commaIdx + 1);
+
+  try {
+    if (metadata.includes(";base64")) {
+      const binaryString = atob(encodedData);
+      const data = new Uint8Array(binaryString.length);
+      for (let i = 0; i < binaryString.length; i++) {
+        data[i] = binaryString.charCodeAt(i);
+      }
+      return { type: "binary", mimeType, data };
+    }
+
+    const decoded = decodeURIComponent(encodedData);
+    const data = new TextEncoder().encode(decoded);
+    return { type: "binary", mimeType, data };
+  } catch {
+    return null;
   }
-  return { type: "binary", mimeType, data };
 }
