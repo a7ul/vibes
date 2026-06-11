@@ -279,6 +279,7 @@ Vibes is designed to stay current with Pydantic AI  -  an AI agent automatically
 | AG-UI event streaming  | `AGUIAdapter.run_stream()` - agent-to-UI events | ✅     | [AG-UI](/integrations/ag-ui) | `AGUIAdapter.handleRequest(input)` returns SSE `Response` |
 | Follow-up messaging    | Continue conversation after tool call results   | ✅     | [AG-UI](/integrations/ag-ui) | `input.messages` history passed as `messageHistory` automatically |
 | Structured event types | Typed event payloads for all agent actions      | ✅     | [AG-UI](/integrations/ag-ui) | `AGUIEvent` discriminated union with 16 event variants |
+| Uploaded file safety in UI history (v1.106.0) | `UploadedFile` handling in UI adapters | ✅ | [AG-UI](/integrations/ag-ui) | AG-UI input validation only accepts string message content; object/file payloads are rejected with 400 before reaching agent history |
 
 ---
 

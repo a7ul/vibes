@@ -641,6 +641,26 @@ Deno.test("AGUIAdapter handler() - returns 400 for missing threadId", async () =
   assertEquals(res.status, 400);
 });
 
+Deno.test("AGUIAdapter handler() - returns 400 for non-string message content", async () => {
+  const model = new MockLanguageModelV3({
+    doStream: () => Promise.resolve(textStream("ok")),
+  });
+  const agent = new Agent({ model });
+  const adapter = new AGUIAdapter(agent);
+  const handler = adapter.handler();
+
+  const req = new Request("http://localhost/run", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      threadId: "t-1",
+      messages: [{ role: "user", content: { type: "uploaded_file", fileId: "f1" } }],
+    }),
+  });
+  const res = await handler(req);
+  assertEquals(res.status, 400);
+});
+
 Deno.test("AGUIAdapter handler() - streams SSE on valid POST", async () => {
   const model = new MockLanguageModelV3({
     doStream: () => Promise.resolve(textStream("hello")),
