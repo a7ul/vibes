@@ -1,5 +1,6 @@
 import type { ModelMessage } from "ai";
 import type { Agent } from "../agent.ts";
+import type { DeferredToolHandler } from "../execution/deferred.ts";
 import type { AGUIEvent } from "./types.ts";
 
 // ---------------------------------------------------------------------------
@@ -102,6 +103,30 @@ export interface AGUIAdapterOptions<TDeps> {
    * as a STATE_SNAPSHOT event before RUN_FINISHED.
    */
   getState?: () => Record<string, unknown> | Promise<Record<string, unknown>>;
+  /**
+   * Handler called automatically when one or more tool calls require approval,
+   * instead of pausing the run and emitting `RUN_ERROR`.
+   *
+   * Receives the `RunContext` and `DeferredToolRequests`. Return
+   * `DeferredToolResults` to resolve the calls and continue the run
+   * automatically, or `null` to decline (which causes `RUN_ERROR` to be
+   * emitted as usual).
+   *
+   * Maps to pydantic-ai's "AG-UI interrupts → DeferredTools" feature (v2.0.0).
+   *
+   * @example
+   * ```ts
+   * const adapter = new AGUIAdapter(agent, {
+   *   deferredToolHandler: async (_ctx, requests) => ({
+   *     results: requests.requests.map((r) => ({
+   *       toolCallId: r.toolCallId,
+   *       result: "approved",
+   *     })),
+   *   }),
+   * });
+   * ```
+   */
+  deferredToolHandler?: DeferredToolHandler<TDeps>;
 }
 
 /**
@@ -140,7 +165,7 @@ export class AGUIAdapter<TDeps, TOutput> {
     const threadId = input.threadId;
     const runId = input.runId ?? generateId("run");
     const { prompt, messageHistory } = convertMessages(input.messages);
-    const { deps, getState } = this.options;
+    const { deps, getState, deferredToolHandler } = this.options;
     const agent = this.agent;
 
     const stream = new ReadableStream<Uint8Array>({
@@ -169,7 +194,8 @@ export class AGUIAdapter<TDeps, TOutput> {
           const eventStream = agent.runStreamEvents(prompt, {
             deps: deps as TDeps,
             messageHistory,
-          });
+      deferredToolHandler,
+    });
 
           for await (const event of eventStream) {
             switch (event.kind) {

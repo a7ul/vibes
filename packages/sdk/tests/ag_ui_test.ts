@@ -19,7 +19,12 @@ import { z } from "zod";
 import { Agent, tool } from "../mod.ts";
 import { AGUIAdapter } from "../lib/ag_ui/mod.ts";
 import type { AGUIEvent, AGUIRunInput } from "../lib/ag_ui/mod.ts";
-import { MockLanguageModelV3, textStream, toolCallStream } from "./_helpers.ts";
+import {
+  MockLanguageModelV3,
+  mockValues,
+  textStream,
+  toolCallStream,
+} from "./_helpers.ts";
 
 // ---------------------------------------------------------------------------
 // SSE parsing helpers
@@ -717,4 +722,82 @@ Deno.test("AGUIAdapter - handles empty messages array gracefully", async () => {
   // Should still complete (with empty prompt)
   const finished = events.find((e) => e.type === "RUN_FINISHED");
   assertExists(finished);
+});
+
+// ---------------------------------------------------------------------------
+// Tests - deferredToolHandler (v2.0.0: AG-UI interrupts → DeferredTools)
+// ---------------------------------------------------------------------------
+
+Deno.test("AGUIAdapter - deferredToolHandler auto-approves and run completes", async () => {
+  const doGenerate = mockValues(
+    toolCallStream("sensitive_op", { param: "value" }, "tc-sensitive"),
+    textStream("Operation approved and done."),
+  );
+
+  const sensitiveOp = tool({
+    name: "sensitive_op",
+    description: "A sensitive operation requiring approval",
+    parameters: z.object({ param: z.string() }),
+    execute: (_ctx, args: { param: string }) =>
+      Promise.resolve(`Executed: ${args.param}`),
+    requiresApproval: true,
+  });
+
+  const model = new MockLanguageModelV3({
+    doStream: () => Promise.resolve(doGenerate()),
+  });
+  const agent = new Agent({ model, tools: [sensitiveOp] });
+
+  let handlerCalled = false;
+  const adapter = new AGUIAdapter(agent, {
+    deferredToolHandler: (_ctx, requests) => {
+      handlerCalled = true;
+      return Promise.resolve({
+        results: requests.requests.map((r) => ({
+          toolCallId: r.toolCallId,
+          result: "approved",
+        })),
+      });
+    },
+  });
+
+  const events = await collectEvents(
+    adapter.handleRequest(makeInput()),
+  );
+
+  assertEquals(handlerCalled, true);
+  const finished = events.find((e) => e.type === "RUN_FINISHED");
+  assertExists(finished);
+
+  // Should NOT have emitted RUN_ERROR
+  const errorEvent = events.find((e) => e.type === "RUN_ERROR");
+  assertEquals(errorEvent, undefined);
+});
+
+Deno.test("AGUIAdapter - without deferredToolHandler, approval-required tool causes RUN_ERROR", async () => {
+  const sensitiveOp = tool({
+    name: "sensitive_op",
+    description: "A sensitive operation requiring approval",
+    parameters: z.object({ param: z.string() }),
+    execute: (_ctx, args: { param: string }) =>
+      Promise.resolve(`Executed: ${args.param}`),
+    requiresApproval: true,
+  });
+
+  const model = new MockLanguageModelV3({
+    doStream: () =>
+      Promise.resolve(
+        toolCallStream("sensitive_op", { param: "value" }, "tc-sensitive"),
+      ),
+  });
+  const agent = new Agent({ model, tools: [sensitiveOp] });
+  const adapter = new AGUIAdapter(agent);
+
+  const events = await collectEvents(
+    adapter.handleRequest(makeInput()),
+  );
+
+  // Without a handler, ApprovalRequiredError surfaces as RUN_ERROR
+  const errorEvent = events.find((e) => e.type === "RUN_ERROR");
+  assertExists(errorEvent);
 });

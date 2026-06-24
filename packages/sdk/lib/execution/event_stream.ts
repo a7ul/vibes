@@ -3,11 +3,16 @@ import type { ModelMessage } from "ai";
 import type { Agent } from "../agent.ts";
 import type { RunContext, Usage } from "../types/context.ts";
 import type { AgentStreamEvent } from "../types/events.ts";
+import type { DeferredToolRequest } from "./deferred.ts";
+import { DeferredToolRequests } from "./deferred.ts";
 import {
   applyUsage,
+  buildDeferredAwareToolMap,
   buildInitialMessages,
   buildResponseMessages,
+  buildResumeToolMessage,
   checkModelRequestsAllowed,
+  correlateApprovalIds,
   createRunContext,
   createSequentialMutex,
   initToolsetsForRun,
@@ -21,14 +26,18 @@ import {
   prepareTurn,
   resolveEndStrategy,
   resolveEventStreamHandler,
+  resolveDeferredToolHandler,
   resolveModelSettings,
   resolveSystemPrompt,
   resolveTelemetry,
+  resolveTools,
   runValidators,
+  stripDeferredToolResults,
+  toolsOrUndefined,
   unionToolIndex,
 } from "./_run_utils.ts";
 import { isBinaryImageOutput } from "../multimodal/binary_content.ts";
-import { MaxTurnsError } from "../types/errors.ts";
+import { ApprovalRequiredError, MaxTurnsError } from "../types/errors.ts";
 
 // ---------------------------------------------------------------------------
 // Main event-streaming entry point
@@ -112,6 +121,7 @@ async function* runEventStreamLoopWithCtx<TDeps, TOutput>(
   const outputMode = agent.outputMode;
   const outputSchema = agent.outputSchema;
   const schemas = isBinaryImageOutput(outputSchema) ? [] : normaliseSchemas(outputSchema);
+  const deferredToolHandler = resolveDeferredToolHandler(agent, opts);
 
   const sequentialMutex = createSequentialMutex();
 
@@ -131,7 +141,7 @@ async function* runEventStreamLoopWithCtx<TDeps, TOutput>(
     for (let turn = 0; turn < maxTurns; turn++) {
       yield { kind: "turn-start", turn };
 
-      const { tools, msgsForModel, system, outputToolNames } =
+      const { toolMap, msgsForModel, system, outputToolNames, resolvedTools } =
         await prepareTurn(
           agent,
           opts,
@@ -142,11 +152,30 @@ async function* runEventStreamLoopWithCtx<TDeps, TOutput>(
           runScopedToolsets,
         );
 
+      // Build deferred-aware tool map when any tool requires approval.
+      const pendingApprovals: DeferredToolRequest[] = [];
+      const hasApprovalTools = resolvedTools.some(
+        (t) => t.requiresApproval !== undefined && t.requiresApproval !== false,
+      );
+      const effectiveTools = hasApprovalTools
+        ? toolsOrUndefined(
+          buildDeferredAwareToolMap(
+            resolvedTools,
+            agent.outputSchema,
+            agent.outputMode,
+            ctx,
+            pendingApprovals,
+            agent.maxConcurrency,
+            sequentialMutex,
+          ),
+        )
+        : toolsOrUndefined(toolMap);
+
       const stream = streamText({
         model,
         system,
         messages: msgsForModel,
-        tools,
+        tools: effectiveTools,
         stopWhen: stepCountIs(1),
         ...(telemetry !== undefined
           ? { experimental_telemetry: telemetry }
@@ -234,7 +263,49 @@ async function* runEventStreamLoopWithCtx<TDeps, TOutput>(
 
       applyUsage(usage, streamUsage);
 
-      // Emit tool-call-result events for every resolved tool result.
+      // ------------------------------------------------------------------
+      // Deferred tool approval check
+      // ------------------------------------------------------------------
+      if (pendingApprovals.length > 0) {
+        const rawToolCalls = toolCalls as Array<{
+          toolCallId: string;
+          toolName: string;
+        }>;
+        correlateApprovalIds(pendingApprovals, rawToolCalls);
+        const pendingCallIds = pendingApprovals.map((r) => r.toolCallId);
+        const rawNewMessages = (responseData.messages ?? []) as ModelMessage[];
+        const cleanNewMessages = stripDeferredToolResults(
+          rawNewMessages,
+          pendingCallIds,
+        );
+        const allMessages = [...messages, ...cleanNewMessages];
+        const deferredObj = new DeferredToolRequests(pendingApprovals, {
+          messages: allMessages,
+          turnCount: turn + 1,
+        });
+        if (deferredToolHandler) {
+          const handlerResult = await deferredToolHandler(ctx, deferredObj);
+          if (handlerResult !== null && handlerResult !== undefined) {
+            const toolDefs = opts._override?.tools ?? agent.tools;
+            const resolvedForResume = await resolveTools(
+              toolDefs,
+              runScopedToolsets,
+              ctx,
+            );
+            const resumeMsg = await buildResumeToolMessage(
+              handlerResult,
+              pendingApprovals,
+              resolvedForResume,
+              ctx,
+            );
+            messages.splice(0, messages.length, ...allMessages, resumeMsg);
+            continue;
+          }
+        }
+        throw new ApprovalRequiredError(deferredObj);
+      }
+
+
       // We use stream.toolResults (the resolved array) rather than raw fullStream
       // chunks because it provides the typed output from tool execute functions.
       for (const tr of toolResults) {

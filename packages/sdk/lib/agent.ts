@@ -425,6 +425,7 @@ export class Agent<TDeps = undefined, TOutput = string> {
       endStrategy: opts?.endStrategy,
       telemetry: opts?.telemetry,
       eventStreamHandler: opts?.eventStreamHandler as EventStreamHandler<TDeps, TOutput> | undefined,
+      deferredToolHandler: opts?.deferredToolHandler,
     });
   }
 
