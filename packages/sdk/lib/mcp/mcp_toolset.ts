@@ -30,6 +30,19 @@ type ToolCache<TDeps> = {
   fetchedAt: number;
 };
 
+function formatMCPToolError(error: unknown): string {
+  if (error instanceof AggregateError) {
+    const nestedMessages = error.errors
+      .map((nested) => formatMCPToolError(nested))
+      .filter((msg) => msg.trim().length > 0);
+    if (nestedMessages.length > 0) {
+      return nestedMessages.join("; ");
+    }
+  }
+  if (error instanceof Error) return error.message;
+  return String(error);
+}
+
 /**
  * A `Toolset` that exposes all tools from a connected MCP server.
  * Tools are discovered lazily on the first call to `tools()` and cached
@@ -99,7 +112,14 @@ export class MCPToolset<TDeps = undefined> implements Toolset<TDeps> {
         _ctx: RunContext<TDeps>,
         args: Record<string, unknown>,
       ) => {
-        const result = await client.callTool(mcpTool.name, args);
+        let result;
+        try {
+          result = await client.callTool(mcpTool.name, args);
+        } catch (error) {
+          throw new Error(
+            `MCP tool error: ${formatMCPToolError(error)}`,
+          );
+        }
 
         if (result.isError) {
           const errorText = result.content
@@ -108,7 +128,7 @@ export class MCPToolset<TDeps = undefined> implements Toolset<TDeps> {
             )
             .map((c) => c.text)
             .join("\n");
-          throw new Error(`MCP tool error: ${errorText}`);
+          throw new Error(`MCP tool error: ${errorText || "Unknown error"}`);
         }
 
         // Extract text content items and join them
@@ -126,4 +146,3 @@ export class MCPToolset<TDeps = undefined> implements Toolset<TDeps> {
     }) as ToolDefinition<TDeps>;
   }
 }
-

@@ -273,6 +273,46 @@ Deno.test("MCPToolset - isError throws from tool execution", async () => {
   );
 });
 
+Deno.test("MCPToolset - AggregateError from callTool is normalized", async () => {
+  const client = new MockMCPClient({
+    tools: [
+      {
+        name: "unstable_tool",
+        description: "Fails with grouped errors",
+        inputSchema: { type: "object", properties: {} },
+      },
+    ],
+  });
+  await client.connect();
+  client.callTool = () =>
+    Promise.reject(
+      new AggregateError(
+        [new Error("primary failure"), new Error("fallback failure")],
+        "grouped failure",
+      ),
+    );
+
+  const ctx: RunContext<undefined> = {
+    deps: undefined,
+    usage: { inputTokens: 0, outputTokens: 0, totalTokens: 0, requests: 0, cachedInputTokens: 0 },
+    retryCount: 0,
+    toolName: null,
+    runId: "test",
+    metadata: {},
+    toolResultMetadata: new Map(),
+    attachMetadata: () => {},
+  };
+
+  const toolset = new MCPToolset(client);
+  const toolDefs = await toolset.tools(ctx);
+
+  await assertRejects(
+    () => toolDefs[0].execute(ctx, {}),
+    Error,
+    "MCP tool error: primary failure; fallback failure",
+  );
+});
+
 Deno.test("MCPToolset - getServerInstructions returns instructions", () => {
   const client = new MockMCPClient({
     serverInstructions: "Use this server for document retrieval.",
