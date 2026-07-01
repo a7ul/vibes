@@ -305,3 +305,14 @@ Vibes is designed to stay current with Pydantic AI  -  an AI agent automatically
 | `UIAdapter.manage_system_prompt` | `'server'` (default) strips frontend system prompts and reinjects agent's own (v1.86.0) | ❌ | - | Not applicable — vibes AG-UI adapter does not store or forward system prompts via message history |
 | `HandleDeferredToolCalls` | Auto-resolve deferred tool calls inline (v1.87.0)                | ✅     | -    | `deferredToolHandler` on `AgentOptions`/`RunOptions`; return `DeferredToolResults` to auto-approve or `null` to fall back to `ApprovalRequiredError` |
 | `ProcessEventStream`     | Observe or transform the agent event stream (v1.87.0)             | ✅     | -    | `eventStreamHandler` on `AgentOptions`/`RunOptions`; observer form (async fn → void) or processor form (async generator → iterable); applies to `runStreamEvents()` |
+
+---
+
+## Provider & release updates (v2.2.0)
+
+| Feature | Pydantic AI | Status | Docs | Notes |
+| ------- | ----------- | ------ | ---- | ----- |
+| Claude Sonnet 5 support | `claude-sonnet-5` model support | ✅ | [Models](/concepts/models) | Vibes accepts any provider model ID supported by the underlying AI SDK provider (e.g. `anthropic("claude-sonnet-5")`). |
+| Google provider retry options | `GoogleProvider(retry_options=...)` | ✅ | [HTTP Retries](/advanced/http-retries) | Vibes does not wrap provider constructors; pass retry/options directly when creating the AI SDK Google model/provider client. |
+| OpenRouter prompt/completion cost fields | Usage cost fields on provider response | ❌ | - | Current `Usage` tracks tokens/requests, not provider-specific monetary cost fields. |
+| TwelveLabs Pegasus example | Video-understanding example | ❌ | - | No dedicated TwelveLabs example in `packages/sdk/docs/examples` yet. |
