@@ -35,6 +35,11 @@ type ToolCache<TDeps> = {
  * Tools are discovered lazily on the first call to `tools()` and cached
  * for `toolCacheTtlMs` milliseconds.
  *
+ * Each agent run receives a fresh, cache-free copy of this toolset via
+ * `forRun()`. This ensures the tool-discovery network call is made exactly
+ * once per run and is recorded identically on every Temporal workflow replay
+ * (no TMPRL1100 nondeterminism from a warm cross-run cache).
+ *
  * @example
  * ```ts
  * const client = new MCPStdioClient({ command: "npx", args: ["-y", "my-mcp-server"] });
@@ -56,6 +61,22 @@ export class MCPToolset<TDeps = undefined> implements Toolset<TDeps> {
     this._client = client;
     this._cacheTtlMs = options?.toolCacheTtlMs ?? DEFAULT_CACHE_TTL_MS;
     this._useInstructions = options?.instructions ?? true;
+  }
+
+  /**
+   * Returns a fresh, cache-free instance of this toolset scoped to a single
+   * agent run. The new instance shares the same underlying MCP client and
+   * options, so tool-call execution is unaffected.
+   *
+   * This ensures that every run starts tool-list discovery from scratch,
+   * making the `listTools` call deterministic on Temporal workflow replay
+   * regardless of whether the worker process has a warm cache from a prior run.
+   */
+  forRun(_ctx: RunContext<TDeps>): MCPToolset<TDeps> {
+    return new MCPToolset<TDeps>(this._client, {
+      toolCacheTtlMs: this._cacheTtlMs,
+      instructions: this._useInstructions,
+    });
   }
 
   /**

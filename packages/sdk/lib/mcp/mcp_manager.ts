@@ -19,6 +19,10 @@ type ServerEntry<TDeps> = {
  * single `Toolset`. Implements `connect()` / `disconnect()` lifecycle methods
  * for batch connection management.
  *
+ * Each agent run receives a fresh copy of this manager (via `forRun()`) whose
+ * child toolsets have empty caches, ensuring replay-deterministic tool
+ * discovery under Temporal or other durable-execution runtimes.
+ *
  * @example
  * ```ts
  * const manager = new MCPManager();
@@ -47,6 +51,22 @@ export class MCPManager<TDeps = undefined> implements Toolset<TDeps> {
     const toolset = new MCPToolset<TDeps>(client, toolsetOptions);
     this._servers = [...this._servers, { client, toolset, name }];
     return this;
+  }
+
+  /**
+   * Returns a fresh manager instance scoped to a single agent run. Each child
+   * `MCPToolset` is replaced with a cache-free copy (via `MCPToolset.forRun`),
+   * so the `listTools` network call is made fresh on every run and recorded
+   * identically on Temporal workflow replay.
+   */
+  forRun(ctx: RunContext<TDeps>): MCPManager<TDeps> {
+    const fresh = new MCPManager<TDeps>();
+    fresh._servers = this._servers.map((s) => ({
+      client: s.client,
+      toolset: s.toolset.forRun(ctx),
+      name: s.name,
+    }));
+    return fresh;
   }
 
   /**

@@ -479,3 +479,194 @@ Deno.test("MCPManager - empty manager returns no tools", async () => {
   const tools = await manager.tools(ctx);
   assertEquals(tools.length, 0);
 });
+
+// ---------------------------------------------------------------------------
+// MCPToolset.forRun - per-run cache isolation
+// ---------------------------------------------------------------------------
+
+Deno.test("MCPToolset - forRun returns a new instance with empty cache", async () => {
+  const client = new MockMCPClient({
+    tools: [
+      {
+        name: "my_tool",
+        description: "A tool",
+        inputSchema: { type: "object", properties: {} },
+      },
+    ],
+  });
+  await client.connect();
+
+  const toolset = new MCPToolset(client, { toolCacheTtlMs: 60_000 });
+
+  const ctx: RunContext<undefined> = {
+    deps: undefined,
+    usage: { inputTokens: 0, outputTokens: 0, totalTokens: 0, requests: 0, cachedInputTokens: 0 },
+    retryCount: 0,
+    toolName: null,
+    runId: "test",
+    metadata: {},
+    toolResultMetadata: new Map(),
+    attachMetadata: () => {},
+  };
+
+  // Warm the cache on the original instance
+  await toolset.tools(ctx);
+  assertEquals(client.listToolsCallCount, 1);
+
+  // forRun returns a different object
+  const runScoped = toolset.forRun(ctx);
+
+  // The run-scoped instance starts with no cache — listTools is called again
+  await runScoped.tools(ctx);
+  assertEquals(client.listToolsCallCount, 2);
+});
+
+Deno.test("MCPToolset - forRun instance caches within the same run", async () => {
+  const client = new MockMCPClient({
+    tools: [
+      {
+        name: "my_tool",
+        description: "A tool",
+        inputSchema: { type: "object", properties: {} },
+      },
+    ],
+  });
+  await client.connect();
+
+  const toolset = new MCPToolset(client, { toolCacheTtlMs: 60_000 });
+
+  const ctx: RunContext<undefined> = {
+    deps: undefined,
+    usage: { inputTokens: 0, outputTokens: 0, totalTokens: 0, requests: 0, cachedInputTokens: 0 },
+    retryCount: 0,
+    toolName: null,
+    runId: "test",
+    metadata: {},
+    toolResultMetadata: new Map(),
+    attachMetadata: () => {},
+  };
+
+  const runScoped = toolset.forRun(ctx);
+
+  // First call fetches from server
+  await runScoped.tools(ctx);
+  assertEquals(client.listToolsCallCount, 1);
+
+  // Second call within the same run uses the cache
+  await runScoped.tools(ctx);
+  assertEquals(client.listToolsCallCount, 1);
+});
+
+Deno.test("MCPToolset - two consecutive runs each get fresh cache", async () => {
+  const client = new MockMCPClient({
+    tools: [
+      {
+        name: "my_tool",
+        description: "A tool",
+        inputSchema: { type: "object", properties: {} },
+      },
+    ],
+  });
+  await client.connect();
+
+  const toolset = new MCPToolset(client, { toolCacheTtlMs: 60_000 });
+
+  const ctx: RunContext<undefined> = {
+    deps: undefined,
+    usage: { inputTokens: 0, outputTokens: 0, totalTokens: 0, requests: 0, cachedInputTokens: 0 },
+    retryCount: 0,
+    toolName: null,
+    runId: "test",
+    metadata: {},
+    toolResultMetadata: new Map(),
+    attachMetadata: () => {},
+  };
+
+  // Simulate run 1
+  const run1 = toolset.forRun(ctx);
+  await run1.tools(ctx);
+  assertEquals(client.listToolsCallCount, 1);
+
+  // Simulate run 2 — forRun creates another fresh instance, so listTools runs again
+  const run2 = toolset.forRun(ctx);
+  await run2.tools(ctx);
+  assertEquals(client.listToolsCallCount, 2);
+
+  // Run 1 cache is unaffected (still 1 fetch total on that instance)
+  await run1.tools(ctx);
+  assertEquals(client.listToolsCallCount, 2);
+});
+
+Deno.test("MCPToolset - forRun preserves toolCacheTtlMs and instructions options", async () => {
+  const client = new MockMCPClient({
+    tools: [],
+    serverInstructions: "Use wisely.",
+  });
+  await client.connect();
+
+  const toolset = new MCPToolset(client, {
+    toolCacheTtlMs: 5_000,
+    instructions: true,
+  });
+
+  const ctx: RunContext<undefined> = {
+    deps: undefined,
+    usage: { inputTokens: 0, outputTokens: 0, totalTokens: 0, requests: 0, cachedInputTokens: 0 },
+    retryCount: 0,
+    toolName: null,
+    runId: "test",
+    metadata: {},
+    toolResultMetadata: new Map(),
+    attachMetadata: () => {},
+  };
+
+  const runScoped = toolset.forRun(ctx);
+
+  // Instructions option is preserved on the run-scoped instance
+  assertEquals(runScoped.getServerInstructions(), "Use wisely.");
+});
+
+// ---------------------------------------------------------------------------
+// MCPManager.forRun - per-run cache isolation
+// ---------------------------------------------------------------------------
+
+Deno.test("MCPManager - forRun returns fresh toolsets for each run", async () => {
+  const client = new MockMCPClient({
+    tools: [
+      {
+        name: "my_tool",
+        description: "A tool",
+        inputSchema: { type: "object", properties: {} },
+      },
+    ],
+  });
+  await client.connect();
+
+  const manager = new MCPManager();
+  manager.addServer(client);
+
+  const ctx: RunContext<undefined> = {
+    deps: undefined,
+    usage: { inputTokens: 0, outputTokens: 0, totalTokens: 0, requests: 0, cachedInputTokens: 0 },
+    retryCount: 0,
+    toolName: null,
+    runId: "test",
+    metadata: {},
+    toolResultMetadata: new Map(),
+    attachMetadata: () => {},
+  };
+
+  // Simulate run 1: each forRun call produces fresh toolsets
+  const mgr1 = manager.forRun(ctx);
+  await mgr1.tools(ctx);
+  assertEquals(client.listToolsCallCount, 1);
+
+  // Simulate run 2: forRun again — listTools is called fresh
+  const mgr2 = manager.forRun(ctx);
+  await mgr2.tools(ctx);
+  assertEquals(client.listToolsCallCount, 2);
+
+  // Within run 2, cache applies on the same instance
+  await mgr2.tools(ctx);
+  assertEquals(client.listToolsCallCount, 2);
+});

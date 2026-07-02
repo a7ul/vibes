@@ -158,7 +158,7 @@ const toolset = new MCPToolset(client, {
 });
 ```
 
-**(1)** The server's tool list doesn't change often, so the toolset caches it. For servers whose tools change frequently (dynamic tool registration), lower the TTL or call `toolset.invalidateCache()` to force a re-fetch on the next turn.<br/>
+**(1)** Each agent run receives a fresh, cache-free copy of the toolset so tool discovery is always recorded exactly once per run (important for Temporal workflow replay determinism). Within a single run, the tool list is cached for `toolCacheTtlMs` milliseconds — 60 seconds by default. For servers whose tools change frequently, lower the TTL or call `toolset.invalidateCache()` to force a re-fetch on the next turn.<br/>
 **(2)** Some MCP servers provide an instruction text during initialization — guidance the server author wrote for the AI agent consuming it. When `instructions: true` (the default), this text is available via `toolset.getServerInstructions()` and can be appended to your system prompt if desired.
 
 ```typescript
