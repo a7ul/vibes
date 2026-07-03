@@ -245,3 +245,29 @@ Deno.test("Dataset.evaluate - error captured after exhausting retries", async ()
   assertExists(result.cases[0].error);
   assertEquals(result.cases[0].output, undefined);
 });
+
+Deno.test("Dataset.evaluate - rejects non-positive maxConcurrency", async () => {
+  const ds = Dataset.fromArray([{ inputs: "x" }]);
+  let threw = false;
+  try {
+    await ds.evaluate((_: string) => _, { maxConcurrency: 0 });
+  } catch (err) {
+    threw = true;
+    assert(err instanceof Error);
+    assert((err as Error).message.includes("maxConcurrency"));
+  }
+  assertEquals(threw, true);
+});
+
+Deno.test("Dataset.evaluate - rejects negative maxConcurrency", async () => {
+  const ds = Dataset.fromArray([{ inputs: "x" }]);
+  let threw = false;
+  try {
+    await ds.evaluate((_: string) => _, { maxConcurrency: -1 });
+  } catch (err) {
+    threw = true;
+    assert(err instanceof Error);
+    assert((err as Error).message.includes("maxConcurrency"));
+  }
+  assertEquals(threw, true);
+});

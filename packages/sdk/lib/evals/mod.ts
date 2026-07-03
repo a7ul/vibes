@@ -65,6 +65,7 @@ export {
 
 // LLM judge
 export {
+  gEval,
   judgeInputOutput,
   judgeInputOutputExpected,
   judgeOutput,
@@ -72,7 +73,23 @@ export {
   llmJudge,
   setDefaultJudgeModel,
 } from "./llm_judge.ts";
-export type { LLMJudgeOptions } from "./llm_judge.ts";
+export type { GEvalOptions, LLMJudgeOptions } from "./llm_judge.ts";
+
+// Agentic span-based evaluators
+export {
+  argumentCorrectness,
+  maxModelRequests,
+  maxToolCalls,
+  toolCorrectness,
+  trajectoryMatch,
+} from "./agentic_evaluators.ts";
+export type {
+  ArgumentCorrectnessOptions,
+  MaxModelRequestsOptions,
+  MaxToolCallsOptions,
+  ToolCorrectnessOptions,
+  TrajectoryMatchOptions,
+} from "./agentic_evaluators.ts";
 
 // Dataset generation
 export { generateDataset } from "./generation.ts";

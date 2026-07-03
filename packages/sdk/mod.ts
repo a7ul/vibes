@@ -260,6 +260,7 @@ export {
   rocAuc,
 } from "./lib/evals/report_evaluators.ts";
 export {
+  gEval,
   judgeInputOutput,
   judgeInputOutputExpected,
   judgeOutput,
@@ -267,7 +268,21 @@ export {
   llmJudge,
   setDefaultJudgeModel,
 } from "./lib/evals/llm_judge.ts";
-export type { LLMJudgeOptions } from "./lib/evals/llm_judge.ts";
+export type { GEvalOptions, LLMJudgeOptions } from "./lib/evals/llm_judge.ts";
+export {
+  argumentCorrectness,
+  maxModelRequests,
+  maxToolCalls,
+  toolCorrectness,
+  trajectoryMatch,
+} from "./lib/evals/agentic_evaluators.ts";
+export type {
+  ArgumentCorrectnessOptions,
+  MaxModelRequestsOptions,
+  MaxToolCallsOptions,
+  ToolCorrectnessOptions,
+  TrajectoryMatchOptions,
+} from "./lib/evals/agentic_evaluators.ts";
 export { generateDataset } from "./lib/evals/generation.ts";
 export type { GenerateDatasetOptions } from "./lib/evals/generation.ts";
 export { runExperiment } from "./lib/evals/experiment.ts";

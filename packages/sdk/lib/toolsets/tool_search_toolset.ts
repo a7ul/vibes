@@ -9,7 +9,6 @@ const SEARCH_TOKEN_RE = /[a-z0-9]+/g;
 
 interface SearchIndexEntry {
   name: string;
-  description: string;
   searchTerms: Set<string>;
 }
 
@@ -108,7 +107,6 @@ export class ToolSearchToolset<TDeps = undefined> implements Toolset<TDeps> {
 
     const searchIndex: SearchIndexEntry[] = undiscovered.map((t) => ({
       name: t.name,
-      description: t.description,
       searchTerms: extractSearchTerms(t.name, t.description),
     }));
 
@@ -138,9 +136,7 @@ export class ToolSearchToolset<TDeps = undefined> implements Toolset<TDeps> {
           return Promise.resolve("Please provide search keywords.");
         }
 
-        const scoredMatches: Array<
-          [score: number, entry: { name: string; description: string }]
-        > = [];
+        const scoredMatches: Array<[score: number, name: string]> = [];
 
         for (const entry of searchIndex) {
           let score = 0;
@@ -148,10 +144,7 @@ export class ToolSearchToolset<TDeps = undefined> implements Toolset<TDeps> {
             if (entry.searchTerms.has(t)) score++;
           }
           if (score > 0) {
-            scoredMatches.push([
-              score,
-              { name: entry.name, description: entry.description },
-            ]);
+            scoredMatches.push([score, entry.name]);
           }
         }
 
@@ -162,13 +155,13 @@ export class ToolSearchToolset<TDeps = undefined> implements Toolset<TDeps> {
         }
 
         scoredMatches.sort((a, b) => b[0] - a[0]);
-        const matches = scoredMatches.slice(0, MAX_SEARCH_RESULTS).map((
-          [, entry],
-        ) => entry);
+        const matches = scoredMatches.slice(0, MAX_SEARCH_RESULTS).map(
+          ([, name]) => name,
+        );
 
         // Mark discovered tools so they appear on the next turn.
-        for (const m of matches) {
-          discovered.add(m.name);
+        for (const name of matches) {
+          discovered.add(name);
         }
 
         return Promise.resolve(JSON.stringify(matches));

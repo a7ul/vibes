@@ -233,3 +233,108 @@ Deno.test("llmJudge with includeExpectedOutput - compares to expected", async ()
 
   assertExists(result);
 });
+
+// ---------------------------------------------------------------------------
+// gEval - validation tests (no LLM calls)
+// ---------------------------------------------------------------------------
+
+import { assertThrows } from "@std/assert";
+import { gEval } from "../lib/evals/llm_judge.ts";
+
+Deno.test("gEval - throws when scoreRange min >= max", () => {
+  assertThrows(
+    () => gEval({ criteria: "coherence", evaluationSteps: ["step"], scoreRange: [5, 1] }),
+    Error,
+    "scoreRange min",
+  );
+});
+
+Deno.test("gEval - throws when scoreRange min === max", () => {
+  assertThrows(
+    () => gEval({ criteria: "coherence", evaluationSteps: ["step"], scoreRange: [3, 3] }),
+    Error,
+    "scoreRange min",
+  );
+});
+
+Deno.test("gEval - throws when evaluationSteps is empty", () => {
+  assertThrows(
+    () => gEval({ criteria: "coherence", evaluationSteps: [] }),
+    Error,
+    "evaluationSteps",
+  );
+});
+
+Deno.test("gEval - uses criteria in evaluator name", () => {
+  const ev = gEval({
+    criteria: "fluency",
+    evaluationSteps: ["Check fluency."],
+  });
+  assertEquals(ev.name, "gEval:fluency");
+});
+
+Deno.test("gEval - throws when no model provided", async () => {
+  setDefaultJudgeModel(undefined as never);
+  const ev = gEval({
+    criteria: "coherence",
+    evaluationSteps: ["step"],
+  });
+  const ctx = makeCtx("output");
+  let threw = false;
+  try {
+    await ev.evaluate(ctx);
+  } catch (e) {
+    threw = true;
+    assertExists((e as Error).message.includes("gEval"));
+  }
+  assertEquals(threw, true);
+});
+
+// ---------------------------------------------------------------------------
+// gEval - with mock LLM
+// ---------------------------------------------------------------------------
+
+function makeGEvalMockModel(
+  score: number,
+  reasoning: string,
+): FunctionModel {
+  return new FunctionModel(({ tools }) => {
+    const finalResultTool = tools.find((t) => t.name === "final_result");
+    const toolCallId = "tc-geval-1";
+    const toolName = finalResultTool?.name ?? "final_result";
+
+    return Promise.resolve({
+      content: [
+        {
+          type: "tool-call" as const,
+          toolCallId,
+          toolName,
+          input: JSON.stringify({ score, reasoning }),
+        },
+      ],
+      finishReason: { unified: "tool-calls" as const, raw: undefined },
+      usage: {
+        inputTokens: { total: 10, noCache: 10, cacheRead: 0, cacheWrite: undefined },
+        outputTokens: { total: 5, text: undefined, reasoning: undefined },
+      },
+      rawResponse: { headers: {} },
+      warnings: [],
+    });
+  });
+}
+
+Deno.test("gEval - returns integer score from model", async () => {
+  const model = makeGEvalMockModel(4, "Good coherence");
+  const ev = gEval({
+    criteria: "coherence",
+    evaluationSteps: [
+      "Read carefully.",
+      "Score from 1 to 5.",
+    ],
+    model,
+  });
+  const ctx = makeCtx("A well-structured response.");
+  const result = await ev.evaluate(ctx);
+  assertEquals(result.score, 4);
+  assertEquals(result.reason, "Good coherence");
+});

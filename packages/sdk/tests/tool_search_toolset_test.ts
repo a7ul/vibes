@@ -246,14 +246,11 @@ Deno.test("ToolSearchToolset - token matching: exact word 'me' does not match 'c
     makeTool("comment_tool", "post a comment"),
   ]);
 
-  const result = JSON.parse((await exec("me")) as string) as Array<
-    { name: string }
-  >;
-  const names = result.map((r) => r.name);
+  const result = JSON.parse((await exec("me")) as string) as string[];
   // "me" as a token matches "get_me" (token: "me") but NOT "comment_tool"
   // (tokens: "comment", "tool" - no "me" token)
-  assertEquals(names.includes("get_me"), true);
-  assertEquals(names.includes("comment_tool"), false);
+  assertEquals(result.includes("get_me"), true);
+  assertEquals(result.includes("comment_tool"), false);
 });
 
 Deno.test("ToolSearchToolset - token scoring: results ordered by number of matching tokens", async () => {
@@ -269,10 +266,10 @@ Deno.test("ToolSearchToolset - token scoring: results ordered by number of match
 
   const result = JSON.parse(
     (await exec("get user profile")) as string,
-  ) as Array<{ name: string }>;
-  assertEquals(result[0].name, "get_user_profile");
-  assertEquals(result[1].name, "get_user");
-  assertEquals(result[2].name, "user_data");
+  ) as string[];
+  assertEquals(result[0], "get_user_profile");
+  assertEquals(result[1], "get_user");
+  assertEquals(result[2], "user_data");
 });
 
 Deno.test("ToolSearchToolset - token matching: no match returns not-found message", async () => {
@@ -285,4 +282,16 @@ Deno.test("ToolSearchToolset - token matching: no match returns not-found messag
     result,
     "No matching tools found. The tools you need may not be available.",
   );
+});
+
+Deno.test("ToolSearchToolset - search returns plain tool names (no description field)", async () => {
+  const exec = await getSearchExecute([
+    makeTool("fetch_weather", "get current weather data"),
+  ]);
+
+  const result = JSON.parse((await exec("weather")) as string) as unknown[];
+  assertEquals(result.length, 1);
+  // Each entry should be a plain string, not an object with name/description
+  assertEquals(typeof result[0], "string");
+  assertEquals(result[0], "fetch_weather");
 });

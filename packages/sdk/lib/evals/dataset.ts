@@ -250,6 +250,11 @@ export class Dataset<TInput = unknown, TExpected = unknown> {
     options?: EvaluateOptions<TInput, TExpected, TOutput>,
   ): Promise<ExperimentResult<TInput, TExpected, TOutput>> {
     const maxConcurrency = options?.maxConcurrency ?? 5;
+    if (maxConcurrency <= 0) {
+      throw new Error(
+        `maxConcurrency must be a positive integer, got ${maxConcurrency}`,
+      );
+    }
     const maxRetries = options?.maxRetries ?? 1;
     const onCaseComplete = options?.onCaseComplete;
     const lifecycle = options?.lifecycle;

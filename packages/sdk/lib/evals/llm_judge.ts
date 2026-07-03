@@ -200,6 +200,154 @@ interface JudgeRunOptions {
   model?: LanguageModel;
 }
 
+// ---------------------------------------------------------------------------
+// GEval
+// ---------------------------------------------------------------------------
+
+/**
+ * Options for the `gEval` evaluator.
+ */
+export interface GEvalOptions {
+  /**
+   * The quality aspect being evaluated (e.g. "coherence", "fluency", "relevance").
+   * Used in the evaluator name and included in the prompt.
+   */
+  criteria: string;
+  /**
+   * Explicit chain-of-thought steps the judge should follow before scoring.
+   * At least one step is required.
+   */
+  evaluationSteps: string[];
+  /**
+   * Inclusive integer range for the score returned by the judge.
+   * Default: [1, 5].
+   */
+  scoreRange?: [min: number, max: number];
+  /**
+   * The LanguageModel to use for judging. Falls back to the default judge model
+   * set via `setDefaultJudgeModel()`.
+   */
+  model?: LanguageModel;
+  /**
+   * Whether to include the task input in the judge's context. Default: false.
+   */
+  includeInput?: boolean;
+  /**
+   * Whether to include the expected output in the judge's context. Default: false.
+   */
+  includeExpectedOutput?: boolean;
+}
+
+/**
+ * G-Eval: chain-of-thought scoring evaluator (Liu et al., 2023).
+ *
+ * The judge follows explicit `evaluationSteps` you provide, then returns an
+ * integer score within `scoreRange` (default 1–5) plus a reasoning trace.
+ *
+ * Unlike `llmJudge`, the returned score is the raw integer from `scoreRange`,
+ * **not** normalized to `[0, 1]`.
+ *
+ * @example
+ * ```ts
+ * const ev = gEval({
+ *   criteria: "coherence",
+ *   evaluationSteps: [
+ *     "Read the output carefully.",
+ *     "Check that each sentence follows logically from the previous one.",
+ *     "Assign a score from 1 (incoherent) to 5 (fully coherent).",
+ *   ],
+ *   includeInput: true,
+ * });
+ * ```
+ */
+export function gEval(options: GEvalOptions): Evaluator {
+  const [minScore, maxScore] = options.scoreRange ?? [1, 5];
+  if (minScore >= maxScore) {
+    throw new Error(
+      `gEval: scoreRange min (${minScore}) must be less than max (${maxScore})`,
+    );
+  }
+  if (options.evaluationSteps.length === 0) {
+    throw new Error("gEval: evaluationSteps must not be empty");
+  }
+
+  const GEvalOutputSchema = z.object({
+    reasoning: z.string().describe(
+      "Step-by-step reasoning following the evaluation steps.",
+    ),
+    score: z
+      .number()
+      .int()
+      .min(minScore)
+      .max(maxScore)
+      .describe(
+        `Integer score in the range [${minScore}, ${maxScore}] for the given criteria.`,
+      ),
+  });
+  type GEvalOutput = z.infer<typeof GEvalOutputSchema>;
+
+  return {
+    name: `gEval:${options.criteria}`,
+    async evaluate(ctx: EvaluatorContext): Promise<EvalScore> {
+      const model = options.model ?? _defaultJudgeModel;
+      if (model === undefined) {
+        throw new Error(
+          "No LLM model provided for gEval. " +
+            "Pass a model in GEvalOptions or call setDefaultJudgeModel().",
+        );
+      }
+
+      const parts: string[] = [];
+      parts.push(
+        `You are evaluating the following aspect: **${options.criteria}**.`,
+      );
+      parts.push("");
+      parts.push("## Evaluation Steps");
+      options.evaluationSteps.forEach((step, i) => {
+        parts.push(`${i + 1}. ${step}`);
+      });
+
+      if (options.includeInput && ctx.inputs !== undefined) {
+        parts.push(
+          `\n## Input\n${JSON.stringify(ctx.inputs, null, 2)}`,
+        );
+      }
+
+      parts.push(
+        `\n## Output to Evaluate\n${JSON.stringify(ctx.output, null, 2)}`,
+      );
+
+      if (options.includeExpectedOutput && ctx.expectedOutput !== undefined) {
+        parts.push(
+          `\n## Expected Output\n${JSON.stringify(ctx.expectedOutput, null, 2)}`,
+        );
+      }
+
+      parts.push(
+        `\nFollow the evaluation steps above and return your reasoning plus an integer score from ${minScore} to ${maxScore}.`,
+      );
+
+      const prompt = parts.join("\n");
+
+      const agent = new Agent<undefined, GEvalOutput>({
+        model,
+        systemPrompt:
+          "You are an expert evaluator. Follow the provided evaluation steps strictly.",
+        outputSchema: GEvalOutputSchema,
+      });
+
+      const result = await agent.run(prompt);
+      const { score, reasoning } = result.output;
+
+      return { score, reason: reasoning };
+    },
+  };
+}
+
+// ---------------------------------------------------------------------------
+// _runJudge (internal)
+// ---------------------------------------------------------------------------
+
 async function _runJudge(options: JudgeRunOptions): Promise<JudgeOutput> {
   const model = options.model ?? _defaultJudgeModel;
   if (model === undefined) {
