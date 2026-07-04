@@ -23,7 +23,7 @@ import { toAISDKTools } from "../tool.ts";
 import { Semaphore } from "../concurrency.ts";
 import { checkUsageLimits } from "../types/usage_limits.ts";
 import { MaxRetriesError } from "../types/errors.ts";
-import { applyHistoryProcessors } from "../history/processor.ts";
+import { applyHistoryProcessors, sanitizeMessages } from "../history/processor.ts";
 import {
   _notifyModelRequest,
   assertModelRequestsAllowed,
@@ -233,7 +233,7 @@ export function buildInitialMessages(
   messageHistory: ModelMessage[] | undefined,
   prompt: string,
 ): ModelMessage[] {
-  return [...(messageHistory ?? []), { role: "user", content: prompt }];
+  return [...sanitizeMessages(messageHistory ?? []), { role: "user", content: prompt }];
 }
 
 // ---------------------------------------------------------------------------
@@ -839,7 +839,12 @@ export async function buildResumeToolMessage<TDeps>(
   ctx: RunContext<TDeps>,
 ): Promise<ModelMessage> {
   const requestByCallId = new Map<string, DeferredToolRequest>();
+  const seenPendingCallIds = new Set<string>();
   for (const req of pendingRequests) {
+    if (seenPendingCallIds.has(req.toolCallId)) {
+      throw new Error(`Duplicate deferred tool call ID: ${req.toolCallId}`);
+    }
+    seenPendingCallIds.add(req.toolCallId);
     requestByCallId.set(req.toolCallId, req);
   }
 
@@ -850,7 +855,12 @@ export async function buildResumeToolMessage<TDeps>(
     output: unknown;
   }> = [];
 
+  const seenResultCallIds = new Set<string>();
   for (const dr of deferredResults.results) {
+    if (seenResultCallIds.has(dr.toolCallId)) {
+      throw new Error(`Duplicate deferred tool call ID: ${dr.toolCallId}`);
+    }
+    seenResultCallIds.add(dr.toolCallId);
     const req = requestByCallId.get(dr.toolCallId);
     const toolName = req?.toolName ?? dr.toolCallId;
     let output: unknown;

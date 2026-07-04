@@ -7,6 +7,7 @@ export type {
 export {
   applyHistoryProcessors,
   privacyFilterProcessor,
+  sanitizeMessages,
   summarizeHistoryProcessor,
   tokenTrimHistoryProcessor,
   trimHistoryProcessor,

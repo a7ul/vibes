@@ -35,6 +35,60 @@ export function trimHistoryProcessor(maxMessages: number): HistoryProcessor {
   };
 }
 
+function isObjectRecord(value: unknown): value is Record<string, unknown> {
+  return value !== null && typeof value === "object";
+}
+
+function sanitizeContentPart(role: ModelMessage["role"], part: unknown): unknown | null {
+  if (!isObjectRecord(part)) return null;
+  if (typeof part["type"] !== "string") return null;
+  if (
+    role === "tool" &&
+    (part["type"] !== "tool-result" || typeof part["toolCallId"] !== "string")
+  ) {
+    return null;
+  }
+  return part;
+}
+
+/**
+ * Sanitizes inbound message history by dropping malformed entries and
+ * invalid content parts.
+ *
+ * This is useful when message history comes from untrusted or user-supplied
+ * input (for example over HTTP), to avoid passing malformed messages to the
+ * model runtime.
+ */
+export function sanitizeMessages(
+  messages: ReadonlyArray<ModelMessage>,
+): ModelMessage[] {
+  const sanitized: ModelMessage[] = [];
+  for (const msg of messages) {
+    if (!isObjectRecord(msg) || typeof msg.role !== "string") continue;
+    if (
+      msg.role !== "system" && msg.role !== "user" && msg.role !== "assistant" &&
+      msg.role !== "tool"
+    ) {
+      continue;
+    }
+
+    if (typeof msg.content === "string") {
+      if (msg.role === "tool") continue;
+      sanitized.push(msg);
+      continue;
+    }
+    if (!Array.isArray(msg.content)) continue;
+
+    const content = msg.content
+      .map((part) => sanitizeContentPart(msg.role, part))
+      .filter((part): part is unknown => part !== null);
+
+    if (content.length === 0) continue;
+    sanitized.push({ ...msg, content } as ModelMessage);
+  }
+  return sanitized;
+}
+
 /**
  * Default token estimator: approximates tokens as ceil(JSON length / 4).
  */

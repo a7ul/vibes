@@ -104,6 +104,7 @@ Vibes is designed to stay current with Pydantic AI  -  an AI agent automatically
 | `ApprovalRequired` exception | Pause agent, surface pending calls to caller     | ✅     | [Human-in-the-Loop](/concepts/human-in-the-loop) | `ApprovalRequiredError` - catch it, inspect `.requests`, resume with results |
 | `DeferredToolRequests`       | Container of pending tool calls needing approval | ✅     | [Human-in-the-Loop](/concepts/human-in-the-loop) | `DeferredToolRequests` class with `.requests` array |
 | `DeferredToolResults`        | Provide approved (or overridden) results         | ✅     | [Human-in-the-Loop](/concepts/human-in-the-loop) | `agent.resume(deferred, { results: [...] })` or `run(..., { deferredResults })` |
+| Deferred ID validation       | Reject duplicate deferred tool call IDs          | ✅     | [Human-in-the-Loop](/concepts/human-in-the-loop) | `agent.resume(...)` now throws on duplicate `toolCallId` entries |
 | Argument override on resume  | Modify args during approval before execution     | ✅     | [Human-in-the-Loop](/concepts/human-in-the-loop) | `argsOverride` field on `DeferredToolResult` |
 | `CallDeferred` exception     | Defer a tool call to an external process         | ✅     | [Human-in-the-Loop](/concepts/human-in-the-loop) | `ExternalToolset` raises `ApprovalRequiredError` for all tools |
 | `ExternalToolset`            | Accept raw JSON schema tools for deferred calls  | ✅     | [Toolsets](/concepts/toolsets) | `new ExternalToolset([{ name, description, jsonSchema }])` |
@@ -139,6 +140,7 @@ Vibes is designed to stay current with Pydantic AI  -  an AI agent automatically
 | Cross-model compatibility | Messages work across providers                | ✅     | [Message History](/concepts/messages) | AI SDK `CoreMessage` is provider-agnostic |
 | History processors        | `history_processors=[...]`                    | ✅     | [Message History](/concepts/messages) | `historyProcessors: [trimHistoryProcessor(n), ...]` on `AgentOptions` |
 | Message serialization     | JSON roundtrip via `ModelMessagesTypeAdapter` | ✅     | [Message History](/concepts/messages) | `serializeMessages()` / `deserializeMessages()` |
+| `sanitize_messages`       | Harden inbound message history                | ✅     | [Message History](/concepts/messages) | `sanitizeMessages(messages)` and automatic sanitization of `messageHistory` on run/stream |
 | Token-aware trimming      | Keep last N messages by token count           | ✅     | [Message History](/concepts/messages) | `tokenTrimHistoryProcessor(maxTokens, tokenCounter?)` |
 | LLM-based summarization   | Summarize old turns via a model call          | ✅     | [Message History](/concepts/messages) | `summarizeHistoryProcessor(model, { maxMessages?, summarizePrompt? })` |
 | Privacy filtering         | Strip sensitive fields before model call      | ✅     | [Message History](/concepts/messages) | `privacyFilterProcessor(rules)` - regex + field-path redaction |

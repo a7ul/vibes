@@ -44,6 +44,7 @@ export type {
 } from "./lib/history/processor.ts";
 export {
 	privacyFilterProcessor,
+	sanitizeMessages,
 	summarizeHistoryProcessor,
 	tokenTrimHistoryProcessor,
 	trimHistoryProcessor,

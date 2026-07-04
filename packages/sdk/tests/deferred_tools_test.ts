@@ -359,6 +359,46 @@ Deno.test("DeferredToolResult.argsOverride - re-executes tool with modified args
   assertEquals(executedArgs[0].amount, 50);
 });
 
+Deno.test("agent.resume() rejects duplicate deferred tool call IDs", async () => {
+  const sensitiveOp = tool({
+    name: "charge_card",
+    description: "Charge a credit card",
+    parameters: z.object({ amount: z.number() }),
+    execute: (_ctx, args) => Promise.resolve(`Charged $${args.amount}`),
+    requiresApproval: true,
+  });
+
+  const responses = mockValues<DoGenerateResult>(
+    toolCallResponse("charge_card", { amount: 99 }, "tc-charge"),
+  );
+  const model = new MockLanguageModelV3({
+    doGenerate: () => Promise.resolve(responses()),
+  });
+
+  const agent = new Agent({ model, tools: [sensitiveOp] });
+
+  let deferredErr: ApprovalRequiredError | null = null;
+  try {
+    await agent.run("Charge $99");
+  } catch (err) {
+    if (err instanceof ApprovalRequiredError) deferredErr = err;
+    else throw err;
+  }
+  assertInstanceOf(deferredErr, ApprovalRequiredError);
+
+  await assertRejects(
+    () =>
+      agent.resume(deferredErr!.deferred, {
+        results: [
+          { toolCallId: "tc-charge", result: "first" },
+          { toolCallId: "tc-charge", result: "duplicate" },
+        ],
+      }),
+    Error,
+    "Duplicate deferred tool call ID",
+  );
+});
+
 // ---------------------------------------------------------------------------
 // HandleDeferredToolCalls - deferredToolHandler on agent / run options
 // ---------------------------------------------------------------------------

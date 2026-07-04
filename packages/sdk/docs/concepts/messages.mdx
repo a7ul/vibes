@@ -158,6 +158,19 @@ The two rule types:
 Do not use `{ type: "regex", redactValue: ... }` - that shape is incorrect. The actual `PrivacyRule` union uses `pattern` for regex rules with no `type` key.
 </Warning>
 
+### sanitizeMessages
+
+Sanitize inbound `messageHistory` from untrusted sources before passing it to `agent.run()` or `agent.stream()`. Malformed messages/parts are dropped.
+
+```typescript
+import { sanitizeMessages } from "@vibesjs/sdk";
+
+const safeHistory = sanitizeMessages(untrustedHistory);
+const result = await agent.run("continue", {
+  messageHistory: safeHistory,
+});
+```
+
 ## Custom history processors
 
 A history processor is any function that takes `(messages: ModelMessage[], ctx: RunContext<TDeps>)` and returns a `ModelMessage[]`.

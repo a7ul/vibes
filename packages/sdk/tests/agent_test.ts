@@ -7,6 +7,7 @@ import {
   textResponse,
   toolCallResponse,
 } from "./_helpers.ts";
+import type { ModelMessage } from "ai";
 import { z } from "zod";
 
 Deno.test("Agent - basic text run", async () => {
@@ -87,6 +88,34 @@ Deno.test("Agent - message history passthrough", async () => {
 
   assertEquals(second.output.includes("TestUser123"), true);
   assertEquals(second.messages.length >= 4, true);
+});
+
+Deno.test("Agent - sanitizes malformed inbound messageHistory", async () => {
+  let capturedMessages: Array<{ role: string; content: unknown }> = [];
+  const model = new MockLanguageModelV3({
+    doGenerate: (opts) => {
+      capturedMessages = opts.prompt.filter((m: { role: string }) => m.role !== "system");
+      return Promise.resolve(textResponse("ok"));
+    },
+  });
+  const agent = new Agent({ model });
+
+  const unsafeHistory = [
+    { role: "user", content: "trusted history entry" },
+    { role: "tool", content: "invalid tool content" },
+    {
+      role: "assistant",
+      content: [{ type: "text", text: "prior assistant text" }, null],
+    },
+    { content: "missing role" },
+  ] as unknown as ModelMessage[];
+
+  await agent.run("new prompt", { messageHistory: unsafeHistory });
+
+  assertEquals(capturedMessages.length, 3);
+  assertEquals(capturedMessages[0].role, "user");
+  assertEquals(capturedMessages[1].role, "assistant");
+  assertEquals(capturedMessages[2].role, "user");
 });
 
 Deno.test("Agent - result validator accepts valid output", async () => {
