@@ -8,6 +8,7 @@ import {
   isBinaryImageOutput,
 } from "../multimodal/binary_content.ts";
 import {
+  EMPTY_STRUCTURED_OUTPUT_NOT_ALLOWED,
   applyUsage,
   buildDeferredAwareToolMap,
   buildInitialMessages,
@@ -24,6 +25,7 @@ import {
   normaliseSchemas,
   nudgeForFinalResult,
   nudgeWithValidationError,
+  parseEmptyStructuredOutput,
   parseTextOutput,
   prepareTurn,
   resolveDeferredToolHandler,
@@ -253,7 +255,7 @@ export async function executeRun<TDeps, TOutput>(
 
       // Native mode: model's parsed output is in response.output
       const nativeOutput = rawResponse["output"];
-      if (nativeOutput !== undefined && nativeOutput !== null) {
+      if (nativeOutput !== undefined) {
         const parsed = primarySchema.safeParse(nativeOutput);
         if (!parsed.success) {
           messages.push(...newMessages);
@@ -265,6 +267,36 @@ export async function executeRun<TDeps, TOutput>(
             resultValidators,
             ctx,
             parsed.data as TOutput,
+          );
+          void endStrategy;
+          const allMessages = [...messages, ...newMessages];
+          return {
+            output: validatedOutput,
+            messages: allMessages,
+            newMessages: allMessages.slice(inputOffset),
+            usage: { ...usage },
+            retryCount: ctx.retryCount,
+            runId,
+            toolMetadata: new Map(ctx.toolResultMetadata),
+          };
+        } catch (err) {
+          const error = err instanceof Error ? err : new Error(String(err));
+          messages.push(...newMessages);
+          nudgeWithValidationError(ctx, messages, maxRetries, error);
+          continue;
+        }
+      }
+
+      const emptyOutput = parseEmptyStructuredOutput<TOutput>(outputSchema);
+      if (
+        (rawResponse["toolCalls"] as Array<unknown> | undefined)?.length === 0 &&
+        emptyOutput !== EMPTY_STRUCTURED_OUTPUT_NOT_ALLOWED
+      ) {
+        try {
+          const validatedOutput = await runValidators(
+            resultValidators,
+            ctx,
+            emptyOutput,
           );
           void endStrategy;
           const allMessages = [...messages, ...newMessages];
@@ -390,6 +422,36 @@ export async function executeRun<TDeps, TOutput>(
             resultValidators,
             ctx,
             parseResult.data,
+          );
+          void endStrategy;
+          const allMessages = [...messages, ...newMessages];
+          return {
+            output: validatedOutput,
+            messages: allMessages,
+            newMessages: allMessages.slice(inputOffset),
+            usage: { ...usage },
+            retryCount: ctx.retryCount,
+            runId,
+            toolMetadata: new Map(ctx.toolResultMetadata),
+          };
+        } catch (err) {
+          const error = err instanceof Error ? err : new Error(String(err));
+          messages.push(...newMessages);
+          nudgeWithValidationError(ctx, messages, maxRetries, error);
+          continue;
+        }
+      }
+
+      const emptyOutput = parseEmptyStructuredOutput<TOutput>(outputSchema);
+      if (
+        response.toolCalls.length === 0 &&
+        emptyOutput !== EMPTY_STRUCTURED_OUTPUT_NOT_ALLOWED
+      ) {
+        try {
+          const validatedOutput = await runValidators(
+            resultValidators,
+            ctx,
+            emptyOutput,
           );
           void endStrategy;
           const allMessages = [...messages, ...newMessages];
@@ -563,6 +625,32 @@ export async function executeRun<TDeps, TOutput>(
     // No tool calls - text response
     if (response.toolCalls.length === 0) {
       if (schemas.length > 0) {
+        const emptyOutput = parseEmptyStructuredOutput<TOutput>(outputSchema);
+        if (emptyOutput !== EMPTY_STRUCTURED_OUTPUT_NOT_ALLOWED) {
+          try {
+            const validatedOutput = await runValidators(
+              resultValidators,
+              ctx,
+              emptyOutput,
+            );
+            void endStrategy;
+            const allMessages = [...messages, ...newMessages];
+            return {
+              output: validatedOutput,
+              messages: allMessages,
+              newMessages: allMessages.slice(inputOffset),
+              usage: { ...usage },
+              retryCount: ctx.retryCount,
+              runId,
+              toolMetadata: new Map(ctx.toolResultMetadata),
+            };
+          } catch (err) {
+            const error = err instanceof Error ? err : new Error(String(err));
+            messages.push(...newMessages);
+            nudgeWithValidationError(ctx, messages, maxRetries, error);
+            continue;
+          }
+        }
         messages.push(...newMessages);
         nudgeForFinalResult(ctx, messages, maxRetries);
         continue;

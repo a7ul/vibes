@@ -326,6 +326,32 @@ export {
   unionToolIndex,
 };
 
+export const EMPTY_STRUCTURED_OUTPUT_NOT_ALLOWED = Symbol(
+  "EMPTY_STRUCTURED_OUTPUT_NOT_ALLOWED",
+);
+
+export function parseEmptyStructuredOutput<TOutput>(
+  outputSchema:
+    | import("zod").ZodType
+    | import("zod").ZodType[]
+    | import("../multimodal/binary_content.ts").BinaryImageOutputSentinel
+    | undefined,
+): TOutput | typeof EMPTY_STRUCTURED_OUTPUT_NOT_ALLOWED {
+  if (isBinaryImageOutput(outputSchema)) {
+    return EMPTY_STRUCTURED_OUTPUT_NOT_ALLOWED;
+  }
+  const schemas = normaliseSchemas(outputSchema);
+  for (const candidate of [null, undefined]) {
+    for (const schema of schemas) {
+      const parsed = schema.safeParse(candidate);
+      if (parsed.success) {
+        return parsed.data as TOutput;
+      }
+    }
+  }
+  return EMPTY_STRUCTURED_OUTPUT_NOT_ALLOWED;
+}
+
 export function buildResponseMessages(
   responseMessages: ModelMessage[],
   accumulatedText: string,

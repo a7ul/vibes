@@ -2,6 +2,7 @@ import { assertEquals, assertExists } from "@std/assert";
 import { Agent, type RunContext, tool } from "../mod.ts";
 import {
   type DoGenerateResult,
+  emptyResponse,
   MockLanguageModelV3,
   mockValues,
   textResponse,
@@ -222,4 +223,19 @@ Deno.test("Agent - tool maxRetries retries on failure", async () => {
 
   await agent.run("Use the flaky tool.");
   assertEquals(callCount, 2);
+});
+
+Deno.test("Agent - empty structured response returns null when schema allows it", async () => {
+  const model = new MockLanguageModelV3({
+    doGenerate: emptyResponse(),
+  });
+
+  const agent = new Agent<undefined, null>({
+    model,
+    outputSchema: z.null(),
+  });
+
+  const result = await agent.run("Think silently if needed.");
+  assertEquals(result.output, null);
+  assertEquals(result.retryCount, 0);
 });

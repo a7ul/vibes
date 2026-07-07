@@ -9,6 +9,7 @@ import { z } from "zod";
 import { Agent } from "../mod.ts";
 import {
   type DoGenerateResult,
+  emptyResponse,
   MockLanguageModelV3,
   mockValues,
   textResponse,
@@ -253,4 +254,20 @@ Deno.test("prompted output - output tool result ends run even in prompted mode",
   // The output tool result should end the run
   assertEquals(toolCalled, true);
   assertEquals(result.output as unknown, "done");
+});
+
+Deno.test("prompted output - empty response returns null when schema allows it", async () => {
+  const model = new MockLanguageModelV3({
+    doGenerate: emptyResponse(),
+  });
+
+  const agent = new Agent<undefined, null>({
+    model,
+    outputMode: "prompted",
+    outputSchema: z.null(),
+  });
+
+  const result = await agent.run("Think silently if needed.");
+  assertEquals(result.output, null);
+  assertEquals(result.retryCount, 0);
 });

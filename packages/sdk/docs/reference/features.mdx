@@ -115,7 +115,7 @@ Vibes is designed to stay current with Pydantic AI  -  an AI agent automatically
 
 | Feature                     | Pydantic AI                          | Status | Docs | Notes |
 | --------------------------- | ------------------------------------ | ------ | ---- | ----- |
-| Single schema output        | `result_type: BaseModel`             | ✅     | [Structured Output](/concepts/results) | `outputSchema: z.object({...})` via `final_result` tool |
+| Single schema output        | `result_type: BaseModel`             | ✅     | [Structured Output](/concepts/results) | `outputSchema: z.object({...})` via `final_result` tool; nullish schemas also accept empty / thinking-only model responses |
 | Result validators           | `@agent.result_validator`            | ✅     | [Result Validators](/concepts/results) | `addResultValidator(fn)` - throw to retry |
 | `result.all_messages()`     | Full message history                 | ✅     | [Message History](/concepts/messages) | `result.messages` (full) + `result.newMessages` (this run) |
 | `result.new_messages()`     | Messages added in _this_ run only    | ✅     | [Message History](/concepts/messages) | `result.newMessages` on `RunResult` and `StreamResult` |

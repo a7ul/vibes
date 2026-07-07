@@ -4,6 +4,7 @@ import type { Agent } from "../agent.ts";
 import type { RunContext, Usage } from "../types/context.ts";
 import type { StreamResult } from "../types/results.ts";
 import {
+  EMPTY_STRUCTURED_OUTPUT_NOT_ALLOWED,
   applyUsage,
   buildInitialMessages,
   buildResponseMessages,
@@ -17,6 +18,7 @@ import {
   normaliseSchemas,
   nudgeForFinalResult,
   nudgeWithValidationError,
+  parseEmptyStructuredOutput,
   parseTextOutput,
   prepareTurn,
   resolveEndStrategy,
@@ -351,6 +353,33 @@ async function runStreamLoop<TDeps, TOutput>(
             continue;
           }
         }
+        const emptyOutput = parseEmptyStructuredOutput<TOutput>(outputSchema);
+        if (
+          toolCalls.length === 0 &&
+          emptyOutput !== EMPTY_STRUCTURED_OUTPUT_NOT_ALLOWED
+        ) {
+          try {
+            const output = await runValidators(
+              resultValidators,
+              ctx,
+              emptyOutput,
+            );
+            const allMessages = [...messages, ...newMessages];
+            closeStreams();
+            deferred.resolve({
+              output,
+              messages: allMessages,
+              newMessages: allMessages.slice(inputOffset),
+              usage: { ...usage },
+            });
+            return;
+          } catch (err) {
+            const error = err instanceof Error ? err : new Error(String(err));
+            messages.push(...newMessages);
+            nudgeWithValidationError(ctx, messages, maxRetries, error);
+            continue;
+          }
+        }
         messages.push(...newMessages);
         nudgeForFinalResult(ctx, messages, maxRetries);
         continue;
@@ -410,6 +439,30 @@ async function runStreamLoop<TDeps, TOutput>(
       // No tool calls - text response
       if (toolCalls.length === 0) {
         if (schemas.length > 0) {
+          const emptyOutput = parseEmptyStructuredOutput<TOutput>(outputSchema);
+          if (emptyOutput !== EMPTY_STRUCTURED_OUTPUT_NOT_ALLOWED) {
+            try {
+              const output = await runValidators(
+                resultValidators,
+                ctx,
+                emptyOutput,
+              );
+              const allMessages = [...messages, ...newMessages];
+              closeStreams();
+              deferred.resolve({
+                output,
+                messages: allMessages,
+                newMessages: allMessages.slice(inputOffset),
+                usage: { ...usage },
+              });
+              return;
+            } catch (err) {
+              const error = err instanceof Error ? err : new Error(String(err));
+              messages.push(...newMessages);
+              nudgeWithValidationError(ctx, messages, maxRetries, error);
+              continue;
+            }
+          }
           messages.push(...newMessages);
           nudgeForFinalResult(ctx, messages, maxRetries);
           continue;

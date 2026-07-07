@@ -19,6 +19,7 @@ import { Agent, setAllowModelRequests, tool } from "../mod.ts";
 import type { AgentStreamEvent } from "../mod.ts";
 import {
   convertArrayToReadableStream,
+  emptyStream,
   MockLanguageModelV3,
   textStream,
   toolCallStream,
@@ -109,6 +110,26 @@ Deno.test("runStreamEvents - final-result with structured output (tool mode)", a
   const output =
     (finalResults[0] as { kind: "final-result"; output: Output }).output;
   assertEquals(output.value, 42);
+});
+
+Deno.test("runStreamEvents - empty structured response returns null when schema allows it", async () => {
+  const model = new MockLanguageModelV3({
+    doStream: () => Promise.resolve(emptyStream()),
+  });
+
+  const agent = new Agent<undefined, null>({
+    model,
+    outputSchema: z.null(),
+  });
+
+  const events = await collectEvents(agent.runStreamEvents("think silently"));
+  const finalResults = events.filter((e) => e.kind === "final-result");
+
+  assertEquals(finalResults.length, 1);
+  assertEquals(
+    (finalResults[0] as { kind: "final-result"; output: null }).output,
+    null,
+  );
 });
 
 Deno.test("runStreamEvents - emits tool-call-start for tool invocations", async () => {

@@ -49,6 +49,15 @@ export function toolCallResponse(
   };
 }
 
+export function emptyResponse(): DoGenerateResult {
+  return {
+    content: [],
+    finishReason: { unified: "stop" as const, raw: undefined },
+    usage: makeUsage(),
+    warnings: [],
+  };
+}
+
 export function textStream(text: string): DoStreamResult {
   return {
     stream: convertArrayToReadableStream([
@@ -78,6 +87,18 @@ export function toolCallStream(
       {
         type: "finish" as const,
         finishReason: { unified: "tool-calls" as const, raw: undefined },
+        usage: makeUsage(),
+      },
+    ]),
+  };
+}
+
+export function emptyStream(): DoStreamResult {
+  return {
+    stream: convertArrayToReadableStream([
+      {
+        type: "finish" as const,
+        finishReason: { unified: "stop" as const, raw: undefined },
         usage: makeUsage(),
       },
     ]),

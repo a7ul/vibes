@@ -1,6 +1,11 @@
 import { assertEquals, assertExists } from "@std/assert";
 import { Agent, tool } from "../mod.ts";
-import { MockLanguageModelV3, textStream, toolCallStream } from "./_helpers.ts";
+import {
+  emptyStream,
+  MockLanguageModelV3,
+  textStream,
+  toolCallStream,
+} from "./_helpers.ts";
 import { z } from "zod";
 
 Deno.test("Agent - stream text", async () => {
@@ -91,4 +96,20 @@ Deno.test("Agent - stream multi-turn with tool call", async () => {
 
   assertEquals(collected, "echo said: hello");
   assertEquals(turnCount, 2);
+});
+
+Deno.test("Agent - stream empty structured response returns null when schema allows it", async () => {
+  const model = new MockLanguageModelV3({
+    doStream: emptyStream(),
+  });
+
+  const agent = new Agent<undefined, null>({
+    model,
+    outputSchema: z.null(),
+  });
+
+  const stream = agent.stream("Think silently if needed.");
+  const output = await stream.output;
+
+  assertEquals(output, null);
 });
