@@ -124,6 +124,7 @@ Vibes is designed to stay current with Pydantic AI  -  an AI agent automatically
 | Native structured output    | `NativeOutput` marker class          | ✅     | [Structured Output](/concepts/results) | `outputMode: 'native'` - uses AI SDK `Output.object()` / JSON mode |
 | Prompted output mode        | `PromptedOutput` marker class        | ✅     | [Structured Output](/concepts/results) | `outputMode: 'prompted'` - schema injected into system prompt |
 | Streaming structured output | Partial validation as output streams | ✅     | [Streaming](/concepts/streaming) | `result.partialOutput` async iterable on `StreamResult` |
+| Time-to-first-token         | Record TTFT for streaming model requests (v2.6.0) | ✅ | [Streaming](/concepts/streaming) | `result.timeToFirstToken` — `Promise<number \| null>` on `StreamResult`; resolves with milliseconds from request start to first chunk, or `null` if no chunk arrived |
 | Message serialization       | `ModelMessagesTypeAdapter`           | ✅     | [Message History](/concepts/messages) | `serializeMessages(msgs)` / `deserializeMessages(json)` |
 | Disable schema prompt       | `template=False` on output marker    | ✅     | [Structured Output](/concepts/results) | `outputTemplate: false` on `AgentOptions` |
 | `BinaryImage` output        | Generate images as output type       | ✅     | [Multi-Modal](/advanced/multimodal) | `outputSchema: BINARY_IMAGE_OUTPUT` - first tool result with `image/*` MIME type becomes the run output as `BinaryContent` |
@@ -250,7 +251,7 @@ Vibes is designed to stay current with Pydantic AI  -  an AI agent automatically
 | --------------------- | --------------------------------------------------- | ------ | ---- | ----- |
 | Datasets & Cases      | `Dataset`, `Case` - typed test scenarios            | ✅     | [Evals](/concepts/evals) | `Dataset.fromArray()`, `Dataset.fromJSON()`, `Dataset.fromFile()` |
 | Built-in evaluators   | Exact match, type validation                        | ✅     | [Evals](/concepts/evals) | `equalsExpected()`, `equals()`, `contains()`, `isInstance()`, `isValidSchema()`, `maxDuration()`, `hasMatchingSpan()`, `custom()` |
-| LLM-as-judge          | LLM-based evaluators for subjective qualities       | ✅     | [Evals](/concepts/evals) | `llmJudge({ rubric, model })` + helpers `judgeOutput()`, `judgeInputOutput()`, etc. |
+| LLM-as-judge          | LLM-based evaluators for subjective qualities       | ✅     | [Evals](/concepts/evals) | `llmJudge({ rubric, model })` + helpers `judgeOutput()`, `judgeInputOutput()`, etc. — `reason` field constrained to concise 1-2 sentence justification (v2.6.0) |
 | Custom evaluators     | Domain-specific scoring functions                   | ✅     | [Evals](/concepts/evals) | `custom(name, fn)` factory or implement `Evaluator` interface directly |
 | Report-level evaluators | Confusion matrix, precision/recall, ROC AUC, KS  | ✅     | [Evals](/concepts/evals) | `confusionMatrix()`, `precisionRecall()`, `rocAuc()`, `kolmogorovSmirnov()` |
 | Span-based evaluation | Score runs via OTel trace spans                     | ✅     | [Evals](/concepts/evals) | `SpanTree`, `hasMatchingSpan()` - build `SpanTree.fromSpanData()` from captured spans |
@@ -305,3 +306,4 @@ Vibes is designed to stay current with Pydantic AI  -  an AI agent automatically
 | `UIAdapter.manage_system_prompt` | `'server'` (default) strips frontend system prompts and reinjects agent's own (v1.86.0) | ❌ | - | Not applicable — vibes AG-UI adapter does not store or forward system prompts via message history |
 | `HandleDeferredToolCalls` | Auto-resolve deferred tool calls inline (v1.87.0)                | ✅     | -    | `deferredToolHandler` on `AgentOptions`/`RunOptions`; return `DeferredToolResults` to auto-approve or `null` to fall back to `ApprovalRequiredError` |
 | `ProcessEventStream`     | Observe or transform the agent event stream (v1.87.0)             | ✅     | -    | `eventStreamHandler` on `AgentOptions`/`RunOptions`; observer form (async fn → void) or processor form (async generator → iterable); applies to `runStreamEvents()` |
+| Time-to-first-chunk metric | Record `gen_ai.client.operation.time_to_first_chunk` OTel metric (v2.6.0) | ✅ | - | `result.timeToFirstToken` on `StreamResult`; milliseconds from request start to first streaming chunk on the initial model turn |

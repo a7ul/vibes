@@ -43,6 +43,16 @@ export interface StreamResult<TOutput> {
   /** Resolves to cumulative token usage once the run completes. */
   usage: Promise<Usage>;
   /**
+   * Resolves to the time in milliseconds from the start of the first model
+   * request to the arrival of the first streaming chunk (text token or tool
+   * call). Resolves to `null` if no streamed chunks were produced (e.g. the
+   * run completed via a non-streaming path).
+   *
+   * Equivalent to pydantic-ai's `gen_ai.client.operation.time_to_first_chunk`
+   * OTel metric.
+   */
+  timeToFirstToken: Promise<number | null>;
+  /**
    * Async iterable of partial output objects emitted progressively as the
    * `final_result` tool args stream in. Emits only when Zod parse succeeds
    * (best-effort). Only populated when `outputMode` is `'tool'`.

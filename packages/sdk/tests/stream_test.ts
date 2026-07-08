@@ -1,4 +1,4 @@
-import { assertEquals, assertExists } from "@std/assert";
+import { assertEquals, assertExists, assertGreaterOrEqual } from "@std/assert";
 import { Agent, tool } from "../mod.ts";
 import { MockLanguageModelV3, textStream, toolCallStream } from "./_helpers.ts";
 import { z } from "zod";
@@ -91,4 +91,41 @@ Deno.test("Agent - stream multi-turn with tool call", async () => {
 
   assertEquals(collected, "echo said: hello");
   assertEquals(turnCount, 2);
+});
+
+Deno.test("Agent - stream timeToFirstToken resolves for text stream", async () => {
+  const model = new MockLanguageModelV3({
+    doStream: textStream("hello"),
+  });
+
+  const agent = new Agent({ model });
+  const stream = agent.stream("Say hello.");
+
+  for await (const _ of stream.textStream) {
+    /* drain */
+  }
+
+  const ttft = await stream.timeToFirstToken;
+  assertExists(ttft);
+  assertGreaterOrEqual(ttft, 0);
+});
+
+Deno.test("Agent - stream timeToFirstToken resolves for structured output", async () => {
+  const OutputSchema = z.object({ value: z.string() });
+
+  const model = new MockLanguageModelV3({
+    doStream: toolCallStream("final_result", { value: "hello" }),
+  });
+
+  const agent = new Agent<undefined, z.infer<typeof OutputSchema>>({
+    model,
+    outputSchema: OutputSchema,
+  });
+
+  const stream = agent.stream("Return hello.");
+  await stream.output;
+
+  const ttft = await stream.timeToFirstToken;
+  assertExists(ttft);
+  assertGreaterOrEqual(ttft, 0);
 });

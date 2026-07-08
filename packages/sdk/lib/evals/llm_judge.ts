@@ -37,9 +37,14 @@ const JudgeOutputSchema = z.object({
     "A score between 0 and 1 indicating how well the output satisfies the rubric. 1 = fully satisfies, 0 = does not satisfy at all.",
   ),
   reason: z.string().describe(
-    "A brief explanation of the score and any issues found.",
+    "A concise 1-2 sentence justification for the verdict.",
   ),
 });
+
+const _JUDGE_REASON_INSTRUCTION =
+  '\nThe "reason" field must be a concise 1-2 sentence justification. ' +
+  "Do not include your reasoning process, self-corrections, or re-checking in the reason. " +
+  "State only the final justification.";
 
 type JudgeOutput = z.infer<typeof JudgeOutputSchema>;
 
@@ -237,7 +242,8 @@ async function _runJudge(options: JudgeRunOptions): Promise<JudgeOutput> {
   const agent = new Agent<undefined, JudgeOutput>({
     model,
     systemPrompt:
-      "You are an expert evaluator. Score outputs against the provided rubric objectively.",
+      "You are an expert evaluator. Score outputs against the provided rubric objectively." +
+      _JUDGE_REASON_INSTRUCTION,
     outputSchema: JudgeOutputSchema,
   });
 

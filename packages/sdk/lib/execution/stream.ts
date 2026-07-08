@@ -110,6 +110,13 @@ export function executeStream<TDeps, TOutput>(
     },
   });
 
+  // Deferred for time-to-first-token: resolves with ms from request start to
+  // first streaming chunk on the initial model turn.
+  let ttftResolve!: (v: number | null) => void;
+  const ttftPromise = new Promise<number | null>((resolve) => {
+    ttftResolve = resolve;
+  });
+
   runStreamLoop(
     agent,
     prompt,
@@ -117,6 +124,7 @@ export function executeStream<TDeps, TOutput>(
     textController,
     partialController,
     deferred,
+    ttftResolve,
   );
 
   return {
@@ -126,6 +134,7 @@ export function executeStream<TDeps, TOutput>(
     messages: deferred.promise.then((r) => r.messages),
     newMessages: deferred.promise.then((r) => r.newMessages),
     usage: deferred.promise.then((r) => r.usage),
+    timeToFirstToken: ttftPromise,
   };
 }
 
@@ -140,6 +149,7 @@ async function runStreamLoop<TDeps, TOutput>(
   textController: ReadableStreamDefaultController<string>,
   partialController: ReadableStreamDefaultController<TOutput>,
   deferred: DeferredResult<TOutput>,
+  ttftResolve: (v: number | null) => void,
 ): Promise<void> {
   const ctx: RunContext<TDeps> = createRunContext(
     agent,
@@ -147,7 +157,6 @@ async function runStreamLoop<TDeps, TOutput>(
     opts.metadata ?? {},
   );
   const { usage } = ctx;
-  let streamClosed = false;
 
   const model = opts._override?.model ?? agent.model;
   const maxTurns = opts._override?.maxTurns ?? agent.maxTurns;
@@ -179,9 +188,17 @@ async function runStreamLoop<TDeps, TOutput>(
   const inputOffset = opts.messageHistory?.length ?? 0;
   const messages = buildInitialMessages(opts.messageHistory, prompt);
 
+  let streamClosed = false;
+  let ttftRecorded = false;
+
   const closeStreams = () => {
     if (!streamClosed) {
       streamClosed = true;
+      // If no streaming chunk arrived (e.g. empty response), resolve TTFT to null.
+      if (!ttftRecorded) {
+        ttftRecorded = true;
+        ttftResolve(null);
+      }
       textController.close();
       try {
         partialController.close();
@@ -204,6 +221,9 @@ async function runStreamLoop<TDeps, TOutput>(
           runScopedToolsets,
         );
 
+      // Record request start time for TTFT measurement on the first turn.
+      const requestStart = turn === 0 ? Date.now() : 0;
+
       const stream = streamText({
         model,
         system,
@@ -225,6 +245,17 @@ async function runStreamLoop<TDeps, TOutput>(
       >();
 
       for await (const chunk of stream.fullStream) {
+        // Record time-to-first-token on the first meaningful chunk of the first turn.
+        if (!ttftRecorded && turn === 0) {
+          if (
+            chunk.type === "text-delta" ||
+            chunk.type === "tool-call" ||
+            chunk.type === "tool-input-start"
+          ) {
+            ttftRecorded = true;
+            ttftResolve(Date.now() - requestStart);
+          }
+        }
         if (chunk.type === "text-delta") {
           // AI SDK v6: text-delta carries `.text` (not `.textDelta`)
           accumulatedText += chunk.text;
